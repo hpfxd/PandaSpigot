@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+# get base dir regardless of execution location
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+SOURCE=$([[ "$SOURCE" = /* ]] && echo "$SOURCE" || echo "$PWD/${SOURCE#./}")
+basedir=$(dirname "$SOURCE")
+
+. "$basedir/scripts/init.sh"
+
+paperstash() {
+    STASHED=$(git stash)
+}
+
+paperunstash() {
+    if [[ "$STASHED" != "No local changes to save" ]] ; then
+        git stash pop
+    fi
+}
+
+buildpaperclipjar() {
+    cp -f scripts/basepaperclip.sh base/Paper/paperclip.sh
+    cd base/Paper
+    ./paperclip.sh
+    cd "$basedir"
+}
+
+case "$1" in
+    "setup")
+        cd "$basedir"
+        scripts/upstream.sh
+    ;;
+    "build")
+        log_info "Preparing to build PandaSpigot"
+        cd "$basedir"
+        scripts/upstream.sh
+        scripts/apply.sh "$basedir"
+        ./gradlew build
+        buildpaperclipjar
+    ;;
+    "rb" | "rbp" | "rebuild")
+    (
+        set -e
+        cd "$basedir"
+        scripts/rebuildpatches.sh "$basedir"
+    )
+    ;;
+    "p" | "patch" | "apply")
+    (
+        set -e
+        cd "$basedir"
+        scripts/apply.sh "$basedir"
+        log_info "    Run './panda jar' to create a runnable JAR."
+    )
+    ;;
+    "j" | "jar")
+    (
+        set -e
+        ./gradlew build
+        buildpaperclipjar
+    )
+    ;;
+    *)
+        echo "PandaSpigot build tool."
+        echo ""
+        echo " Commands:"
+        echo "  * setup        | Setup the build environment"
+        echo "  * build        | Setup the build environment, apply patches, and create a runnable JAR"
+        echo "  * p, patch     | Apply patches"
+        echo "  * rb, rebuild  | Rebuild patches"
+        echo "  * j, jar       | Create a runnable JAR"
+    ;;
+esac
+
+unset -f paperstash
+unset -f paperunstash

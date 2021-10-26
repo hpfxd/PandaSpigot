@@ -1,0 +1,59 @@
+From c74a5eeef072e480207f190a9092e5147892a622 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Tue, 26 Oct 2021 20:51:53 -0400
+Subject: [PATCH] Disable version checking in version command for now
+
+
+diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+index e91e1d8c..9927fcd9 100644
+--- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
++++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+@@ -1,10 +1,8 @@
+ package org.bukkit.command.defaults;
+ 
+ import com.google.common.base.Charsets;
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.List;
+-
++import com.google.common.collect.ImmutableList;
++import com.google.common.io.Resources;
+ import org.apache.commons.lang.Validate;
+ import org.bukkit.Bukkit;
+ import org.bukkit.ChatColor;
+@@ -13,20 +11,15 @@ import org.bukkit.plugin.Plugin;
+ import org.bukkit.plugin.PluginDescriptionFile;
+ import org.bukkit.util.StringUtil;
+ 
+-import com.google.common.collect.ImmutableList;
+-import com.google.common.io.Resources;
+ import java.io.BufferedReader;
+ import java.io.IOException;
+ import java.net.URL;
+-import java.net.URLEncoder;
++import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.HashSet;
++import java.util.List;
+ import java.util.Set;
+ import java.util.concurrent.locks.ReentrantLock;
+-import java.util.logging.Level;
+-import java.util.logging.Logger;
+-import org.json.simple.JSONObject;
+-import org.json.simple.parser.JSONParser;
+-import org.json.simple.parser.ParseException;
+ 
+ public class VersionCommand extends BukkitCommand {
+     public VersionCommand(String name) {
+@@ -44,7 +37,7 @@ public class VersionCommand extends BukkitCommand {
+ 
+         if (args.length == 0) {
+             sender.sendMessage("This server is running " + Bukkit.getName() + " version " + Bukkit.getVersion() + " (Implementing API version " + Bukkit.getBukkitVersion() + ")");
+-            sendVersion(sender);
++            //sendVersion(sender); // PandaSpigot - Disable version sending for now.
+         } else {
+             StringBuilder name = new StringBuilder();
+ 
+-- 
+2.29.2.windows.2
+

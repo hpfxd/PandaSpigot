@@ -1,0 +1,33 @@
+From 315994e2bc09d8830de79d5a67d954c734d9fbbc Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 3 Nov 2021 14:29:02 -0400
+Subject: [PATCH] Player Chunk Load/Unload Events
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 0c49a256..77068cd0 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -241,6 +241,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+                             arraylist.add(chunk);
+                             arraylist1.addAll(chunk.tileEntities.values()); // CraftBukkit - Get tile entities directly from the chunk instead of the world
+                             iterator1.remove();
++                            Bukkit.getPluginManager().callEvent(new io.papermc.paper.event.packet.PlayerChunkLoadEvent(chunk.bukkitChunk, this.getBukkitEntity())); // PandaSpigot
+                         }
+                     }
+                 } else {
+diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+index 38586aad..4bf77d3c 100644
+--- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+@@ -428,6 +428,7 @@ public class PlayerChunkMap {
+                 this.players.remove(entityplayer); // CraftBukkit
+                 this.b.remove(entityplayer);
+                 entityplayer.chunkCoordIntPairQueue.remove(this.location);
++                org.bukkit.Bukkit.getPluginManager().callEvent(new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(chunk.bukkitChunk, entityplayer.getBukkitEntity())); // PandaSpigot
+                 if (this.b.isEmpty()) {
+                     long i = (long) this.location.x + 2147483647L | (long) this.location.z + 2147483647L << 32;
+ 
+-- 
+2.29.2.windows.2
+

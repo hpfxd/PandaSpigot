@@ -1,0 +1,11 @@
+/.idea/
+/base/mc-dev/
+/PandaSpigot-API/
+/PandaSpigot-Server/
+*.iml
+*.DS_Store
+run/
+
+# gradle
+.gradle/
+build/

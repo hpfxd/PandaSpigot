@@ -1,0 +1,484 @@
+From a1eef11f7341ef5e5206a964214d2b5fc25e751d Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 27 Oct 2021 01:43:01 -0400
+Subject: [PATCH] Setup Gradle project
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+new file mode 100644
+index 00000000..ea4e3ad5
+--- /dev/null
++++ b/build.gradle.kts
+@@ -0,0 +1,100 @@
++plugins {
++    id("com.hpfxd.pandaspigot.java-conventions")
++    id("com.github.johnrengelman.shadow") version "7.1.0"
++}
++
++val minecraftVersion = "1_8_R3"
++
++dependencies {
++    implementation(project(":pandaspigot-api"))
++    implementation("com.hpfxd.pandaspigot:minecraft-server:1.8.8-SNAPSHOT")
++
++    // Minecraft libraries:
++    implementation("net.sf.trove4j:trove4j:3.0.3")
++    implementation("io.netty:netty-all:4.0.23.Final")
++    implementation("net.sf.jopt-simple:jopt-simple:3.2")
++    implementation("jline:jline:2.12")
++
++    implementation("org.xerial:sqlite-jdbc:3.7.2")
++    implementation("mysql:mysql-connector-java:5.1.14")
++
++    testImplementation("junit:junit:4.11")
++    testImplementation("org.hamcrest:hamcrest-library:1.3")
++}
++
++fun TaskContainer.registerRunTask(
++    name: String, block: JavaExec.() -> Unit
++): TaskProvider<JavaExec> = register<JavaExec>(name) {
++    group = "pandaspigot"
++    standardInput = System.`in`
++    workingDir = rootProject.layout.projectDirectory.dir(
++        providers.gradleProperty("runWorkDir").forUseAtConfigurationTime().orElse("run")
++    ).get().asFile
++
++    if (project.hasProperty("disableWatchdog")) {
++        systemProperty("disable.watchdog", true)
++    }
++    doFirst {
++        workingDir.mkdirs()
++    }
++    block(this)
++}
++
++tasks {
++    shadowJar {
++        mergeServiceFiles()
++        archiveBaseName.set("pandaspigot")
++        archiveClassifier.set("") // without "-all"
++
++        val cbLibsPkg = "org.bukkit.craftbukkit.libs"
++
++        relocate("joptsimple", "$cbLibsPkg.joptsimple")
++        relocate("jline", "$cbLibsPkg.jline")
++        relocate("org.ibex", "$cbLibsPkg.org.ibex")
++        relocate("org.gjt", "$cbLibsPkg.org.gjt")
++
++        relocate("org.bukkit.craftbukkit", "org.bukkit.craftbukkit.v${minecraftVersion}") {
++            exclude("org.bukkit.craftbukkit.Main*") // don't relocate main class
++        }
++        relocate("net.minecraft.server", "net.minecraft.server.v${minecraftVersion}")
++    }
++
++    named("build") {
++        dependsOn(named("shadowJar"))
++    }
++
++    test {
++        exclude("org/bukkit/craftbukkit/inventory/ItemStack*Test.class")
++    }
++
++    jar {
++        manifest {
++            // set version as CI build id, or "dev" if this is a manual build
++            val implementationVersion = "PandaSpigot-" + System.getenv("GITHUB_RUN_NUMBER").let {
++                if (it == null) "dev"
++                else "ci-$it"
++            }
++
++            attributes(
++                "Main-Class" to "org.bukkit.craftbukkit.Main",
++                "Implementation-Title" to "PandaSpigot",
++                "Implementation-Version" to implementationVersion,
++                "Specification-Title" to "Bukkit",
++                "Specification-Version" to project.version,
++                "Specification-Vendor" to "Bukkit Team",
++                "Multi-Release" to "true", // PandaSpigot
++            )
++        }
++    }
++
++    registerRunTask("runShadow") {
++        description = "Spin up a test server from the shadowJar archiveFile"
++        classpath(shadowJar.flatMap { it.archiveFile })
++    }
++
++    registerRunTask("runDev") {
++        description = "Spin up a non-shaded non-relocated test server"
++        classpath = java.sourceSets.main.get().runtimeClasspath
++        mainClass.set("org.bukkit.craftbukkit.Main")
++    }
++}
+diff --git a/deprecation-mappings.at b/deprecation-mappings.at
+deleted file mode 100644
+index 5858b488..00000000
+--- a/deprecation-mappings.at
++++ /dev/null
+@@ -1,62 +0,0 @@
+-public+synthetic org/bukkit/Bukkit/getOnlinePlayers()[Lorg/bukkit/entity/Player;
+-public+synthetic org/bukkit/Server/getOnlinePlayers()[Lorg/bukkit/entity/Player;
+-
+-public+synthetic org/bukkit/entity/Damageable/damage(I)V
+-public+synthetic org/bukkit/entity/Damageable/damage(ILorg/bukkit/entity/Entity;)V
+-public+synthetic org/bukkit/entity/Damageable/getHealth()I
+-public+synthetic org/bukkit/entity/Damageable/getMaxHealth()I
+-public+synthetic org/bukkit/entity/Damageable/setHealth(I)V
+-public+synthetic org/bukkit/entity/Damageable/setMaxHealth(I)V
+-
+-public+synthetic org/bukkit/entity/LivingEntity/getLastDamage()I
+-public+synthetic org/bukkit/entity/LivingEntity/setLastDamage(I)V
+-
+-public+synthetic org/bukkit/entity/Minecart/getDamage()I
+-public+synthetic org/bukkit/entity/Minecart/setDamage(I)V
+-
+-public+synthetic org/bukkit/entity/Projectile/getShooter()Lorg/bukkit/entity/LivingEntity;
+-public+synthetic org/bukkit/entity/Projectile/setShooter(Lorg/bukkit/entity/LivingEntity;)V
+-
+-public+synthetic org/bukkit/event/entity/EntityDamageEvent/getDamage()I
+-public+synthetic org/bukkit/event/entity/EntityDamageEvent/setDamage(I)V
+-
+-public+synthetic org/bukkit/event/entity/EntityRegainHealthEvent/getAmount()I
+-public+synthetic org/bukkit/event/entity/EntityRegainHealthEvent/setAmount(I)V
+-
+-public+synthetic org/bukkit/event/vehicle/VehicleDamageEvent/getDamage()I
+-public+synthetic org/bukkit/event/vehicle/VehicleDamageEvent/setDamage(I)V
+-
+-# CraftBukkit
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/CraftServer/getOnlinePlayers()[Lorg/bukkit/entity/Player;
+-
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftArrow/getShooter()Lorg/bukkit/entity/LivingEntity;
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftArrow/setShooter(Lorg/bukkit/entity/LivingEntity;)V
+-
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/damage(I)V
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/damage(ILorg/bukkit/entity/Entity;)V
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/getHealth()I
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/getMaxHealth()I
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/setHealth(I)V
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/setMaxHealth(I)V
+-
+-
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftFireball/getShooter()Lorg/bukkit/entity/LivingEntity;
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftFireball/setShooter(Lorg/bukkit/entity/LivingEntity;)V
+-
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftFish/getShooter()Lorg/bukkit/entity/LivingEntity;
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftFish/setShooter(Lorg/bukkit/entity/LivingEntity;)V
+-
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/damage(I)V
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/damage(ILorg/bukkit/entity/Entity;)V
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/getHealth()I
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/getMaxHealth()I
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/setHealth(I)V
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/setMaxHealth(I)V
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/getLastDamage()I
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/setLastDamage(I)V
+-
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftMinecart/getDamage()I
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftMinecart/setDamage(I)V
+-
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftProjectile/getShooter()Lorg/bukkit/entity/LivingEntity;
+-public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftProjectile/setShooter(Lorg/bukkit/entity/LivingEntity;)V
+diff --git a/deprecation-mappings.csrg b/deprecation-mappings.csrg
+deleted file mode 100644
+index 48bc5049..00000000
+--- a/deprecation-mappings.csrg
++++ /dev/null
+@@ -1,27 +0,0 @@
+-org/bukkit/Bukkit _INVALID_getOnlinePlayers ()[Lorg/bukkit/entity/Player; getOnlinePlayers
+-org/bukkit/Server _INVALID_getOnlinePlayers ()[Lorg/bukkit/entity/Player; getOnlinePlayers
+-
+-org/bukkit/entity/Damageable _INVALID_damage (I)V damage
+-org/bukkit/entity/Damageable _INVALID_damage (ILorg/bukkit/entity/Entity;)V damage
+-org/bukkit/entity/Damageable _INVALID_getHealth ()I getHealth
+-org/bukkit/entity/Damageable _INVALID_getMaxHealth ()I getMaxHealth
+-org/bukkit/entity/Damageable _INVALID_setHealth (I)V setHealth
+-org/bukkit/entity/Damageable _INVALID_setMaxHealth (I)V setMaxHealth
+-
+-org/bukkit/entity/LivingEntity _INVALID_getLastDamage ()I getLastDamage
+-org/bukkit/entity/LivingEntity _INVALID_setLastDamage (I)V setLastDamage
+-
+-org/bukkit/entity/Minecart _INVALID_getDamage ()I getDamage
+-org/bukkit/entity/Minecart _INVALID_setDamage (I)V setDamage
+-
+-org/bukkit/entity/Projectile _INVALID_getShooter ()Lorg/bukkit/entity/LivingEntity; getShooter
+-org/bukkit/entity/Projectile _INVALID_setShooter (Lorg/bukkit/entity/LivingEntity;)V setShooter
+-
+-org/bukkit/event/entity/EntityDamageEvent _INVALID_getDamage ()I getDamage
+-org/bukkit/event/entity/EntityDamageEvent _INVALID_setDamage (I)V setDamage
+-
+-org/bukkit/event/entity/EntityRegainHealthEvent _INVALID_getAmount ()I getAmount
+-org/bukkit/event/entity/EntityRegainHealthEvent _INVALID_setAmount (I)V setAmount
+-
+-org/bukkit/event/vehicle/VehicleDamageEvent _INVALID_getDamage ()I getDamage
+-org/bukkit/event/vehicle/VehicleDamageEvent _INVALID_setDamage (I)V setDamage
+diff --git a/pom.xml b/pom.xml
+deleted file mode 100644
+index 6aaba502..00000000
+--- a/pom.xml
++++ /dev/null
+@@ -1,262 +0,0 @@
+-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+-    <modelVersion>4.0.0</modelVersion>
+-    <groupId>org.github.paperspigot</groupId>
+-    <artifactId>paperspigot</artifactId>
+-    <packaging>jar</packaging>
+-    <version>1.8.8-R0.1-SNAPSHOT</version>
+-    <name>PaperSpigot</name>
+-    <url>https://hub.spigotmc.org/stash/projects/PAPER/</url>
+-
+-    <properties>
+-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+-        <api.version>unknown</api.version>
+-        <junit.version>4.11</junit.version>
+-        <minecraft.version>1.8.8</minecraft.version>
+-        <minecraft_version>1_8_R3</minecraft_version>
+-        <buildtag.prefix>git-Bukkit-</buildtag.prefix>
+-        <buildtag.suffix></buildtag.suffix>
+-        <!--PaperSpigot - Bump to 1.8 - This will haunt me -->
+-        <maven.compiler.source>1.8</maven.compiler.source>
+-        <maven.compiler.target>1.8</maven.compiler.target>
+-    </properties>
+-
+-    <parent>
+-        <groupId>org.github.paperspigot</groupId>
+-        <artifactId>paperspigot-parent</artifactId>
+-        <version>dev-SNAPSHOT</version>
+-        <relativePath>../pom.xml</relativePath>
+-    </parent>
+-
+-    <dependencies>
+-        <dependency>
+-            <groupId>net.sf.trove4j</groupId>
+-            <artifactId>trove4j</artifactId>
+-            <version>3.0.3</version>
+-        </dependency>
+-        <dependency>
+-            <groupId>org.github.paperspigot</groupId>
+-            <artifactId>paperspigot-api</artifactId>
+-            <version>${project.version}</version>
+-            <type>jar</type>
+-            <scope>compile</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>org.spigotmc</groupId>
+-            <artifactId>minecraft-server</artifactId>
+-            <version>${minecraft.version}-SNAPSHOT</version>
+-            <type>jar</type>
+-            <scope>compile</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>net.sf.jopt-simple</groupId>
+-            <artifactId>jopt-simple</artifactId>
+-            <version>3.2</version>
+-            <type>jar</type>
+-            <scope>compile</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>jline</groupId>
+-            <artifactId>jline</artifactId>
+-            <version>2.12</version>
+-            <type>jar</type>
+-            <scope>compile</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>org.xerial</groupId>
+-            <artifactId>sqlite-jdbc</artifactId>
+-            <version>3.7.2</version>
+-            <type>jar</type>
+-            <scope>compile</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>mysql</groupId>
+-            <artifactId>mysql-connector-java</artifactId>
+-            <version>5.1.14</version>
+-            <type>jar</type>
+-            <scope>compile</scope>
+-        </dependency>
+-        <!-- testing -->
+-        <dependency>
+-            <groupId>junit</groupId>
+-            <artifactId>junit</artifactId>
+-            <version>${junit.version}</version>
+-            <scope>test</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>org.hamcrest</groupId>
+-            <artifactId>hamcrest-library</artifactId>
+-            <version>1.3</version>
+-            <scope>test</scope>
+-        </dependency>
+-    </dependencies>
+-
+-    <!-- required until fixed plexus-compiler-eclipse is deployed -->
+-    <pluginRepositories>
+-        <pluginRepository>
+-            <id>spigotmc-public</id>
+-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+-        </pluginRepository>
+-        <!-- PaperSpigot - Repo for gitdescribe -->
+-        <pluginRepository>
+-            <id>destroystokyo</id>
+-            <url>https://ci.destroystokyo.com/plugin/repository/everything/</url>
+-        </pluginRepository>
+-    </pluginRepositories>
+-
+-    <!-- This builds a completely 'ready to start' jar with all dependencies inside -->
+-    <build>
+-        <defaultGoal>install</defaultGoal>
+-        <plugins>
+-            <plugin>
+-            <groupId>com.lukegb.mojo</groupId>
+-            <artifactId>gitdescribe-maven-plugin</artifactId>
+-            <version>1.3</version>
+-            <configuration>
+-                <outputPrefix>git-PaperSpigot-</outputPrefix>
+-                <scmDirectory>..</scmDirectory>
+-            </configuration>
+-            <executions>
+-                <execution>
+-                    <phase>compile</phase>
+-                    <goals>
+-                        <goal>gitdescribe</goal>
+-                    </goals>
+-                </execution>
+-            </executions>
+-        </plugin>
+-            <plugin>
+-                <groupId>org.apache.maven.plugins</groupId>
+-                <artifactId>maven-jar-plugin</artifactId>
+-                <version>2.5</version>
+-                <configuration>
+-                    <forceCreation>true</forceCreation> <!-- Required to prevent shading the jar multiple times -->
+-                    <archive>
+-                        <manifestEntries>
+-                            <Main-Class>org.bukkit.craftbukkit.Main</Main-Class>
+-                            <Implementation-Title>CraftBukkit</Implementation-Title>
+-                            <Implementation-Version>${describe}</Implementation-Version>
+-                            <Implementation-Vendor>Bukkit Team</Implementation-Vendor>
+-                            <Specification-Title>Bukkit</Specification-Title>
+-                            <Specification-Version>${api.version}</Specification-Version>
+-                            <Specification-Vendor>Bukkit Team</Specification-Vendor>
+-                        </manifestEntries>
+-                        <manifestSections>
+-                            <manifestSection>
+-                                <name>net/bukkit/</name>
+-                                <manifestEntries>
+-                                    <Sealed>true</Sealed>
+-                                </manifestEntries>
+-                            </manifestSection>
+-                            <manifestSection>
+-                                <name>com/bukkit/</name>
+-                                <manifestEntries>
+-                                    <Sealed>true</Sealed>
+-                                </manifestEntries>
+-                            </manifestSection>
+-                            <manifestSection>
+-                                <name>org/bukkit/</name>
+-                                <manifestEntries>
+-                                    <Sealed>true</Sealed>
+-                                </manifestEntries>
+-                            </manifestSection>
+-                        </manifestSections>
+-                    </archive>
+-                </configuration>
+-            </plugin>
+-            <plugin>
+-                <groupId>org.apache.maven.plugins</groupId>
+-                <artifactId>maven-shade-plugin</artifactId>
+-                <version>2.3</version>
+-                <executions>
+-                    <execution>
+-                        <phase>package</phase>
+-                        <goals>
+-                            <goal>shade</goal>
+-                        </goals>
+-                        <configuration>
+-                            <relocations>
+-                                <relocation>
+-                                    <pattern>joptsimple</pattern>
+-                                    <shadedPattern>org.bukkit.craftbukkit.libs.joptsimple</shadedPattern>
+-                                </relocation>
+-                                <relocation>
+-                                    <pattern>jline</pattern>
+-                                    <shadedPattern>org.bukkit.craftbukkit.libs.jline</shadedPattern>
+-                                </relocation>
+-                                <relocation>
+-                                    <pattern>org.ibex</pattern>
+-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.ibex</shadedPattern>
+-                                </relocation>
+-                                <relocation>
+-                                    <pattern>org.gjt</pattern>
+-                                    <shadedPattern>org.bukkit.craftbukkit.libs.org.gjt</shadedPattern>
+-                                </relocation>
+-                                <relocation>
+-                                    <pattern>org.bukkit.craftbukkit</pattern>
+-                                    <shadedPattern>org.bukkit.craftbukkit.v${minecraft_version}</shadedPattern>
+-                                    <excludes>
+-                                        <exclude>org.bukkit.craftbukkit.Main*</exclude>
+-                                    </excludes>
+-                                </relocation>
+-                                <relocation>
+-                                    <pattern>net.minecraft.server</pattern>
+-                                    <shadedPattern>net.minecraft.server.v${minecraft_version}</shadedPattern>
+-                                </relocation>
+-                            </relocations>
+-                        </configuration>
+-                    </execution>
+-                </executions>
+-            </plugin>
+-            <!-- Gotta go after shade plugin -->
+-            <plugin>
+-                <groupId>net.md-5</groupId>
+-                <artifactId>specialsource-maven-plugin</artifactId>
+-                <version>1.2.1</version>
+-                <executions>
+-                    <execution>
+-                        <phase>package</phase>
+-                        <goals>
+-                            <goal>remap</goal>
+-                        </goals>
+-                        <configuration>
+-                            <srgIn>${project.basedir}/deprecation-mappings.csrg</srgIn>
+-                            <accessIn>${project.basedir}/deprecation-mappings.at</accessIn>
+-                        </configuration>
+-                    </execution>
+-                </executions>
+-            </plugin>
+-            <plugin>
+-                <groupId>org.apache.maven.plugins</groupId>
+-                <artifactId>maven-compiler-plugin</artifactId>
+-                <!-- versions after this appear to be broken -->
+-                <version>3.1</version>
+-                <configuration>
+-                    <!-- we use the Eclipse compiler as it doesn't need a JDK -->
+-                    <compilerId>eclipse</compilerId>
+-                    <!-- source and target are ignored if this isn't true -->
+-                    <optimize>true</optimize>
+-                </configuration>
+-                <dependencies>
+-                    <!-- we need our custom version as it fixes some bugs on case sensitive file systems -->
+-                    <dependency>
+-                        <groupId>org.codehaus.plexus</groupId>
+-                        <artifactId>plexus-compiler-eclipse</artifactId>
+-                        <version>2.5.0-spigotmc</version>
+-                    </dependency>
+-                </dependencies>
+-            </plugin>
+-            <plugin>
+-                <groupId>org.apache.maven.plugins</groupId>
+-                <artifactId>maven-surefire-plugin</artifactId>
+-                <version>2.18</version>
+-                <configuration>
+-                    <workingDirectory>${basedir}/target/test-server</workingDirectory>
+-                    <excludes>
+-                        <exclude>org/bukkit/craftbukkit/inventory/ItemStack*Test.java</exclude>
+-                    </excludes>
+-                </configuration>
+-            </plugin>
+-        </plugins>
+-    </build>
+-</project>
+-- 
+2.29.2.windows.2
+

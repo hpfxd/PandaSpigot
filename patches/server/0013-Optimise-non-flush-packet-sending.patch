@@ -1,0 +1,56 @@
+From a4a014960af64b2a0dae7f7343ae5668399edf16 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <spottedleaf@spottedleaf.dev>
+Date: Fri, 29 Oct 2021 08:25:50 -0400
+Subject: [PATCH] Optimise non-flush packet sending
+
+Places like entity tracking make heavy use of packet sending,
+and internally netty will use some very expensive thread wakeup
+calls when scheduling.
+
+Thanks to various hacks in ProtocolLib as well as other
+plugins, we cannot simply use a queue of packets to group
+send on execute. We have to call execute for each packet.
+
+Tux's suggestion here is exactly what was needed - tag
+the Runnable indicating it should not make a wakeup call.
+
+Big thanks to Tux for making this possible as I had given
+up on this optimisation before he came along.
+
+Locally this patch drops the entity tracker tick by a full 1.5x.
+
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index ce27fe27..f5607282 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -311,7 +311,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+             }
+             // PandaSpigot end
+         } else {
+-            this.channel.eventLoop().execute(new Runnable() {
++            Runnable command = new Runnable() { // PandaSpigot - optimize packets that are not flushed
+                 public void run() {
+                     if (enumprotocol != enumprotocol1) {
+                         NetworkManager.this.a(enumprotocol);
+@@ -344,7 +344,17 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+                     }
+                     // PandaSpigot end
+                 }
+-            });
++            // PandaSpigot start - optimize packets that are not flushed
++            };
++            if (!flush) {
++                // create a LazyRunnable that when executed, calls command.run()
++                io.netty.util.concurrent.AbstractEventExecutor.LazyRunnable run = command::run;
++                this.channel.eventLoop().execute(run);
++            } else {
++                // if flushing, just schedule like normal
++                this.channel.eventLoop().execute(command);
++            }
++            // PandaSpigot end
+         }
+ 
+     }
+-- 
+2.29.2.windows.2
+

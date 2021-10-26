@@ -1,0 +1,45 @@
+From fccc6f4ed1c55f7ac2029bfa7b6759ebaa94338c Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sat, 30 Oct 2021 04:55:10 -0400
+Subject: [PATCH] Fix compatibility with new Java versions.
+
+Changes:
+- Removed W3C CSS import from LoadingMap (????)
+- Removed Reflection#getCallerClass from CustomTimingsHandler. This could be replaced with a StalkWalker with a multi-release jar, but since the class is deprecated anyways, I think it's fine to just leave it.
+
+diff --git a/src/main/java/co/aikar/util/LoadingMap.java b/src/main/java/co/aikar/util/LoadingMap.java
+index a9f29199..26d345f5 100644
+--- a/src/main/java/co/aikar/util/LoadingMap.java
++++ b/src/main/java/co/aikar/util/LoadingMap.java
+@@ -27,7 +27,6 @@ package co.aikar.util;
+ import com.google.common.base.Function;
+ import org.bukkit.Material;
+ import co.aikar.timings.TimingHistory;
+-import org.w3c.dom.css.Counter;
+ 
+ import java.lang.reflect.Constructor;
+ import java.util.AbstractMap;
+diff --git a/src/main/java/org/spigotmc/CustomTimingsHandler.java b/src/main/java/org/spigotmc/CustomTimingsHandler.java
+index 7e89b97b..709b62e0 100644
+--- a/src/main/java/org/spigotmc/CustomTimingsHandler.java
++++ b/src/main/java/org/spigotmc/CustomTimingsHandler.java
+@@ -30,7 +30,6 @@ import co.aikar.timings.NullTimingHandler;
+ import co.aikar.timings.Timing;
+ import co.aikar.timings.Timings;
+ import co.aikar.timings.TimingsManager;
+-import sun.reflect.Reflection;
+ 
+ import java.lang.reflect.Method;
+ import java.util.logging.Level;
+@@ -52,7 +51,7 @@ public final class CustomTimingsHandler {
+ 
+         Plugin plugin = null;
+         try {
+-             plugin = TimingsManager.getPluginByClassloader(Reflection.getCallerClass(2));
++             //plugin = TimingsManager.getPluginByClassloader(Reflection.getCallerClass(2));
+         } catch (Exception ignored) {}
+ 
+         new AuthorNagException("Deprecated use of CustomTimingsHandler. Please Switch to Timings.of ASAP").printStackTrace();
+-- 
+2.29.2.windows.2
+

@@ -1,0 +1,300 @@
+From de4d9da55e165f06b30fdb0243a315ac0bdc4cd2 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 27 Oct 2021 01:44:46 -0400
+Subject: [PATCH] Setup Gradle project
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+new file mode 100644
+index 00000000..78151f58
+--- /dev/null
++++ b/build.gradle.kts
+@@ -0,0 +1,118 @@
++plugins {
++    id("com.hpfxd.pandaspigot.java-conventions")
++    `maven-publish`
++}
++
++java {
++    withSourcesJar()
++    withJavadocJar()
++}
++
++dependencies {
++    api("commons-lang:commons-lang:2.6")
++    api("org.avaje:ebean:2.8.1")
++    api("com.googlecode.json-simple:json-simple:1.1.1")
++    api("org.yaml:snakeyaml:1.15")
++    api("net.md-5:bungeecord-chat:1.8-SNAPSHOT")
++    compileOnlyApi("net.sf.trove4j:trove4j:3.0.3") // provided by server
++
++    // bundled with Minecraft, should be kept in sync
++    api("com.google.guava:guava:17.0")
++    api("com.google.code.gson:gson:2.2.4")
++
++    // testing
++    testImplementation("junit:junit:4.12")
++    testImplementation("org.hamcrest:hamcrest-library:1.3")
++    testImplementation("net.sf.trove4j:trove4j:3.0.3") // required by tests
++}
++
++tasks {
++    val generateApiVersioningFile by registering {
++        inputs.property("version", project.version)
++        val pomProps = layout.buildDirectory.file("pom.properties")
++        outputs.file(pomProps)
++        doLast {
++            pomProps.get().asFile.writeText("version=${project.version}")
++        }
++    }
++
++    jar {
++        from(generateApiVersioningFile.map { it.outputs.files.singleFile }) {
++            into("META-INF/maven/${project.group}/${project.name.toLowerCase()}")
++        }
++
++        manifest {
++            attributes(
++                "Automatic-Module-Name" to "org.bukkit"
++            )
++        }
++    }
++
++    withType<Javadoc> {
++        (options as StandardJavadocDocletOptions).let {
++            // hide warnings
++            it.addStringOption("Xdoclint:none", "-quiet")
++
++            it.links(
++                "https://guava.dev/releases/21.0/api/docs/",
++                "https://javadoc.io/doc/org.yaml/snakeyaml/1.28/",
++                "https://javadoc.io/doc/org.jetbrains/annotations-java5/21.0.1/",
++                "https://javadoc.io/doc/net.md-5/bungeecord-chat/1.16-R0.4/",
++            )
++        }
++    }
++}
++
++publishing {
++    publications {
++        create<MavenPublication>("mavenJava") {
++            from(components["java"])
++            versionMapping {
++                usage("java-api") {
++                    fromResolutionOf("runtimeClasspath")
++                }
++            }
++
++            pom {
++                url.set("https://github.com/hpfxd/PandaSpigot")
++                description.set(project.description)
++                name.set(project.name)
++                // if this is a CI build, set version as the run id
++                System.getenv("GITHUB_RUN_NUMBER").let { if (it != null) version = it }
++
++                developers {
++                    developer {
++                        id.set("hpfxd")
++                        name.set("Nate")
++                        email.set("me@hpfxd.com")
++                    }
++                }
++
++                scm {
++                    connection.set("scm:git:git://github.com/hpfxd/PandaSpigot.git")
++                    developerConnection.set("scm:git:git://github.com/hpfxd/PandaSpigot.git")
++                    url.set("https://github.com/hpfxd/PandaSpigot")
++                }
++
++                licenses {
++                    license {
++                        name.set("GPL-v3.0")
++                        url.set("https://www.gnu.org/licenses/gpl-3.0.txt")
++                    }
++                }
++            }
++        }
++    }
++
++    repositories {
++        maven {
++            name = "hpfxd-repo"
++            url = uri("https://repo.hpfxd.com/releases/")
++
++            credentials {
++                username = System.getenv("REPO_USERNAME") ?: property("repository.hpfxd.username") as String
++                password = System.getenv("REPO_PASSWORD") ?: property("repository.hpfxd.password") as String
++            }
++        }
++    }
++}
+diff --git a/pom.xml b/pom.xml
+deleted file mode 100644
+index fe9d6d26..00000000
+--- a/pom.xml
++++ /dev/null
+@@ -1,161 +0,0 @@
+-
+-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+-    <modelVersion>4.0.0</modelVersion>
+-
+-    <parent>
+-        <groupId>org.github.paperspigot</groupId>
+-        <artifactId>paperspigot-parent</artifactId>
+-        <version>dev-SNAPSHOT</version>
+-    </parent>
+-
+-    <groupId>org.github.paperspigot</groupId>
+-    <artifactId>paperspigot-api</artifactId>
+-    <version>1.8.8-R0.1-SNAPSHOT</version>
+-    <packaging>jar</packaging>
+-
+-    <name>PaperSpigot-API</name>
+-    <url>https://hub.spigotmc.org/stash/projects/PAPER/</url>
+-    <description>An enhanced plugin API for Minecraft servers.</description>
+-
+-    <properties>
+-        <!--PaperSpigot - Bump to 1.8 - This will haunt me -->
+-        <additionalparam>-Xdoclint:none</additionalparam>
+-        <maven.compiler.source>1.8</maven.compiler.source>
+-        <maven.compiler.target>1.8</maven.compiler.target>
+-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+-    </properties>
+-
+-    <!-- just until we get deployment to central approved -->
+-    <distributionManagement>
+-        <repository>
+-            <id>destroystokyo-releases</id>
+-            <url>https://repo.destroystokyo.com/content/repositories/releases/</url>
+-        </repository>
+-        <snapshotRepository>
+-            <id>destroystokyo-snapshots</id>
+-            <url>https://repo.destroystokyo.com/content/repositories/snapshots/</url>
+-        </snapshotRepository>
+-    </distributionManagement>
+-
+-    <!-- required until fixed plexus-compiler-eclipse is deployed -->
+-    <pluginRepositories>
+-        <pluginRepository>
+-            <id>spigotmc-public</id>
+-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+-        </pluginRepository>
+-    </pluginRepositories>
+-
+-    <dependencies>
+-        <dependency>
+-            <groupId>net.sf.trove4j</groupId>
+-            <artifactId>trove4j</artifactId>
+-            <version>3.0.3</version>
+-            <!-- Trove Provided by CraftBukkit -->
+-            <scope>provided</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>commons-lang</groupId>
+-            <artifactId>commons-lang</artifactId>
+-            <version>2.6</version>
+-            <scope>compile</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>com.googlecode.json-simple</groupId>
+-            <artifactId>json-simple</artifactId>
+-            <version>1.1.1</version>
+-            <type>jar</type>
+-            <scope>compile</scope>
+-        </dependency>
+-        <!-- bundled with Minecraft, should be kept in sync -->
+-        <dependency>
+-            <groupId>com.google.guava</groupId>
+-            <artifactId>guava</artifactId>
+-            <version>17.0</version>
+-            <scope>compile</scope>
+-        </dependency>
+-        <!-- bundled with Minecraft, should be kept in sync -->
+-        <dependency>
+-            <groupId>com.google.code.gson</groupId>
+-            <artifactId>gson</artifactId>
+-          <version>2.2.4</version>
+-        </dependency>
+-        <dependency>
+-            <groupId>org.avaje</groupId>
+-            <artifactId>ebean</artifactId>
+-            <version>2.8.1</version>
+-            <scope>compile</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>org.yaml</groupId>
+-            <artifactId>snakeyaml</artifactId>
+-            <version>1.15</version>
+-            <scope>compile</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>net.md-5</groupId>
+-            <artifactId>bungeecord-chat</artifactId>
+-            <version>1.8-SNAPSHOT</version>
+-            <type>jar</type>
+-            <scope>compile</scope>
+-        </dependency>
+-
+-        <!-- testing -->
+-        <dependency>
+-            <groupId>junit</groupId>
+-            <artifactId>junit</artifactId>
+-            <version>4.12</version>
+-            <scope>test</scope>
+-        </dependency>
+-        <dependency>
+-            <groupId>org.hamcrest</groupId>
+-            <artifactId>hamcrest-library</artifactId>
+-            <version>1.3</version>
+-            <scope>test</scope>
+-        </dependency>
+-    </dependencies>
+-
+-    <build>
+-        <plugins>
+-            <plugin>
+-                <groupId>org.apache.maven.plugins</groupId>
+-                <artifactId>maven-compiler-plugin</artifactId>
+-                <!-- versions after this appear to be broken -->
+-                <version>3.1</version>
+-                <configuration>
+-                    <!-- we use the Eclipse compiler as it doesn't need a JDK -->
+-                    <compilerId>eclipse</compilerId>
+-                    <!-- source and target are ignored if this isn't true -->
+-                    <optimize>true</optimize>
+-                </configuration>
+-                <dependencies>
+-                    <!-- we need our custom version as it fixes some bugs on case sensitive file systems -->
+-                    <dependency>
+-                        <groupId>org.codehaus.plexus</groupId>
+-                        <artifactId>plexus-compiler-eclipse</artifactId>
+-                        <version>2.5.0-spigotmc</version>
+-                    </dependency>
+-                </dependencies>
+-            </plugin>
+-            <plugin>
+-                <groupId>org.apache.maven.plugins</groupId>
+-                <artifactId>maven-shade-plugin</artifactId>
+-                <version>2.3</version>
+-                <executions>
+-                    <execution>
+-                        <phase>package</phase>
+-                        <goals>
+-                            <goal>shade</goal>
+-                        </goals>
+-                    </execution>
+-                </executions>
+-                <configuration>
+-                    <!-- utterly useless artifact from shade 2.x -->
+-                    <createDependencyReducedPom>false</createDependencyReducedPom>
+-                    <!-- when downloading via Maven we can pull depends individually -->
+-                    <shadedArtifactAttached>true</shadedArtifactAttached>
+-                </configuration>
+-            </plugin>
+-        </plugins>
+-    </build>
+-</project>
+-- 
+2.29.2.windows.2
+
