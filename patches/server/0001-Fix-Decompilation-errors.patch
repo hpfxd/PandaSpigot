@@ -1,4 +1,4 @@
-From 009cfd5d050312ce023eca38a730ae6ea45a79a0 Mon Sep 17 00:00:00 2001
+From 22156a526cbda4c7dcb7693d48f1178ddea7ceb0 Mon Sep 17 00:00:00 2001
 From: cswhite2000 <18whitechristop@gmail.com>
 Date: Mon, 6 Aug 2018 16:39:57 -0700
 Subject: [PATCH] Fix Decompilation errors
@@ -111,6 +111,19 @@ index 1541921c..89499ead 100644
 -    public void a(PacketListener packetlistener) {
 -        this.a((PacketListenerPlayOut) packetlistener);
 -    }
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketPrepender.java b/src/main/java/net/minecraft/server/PacketPrepender.java
+index e09ede5b..29d28a45 100644
+--- a/src/main/java/net/minecraft/server/PacketPrepender.java
++++ b/src/main/java/net/minecraft/server/PacketPrepender.java
+@@ -23,7 +23,7 @@ public class PacketPrepender extends MessageToByteEncoder<ByteBuf> {
+         }
+     }
+ 
+-    protected void encode(ChannelHandlerContext channelhandlercontext, Object object, ByteBuf bytebuf) throws Exception {
++    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
+         this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
+     }
  }
 diff --git a/src/main/java/net/minecraft/server/ServerPing.java b/src/main/java/net/minecraft/server/ServerPing.java
 index 034a559b..5e34b19c 100644

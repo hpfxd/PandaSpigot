@@ -58,7 +58,9 @@ import WorldGenCaves
 import WorldSettings
 import BlockCarpet
 import MerchantRecipeList
-import Packet # PandaSpigot
+import Packet
+import PacketPrepender
+import PacketSplitter
 
 cd "$basedir/base/Paper/PaperSpigot-Server/"
 rm -rf nms-patches applyPatches.sh makePatches.sh >/dev/null 2>&1
