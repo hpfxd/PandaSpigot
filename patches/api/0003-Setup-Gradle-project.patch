@@ -1,4 +1,4 @@
-From de4d9da55e165f06b30fdb0243a315ac0bdc4cd2 Mon Sep 17 00:00:00 2001
+From 53fdfcaee3d3942a2107d6df90e4429f35cff620 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 01:44:46 -0400
 Subject: [PATCH] Setup Gradle project
@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 00000000..78151f58
+index 00000000..85498903
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,122 @@
 +plugins {
 +    id("com.hpfxd.pandaspigot.java-conventions")
 +    `maven-publish`
@@ -116,14 +116,18 @@ index 00000000..78151f58
 +        }
 +    }
 +
-+    repositories {
-+        maven {
-+            name = "hpfxd-repo"
-+            url = uri("https://repo.hpfxd.com/releases/")
++    (System.getenv("REPO_USERNAME") ?: findProperty("repository.hpfxd.username")).let { repoUsername ->
++        if (repoUsername == null) return@let // don't declare repository if username not declared
 +
-+            credentials {
-+                username = System.getenv("REPO_USERNAME") ?: property("repository.hpfxd.username") as String
-+                password = System.getenv("REPO_PASSWORD") ?: property("repository.hpfxd.password") as String
++        repositories {
++            maven {
++                name = "hpfxd-repo"
++                url = uri("https://repo.hpfxd.com/releases/")
++
++                credentials {
++                    username = repoUsername as String
++                    password = System.getenv("REPO_PASSWORD") ?: findProperty("repository.hpfxd.password") as String
++                }
 +            }
 +        }
 +    }

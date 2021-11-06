@@ -11,7 +11,7 @@ initScript=$(dirname "$SOURCE")/init.sh
 PS1="$"
 
 paperVer=$(cat base/.upstream-state)
-log_info "Applying SportPaper patches"
+log_info "Applying PandaSpigot patches"
 function applyPatch {
     what=$1
     what_name=$(dirname "$what")

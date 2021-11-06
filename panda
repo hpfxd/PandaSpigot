@@ -60,6 +60,7 @@ case "$1" in
     "j" | "jar")
     (
         set -e
+        cd "$basedir"
         ./gradlew build
         buildpaperclipjar
     )

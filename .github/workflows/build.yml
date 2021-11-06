@@ -1,0 +1,53 @@
+name: Build
+
+on:
+  - push
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Maven cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Setup JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: 8
+          distribution: adopt
+
+      - name: Setup Git identity
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git config --global init.defaultBranch master
+
+      - name: Setup build environment
+        run: ./panda setup
+
+      - name: Apply patches
+        run: ./panda patch
+
+      - name: Build
+        run: ./gradlew build --console=plain --no-daemon
+
+      - name: Paperclip
+        run: |
+          cp -f ./scripts/basepaperclip.sh ./base/Paper/paperclip.sh
+          cd ./base/Paper
+          ./paperclip.sh
+          cd ../../
+          mv -v "./PandaSpigot-Server/build/libs/pandaspigot.jar" "./PandaSpigot-Server/build/libs/pandaspigot-$GITHUB_RUN_NUMBER.jar"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Server JAR
+          path: PandaSpigot-Server/build/libs/pandaspigot-${{ github.run_number }}.jar

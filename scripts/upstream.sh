@@ -11,6 +11,7 @@ initScript=$(dirname "$SOURCE")/init.sh
 # PandaSpigot start - check for zip
 if ! type "zip" > /dev/null; then
   echo "Required command \"zip\" not found."
+  exit 1
 fi
 # PandaSpigot end
 
