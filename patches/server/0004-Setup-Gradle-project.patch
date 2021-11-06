@@ -1,4 +1,4 @@
-From a1eef11f7341ef5e5206a964214d2b5fc25e751d Mon Sep 17 00:00:00 2001
+From 5ec1faf68447ee5b7be07306af9c6ce4315e0205 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 01:43:01 -0400
 Subject: [PATCH] Setup Gradle project
@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 00000000..ea4e3ad5
+index 00000000..fac777aa
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,100 @@
+@@ -0,0 +1,98 @@
 +plugins {
 +    id("com.hpfxd.pandaspigot.java-conventions")
 +    id("com.github.johnrengelman.shadow") version "7.1.0"
@@ -81,16 +81,14 @@ index 00000000..ea4e3ad5
 +
 +    jar {
 +        manifest {
-+            // set version as CI build id, or "dev" if this is a manual build
-+            val implementationVersion = "PandaSpigot-" + System.getenv("GITHUB_RUN_NUMBER").let {
-+                if (it == null) "dev"
-+                else "ci-$it"
-+            }
-+
++            val git = Git(rootProject.layout.projectDirectory)
++            val gitHash = git("rev-parse", "--short=7", "HEAD").getText().trim()
++            val date = git("show", "-s", "--format=%ci", gitHash).getText().trim()
 +            attributes(
 +                "Main-Class" to "org.bukkit.craftbukkit.Main",
-+                "Implementation-Title" to "PandaSpigot",
-+                "Implementation-Version" to implementationVersion,
++                "Implementation-Title" to "CraftBukkit",
++                "Implementation-Version" to "git-PandaSpigot-$gitHash",
++                "Implementation-Vendor" to date,
 +                "Specification-Title" to "Bukkit",
 +                "Specification-Version" to project.version,
 +                "Specification-Vendor" to "Bukkit Team",
