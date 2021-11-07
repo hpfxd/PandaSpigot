@@ -29,7 +29,6 @@ To compile PandaSpigot, you'll need:
 - Git
 - Maven (Required to build upstream projects)
 - Bash
-- `zip` command (`sudo apt install zip` on Ubuntu)
 
 Building, patching, and compiling are all done through the main `panda` script.
 

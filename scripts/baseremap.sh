@@ -70,12 +70,6 @@ if [ ! -f "$jarpath-mapped.jar" ]; then
     fi
 fi
 
-zip -q -d "$jarpath-mapped.jar" "io/*" "META-INF/io.netty.versions.properties" # PandaSpigot - Remove Netty from mapped jar
-if [ "$?" != "0" ]; then
-    echo "Failed to remove Netty from remapped jar. Missing zip command?"
-    exit 1
-fi
-
 echo "Installing remapped jar..."
 cd CraftBukkit # Need to be in a directory with a valid POM at the time of install.
 mvn install:install-file -q -Dfile="$jarpath-mapped.jar" -Dpackaging=jar -DgroupId=com.hpfxd.pandaspigot -DartifactId=minecraft-server -Dversion="$minecraftversion-SNAPSHOT"
