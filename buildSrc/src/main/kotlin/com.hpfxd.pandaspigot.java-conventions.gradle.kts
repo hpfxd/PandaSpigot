@@ -5,7 +5,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    mavenLocal()
 
     maven(url = "https://oss.sonatype.org/content/groups/public")
     maven(url = "https://hub.spigotmc.org/nexus/content/groups/public")

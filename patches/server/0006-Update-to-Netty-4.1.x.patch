@@ -1,23 +1,31 @@
-From 1129ec0ff9df20e5748b7119e2644f55ff8994ec Mon Sep 17 00:00:00 2001
+From 93bcc37c7b217e74af583c0c4b160cc9aad066c5 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 06:29:44 -0400
 Subject: [PATCH] Update to Netty 4.1.x
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index ea4e3ad5..501a8c3a 100644
+index 76eb5981..2b4ec47e 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -11,7 +11,7 @@ dependencies {
+@@ -13,7 +13,7 @@ dependencies {
+     implementation(project(":pandaspigot-api"))
  
      // Minecraft libraries:
+-    implementation("com.mojang:netty:1.7.7")
++    implementation("io.netty:netty-all:4.1.69.Final") // PandaSpigot - Update Netty to 4.1.x
+     implementation("com.mojang:authlib:1.5.21")
+     implementation("org.apache.logging.log4j:log4j-api:2.0-beta9")
+     implementation("org.apache.logging.log4j:log4j-core:2.0-beta9")
+@@ -23,7 +23,6 @@ dependencies {
+     implementation("com.google.guava:guava:17.0")
+     implementation("com.google.code.gson:gson:2.2.4")
      implementation("net.sf.trove4j:trove4j:3.0.3")
 -    implementation("io.netty:netty-all:4.0.23.Final")
-+    implementation("io.netty:netty-all:4.1.69.Final") // PandaSpigot - Update Netty to 4.1.x
      implementation("net.sf.jopt-simple:jopt-simple:3.2")
      implementation("jline:jline:2.12")
  
-@@ -43,6 +43,7 @@ fun TaskContainer.registerRunTask(
+@@ -55,6 +54,7 @@ fun TaskContainer.registerRunTask(
  tasks {
      shadowJar {
          mergeServiceFiles()
