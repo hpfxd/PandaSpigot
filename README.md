@@ -21,7 +21,7 @@ Fork of Paper for 1.8.8 focused on improved performance and stability.
 See a full list of patches [here](./patches/).
 
 ## Using
-You can download the latest pre-built artifact [here](https://nightly.link/hpfxd/PandaSpigot/workflows/build/master/Server%20JAR).
+You can download the latest pre-built artifact [here](https://nightly.link/hpfxd/PandaSpigot/workflows/build/master/Server%20JAR.zip).
 
 ## Building
 To compile PandaSpigot, you'll need:
