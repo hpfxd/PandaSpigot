@@ -1,4 +1,4 @@
-From b4b1f3f9d3de20a5ea25543b07e8e5fb1bf7f40e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Shane Freeder <theboyetronic@gmail.com>
 Date: Wed, 3 Nov 2021 20:22:36 -0400
 Subject: [PATCH] Cleanup allocated favicon ByteBuf
@@ -7,7 +7,7 @@ Cleanups a bytebuffer which was allocated during the encoding of the
 favicon to be sent to the client.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b55d6e5e..9b29837a 100644
+index 35a692b6e1b201db03b6295003625ad8d02948e5..7183ae86f4a08576f98fa888de0b07045acef578 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -679,6 +679,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -34,6 +34,3 @@ index b55d6e5e..9b29837a 100644
              }
          }
  
--- 
-2.29.2.windows.2
-

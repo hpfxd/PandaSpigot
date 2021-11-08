@@ -39,7 +39,7 @@ function savePatches {
         done
     fi
 
-    git format-patch --quiet --no-stat -N -o "$basedir/patches/$2" upstream/upstream
+    git format-patch --zero-commit --full-index --no-signature --no-stat -N -o "$basedir/patches/$2" upstream/upstream > /dev/null
     cd "$basedir"
     git add -A "$basedir/patches/$2"
     cleanupPatches "$basedir/patches/$2/"

@@ -1,11 +1,11 @@
-From 8edf9042d3d3c8085d6753a1d1c8bc32c179a4a9 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Tue, 26 Oct 2021 21:01:56 -0400
 Subject: [PATCH] Rebrand
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b400ce04..e6cabf15 100644
+index 864b3bc1375cb72588b63855eee8fa4ff569a5d3..7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1084,7 +1084,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -18,7 +18,7 @@ index b400ce04..e6cabf15 100644
  
      public CrashReport b(CrashReport crashreport) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 69485fa6..6f021d50 100644
+index 69485fa696f27c965dd576d9cda7b4b56ef57032..6f021d50d2d91497992c794161918c25f187cfdb 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -127,7 +127,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
@@ -40,7 +40,7 @@ index 69485fa6..6f021d50 100644
          return result;
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
-index 3a4b1424..da66025a 100644
+index 3a4b14246bb99b989a4685242ccedd0030e481aa..da66025a18b23e249ce13a8b998d24b112cb969e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
 @@ -11,7 +11,7 @@ public final class Versioning {
@@ -52,6 +52,3 @@ index 3a4b1424..da66025a 100644
          Properties properties = new Properties();
  
          if (stream != null) {
--- 
-2.29.2.windows.2
-

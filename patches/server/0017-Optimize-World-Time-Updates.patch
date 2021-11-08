@@ -1,4 +1,4 @@
-From ff4ae84cb046f830fdb8b6f035b87bb81294fc8e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Aikar <aikar@aikar.co>
 Date: Sat, 30 Oct 2021 14:38:33 -0400
 Subject: [PATCH] Optimize World Time Updates
@@ -8,7 +8,7 @@ the updates per world, so that we can re-use the same packet
 object for every player unless they have per-player time enabled.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 61e83b78..c8925861 100644
+index da2c2c7626e9a41abdd6875c6169cf7a41cdd7e4..48eb91bcb3be565d40dd5e675e893f9c6cf4ce1b 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -804,12 +804,24 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -40,6 +40,3 @@ index 61e83b78..c8925861 100644
          SpigotTimings.timeUpdateTimer.stopTiming(); // Spigot
  
          int i;
--- 
-2.29.2.windows.2
-

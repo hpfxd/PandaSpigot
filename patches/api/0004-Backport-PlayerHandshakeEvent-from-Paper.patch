@@ -1,4 +1,4 @@
-From b8acd172f70eabaeecb7930a4ab1eb02fb86a65e Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 04:06:49 -0400
 Subject: [PATCH] Backport PlayerHandshakeEvent from Paper
@@ -7,7 +7,7 @@ This patch was added in Paper 1.9.4, and is used by plugins such as BungeeGuard 
 
 diff --git a/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java b/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java
 new file mode 100644
-index 00000000..f9f1ea58
+index 0000000000000000000000000000000000000000..f9f1ea58e4fa7e582b08df907b1fd5d4ea057204
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java
 @@ -0,0 +1,239 @@
@@ -250,6 +250,3 @@ index 00000000..f9f1ea58
 +        return HANDLERS;
 +    }
 +}
--- 
-2.29.2.windows.2
-

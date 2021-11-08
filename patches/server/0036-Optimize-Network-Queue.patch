@@ -1,4 +1,4 @@
-From 0af1b2e6c3e7d25dbff44ba205c9b89899b05331 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: vemacs <d@nkmem.es>
 Date: Thu, 4 Nov 2021 09:44:02 -0400
 Subject: [PATCH] Optimize Network Queue
@@ -9,7 +9,7 @@ caches the queue's size.
 
 diff --git a/src/main/java/com/destroystokyo/paper/utils/CachedSizeConcurrentLinkedQueue.java b/src/main/java/com/destroystokyo/paper/utils/CachedSizeConcurrentLinkedQueue.java
 new file mode 100644
-index 00000000..c8540d16
+index 0000000000000000000000000000000000000000..c8540d16defdc633113b504616794f440ac1c160
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/utils/CachedSizeConcurrentLinkedQueue.java
 @@ -0,0 +1,31 @@
@@ -45,7 +45,7 @@ index 00000000..c8540d16
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 9b29837a..7629cf34 100644
+index 7183ae86f4a08576f98fa888de0b07045acef578..1bbdafb43a1d8cbba5df8c59e8fbfa0050258d35 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -100,7 +100,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -57,6 +57,3 @@ index 9b29837a..7629cf34 100644
      private Thread serverThread;
      private long ab = az();
  
--- 
-2.29.2.windows.2
-

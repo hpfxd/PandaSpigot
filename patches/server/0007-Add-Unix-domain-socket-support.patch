@@ -1,4 +1,4 @@
-From 02a97db9946a8eac395eb14378696316f38f76de Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 07:36:59 -0400
 Subject: [PATCH] Add Unix domain socket support
@@ -10,7 +10,7 @@ This feature can be enabled by setting the "server-ip" field in server.propertie
 Currently, this feature is only supported on Linux environments with Epoll available.
 
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 088beb22..8e57df17 100644
+index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..8e57df176bcb04b7309a476a5472a41e5e46f8ae 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
 @@ -163,6 +163,28 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
@@ -76,7 +76,7 @@ index 088beb22..8e57df17 100644
                  DedicatedServer.LOGGER.warn("**** FAILED TO BIND TO PORT!");
                  DedicatedServer.LOGGER.warn("The exception was: {}", new Object[] { ioexception.toString()});
 diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index 11626e60..6558d82a 100644
+index 11626e60eaa3033260e42a71583f88ca7bbe8044..6558d82a96134eee0afca034150a9e7d4e48be9b 100644
 --- a/src/main/java/net/minecraft/server/HandshakeListener.java
 +++ b/src/main/java/net/minecraft/server/HandshakeListener.java
 @@ -29,6 +29,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
@@ -109,7 +109,7 @@ index 11626e60..6558d82a 100644
                      } else
                      {
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 9d23c6c0..fcf54e3a 100644
+index 9d23c6c0ccaa91a46cb60474461f3977fa793122..fcf54e3a138f8408d7b85f087be03ca8cedb45f9 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -339,6 +339,11 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -125,7 +125,7 @@ index 9d23c6c0..fcf54e3a 100644
      }
      // Spigot End
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index f13182c1..578d03ea 100644
+index f13182c186723c0fe6ac695c8fe3a0c0bcfaab5d..578d03ead09c3c126fcd2da0657e1d94dbba9840 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -67,7 +67,12 @@ public class ServerConnection {
@@ -165,6 +165,3 @@ index f13182c1..578d03ea 100644
          }
      }
  
--- 
-2.29.2.windows.2
-

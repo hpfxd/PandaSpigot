@@ -1,4 +1,4 @@
-From 7a07300b906a32a0363ba799009b7e8745815df1 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Thu, 4 Nov 2021 09:32:54 -0400
 Subject: [PATCH] Cache user authenticator threads
@@ -9,7 +9,7 @@ overall login performance when many players join, as thread
 creation is quite expensive.
 
 diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index 541cec7c..41676922 100644
+index 541cec7cfb0fcc680af4bb34eeeb1eb20131d3cc..416769221c099d5bd2a7facd5bb34cb4b2aed71a 100644
 --- a/src/main/java/net/minecraft/server/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/LoginListener.java
 @@ -40,6 +40,12 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
@@ -61,6 +61,3 @@ index 541cec7c..41676922 100644
          }
      }
  
--- 
-2.29.2.windows.2
-

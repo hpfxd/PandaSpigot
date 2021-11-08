@@ -1,4 +1,4 @@
-From 06c07398cb2aae6a474b929296379f3e3d03cc0b Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Fri, 29 Oct 2021 06:38:18 -0400
 Subject: [PATCH] Optimize Network Manager and add advanced packet support
@@ -26,7 +26,7 @@ Also avoids spamming closed channel exception by rechecking closed state in disp
 and then catch exceptions and close if they fire.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa7..e46ed015 100644
+index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..e46ed015ba584a84af52ab8a33d83e2b80a00851 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -357,7 +357,7 @@ index 8f8b9aa7..e46ed015 100644
  
      // Spigot Start
 diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
-index fdc142b7..d60ec06b 100644
+index fdc142b75b78289f01a9e9fed6f36432624735db..d60ec06b995eb477b555d222e99e208560656cef 100644
 --- a/src/main/java/net/minecraft/server/Packet.java
 +++ b/src/main/java/net/minecraft/server/Packet.java
 @@ -9,4 +9,37 @@ public interface Packet<T extends PacketListener> {
@@ -399,7 +399,7 @@ index fdc142b7..d60ec06b 100644
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 578d03ea..f118ba3e 100644
+index 578d03ead09c3c126fcd2da0657e1d94dbba9840..f118ba3eaec0948e838281c9608f0a45e753ded1 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -61,6 +61,7 @@ public class ServerConnection {
@@ -424,6 +424,3 @@ index 578d03ea..f118ba3e 100644
                      networkmanager.a((PacketListener) (new HandshakeListener(ServerConnection.this.f, networkmanager)));
                  }
              }).group((EventLoopGroup) lazyinitvar.c()).localAddress(address)).bind().syncUninterruptibly()); // PandaSpigot - Unix domain socket support
--- 
-2.29.2.windows.2
-

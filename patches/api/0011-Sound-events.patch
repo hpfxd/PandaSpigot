@@ -1,4 +1,4 @@
-From db9d0fc382ac3339f4abfc713624e28f0a1610a4 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Thu, 4 Nov 2021 18:00:53 -0400
 Subject: [PATCH] Sound events
@@ -6,7 +6,7 @@ Subject: [PATCH] Sound events
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/event/sound/EntitySoundEvent.java b/src/main/java/com/hpfxd/pandaspigot/event/sound/EntitySoundEvent.java
 new file mode 100644
-index 00000000..2cc68d5e
+index 0000000000000000000000000000000000000000..2cc68d5e8afed1bf306608eefaf274e584c6144c
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/event/sound/EntitySoundEvent.java
 @@ -0,0 +1,24 @@
@@ -36,7 +36,7 @@ index 00000000..2cc68d5e
 +}
 diff --git a/src/main/java/com/hpfxd/pandaspigot/event/sound/PlayerSoundEvent.java b/src/main/java/com/hpfxd/pandaspigot/event/sound/PlayerSoundEvent.java
 new file mode 100644
-index 00000000..f94f7c6c
+index 0000000000000000000000000000000000000000..f94f7c6ca8d4a6384150352ee79e2f2e5fa13392
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/event/sound/PlayerSoundEvent.java
 @@ -0,0 +1,21 @@
@@ -63,7 +63,7 @@ index 00000000..f94f7c6c
 +}
 diff --git a/src/main/java/com/hpfxd/pandaspigot/event/sound/SoundEvent.java b/src/main/java/com/hpfxd/pandaspigot/event/sound/SoundEvent.java
 new file mode 100644
-index 00000000..c1858e35
+index 0000000000000000000000000000000000000000..c1858e35b34c93dbaa37399eb4fc8a972dacb30a
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/event/sound/SoundEvent.java
 @@ -0,0 +1,109 @@
@@ -176,6 +176,3 @@ index 00000000..c1858e35
 +        return handlers;
 +    }
 +}
--- 
-2.29.2.windows.2
-

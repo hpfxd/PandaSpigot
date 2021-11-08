@@ -1,4 +1,4 @@
-From 89969b32f9e844a7a5e062e3bcca5e869b455c04 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Aikar <aikar@aikar.co>
 Date: Wed, 3 Nov 2021 19:55:46 -0400
 Subject: [PATCH] Optimize World.isLoaded(BlockPosition)Z
@@ -6,7 +6,7 @@ Subject: [PATCH] Optimize World.isLoaded(BlockPosition)Z
 Reduce method invocations for World.isLoaded(BlockPosition)Z
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 375d991f..73de7d6d 100644
+index 375d991f1ede3b352027192f5eccd8a8b988d17f..73de7d6d4dc619416363a7d8557b71b850313cfb 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -298,7 +298,7 @@ public abstract class World implements IBlockAccess {
@@ -18,6 +18,3 @@ index 375d991f..73de7d6d 100644
      }
  
      public boolean a(BlockPosition blockposition, boolean flag) {
--- 
-2.29.2.windows.2
-

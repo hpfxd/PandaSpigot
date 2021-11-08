@@ -1,4 +1,4 @@
-From 3455d8ee24151bd04f2bae0ea036fb41f6cc69a6 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 01:43:01 -0400
 Subject: [PATCH] Setup Gradle project
@@ -6,7 +6,7 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 00000000..76eb5981
+index 0000000000000000000000000000000000000000..76eb5981a10f74f23cdb3024b88ec4582d2dbef7
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,110 @@
@@ -122,7 +122,7 @@ index 00000000..76eb5981
 +}
 diff --git a/deprecation-mappings.at b/deprecation-mappings.at
 deleted file mode 100644
-index 5858b488..00000000
+index 5858b488706682919648deb1aaf32c13d26b95af..0000000000000000000000000000000000000000
 --- a/deprecation-mappings.at
 +++ /dev/null
 @@ -1,62 +0,0 @@
@@ -190,7 +190,7 @@ index 5858b488..00000000
 -public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftProjectile/setShooter(Lorg/bukkit/entity/LivingEntity;)V
 diff --git a/deprecation-mappings.csrg b/deprecation-mappings.csrg
 deleted file mode 100644
-index 48bc5049..00000000
+index 48bc504954dfc5763cae9069aa8cc8f70453e5b0..0000000000000000000000000000000000000000
 --- a/deprecation-mappings.csrg
 +++ /dev/null
 @@ -1,27 +0,0 @@
@@ -223,7 +223,7 @@ index 48bc5049..00000000
 -org/bukkit/event/vehicle/VehicleDamageEvent _INVALID_setDamage (I)V setDamage
 diff --git a/pom.xml b/pom.xml
 deleted file mode 100644
-index 6aaba502..00000000
+index 6aaba50276525deab2e50a92d80fa57f8ed43faa..0000000000000000000000000000000000000000
 --- a/pom.xml
 +++ /dev/null
 @@ -1,262 +0,0 @@
@@ -489,6 +489,3 @@ index 6aaba502..00000000
 -        </plugins>
 -    </build>
 -</project>
--- 
-2.29.2.windows.2
-

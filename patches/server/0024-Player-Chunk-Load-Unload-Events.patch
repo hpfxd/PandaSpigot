@@ -1,11 +1,11 @@
-From 315994e2bc09d8830de79d5a67d954c734d9fbbc Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 3 Nov 2021 14:29:02 -0400
 Subject: [PATCH] Player Chunk Load/Unload Events
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 0c49a256..77068cd0 100644
+index 0c49a256cc481af1ceb7a873b03763e1d942a362..77068cd022e677fbf284df3d8aff95325089ce4f 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -241,6 +241,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -17,7 +17,7 @@ index 0c49a256..77068cd0 100644
                      }
                  } else {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 38586aad..4bf77d3c 100644
+index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..4bf77d3cec9c3a1f0048de7749432b9a6024b242 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -428,6 +428,7 @@ public class PlayerChunkMap {
@@ -28,6 +28,3 @@ index 38586aad..4bf77d3c 100644
                  if (this.b.isEmpty()) {
                      long i = (long) this.location.x + 2147483647L | (long) this.location.z + 2147483647L << 32;
  
--- 
-2.29.2.windows.2
-

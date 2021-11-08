@@ -1,4 +1,4 @@
-From f1970f7e77b9bec4a848450931e10ef8b903ccaf Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Thu, 4 Nov 2021 10:38:49 -0400
 Subject: [PATCH] Improved plugins command
@@ -11,7 +11,7 @@ Additionally, if the sender has permission to use /version, clicking
 on a plugin will execute "/version <plugin name>"
 
 diff --git a/src/main/java/org/bukkit/command/defaults/PluginsCommand.java b/src/main/java/org/bukkit/command/defaults/PluginsCommand.java
-index e21d1679..6f2eef45 100644
+index e21d16793b703189a5f4cf9091ac12f494d0107e..6f2eef45b72dc68668aa214cc21a08997b477eb5 100644
 --- a/src/main/java/org/bukkit/command/defaults/PluginsCommand.java
 +++ b/src/main/java/org/bukkit/command/defaults/PluginsCommand.java
 @@ -6,6 +6,15 @@ import org.bukkit.Bukkit;
@@ -139,6 +139,3 @@ index e21d1679..6f2eef45 100644
      private String getPluginList() {
          StringBuilder pluginList = new StringBuilder();
          Plugin[] plugins = Bukkit.getPluginManager().getPlugins();
--- 
-2.29.2.windows.2
-

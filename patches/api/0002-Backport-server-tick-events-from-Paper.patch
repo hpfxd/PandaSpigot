@@ -1,4 +1,4 @@
-From fd9222076c9f8707b87f56a41b0b6e1254f0a93b Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Tue, 26 Oct 2021 21:33:07 -0400
 Subject: [PATCH] Backport server tick events from Paper
@@ -7,7 +7,7 @@ These events were added by Paper in the late 1.13.2 era, and are used by plugins
 
 diff --git a/src/main/java/com/destroystokyo/paper/event/server/ServerTickEndEvent.java b/src/main/java/com/destroystokyo/paper/event/server/ServerTickEndEvent.java
 new file mode 100644
-index 00000000..e16c093a
+index 0000000000000000000000000000000000000000..e16c093a408eda45cc806f53e38af3565e36d17c
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/event/server/ServerTickEndEvent.java
 @@ -0,0 +1,56 @@
@@ -69,7 +69,7 @@ index 00000000..e16c093a
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/event/server/ServerTickStartEvent.java b/src/main/java/com/destroystokyo/paper/event/server/ServerTickStartEvent.java
 new file mode 100644
-index 00000000..6aa0d1fe
+index 0000000000000000000000000000000000000000..6aa0d1febde1498b75dcd858035ed2dba9b1a3e5
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/event/server/ServerTickStartEvent.java
 @@ -0,0 +1,29 @@
@@ -102,6 +102,3 @@ index 00000000..6aa0d1fe
 +        return handlers;
 +    }
 +}
--- 
-2.29.2.windows.2
-

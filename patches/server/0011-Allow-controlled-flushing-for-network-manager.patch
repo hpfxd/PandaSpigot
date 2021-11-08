@@ -1,4 +1,4 @@
-From dfa2f261114b3fde1df7a3779cbbc50af7c778d7 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Fri, 29 Oct 2021 07:56:48 -0400
 Subject: [PATCH] Allow controlled flushing for network manager
@@ -8,7 +8,7 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index e46ed015..ce27fe27 100644
+index e46ed015ba584a84af52ab8a33d83e2b80a00851..ce27fe27a6250c24dac50e382b035858441414ce 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -81,6 +81,39 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -116,6 +116,3 @@ index e46ed015..ce27fe27 100644
              }
          }
          return true;
--- 
-2.29.2.windows.2
-

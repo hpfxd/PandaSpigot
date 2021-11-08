@@ -1,11 +1,11 @@
-From 445dbae0670e880b2aefb89d90af782a4b0ea65c Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Sat, 30 Oct 2021 14:42:18 -0400
 Subject: [PATCH] Configurable time update frequency.
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 0e781b78..02382093 100644
+index 0e781b78cb37bd85f9f753bd351d7c724a561bd7..023820936a0684c97fefb115e7ab10d35413ce6f 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -6,6 +6,13 @@ import org.spongepowered.configurate.objectmapping.meta.Comment;
@@ -23,7 +23,7 @@ index 0e781b78..02382093 100644
      public KnockbackConfig knockback;
      
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index c8925861..08b3f670 100644
+index 48eb91bcb3be565d40dd5e675e893f9c6cf4ce1b..59f9709ee55e41cf8c15326f31b8c3f1a56f4bdd 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -811,7 +811,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -35,6 +35,3 @@ index c8925861..08b3f670 100644
                      continue;
                  }
                  EntityPlayer entityplayer = (EntityPlayer) entityhuman;
--- 
-2.29.2.windows.2
-
