@@ -1,11 +1,11 @@
-From 93bcc37c7b217e74af583c0c4b160cc9aad066c5 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 06:29:44 -0400
 Subject: [PATCH] Update to Netty 4.1.x
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 76eb5981..2b4ec47e 100644
+index 76eb5981a10f74f23cdb3024b88ec4582d2dbef7..2b4ec47e30e2429cb9ac4d3a168b4c117b90e77e 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -13,7 +13,7 @@ dependencies {
@@ -34,7 +34,7 @@ index 76eb5981..2b4ec47e 100644
          archiveClassifier.set("") // without "-all"
  
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-index e2eb3054..b48eeb63 100644
+index e2eb305468ff76026dc9b24d59394cfc94501273..b48eeb63ad61b18a630f2feb4fd6203e5e3e6c80 100644
 --- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
 +++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
 @@ -20,6 +20,10 @@ import java.nio.channels.GatheringByteChannel;
@@ -328,6 +328,3 @@ index e2eb3054..b48eeb63 100644
 +    }
 +    // PandaSpigot end
  }
--- 
-2.29.2.windows.2
-

@@ -1,11 +1,11 @@
-From 6ad04caf78c82bba30ac2ba1c70852c79d1c0af5 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 3 Nov 2021 18:01:06 -0400
 Subject: [PATCH] Configurable entity AI
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 75f46d3d..1d35967a 100644
+index 75f46d3db814ae48e8a1a12884aacb8bf5afe017..1d35967a27245ab12ea76db9218662eb6a4b8306 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -31,6 +31,11 @@ public class PandaSpigotWorldConfig {
@@ -21,7 +21,7 @@ index 75f46d3d..1d35967a 100644
      public KnockbackConfig knockback;
      
 diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index b82b9847..c1f100c3 100644
+index b82b98473f516e5963fed51ba892bfa59a80c2f5..c1f100c3bd68329b77f9a899cc7353374064daf6 100644
 --- a/src/main/java/net/minecraft/server/EntityInsentient.java
 +++ b/src/main/java/net/minecraft/server/EntityInsentient.java
 @@ -459,7 +459,7 @@ public abstract class EntityInsentient extends EntityLiving {
@@ -33,6 +33,3 @@ index b82b9847..c1f100c3 100644
          {
              // PaperSpigot start - Allow nerfed mobs to jump
              if (goalFloat != null) {
--- 
-2.29.2.windows.2
-

@@ -1,11 +1,11 @@
-From c74a5eeef072e480207f190a9092e5147892a622 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Tue, 26 Oct 2021 20:51:53 -0400
 Subject: [PATCH] Disable version checking in version command for now
 
 
 diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-index e91e1d8c..9927fcd9 100644
+index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..9927fcd9c4a8135a745bd47429c97df72695e395 100644
 --- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
 +++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
 @@ -1,10 +1,8 @@
@@ -54,6 +54,3 @@ index e91e1d8c..9927fcd9 100644
          } else {
              StringBuilder name = new StringBuilder();
  
--- 
-2.29.2.windows.2
-

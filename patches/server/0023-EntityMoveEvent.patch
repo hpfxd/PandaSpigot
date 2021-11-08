@@ -1,11 +1,11 @@
-From 8260c156f98bb2d4320cba6547e29c765bec52a7 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Mon, 1 Nov 2021 11:46:53 -0400
 Subject: [PATCH] EntityMoveEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 72c7e6fc..cd95aa17 100644
+index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..cd95aa17291d31e3cebe9f6488a43923a18facba 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
 +++ b/src/main/java/net/minecraft/server/EntityLiving.java
 @@ -1665,6 +1665,22 @@ public abstract class EntityLiving extends Entity {
@@ -32,7 +32,7 @@ index 72c7e6fc..cd95aa17 100644
  
      protected void doTick() {}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 08b3f670..b55d6e5e 100644
+index 59f9709ee55e41cf8c15326f31b8c3f1a56f4bdd..35a692b6e1b201db03b6295003625ad8d02948e5 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -831,6 +831,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -44,7 +44,7 @@ index 08b3f670..b55d6e5e 100644
                  this.methodProfiler.a(worldserver.getWorldData().getName());
                  /* Drop global time updates
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index f54a2794..9bf5b0a7 100644
+index f54a279407ad09fabcac038b11e8d668e68c35f6..9bf5b0a7d4b7eac5496768b3ce8dad22b02b332c 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -49,6 +49,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
@@ -55,6 +55,3 @@ index f54a2794..9bf5b0a7 100644
  
      // CraftBukkit start
      public final int dimension;
--- 
-2.29.2.windows.2
-

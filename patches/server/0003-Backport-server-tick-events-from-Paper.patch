@@ -1,11 +1,11 @@
-From 85949cdaeddbac5df898ad6b8bdb7d7607354f04 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Tue, 26 Oct 2021 21:34:39 -0400
 Subject: [PATCH] Backport server tick events from Paper
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index e6cabf15..0d1e4bb8 100644
+index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..0473bfc09e0218c4f612655637282322e15183fb 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -613,7 +613,13 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -22,6 +22,3 @@ index e6cabf15..0d1e4bb8 100644
                      this.Q = true;
                  }
                  // Spigot end
--- 
-2.29.2.windows.2
-

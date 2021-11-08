@@ -1,4 +1,4 @@
-From 091a317a652c42135d15b6b57e75da64d71290e8 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 3 Nov 2021 20:58:47 -0400
 Subject: [PATCH] Optimize BlockPosition helper methods
@@ -6,7 +6,7 @@ Subject: [PATCH] Optimize BlockPosition helper methods
 See https://bugs.mojang.com/browse/MC-136025
 
 diff --git a/src/main/java/net/minecraft/server/BlockPosition.java b/src/main/java/net/minecraft/server/BlockPosition.java
-index 0d0e0abb..ec40091f 100644
+index 0d0e0abb644754e49543fa7b630174f614fdaf45..ec40091fe45dd67d6415a5cd39c98556ceb2707b 100644
 --- a/src/main/java/net/minecraft/server/BlockPosition.java
 +++ b/src/main/java/net/minecraft/server/BlockPosition.java
 @@ -52,55 +52,72 @@ public class BlockPosition extends BaseBlockPosition {
@@ -95,6 +95,3 @@ index 0d0e0abb..ec40091f 100644
      }
  
      public BlockPosition shift(EnumDirection enumdirection, int i) {
--- 
-2.29.2.windows.2
-

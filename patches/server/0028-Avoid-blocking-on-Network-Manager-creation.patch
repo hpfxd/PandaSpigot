@@ -1,4 +1,4 @@
-From ad8d2c7ccf1631d80f47af66338a5bdfad568986 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Aikar <aikar@aikar.co>
 Date: Wed, 3 Nov 2021 19:45:25 -0400
 Subject: [PATCH] Avoid blocking on Network Manager creation
@@ -6,7 +6,7 @@ Subject: [PATCH] Avoid blocking on Network Manager creation
 Per Paper issue 294
 
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index f118ba3e..ac382838 100644
+index f118ba3eaec0948e838281c9608f0a45e753ded1..ac3828389190584842f3c9745bcb43ba63bdd71b 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -62,6 +62,16 @@ public class ServerConnection {
@@ -50,6 +50,3 @@ index f118ba3e..ac382838 100644
              // Spigot Start
              // This prevents players from 'gaming' the server, and strategically relogging to increase their position in the tick order
              if ( org.spigotmc.SpigotConfig.playerShuffle > 0 && MinecraftServer.currentTick % org.spigotmc.SpigotConfig.playerShuffle == 0 )
--- 
-2.29.2.windows.2
-

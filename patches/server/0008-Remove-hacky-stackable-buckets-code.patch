@@ -1,4 +1,4 @@
-From 276ce7f6f4db9b89cc16316188da440044ee1706 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 20:46:41 -0400
 Subject: [PATCH] Remove hacky stackable buckets code
@@ -8,7 +8,7 @@ The old code for stackable buckets involved using reflection to set a final fiel
 The new system uses a method to set the Material's maximum stack size dynamically, without reflection.
 
 diff --git a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
-index d6d9899e..b118ecd4 100644
+index d6d9899e27f5c002f31598deeaea8c52b158c175..b118ecd457df670f34623800264435d46a2b4c71 100644
 --- a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
 +++ b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
 @@ -183,38 +183,23 @@ public class PaperSpigotConfig
@@ -63,6 +63,3 @@ index d6d9899e..b118ecd4 100644
      }
  
      public static boolean warnForExcessiveVelocity;
--- 
-2.29.2.windows.2
-

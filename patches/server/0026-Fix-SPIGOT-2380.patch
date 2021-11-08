@@ -1,4 +1,4 @@
-From 0fb4b1c253c4887948068c9f2c6a4030d95ca103 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 3 Nov 2021 19:26:02 -0400
 Subject: [PATCH] Fix SPIGOT-2380
@@ -10,7 +10,7 @@ See:
 - md_5's fix: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/commits/6d3efa063495d5dc9d81cdc9e472f009ea6daa58
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index db915033..7cf87053 100644
+index db915033b217518a918e3553d90d1c193d78e67b..7cf870537490a553f81d5cf5c9dabe1ac9d90950 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 @@ -188,7 +188,7 @@ public class CraftEventFactory {
@@ -41,6 +41,3 @@ index db915033..7cf87053 100644
              switch (action) {
              case LEFT_CLICK_BLOCK:
                  action = Action.LEFT_CLICK_AIR;
--- 
-2.29.2.windows.2
-

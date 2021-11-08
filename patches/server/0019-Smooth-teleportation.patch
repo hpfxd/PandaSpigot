@@ -1,4 +1,4 @@
-From 5221403672b19a5e23fe5ad94c8559ef2b552e0f Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Sun, 31 Oct 2021 05:30:25 -0400
 Subject: [PATCH] Smooth teleportation
@@ -8,7 +8,7 @@ will send a relative teleport packet indicating that the player's
 rotation should stay the same as it currently is on the client.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 02382093..29c74482 100644
+index 023820936a0684c97fefb115e7ab10d35413ce6f..29c74482046bdba073c68c3baeea010f1e134b51 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -13,6 +13,15 @@ public class PandaSpigotWorldConfig {
@@ -28,7 +28,7 @@ index 02382093..29c74482 100644
      public KnockbackConfig knockback;
      
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 4391ad7e..5842cedc 100644
+index 4391ad7e7cf547b5e179c06e64b3a6e02cbe7a41..5842cedc81b90b4f3565d71ba5dfa8c0c98dfca6 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -68,6 +68,13 @@ import org.github.paperspigot.PaperSpigotConfig; // PaperSpigot
@@ -76,6 +76,3 @@ index 4391ad7e..5842cedc 100644
          if (Float.isNaN(f)) {
              f = 0;
          }
--- 
-2.29.2.windows.2
-

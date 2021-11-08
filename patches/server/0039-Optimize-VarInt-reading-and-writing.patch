@@ -1,4 +1,4 @@
-From 0327793b72767f78cc41d2ee09f8366f39b4f58d Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Sat, 6 Nov 2021 13:04:43 -0400
 Subject: [PATCH] Optimize VarInt reading and writing
@@ -8,7 +8,7 @@ See: https://github.com/VelocityPowered/Velocity
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/network/VarIntByteDecoder.java b/src/main/java/com/hpfxd/pandaspigot/network/VarIntByteDecoder.java
 new file mode 100644
-index 00000000..df2d56f9
+index 0000000000000000000000000000000000000000..df2d56f9a0e38b165d03dbea9e02ecb4d14b1e78
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/network/VarIntByteDecoder.java
 @@ -0,0 +1,50 @@
@@ -64,7 +64,7 @@ index 00000000..df2d56f9
 +}
 diff --git a/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java b/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java
 new file mode 100644
-index 00000000..c0040dd8
+index 0000000000000000000000000000000000000000..c0040dd80559d30f963eb952f6ef3372d38f7208
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java
 @@ -0,0 +1,114 @@
@@ -183,7 +183,7 @@ index 00000000..c0040dd8
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/PacketPrepender.java b/src/main/java/net/minecraft/server/PacketPrepender.java
-index 29d28a45..0c0babf7 100644
+index 29d28a45224afbf7f5641a98fee1ae7a416ed6e1..0c0babf7a0c306e1156b8177fc00334999b5adc2 100644
 --- a/src/main/java/net/minecraft/server/PacketPrepender.java
 +++ b/src/main/java/net/minecraft/server/PacketPrepender.java
 @@ -4,26 +4,29 @@ import io.netty.buffer.ByteBuf;
@@ -230,7 +230,7 @@ index 29d28a45..0c0babf7 100644
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/net/minecraft/server/PacketSplitter.java b/src/main/java/net/minecraft/server/PacketSplitter.java
-index c51a1f7d..3f9cdbff 100644
+index c51a1f7d1a57acde1e5c7378fe35c30547107052..3f9cdbff6746ed0776b32d9649e5689f397873da 100644
 --- a/src/main/java/net/minecraft/server/PacketSplitter.java
 +++ b/src/main/java/net/minecraft/server/PacketSplitter.java
 @@ -1,5 +1,6 @@
@@ -317,7 +317,7 @@ index c51a1f7d..3f9cdbff 100644
      }
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index ac382838..000b2488 100644
+index ac3828389190584842f3c9745bcb43ba63bdd71b..000b2488b0806594bc2d15012c966357f4325f4a 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -115,7 +115,14 @@ public class ServerConnection {
@@ -336,6 +336,3 @@ index ac382838..000b2488 100644
                      NetworkManager networkmanager = new NetworkManager(EnumProtocolDirection.SERVERBOUND);
      
                      // PandaSpigot start - prevent blocking on adding a new network manager while the server is ticking
--- 
-2.29.2.windows.2
-

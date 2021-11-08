@@ -1,11 +1,11 @@
-From 3a64d43f14fa566e2637b52a4effd8df477668e5 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Thu, 4 Nov 2021 18:00:50 -0400
 Subject: [PATCH] Sound events
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 73de7d6d..3795d7f0 100644
+index 73de7d6d4dc619416363a7d8557b71b850313cfb..3795d7f097c8051e5e80f6920d1b3fd69531c994 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -944,20 +944,57 @@ public abstract class World implements IBlockAccess {
@@ -68,6 +68,3 @@ index 73de7d6d..3795d7f0 100644
          for (int i = 0; i < this.u.size(); ++i) {
              ((IWorldAccess) this.u.get(i)).a(s, d0, d1, d2, f, f1);
          }
--- 
-2.29.2.windows.2
-

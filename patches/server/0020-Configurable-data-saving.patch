@@ -1,4 +1,4 @@
-From 9f0e68839bfd65e79cc14de6395b7b2e491960a4 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Sun, 31 Oct 2021 08:38:32 -0400
 Subject: [PATCH] Configurable data saving
@@ -8,7 +8,7 @@ This patch adds configuration options for:
 - Region writing (world data)
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 29c74482..75f46d3d 100644
+index 29c74482046bdba073c68c3baeea010f1e134b51..75f46d3db814ae48e8a1a12884aacb8bf5afe017 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -22,6 +22,15 @@ public class PandaSpigotWorldConfig {
@@ -28,7 +28,7 @@ index 29c74482..75f46d3d 100644
      public KnockbackConfig knockback;
      
 diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
-index b4056a28..ba13f3f2 100644
+index b4056a28a00ba706a4cec5c22ed815ca9c980196..ba13f3f20bb86f667178f51f4d3d1df63f5acf2d 100644
 --- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
 +++ b/src/main/java/net/minecraft/server/WorldNBTStorage.java
 @@ -182,6 +182,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
@@ -48,7 +48,7 @@ index b4056a28..ba13f3f2 100644
  
          try {
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 87529552..f54a2794 100644
+index 87529552aa27fc89a542130a27a6b2bfdda44ccd..f54a279407ad09fabcac038b11e8d668e68c35f6 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -958,7 +958,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
@@ -61,6 +61,3 @@ index 87529552..f54a2794 100644
              // CraftBukkit - ArrayList -> Collection
              Collection arraylist = this.chunkProviderServer.a();
              Iterator iterator = arraylist.iterator();
--- 
-2.29.2.windows.2
-

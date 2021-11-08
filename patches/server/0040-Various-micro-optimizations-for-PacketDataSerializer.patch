@@ -1,11 +1,11 @@
-From 4ee089579aa0911d0998fee38ef841f5e3441f2d Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Sat, 6 Nov 2021 13:21:21 -0400
 Subject: [PATCH] Various micro-optimizations for PacketDataSerializer
 
 
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-index b48eeb63..6c46349f 100644
+index b48eeb63ad61b18a630f2feb4fd6203e5e3e6c80..6c46349fb24856bb2b0f94d84536f64d96daeece 100644
 --- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
 +++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
 @@ -90,20 +90,7 @@ public class PacketDataSerializer extends ByteBuf {
@@ -66,6 +66,3 @@ index b48eeb63..6c46349f 100644
      }
  
      public int capacity() {
--- 
-2.29.2.windows.2
-

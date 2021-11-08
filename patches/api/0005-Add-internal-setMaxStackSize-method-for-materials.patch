@@ -1,4 +1,4 @@
-From 3b9a5faa30d6443c9127e428026fe0f5b5d76053 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 20:45:30 -0400
 Subject: [PATCH] Add internal setMaxStackSize method for materials
@@ -6,7 +6,7 @@ Subject: [PATCH] Add internal setMaxStackSize method for materials
 This is to be used by internal systems that need to set a Material's maximum stack size dynamically, such as stackable buckets in Paper's config.
 
 diff --git a/src/main/java/org/bukkit/Material.java b/src/main/java/org/bukkit/Material.java
-index 0fb26055..0fd42a85 100644
+index 0fb260555ce50f5348293a17f85512a4fb08918d..0fd42a85f05be7ee26e63d241645745d63becbee 100644
 --- a/src/main/java/org/bukkit/Material.java
 +++ b/src/main/java/org/bukkit/Material.java
 @@ -461,7 +461,7 @@ public enum Material {
@@ -40,6 +40,3 @@ index 0fb26055..0fd42a85 100644
  
      /**
       * Gets the maximum durability of this material
--- 
-2.29.2.windows.2
-

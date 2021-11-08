@@ -1,4 +1,4 @@
-From 53fdfcaee3d3942a2107d6df90e4429f35cff620 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 01:44:46 -0400
 Subject: [PATCH] Setup Gradle project
@@ -6,7 +6,7 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 00000000..85498903
+index 0000000000000000000000000000000000000000..85498903f8635790791bc25ae9b177c63479b350
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,122 @@
@@ -134,7 +134,7 @@ index 00000000..85498903
 +}
 diff --git a/pom.xml b/pom.xml
 deleted file mode 100644
-index fe9d6d26..00000000
+index fe9d6d265b686ae1c373e4fdcd202b16673366f1..0000000000000000000000000000000000000000
 --- a/pom.xml
 +++ /dev/null
 @@ -1,161 +0,0 @@
@@ -299,6 +299,3 @@ index fe9d6d26..00000000
 -        </plugins>
 -    </build>
 -</project>
--- 
-2.29.2.windows.2
-
