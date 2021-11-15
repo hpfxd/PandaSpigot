@@ -1,0 +1,86 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Andrew Steinborn <git@steinborn.me>
+Date: Sun, 14 Nov 2021 23:14:55 -0500
+Subject: [PATCH] Lazily track plugin scoreboards by default
+
+On servers with plugins that constantly churn through scoreboards, there is a risk of
+degraded GC performance due to the number of scoreboards held on by weak references.
+Most plugins don't even need the (vanilla) functionality that requires all plugin
+scoreboards to be tracked by the server. Instead, only track scoreboards when an
+objective is added with a non-dummy criteria.
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+index f021fd0c7622a788b809ecbf896162912ab4b0d0..4a3b170542d6266cb5868a925c6d3d081fc9598f 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+@@ -93,4 +93,10 @@ public class PandaSpigotConfig {
+     }
+     
+     //------------------------------------------------------------------------
++    @Comment("On servers with plugins that constantly churn through scoreboards, there is a risk of\n" +
++        "degraded GC performance due to the number of scoreboards held on by weak references.\n" +
++        "Most plugins don't even need the (vanilla) functionality that requires all plugin\n" +
++        "scoreboards to be tracked by the server. Instead, only track scoreboards when an\n" +
++        "objective is added with a non-dummy criteria.")
++    public boolean trackPluginScoreboards = false;
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
+index 00b30f8c80687a5e46e0edd033caf395b09d736d..1d0bd0d53fca2efa85466eb722ea85bd78235074 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboard.java
+@@ -19,6 +19,7 @@ import com.google.common.collect.Iterables;
+ 
+ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
+     final Scoreboard board;
++    boolean registeredGlobally = false; // PandaSpigot
+ 
+     CraftScoreboard(Scoreboard board) {
+         this.board = board;
+@@ -31,6 +32,12 @@ public final class CraftScoreboard implements org.bukkit.scoreboard.Scoreboard {
+         Validate.isTrue(board.getObjective(name) == null, "An objective of name '" + name + "' already exists");
+ 
+         CraftCriteria craftCriteria = CraftCriteria.getFromBukkit(criteria);
++        // PandaSpigot start
++        if (craftCriteria.criteria != net.minecraft.server.IScoreboardCriteria.b && !this.registeredGlobally) {
++            net.minecraft.server.MinecraftServer.getServer().server.getScoreboardManager().registerScoreboardForVanilla(this);
++            this.registeredGlobally = true;
++        }
++        // PandaSpigot end
+         ScoreboardObjective objective = board.registerObjective(name, craftCriteria.criteria);
+         return new CraftObjective(this, objective);
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
+index fbea5db29a49d72c6859aa77073dee2021aa42ea..ccd7b3036e1f08ca3c95bdc9627c5b3d0fca3953 100644
+--- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
++++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftScoreboardManager.java
+@@ -33,6 +33,7 @@ public final class CraftScoreboardManager implements ScoreboardManager {
+ 
+     public CraftScoreboardManager(MinecraftServer minecraftserver, net.minecraft.server.Scoreboard scoreboardServer) {
+         mainScoreboard = new CraftScoreboard(scoreboardServer);
++        mainScoreboard.registeredGlobally = true; // PandaSpigot
+         server = minecraftserver;
+         scoreboards.add(mainScoreboard);
+     }
+@@ -44,10 +45,22 @@ public final class CraftScoreboardManager implements ScoreboardManager {
+     public CraftScoreboard getNewScoreboard() {
+         org.spigotmc.AsyncCatcher.catchOp( "scoreboard creation"); // Spigot
+         CraftScoreboard scoreboard = new CraftScoreboard(new ScoreboardServer(server));
++        // PandaSpigot start
++        if (com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().trackPluginScoreboards) {
++            scoreboard.registeredGlobally = true;
+         scoreboards.add(scoreboard);
++        }
++        // PandaSpigot end
+         return scoreboard;
+     }
+ 
++    // PandaSpigot start
++    public void registerScoreboardForVanilla(CraftScoreboard scoreboard) {
++        org.spigotmc.AsyncCatcher.catchOp("scoreboard registration");
++        this.scoreboards.add(scoreboard);
++    }
++    // PandaSpigot end
++
+     // CraftBukkit method
+     public CraftScoreboard getPlayerBoard(CraftPlayer player) {
+         CraftScoreboard board = playerBoards.get(player);
