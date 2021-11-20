@@ -27,10 +27,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Setup JDK 8
+      - name: Setup JDK
         uses: actions/setup-java@v2
         with:
-          java-version: 8
+          java-version: 17
           distribution: adopt
 
       - name: Set Git identity
