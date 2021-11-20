@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sat, 20 Nov 2021 09:47:46 -0500
+Subject: [PATCH] Fix sending head rotation packet to all viewers
+
+This code, originally introduced by CraftBukkit, sends the entity's head
+rotation when it gains a new viewer. But instead of sending the packet
+only to the viewer, it broadcasts it to all viewers. This can cause many
+packets to be sent when an entity spawns near many players.
+
+This patch modifies the code to send the packet only to the viewer
+that the packet was meant to be delivered to.
+
+diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index 1fc2388eaa178366b92e9f4e2d6b32ed8a83c0dc..0b90b6f30ea09fb117281d5ddd2fc752d2c139b5 100644
+--- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+@@ -412,7 +412,7 @@ public class EntityTrackerEntry {
+ 
+                     // CraftBukkit start - Fix for nonsensical head yaw
+                     this.i = MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F);
+-                    this.broadcast(new PacketPlayOutEntityHeadRotation(this.tracker, (byte) i));
++                    entityplayer.playerConnection.sendPacket(new PacketPlayOutEntityHeadRotation(this.tracker, (byte) this.i)); // PandaSpigot - Don't broadcast
+                     // CraftBukkit end
+ 
+                     if (this.tracker instanceof EntityLiving) {
