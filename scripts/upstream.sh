@@ -8,12 +8,6 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 initScript=$(dirname "$SOURCE")/init.sh
 . "$initScript"
-# PandaSpigot start - check for zip
-if ! type "zip" > /dev/null; then
-  echo "Required command \"zip\" not found."
-  exit 1
-fi
-# PandaSpigot end
 
 if [[ "$1" == up* ]]; then
     (
