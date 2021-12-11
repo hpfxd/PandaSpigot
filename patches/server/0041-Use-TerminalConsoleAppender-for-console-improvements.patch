@@ -718,7 +718,7 @@ index 0000000000000000000000000000000000000000..0694b21465fb9e4164e71862ff24b622
 @@ -0,0 +1 @@
 +log4j.skipJansi=true
 diff --git a/src/main/resources/log4j2.xml b/src/main/resources/log4j2.xml
-index f37d1c2d722424aba16d978d409073dca9c55bbb..58af9a3056b6f693fac2d09a591e7969419ff002 100644
+index f37d1c2d722424aba16d978d409073dca9c55bbb..9af4553cb02303ef3450e5c61ab26dafca64bbda 100644
 --- a/src/main/resources/log4j2.xml
 +++ b/src/main/resources/log4j2.xml
 @@ -1,12 +1,11 @@
@@ -730,11 +730,11 @@ index f37d1c2d722424aba16d978d409073dca9c55bbb..58af9a3056b6f693fac2d09a591e7969
 -            <PatternLayout pattern="[%d{HH:mm:ss} %level]: %msg%n" />
 -        </Queue>
 +        <TerminalConsole name="TerminalConsole">
-+            <PatternLayout pattern="%highlightError{[%d{HH:mm:ss} %level]: %minecraftFormatting{%msg}%n%xEx}" />
++            <PatternLayout pattern="%highlightError{[%d{HH:mm:ss} %level]: %minecraftFormatting{%msg{nolookups}}%n%xEx}" />
 +        </TerminalConsole>
          <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
 -            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg%n" />
-+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %minecraftFormatting{%msg}{strip}%n" />
++            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %minecraftFormatting{%msg{nolookups}}{strip}%n" />
              <Policies>
                  <TimeBasedTriggeringPolicy />
                  <OnStartupTriggeringPolicy />
