@@ -1,0 +1,80 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Fri, 18 Mar 2022 15:20:38 -0400
+Subject: [PATCH] Ability to change PlayerProfile in AsyncPreLoginEvent
+
+This will allow you to change the players name or skin on login.
+
+diff --git a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
+index 1d571889979f161b3c99792432e9739f462ebae6..62562d3503d856a3dce22c3e972543f1a2d63cca 100644
+--- a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
++++ b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
+@@ -15,22 +15,46 @@ public class AsyncPlayerPreLoginEvent extends Event {
+     private static final HandlerList handlers = new HandlerList();
+     private Result result;
+     private String message;
+-    private final String name;
++    //private final String name; // PandaSpigot - Not used anymore
+     private final InetAddress ipAddress;
+-    private final UUID uniqueId;
++    //private final UUID uniqueId; // PandaSpigot - Not used anymore
+ 
+     @Deprecated
+     public AsyncPlayerPreLoginEvent(final String name, final InetAddress ipAddress) {
+         this(name, ipAddress, null);
+     }
+ 
++    // PandaSpigot start - Ability to change PlayerProfile in AsyncPreLoginEvent
+     public AsyncPlayerPreLoginEvent(final String name, final InetAddress ipAddress, final UUID uniqueId) {
++        this(name, ipAddress, uniqueId, org.bukkit.Bukkit.createProfile(uniqueId, name));
++    }
++    private com.destroystokyo.paper.profile.PlayerProfile profile;
++
++    /**
++     * Gets the PlayerProfile of the player logging in
++     * @return The Profile
++     */
++    public com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile() {
++        return profile;
++    }
++
++    /**
++     * Changes the PlayerProfile the player will login as
++     * @param profile The profile to use
++     */
++    public void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile) {
++        this.profile = profile;
++    }
++
++    public AsyncPlayerPreLoginEvent(final String name, final InetAddress ipAddress, final UUID uniqueId, final com.destroystokyo.paper.profile.PlayerProfile profile) {
+         super(true);
++        this.profile = profile;
++    // PandaSpigot end
+         this.result = Result.ALLOWED;
+         this.message = "";
+-        this.name = name;
++        //this.name = name; // PandaSpigot - Not used anymore
+         this.ipAddress = ipAddress;
+-        this.uniqueId = uniqueId;
++        //this.uniqueId = uniqueId; // PandaSpigot - Not used anymore
+     }
+ 
+     /**
+@@ -136,7 +160,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
+      * @return the player's name
+      */
+     public String getName() {
+-        return name;
++        return profile.getName(); // PandaSpigot - Use profile
+     }
+ 
+     /**
+@@ -154,7 +178,7 @@ public class AsyncPlayerPreLoginEvent extends Event {
+      * @return The unique ID
+      */
+     public UUID getUniqueId() {
+-        return uniqueId;
++        return profile.getId(); // PandaSpigot - Use profile
+     }
+ 
+     @Override
