@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Fri, 18 Mar 2022 16:02:59 -0400
+Subject: [PATCH] Add Raw Byte ItemStack Serialization
+
+
+diff --git a/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java b/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java
+index b2d52540dbaf61b1f3bccd1b3e71435cb6d9a4ee..be5e84305be13de53977aff73800d2de7c3c9a76 100644
+--- a/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java
++++ b/src/main/java/net/minecraft/server/NBTCompressedStreamTools.java
+@@ -14,6 +14,7 @@ import java.util.zip.GZIPOutputStream;
+ 
+ public class NBTCompressedStreamTools {
+ 
++    public static NBTTagCompound readNBT(InputStream inputstream) throws IOException { return a(inputstream); } // PandaSpigot - OBFHELPER
+     public static NBTTagCompound a(InputStream inputstream) throws IOException {
+         DataInputStream datainputstream = new DataInputStream(new BufferedInputStream(new GZIPInputStream(inputstream)));
+ 
+@@ -28,6 +29,7 @@ public class NBTCompressedStreamTools {
+         return nbttagcompound;
+     }
+ 
++    public static void writeNBT(NBTTagCompound nbttagcompound, OutputStream outputstream) throws IOException { a(nbttagcompound, outputstream); } // PandaSpigot - OBFHELPER
+     public static void a(NBTTagCompound nbttagcompound, OutputStream outputstream) throws IOException {
+         DataOutputStream dataoutputstream = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(outputstream)));
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
+index 23f05f4db84237a3f6477fd26e7fd731b742aeca..95277e3758afff4c4a9205a1ace631401e81401b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemStack.java
+@@ -90,7 +90,7 @@ public final class CraftItemStack extends ItemStack {
+         return new CraftItemStack(CraftMagicNumbers.getMaterial(item), amount, (short) 0, null);
+     }
+ 
+-    net.minecraft.server.ItemStack handle;
++    public net.minecraft.server.ItemStack handle; // PandaSpigot - public
+ 
+     /**
+      * Mirror
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+index 589dba72db8a20235472a59f02412cb1e73ccb93..d2cb30ba1af3fb46dc0229e33160210cf393082a 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/CraftMagicNumbers.java
+@@ -143,4 +143,34 @@ public final class CraftMagicNumbers implements UnsafeValues {
+         }
+         return matches;
+     }
++
++    // PandaSpigot start
++    @Override
++    public byte[] serializeItem(ItemStack item) {
++        com.google.common.base.Preconditions.checkNotNull(item, "null cannot be serialized");
++        com.google.common.base.Preconditions.checkArgument(item.getType() != Material.AIR, "air cannot be serialized");
++
++        java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
++        NBTTagCompound compound = (item instanceof CraftItemStack ? ((CraftItemStack) item).handle : CraftItemStack.asNMSCopy(item)).save(new NBTTagCompound());
++        try {
++            net.minecraft.server.NBTCompressedStreamTools.writeNBT(compound, outputStream);
++        } catch (java.io.IOException ex) {
++            throw new RuntimeException(ex);
++        }
++        return outputStream.toByteArray();
++    }
++
++    @Override
++    public ItemStack deserializeItem(byte[] data) {
++        com.google.common.base.Preconditions.checkNotNull(data, "null cannot be deserialized");
++        com.google.common.base.Preconditions.checkArgument(data.length > 0, "cannot deserialize nothing");
++
++        try {
++            NBTTagCompound compound = net.minecraft.server.NBTCompressedStreamTools.readNBT(new java.io.ByteArrayInputStream(data));
++            return CraftItemStack.asCraftMirror(net.minecraft.server.ItemStack.createStack(compound));
++        } catch (java.io.IOException ex) {
++            throw new RuntimeException(ex);
++        }
++    }
++    // PandaSpigot end
+ }
