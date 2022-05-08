@@ -6,7 +6,7 @@ Subject: [PATCH] Sound events
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/event/sound/EntitySoundEvent.java b/src/main/java/com/hpfxd/pandaspigot/event/sound/EntitySoundEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2cc68d5e8afed1bf306608eefaf274e584c6144c
+index 0000000000000000000000000000000000000000..511aba38bb66789c45c4e7fa45d0f30dd5fde7bb
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/event/sound/EntitySoundEvent.java
 @@ -0,0 +1,24 @@
@@ -15,7 +15,7 @@ index 0000000000000000000000000000000000000000..2cc68d5e8afed1bf306608eefaf274e5
 +import org.bukkit.entity.Entity;
 +
 +/**
-+ * Called when an entity is playing a sound.
++ * Called when a sound is about to be played.
 + */
 +public class EntitySoundEvent extends SoundEvent {
 +    private final Entity entity;
@@ -36,7 +36,7 @@ index 0000000000000000000000000000000000000000..2cc68d5e8afed1bf306608eefaf274e5
 +}
 diff --git a/src/main/java/com/hpfxd/pandaspigot/event/sound/PlayerSoundEvent.java b/src/main/java/com/hpfxd/pandaspigot/event/sound/PlayerSoundEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f94f7c6ca8d4a6384150352ee79e2f2e5fa13392
+index 0000000000000000000000000000000000000000..bbe3fbb8f0b5d2800ef651689a217d0ec46dbcc9
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/event/sound/PlayerSoundEvent.java
 @@ -0,0 +1,21 @@
@@ -45,7 +45,7 @@ index 0000000000000000000000000000000000000000..f94f7c6ca8d4a6384150352ee79e2f2e
 +import org.bukkit.entity.Player;
 +
 +/**
-+ * Called when a player is playing a sound.
++ * Called when a sound is about to be played.
 + */
 +public class PlayerSoundEvent extends EntitySoundEvent {
 +    public PlayerSoundEvent(Player player, String sound, float volume, float pitch) {
@@ -63,7 +63,7 @@ index 0000000000000000000000000000000000000000..f94f7c6ca8d4a6384150352ee79e2f2e
 +}
 diff --git a/src/main/java/com/hpfxd/pandaspigot/event/sound/SoundEvent.java b/src/main/java/com/hpfxd/pandaspigot/event/sound/SoundEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c1858e35b34c93dbaa37399eb4fc8a972dacb30a
+index 0000000000000000000000000000000000000000..2f28ae4900a9a1cafdaeacef032a632c27853993
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/event/sound/SoundEvent.java
 @@ -0,0 +1,109 @@
@@ -76,7 +76,7 @@ index 0000000000000000000000000000000000000000..c1858e35b34c93dbaa37399eb4fc8a97
 +import org.bukkit.event.HandlerList;
 +
 +/**
-+ * Called when a sound is being played.
++ * Called when a sound is about to be played.
 + */
 +public class SoundEvent extends Event implements Cancellable {
 +    private static final HandlerList handlers = new HandlerList();
