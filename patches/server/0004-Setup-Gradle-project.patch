@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..76eb5981a10f74f23cdb3024b88ec4582d2dbef7
+index 0000000000000000000000000000000000000000..9928633a3fff197dc53f09b6d8ba31edc0548287
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,110 @@
+@@ -0,0 +1,114 @@
 +plugins {
 +    id("com.hpfxd.pandaspigot.java-conventions")
 +    id("com.github.johnrengelman.shadow") version "7.1.0"
@@ -95,16 +95,20 @@ index 0000000000000000000000000000000000000000..76eb5981a10f74f23cdb3024b88ec458
 +        manifest {
 +            val git = Git(rootProject.layout.projectDirectory)
 +            val gitHash = git("rev-parse", "--short=7", "HEAD").getText().trim()
++            val implementationVersion = System.getenv("GITHUB_RUN_NUMBER") ?: "\"$gitHash\""
 +            val date = git("show", "-s", "--format=%ci", gitHash).getText().trim()
++            val gitBranch = git("rev-parse", "--abbrev-ref", "HEAD").getText().trim()
 +            attributes(
 +                "Main-Class" to "org.bukkit.craftbukkit.Main",
 +                "Implementation-Title" to "CraftBukkit",
-+                "Implementation-Version" to "git-PandaSpigot-$gitHash",
++                "Implementation-Version" to "git-PandaSpigot-$implementationVersion",
 +                "Implementation-Vendor" to date,
 +                "Specification-Title" to "Bukkit",
 +                "Specification-Version" to project.version,
 +                "Specification-Vendor" to "Bukkit Team",
 +                "Multi-Release" to "true", // PandaSpigot
++                "Git-Branch" to gitBranch,
++                "Git-Commit" to gitHash,
 +            )
 +        }
 +    }
