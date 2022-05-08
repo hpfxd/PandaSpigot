@@ -6,10 +6,10 @@ Subject: [PATCH] Backport PlayerHandshakeEvent from Paper
 This patch was added in Paper 1.9.4, and is used by plugins such as BungeeGuard to listen to and modify handshake packets without requiring a packet listener such as ProtocolLib.
 
 diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index 215648ece51b9e0316bae17de60abccfd40f8b35..11626e60eaa3033260e42a71583f88ca7bbe8044 100644
+index 215648ece51b9e0316bae17de60abccfd40f8b35..b7615b1472470805e6ee2a49dd8d4cdca4f70806 100644
 --- a/src/main/java/net/minecraft/server/HandshakeListener.java
 +++ b/src/main/java/net/minecraft/server/HandshakeListener.java
-@@ -72,8 +72,35 @@ public class HandshakeListener implements PacketHandshakingInListener {
+@@ -72,8 +72,36 @@ public class HandshakeListener implements PacketHandshakingInListener {
                  this.b.close(chatcomponenttext);
              } else {
                  this.b.a((PacketListener) (new LoginListener(this.a, this.b)));
@@ -21,6 +21,7 @@ index 215648ece51b9e0316bae17de60abccfd40f8b35..11626e60eaa3033260e42a71583f88ca
 +                    java.net.SocketAddress socketAddress = this.b.l;
 +                    String hostnameOfRemote = socketAddress instanceof java.net.InetSocketAddress ? ((java.net.InetSocketAddress) socketAddress).getHostString() : InetAddress.getLoopbackAddress().getHostAddress();
 +                    com.destroystokyo.paper.event.player.PlayerHandshakeEvent event = new com.destroystokyo.paper.event.player.PlayerHandshakeEvent(packethandshakinginsetprotocol.hostname, hostnameOfRemote, !proxyLogicEnabled);
++                    org.bukkit.Bukkit.getPluginManager().callEvent(event);
 +                    if (!event.isCancelled()) {
 +                        // If we've failed somehow, let the client know so and go no further.
 +                        if (event.isFailed()) {
