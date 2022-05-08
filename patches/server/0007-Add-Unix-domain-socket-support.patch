@@ -76,7 +76,7 @@ index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..8e57df176bcb04b7309a476a5472a41e
                  DedicatedServer.LOGGER.warn("**** FAILED TO BIND TO PORT!");
                  DedicatedServer.LOGGER.warn("The exception was: {}", new Object[] { ioexception.toString()});
 diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index 11626e60eaa3033260e42a71583f88ca7bbe8044..6558d82a96134eee0afca034150a9e7d4e48be9b 100644
+index b7615b1472470805e6ee2a49dd8d4cdca4f70806..578a417bda8dddbd46db77cfe0304d9dc06ce4cf 100644
 --- a/src/main/java/net/minecraft/server/HandshakeListener.java
 +++ b/src/main/java/net/minecraft/server/HandshakeListener.java
 @@ -29,6 +29,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
@@ -95,7 +95,7 @@ index 11626e60eaa3033260e42a71583f88ca7bbe8044..6558d82a96134eee0afca034150a9e7d
              } catch (Throwable t) {
                  org.apache.logging.log4j.LogManager.getLogger().debug("Failed to check connection throttle", t);
              }
-@@ -103,8 +105,11 @@ public class HandshakeListener implements PacketHandshakingInListener {
+@@ -104,8 +106,11 @@ public class HandshakeListener implements PacketHandshakingInListener {
                  //if (org.spigotmc.SpigotConfig.bungee) { // PandaSpigot - comment out, we check above!
                      String[] split = packethandshakinginsetprotocol.hostname.split("\00");
                      if ( split.length == 3 || split.length == 4 ) {
