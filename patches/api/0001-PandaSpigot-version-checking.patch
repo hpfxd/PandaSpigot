@@ -1,0 +1,152 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Tue, 26 Oct 2021 20:51:53 -0400
+Subject: [PATCH] PandaSpigot version checking
+
+
+diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..b732f26cbe156ff1347241c62842053522f7526e 100644
+--- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
++++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+@@ -1,10 +1,8 @@
+ package org.bukkit.command.defaults;
+ 
+ import com.google.common.base.Charsets;
+-import java.util.ArrayList;
+-import java.util.Arrays;
+-import java.util.List;
+-
++import com.google.common.collect.ImmutableList;
++import com.google.common.io.Resources;
+ import org.apache.commons.lang.Validate;
+ import org.bukkit.Bukkit;
+ import org.bukkit.ChatColor;
+@@ -13,20 +11,24 @@ import org.bukkit.plugin.Plugin;
+ import org.bukkit.plugin.PluginDescriptionFile;
+ import org.bukkit.util.StringUtil;
+ 
+-import com.google.common.collect.ImmutableList;
+-import com.google.common.io.Resources;
+ import java.io.BufferedReader;
+ import java.io.IOException;
+ import java.net.URL;
+-import java.net.URLEncoder;
++import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.HashSet;
++import java.util.List;
+ import java.util.Set;
+ import java.util.concurrent.locks.ReentrantLock;
+-import java.util.logging.Level;
+-import java.util.logging.Logger;
+-import org.json.simple.JSONObject;
+-import org.json.simple.parser.JSONParser;
+-import org.json.simple.parser.ParseException;
++
++// PandaSpigot start
++import com.google.gson.Gson;
++import com.google.gson.JsonArray;
++import com.google.gson.JsonObject;
++import com.google.gson.JsonSyntaxException;
++import java.io.InputStreamReader;
++import java.net.HttpURLConnection;
++// PandaSpigot end
+ 
+ public class VersionCommand extends BukkitCommand {
+     public VersionCommand(String name) {
+@@ -185,8 +187,33 @@ public class VersionCommand extends BukkitCommand {
+     private void obtainVersion() {
+         String version = Bukkit.getVersion();
+         if (version == null) version = "Custom";
++        // PandaSpigot start
++        if (version.startsWith("git-PandaSpigot-")) {
++            String[] parts = version.substring("git-PandaSpigot-".length()).split("[-\\s]");
++            int distance;
++            try {
++                distance = fetchActionsDistance("hpfxd/PandaSpigot", "build.yml", Integer.parseInt(parts[0]));
++            } catch (NumberFormatException e) {
++                distance = fetchGitDistance("hpfxd/PandaSpigot", "master", parts[0]);
++            }
++
++            switch (distance) {
++                case -1:
++                    this.setVersionMessage(ChatColor.YELLOW + "Error obtaining version information");
++                    break;
++                case 0:
++                    this.setVersionMessage(ChatColor.GREEN + "You are running the latest version");
++                    break;
++                case -2:
++                    this.setVersionMessage(ChatColor.YELLOW + "Unknown version");
++                    break;
++                default:
++                    this.setVersionMessage(ChatColor.RED + "You are " + distance + " version(s) behind!\n" + ChatColor.RED + "Download the new version at " + ChatColor.GOLD + "https://github.com/hpfxd/PandaSpigot");
++                    break;
++            }
+         // PaperSpigot start
+-        if (version.startsWith("git-PaperSpigot-")) {
++        } else if (version.startsWith("git-PaperSpigot-")) {
++        // PandaSpigot end
+             String[] parts = version.substring("git-PaperSpigot-".length()).split("[-\\s]");
+             int paperSpigotVersions = getDistance("paperspigot", parts[0]);
+             if (paperSpigotVersions == -1) {
+@@ -246,6 +273,60 @@ public class VersionCommand extends BukkitCommand {
+         }
+     }
+ 
++    // PandaSpigot start
++    private static int fetchActionsDistance(String repo, String workflowId, int runNumber) {
++        try {
++            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.github.com/repos/" + repo + "/actions/workflows/" + workflowId + "/runs").openConnection();
++            connection.setRequestProperty("Accept", "application/vnd.github.v3+json");
++            connection.setRequestProperty("User-Agent", "PandaSpigot/" + Bukkit.getVersion());
++            connection.connect();
++            if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) return -2;
++            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charsets.UTF_8))) {
++                JsonObject obj = new Gson().fromJson(reader, JsonObject.class);
++                JsonArray arr = obj.getAsJsonArray("workflow_runs");
++                if (arr.size() == 0) return -1;
++                JsonObject firstElement = arr.iterator().next().getAsJsonObject();
++                int latestRunNumber = firstElement.get("run_number").getAsInt();
++                return latestRunNumber - runNumber;
++            } catch (JsonSyntaxException | NumberFormatException e) {
++                e.printStackTrace();
++                return -1;
++            }
++        } catch (IOException e) {
++            e.printStackTrace();
++            return -1;
++        }
++    }
++    private static int fetchGitDistance(String repo, String branch, String hash) {
++        hash = hash.replace("\"", "");
++        try {
++            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.github.com/repos/" + repo + "/compare/" + branch + "..." + hash).openConnection();
++            connection.setRequestProperty("Accept", "application/vnd.github.v3+json");
++            connection.setRequestProperty("User-Agent", "PandaSpigot/" + Bukkit.getVersion());
++            connection.connect();
++            if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) return -2; // Unknown commit
++            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charsets.UTF_8))) {
++                JsonObject obj = new Gson().fromJson(reader, JsonObject.class);
++                String status = obj.get("status").getAsString();
++                switch (status) {
++                    case "identical":
++                        return 0;
++                    case "behind":
++                        return obj.get("behind_by").getAsInt();
++                    default:
++                        return -1;
++                }
++            } catch (JsonSyntaxException | NumberFormatException e) {
++                e.printStackTrace();
++                return -1;
++            }
++        } catch (IOException e) {
++            e.printStackTrace();
++            return -1;
++        }
++    }
++    // PandaSpigot end
++
+     private static int getDistance(String repo, String currentVerInt) { // PaperSpigot
+         try {
+             BufferedReader reader = Resources.asCharSource(
