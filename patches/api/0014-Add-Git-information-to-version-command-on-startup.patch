@@ -75,15 +75,15 @@ index c5a51d00b6d690213716b9bab71b4cfa8bf8af09..21c48d2b072ab4440d20a65d32945536
      /**
       * Gets the name of this server implementation.
 diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-index 9927fcd9c4a8135a745bd47429c97df72695e395..6735a49197b4de3747658463682930ef572355e2 100644
+index b732f26cbe156ff1347241c62842053522f7526e..c3c9ad38005dd8591b48085c517620d25225a964 100644
 --- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
 +++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-@@ -36,7 +36,7 @@ public class VersionCommand extends BukkitCommand {
+@@ -45,7 +45,7 @@ public class VersionCommand extends BukkitCommand {
          if (!testPermission(sender)) return true;
  
          if (args.length == 0) {
 -            sender.sendMessage("This server is running " + Bukkit.getName() + " version " + Bukkit.getVersion() + " (Implementing API version " + Bukkit.getBukkitVersion() + ")");
 +            sender.sendMessage(Bukkit.getVersionMessage()); // PandaSpigot - Use Bukkit.getVersionMessage
-             //sendVersion(sender); // PandaSpigot - Disable version sending for now.
+             sendVersion(sender);
          } else {
              StringBuilder name = new StringBuilder();
