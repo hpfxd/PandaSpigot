@@ -27,18 +27,19 @@ index c48b1cca7ac3b61e1a81b02cdb1a5c8206de377f..11d42531ea1659ce8f932bd1b43fd58d
      
      public boolean complete(boolean textures, boolean onlineMode) {
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
-index 4a3b170542d6266cb5868a925c6d3d081fc9598f..a5a3028dfc13b32ba70c16560f1358d1a6042bf6 100644
+index 4a3b170542d6266cb5868a925c6d3d081fc9598f..99367c42858cf97190a3b090f258b18e4aea3ac2 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
-@@ -3,6 +3,7 @@ package com.hpfxd.pandaspigot.config;
+@@ -3,6 +3,8 @@ package com.hpfxd.pandaspigot.config;
  import com.google.common.base.Throwables;
  import com.hpfxd.configurate.eoyaml.EOYamlConfigurationLoader;
  import net.minecraft.server.World;
 +import org.bukkit.Bukkit;
++import org.spigotmc.SpigotConfig;
  import org.spongepowered.configurate.CommentedConfigurationNode;
  import org.spongepowered.configurate.ConfigurationNode;
  import org.spongepowered.configurate.objectmapping.ConfigSerializable;
-@@ -99,4 +100,12 @@ public class PandaSpigotConfig {
+@@ -99,4 +101,12 @@ public class PandaSpigotConfig {
          "scoreboards to be tracked by the server. Instead, only track scoreboards when an\n" +
          "objective is added with a non-dummy criteria.")
      public boolean trackPluginScoreboards = false;
@@ -48,7 +49,7 @@ index 4a3b170542d6266cb5868a925c6d3d081fc9598f..a5a3028dfc13b32ba70c16560f1358d1
 +    public boolean proxyOnlineMode = true;
 +
 +    public boolean isProxyOnlineMode() {
-+        return Bukkit.getOnlineMode() || this.proxyOnlineMode;
++        return Bukkit.getOnlineMode() || (SpigotConfig.bungee && this.proxyOnlineMode);
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
