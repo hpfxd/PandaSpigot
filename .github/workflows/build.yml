@@ -55,6 +55,7 @@ jobs:
           ./paperclip.sh
           cd ../../
           mv -v "./PandaSpigot-Server/build/libs/pandaspigot.jar" "./PandaSpigot-Server/build/libs/pandaspigot-$GITHUB_RUN_NUMBER.jar"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:

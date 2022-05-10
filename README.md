@@ -32,8 +32,7 @@ To compile PandaSpigot, you'll need:
 
 Building, patching, and compiling are all done through the main `panda` script.
 
-PandaSpigot can be built by running `./panda build`, 
-and you will find the final Paperclip jar in the default directory designated by `pandaclip.jar`.
+PandaSpigot can be built by running `./panda build`, and you will find the final Paperclip jar in `PandaSpigot-Server/build/libs/pandaspigot.jar`
 
 ## Contributing
 You can mostly follow [Paper's contributing guide](https://github.com/PaperMC/Paper/blob/ver/1.16.5/CONTRIBUTING.md), just remember:

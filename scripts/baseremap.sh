@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# Copied from https://github.com/PaperMC/Paper/blob/d54ce6c17fb7a35238d6b9f734d30a4289886773/scripts/paperclip.sh
-# License from Paper applies to this file
-
 # get base dir regardless of execution location
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
