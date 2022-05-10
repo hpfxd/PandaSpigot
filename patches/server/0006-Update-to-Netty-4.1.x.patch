@@ -5,7 +5,7 @@ Subject: [PATCH] Update to Netty 4.1.x
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 76eb5981a10f74f23cdb3024b88ec4582d2dbef7..2b4ec47e30e2429cb9ac4d3a168b4c117b90e77e 100644
+index 58bb06a2817a49ca788147bd0c7ced49d5b7c346..a92f27a3ca47b6ed3dd1d9b346c4164690641bdf 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -13,7 +13,7 @@ dependencies {
@@ -15,15 +15,15 @@ index 76eb5981a10f74f23cdb3024b88ec4582d2dbef7..2b4ec47e30e2429cb9ac4d3a168b4c11
 -    implementation("com.mojang:netty:1.7.7")
 +    implementation("io.netty:netty-all:4.1.69.Final") // PandaSpigot - Update Netty to 4.1.x
      implementation("com.mojang:authlib:1.5.21")
-     implementation("org.apache.logging.log4j:log4j-api:2.0-beta9")
-     implementation("org.apache.logging.log4j:log4j-core:2.0-beta9")
+     implementation("org.apache.logging.log4j:log4j-api:2.14.1")
+     implementation("org.apache.logging.log4j:log4j-core:2.14.1")
 @@ -23,7 +23,6 @@ dependencies {
      implementation("com.google.guava:guava:17.0")
      implementation("com.google.code.gson:gson:2.2.4")
      implementation("net.sf.trove4j:trove4j:3.0.3")
 -    implementation("io.netty:netty-all:4.0.23.Final")
      implementation("net.sf.jopt-simple:jopt-simple:3.2")
-     implementation("jline:jline:2.12")
+     implementation("jline:jline:2.12.1")
  
 @@ -55,6 +54,7 @@ fun TaskContainer.registerRunTask(
  tasks {
