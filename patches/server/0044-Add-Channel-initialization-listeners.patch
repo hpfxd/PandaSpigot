@@ -5,10 +5,10 @@ Subject: [PATCH] Add Channel initialization listeners
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 3d8f438e105d2c296e6ee0b79cd6b54b2eaff8fe..5f2ee8b18bc57eac21e5a5565d710ecc45d2e68a 100644
+index ca903bb95495937ee525fc9ac75c1201788ede43..1229538c3aa61fbbdb88f74dbc13bafdb5b6aec6 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -41,6 +41,8 @@ dependencies {
+@@ -39,6 +39,8 @@ dependencies {
      implementation("org.jline:jline-terminal-jansi:3.20.0")
      // PandaSpigot end
  
