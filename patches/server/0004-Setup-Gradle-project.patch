@@ -27,8 +27,8 @@ index 0000000000000000000000000000000000000000..01ab7155899f79b8d2d9a57aad41c31f
 +    // Minecraft libraries:
 +    implementation("com.mojang:netty:1.7.7")
 +    implementation("com.mojang:authlib:1.5.21")
-+    implementation("org.apache.logging.log4j:log4j-api:2.14.1")
-+    implementation("org.apache.logging.log4j:log4j-core:2.14.1")
++    implementation("org.apache.logging.log4j:log4j-api:2.17.1")
++    implementation("org.apache.logging.log4j:log4j-core:2.17.1")
 +    implementation("org.apache.commons:commons-lang3:3.3.2")
 +    implementation("commons-io:commons-io:2.4")
 +    implementation("commons-codec:commons-codec:1.9")
