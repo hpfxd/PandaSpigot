@@ -45,7 +45,7 @@ fi
 
 echo "Applying class mappings..."
 if [ ! -f "$jarpath-cl.jar" ]; then
-    java -jar BuildData/bin/SpecialSource-2.jar map -i "$jarpath.jar" -m "$classmappings" -o "$jarpath-cl.jar" 1>/dev/null
+    java -jar ../../bin/SpecialSource-2.jar map -i "$jarpath.jar" -m "$classmappings" -o "$jarpath-cl.jar" 1>/dev/null
     if [ "$?" != "0" ]; then
         echo "Failed to apply class mappings."
         exit 1
@@ -54,7 +54,7 @@ fi
 
 echo "Applying member mappings..."
 if [ ! -f "$jarpath-m.jar" ]; then
-    java -jar BuildData/bin/SpecialSource-2.jar map -i "$jarpath-cl.jar" -m "$membermappings" -o "$jarpath-m.jar" 1>/dev/null
+    java -jar ../../bin/SpecialSource-2.jar map -i "$jarpath-cl.jar" -m "$membermappings" -o "$jarpath-m.jar" 1>/dev/null
     if [ "$?" != "0" ]; then
         echo "Failed to apply member mappings."
         exit 1
@@ -63,7 +63,7 @@ fi
 
 echo "Creating remapped jar..."
 if [ ! -f "$jarpath-mapped.jar" ]; then
-    java -jar BuildData/bin/SpecialSource.jar --kill-lvt -i "$jarpath-m.jar" --access-transformer "$accesstransforms" -m "$packagemappings" -o "$jarpath-mapped.jar" 1>/dev/null
+    java -jar ../../bin/SpecialSource.jar --kill-lvt -i "$jarpath-m.jar" --access-transformer "$accesstransforms" -m "$packagemappings" -o "$jarpath-mapped.jar" 1>/dev/null
     if [ "$?" != "0" ]; then
         echo "Failed to create remapped jar."
         exit 1
