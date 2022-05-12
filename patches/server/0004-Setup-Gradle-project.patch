@@ -6,7 +6,7 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..9928633a3fff197dc53f09b6d8ba31edc0548287
+index 0000000000000000000000000000000000000000..01ab7155899f79b8d2d9a57aad41c31fad93eb60
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,114 @@
@@ -27,8 +27,8 @@ index 0000000000000000000000000000000000000000..9928633a3fff197dc53f09b6d8ba31ed
 +    // Minecraft libraries:
 +    implementation("com.mojang:netty:1.7.7")
 +    implementation("com.mojang:authlib:1.5.21")
-+    implementation("org.apache.logging.log4j:log4j-api:2.0-beta9")
-+    implementation("org.apache.logging.log4j:log4j-core:2.0-beta9")
++    implementation("org.apache.logging.log4j:log4j-api:2.17.1")
++    implementation("org.apache.logging.log4j:log4j-core:2.17.1")
 +    implementation("org.apache.commons:commons-lang3:3.3.2")
 +    implementation("commons-io:commons-io:2.4")
 +    implementation("commons-codec:commons-codec:1.9")
@@ -37,7 +37,7 @@ index 0000000000000000000000000000000000000000..9928633a3fff197dc53f09b6d8ba31ed
 +    implementation("net.sf.trove4j:trove4j:3.0.3")
 +    implementation("io.netty:netty-all:4.0.23.Final")
 +    implementation("net.sf.jopt-simple:jopt-simple:3.2")
-+    implementation("jline:jline:2.12")
++    implementation("jline:jline:2.12.1")
 +
 +    implementation("org.xerial:sqlite-jdbc:3.7.2")
 +    implementation("mysql:mysql-connector-java:5.1.14")
@@ -227,10 +227,10 @@ index 48bc504954dfc5763cae9069aa8cc8f70453e5b0..00000000000000000000000000000000
 -org/bukkit/event/vehicle/VehicleDamageEvent _INVALID_setDamage (I)V setDamage
 diff --git a/pom.xml b/pom.xml
 deleted file mode 100644
-index 6aaba50276525deab2e50a92d80fa57f8ed43faa..0000000000000000000000000000000000000000
+index 644305e68a20f43286c917b15e04a43f05dce254..0000000000000000000000000000000000000000
 --- a/pom.xml
 +++ /dev/null
-@@ -1,262 +0,0 @@
+@@ -1,279 +0,0 @@
 -<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 -         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 -    <modelVersion>4.0.0</modelVersion>
@@ -275,6 +275,12 @@ index 6aaba50276525deab2e50a92d80fa57f8ed43faa..00000000000000000000000000000000
 -            <scope>compile</scope>
 -        </dependency>
 -        <dependency>
+-            <groupId>org.apache.logging.log4j</groupId>
+-            <artifactId>log4j-core</artifactId>
+-            <version>2.17.0</version> <!-- Paper - Update Log4j -->
+-            <scope>compile</scope>
+-        </dependency>
+-        <dependency>
 -            <groupId>org.spigotmc</groupId>
 -            <artifactId>minecraft-server</artifactId>
 -            <version>${minecraft.version}-SNAPSHOT</version>
@@ -291,7 +297,7 @@ index 6aaba50276525deab2e50a92d80fa57f8ed43faa..00000000000000000000000000000000
 -        <dependency>
 -            <groupId>jline</groupId>
 -            <artifactId>jline</artifactId>
--            <version>2.12</version>
+-            <version>2.12.1</version> <!-- Paper - Update Log4j - use this specific version as it works on both aarch64 and windows -->
 -            <type>jar</type>
 -            <scope>compile</scope>
 -        </dependency>
@@ -332,8 +338,8 @@ index 6aaba50276525deab2e50a92d80fa57f8ed43faa..00000000000000000000000000000000
 -        </pluginRepository>
 -        <!-- PaperSpigot - Repo for gitdescribe -->
 -        <pluginRepository>
--            <id>destroystokyo</id>
--            <url>https://ci.destroystokyo.com/plugin/repository/everything/</url>
+-            <id>papermc</id> <!-- Paper - Update Log4j -->
+-            <url>https://papermc.io/repo/repository/maven-public/</url> <!-- Paper - Update Log4j -->
 -        </pluginRepository>
 -    </pluginRepositories>
 -
@@ -373,6 +379,7 @@ index 6aaba50276525deab2e50a92d80fa57f8ed43faa..00000000000000000000000000000000
 -                            <Specification-Title>Bukkit</Specification-Title>
 -                            <Specification-Version>${api.version}</Specification-Version>
 -                            <Specification-Vendor>Bukkit Team</Specification-Vendor>
+-                            <Multi-Release>true</Multi-Release> <!-- Paper - update log4j -->
 -                        </manifestEntries>
 -                        <manifestSections>
 -                            <manifestSection>
@@ -400,7 +407,7 @@ index 6aaba50276525deab2e50a92d80fa57f8ed43faa..00000000000000000000000000000000
 -            <plugin>
 -                <groupId>org.apache.maven.plugins</groupId>
 -                <artifactId>maven-shade-plugin</artifactId>
--                <version>2.3</version>
+-                <version>3.2.4</version> <!-- Paper - Update Log4j -->
 -                <executions>
 -                    <execution>
 -                        <phase>package</phase>
@@ -408,6 +415,16 @@ index 6aaba50276525deab2e50a92d80fa57f8ed43faa..00000000000000000000000000000000
 -                            <goal>shade</goal>
 -                        </goals>
 -                        <configuration>
+-                            <!-- Paper start - Update Log4j -->
+-                            <filters>
+-                                <filter>
+-                                    <artifact>org.spigotmc:minecraft-server:**</artifact>
+-                                    <excludes>
+-                                        <exclude>org/apache/logging/log4j/**</exclude>
+-                                    </excludes>
+-                                </filter>
+-                            </filters>
+-                            <!-- Paper end - Update Log4j -->
 -                            <relocations>
 -                                <relocation>
 -                                    <pattern>joptsimple</pattern>
@@ -445,7 +462,7 @@ index 6aaba50276525deab2e50a92d80fa57f8ed43faa..00000000000000000000000000000000
 -            <plugin>
 -                <groupId>net.md-5</groupId>
 -                <artifactId>specialsource-maven-plugin</artifactId>
--                <version>1.2.1</version>
+-		<version>1.2.3</version> <!-- paper - bump log4j -->
 -                <executions>
 -                    <execution>
 -                        <phase>package</phase>
