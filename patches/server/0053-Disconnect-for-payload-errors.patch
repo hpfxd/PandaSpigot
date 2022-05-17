@@ -6,7 +6,7 @@ Subject: [PATCH] Disconnect for payload errors
 Backported from CraftBukkit#fcc5dcce546.
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 89d251abc16d7a98a5e6d5a5b3298b3a577c9442..071d8b548a8fa30163460ee8fe698722e5c33419 100644
+index 89d251abc16d7a98a5e6d5a5b3298b3a577c9442..d5151ae17c30a9b2515b3e766ebe0dd6e2b8d89b 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -2203,19 +2203,36 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
@@ -23,7 +23,7 @@ index 89d251abc16d7a98a5e6d5a5b3298b3a577c9442..071d8b548a8fa30163460ee8fe698722
 +                    getPlayer().addChannel(channel);
 +                }
 +            } catch (Exception ex) {
-+                PlayerConnection.c.error("Couldn\t register custom payload", ex);
++                PlayerConnection.c.error("Couldn\'t register custom payload", ex);
 +                this.disconnect("Invalid payload REGISTER!");
              }
          } else if (packetplayincustompayload.a().equals("UNREGISTER")) {
@@ -36,7 +36,7 @@ index 89d251abc16d7a98a5e6d5a5b3298b3a577c9442..071d8b548a8fa30163460ee8fe698722
 +                    getPlayer().removeChannel(channel);
 +                }
 +            } catch (Exception ex) {
-+                PlayerConnection.c.error("Couldn\t register custom payload", ex);
++                PlayerConnection.c.error("Couldn\'t register custom payload", ex);
 +                this.disconnect("Invalid payload UNREGISTER!");
              }
          } else {
@@ -48,7 +48,7 @@ index 89d251abc16d7a98a5e6d5a5b3298b3a577c9442..071d8b548a8fa30163460ee8fe698722
 +                packetplayincustompayload.b().readBytes(data);
 +                server.getMessenger().dispatchIncomingMessage(player.getBukkitEntity(), packetplayincustompayload.a(), data);
 +            } catch (Exception ex) {
-+                PlayerConnection.c.error("Couldn\t register custom payload", ex);
++                PlayerConnection.c.error("Couldn\'t register custom payload", ex);
 +                this.disconnect("Invalid custom payload!");
 +            }
 +	    // PandaSpigot end - Disconnect for payload errors
