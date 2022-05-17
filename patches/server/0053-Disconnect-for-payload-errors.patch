@@ -6,17 +6,17 @@ Subject: [PATCH] Disconnect for payload errors
 Backported from CraftBukkit#fcc5dcce546.
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 89d251abc16d7a98a5e6d5a5b3298b3a577c9442..9a087e0778e40f9ac9e732b80bdc6702919a0a78 100644
+index 89d251abc16d7a98a5e6d5a5b3298b3a577c9442..071d8b548a8fa30163460ee8fe698722e5c33419 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -2203,20 +2203,37 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -2203,19 +2203,36 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
          }
          // CraftBukkit start
          else if (packetplayincustompayload.a().equals("REGISTER")) {
 -            String channels = packetplayincustompayload.b().toString(com.google.common.base.Charsets.UTF_8);
 -            for (String channel : channels.split("\0")) {
 -                getPlayer().addChannel(channel);
-+            // PandaSpigot - Disconnect for payload errors
++            // PandaSpigot start - Disconnect for payload errors
 +            try {
 +                String channels = packetplayincustompayload.b().toString(com.google.common.base.Charsets.UTF_8);
 +                for (String channel : channels.split("\0")) {
@@ -51,8 +51,7 @@ index 89d251abc16d7a98a5e6d5a5b3298b3a577c9442..9a087e0778e40f9ac9e732b80bdc6702
 +                PlayerConnection.c.error("Couldn\t register custom payload", ex);
 +                this.disconnect("Invalid custom payload!");
 +            }
++	    // PandaSpigot end - Disconnect for payload errors
          }
-+        // PandaSpigot end
          // CraftBukkit end
          // CraftBukkit start
-         } finally {
