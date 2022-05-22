@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sun, 22 May 2022 23:42:48 +0200
+Subject: [PATCH] Fix Occasional Client Side Unloading of Chunk 0 0
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index c4dab42bdf868f73f0c3875e8adfb852b2b02e18..1c318f7062f37fdcece826bf702f9f1fefd1bf81 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -38,7 +38,7 @@ public class ChunkProviderServer implements IChunkProvider {
+     public WorldServer world;
+ 
+     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, IChunkProvider ichunkprovider) {
+-        this.emptyChunk = new EmptyChunk(worldserver, 0, 0);
++        this.emptyChunk = new EmptyChunk(worldserver, Integer.MIN_VALUE, Integer.MIN_VALUE); //PandaSpigot - Occasional Client Side Unloading of 0,0 chunk
+         this.world = worldserver;
+         this.chunkLoader = ichunkloader;
+         this.chunkProvider = ichunkprovider;
+@@ -174,9 +174,9 @@ public class ChunkProviderServer implements IChunkProvider {
+             }
+ 
+             this.chunks.put(LongHash.toLong(i, j), chunk);
+-            
++
+             chunk.addEntities();
+-            
++
+             // CraftBukkit start
+             Server server = world.getServer();
+             if (server != null) {
+@@ -315,7 +315,7 @@ public class ChunkProviderServer implements IChunkProvider {
+                 BlockSand.instaFall = false;
+                 this.world.getServer().getPluginManager().callEvent(new org.bukkit.event.world.ChunkPopulateEvent(chunk.bukkitChunk));
+                 // CraftBukkit end
+-                
++
+                 chunk.e();
+             }
+         }
