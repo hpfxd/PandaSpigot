@@ -1,0 +1,94 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Mon, 23 May 2022 20:18:08 -0400
+Subject: [PATCH] Backport ProjectileHitEvent API improvements
+
+- Added getHitBlock
+- Added getHitBlockFace
+- Added getHitEntity
+
+diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
+index 8c9b5c034d32349317bbeb8807f7e4a4c63229ae..d00c13962674f6c1031c16c5f01004b897d6cf13 100644
+--- a/src/main/java/net/minecraft/server/EntityArrow.java
++++ b/src/main/java/net/minecraft/server/EntityArrow.java
+@@ -231,7 +231,7 @@ public class EntityArrow extends Entity implements IProjectile {
+             // PaperSpigot end
+ 
+             if (movingobjectposition != null) {
+-                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this); // CraftBukkit - Call event
++                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // CraftBukkit - Call event // PandaSpigot - movingobjectposition
+                 if (movingobjectposition.entity != null) {
+                     f2 = MathHelper.sqrt(this.motX * this.motX + this.motY * this.motY + this.motZ * this.motZ);
+                     int k = MathHelper.f((double) f2 * this.damage);
+diff --git a/src/main/java/net/minecraft/server/EntityFireball.java b/src/main/java/net/minecraft/server/EntityFireball.java
+index 125f74dfcbd525c014e152db432241aab299a0fb..99924ee78596778501d71cfb5868b0296ef986f2 100644
+--- a/src/main/java/net/minecraft/server/EntityFireball.java
++++ b/src/main/java/net/minecraft/server/EntityFireball.java
+@@ -131,7 +131,7 @@ public abstract class EntityFireball extends Entity {
+ 
+                 // CraftBukkit start - Fire ProjectileHitEvent
+                 if (this.dead) {
+-                    CraftEventFactory.callProjectileHitEvent(this);
++                    CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // PandaSpigot - movingobjectposition
+                 }
+                 // CraftBukkit end
+             }
+diff --git a/src/main/java/net/minecraft/server/EntityFishingHook.java b/src/main/java/net/minecraft/server/EntityFishingHook.java
+index 8da61e99da8f17b88b73548c61e45cab0a1c7ab8..ef1a551b7a7790303cddf115c418e34534084091 100644
+--- a/src/main/java/net/minecraft/server/EntityFishingHook.java
++++ b/src/main/java/net/minecraft/server/EntityFishingHook.java
+@@ -196,7 +196,7 @@ public class EntityFishingHook extends Entity {
+             // PaperSpigot end
+ 
+             if (movingobjectposition != null) {
+-                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this); // Craftbukkit - Call event
++                org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // CraftBukkit - Call event // PandaSpigot - movingobjectposition
+                 if (movingobjectposition.entity != null) {
+                     if (movingobjectposition.entity.damageEntity(DamageSource.projectile(this, this.owner), 0.0F)) {
+                         this.hooked = movingobjectposition.entity;
+diff --git a/src/main/java/net/minecraft/server/EntityProjectile.java b/src/main/java/net/minecraft/server/EntityProjectile.java
+index e7cca3c6c44644898cd8acb7b24956bff7777b9a..7a82be1ef09b272189326072a81ea1138dc6a9fb 100644
+--- a/src/main/java/net/minecraft/server/EntityProjectile.java
++++ b/src/main/java/net/minecraft/server/EntityProjectile.java
+@@ -162,7 +162,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
+                 this.a(movingobjectposition);
+                 // CraftBukkit start
+                 if (this.dead) {
+-                    org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this);
++                    org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // PandaSpigot - movingobjectposition
+                 }
+                 // CraftBukkit end
+             }
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 7cf870537490a553f81d5cf5c9dabe1ac9d90950..c1db7fe84f36283d9ef6606d321e9480eb433d1d 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -759,8 +759,26 @@ public class CraftEventFactory {
+         return event;
+     }
+ 
+-    public static ProjectileHitEvent callProjectileHitEvent(Entity entity) {
+-        ProjectileHitEvent event = new ProjectileHitEvent((Projectile) entity.getBukkitEntity());
++    // PandaSpigot start
++    public static ProjectileHitEvent callProjectileHitEvent(Entity entity, MovingObjectPosition position) {
++        if (position.type == MovingObjectPosition.EnumMovingObjectType.MISS) {
++            return null;
++        }
++
++        Block hitBlock = null;
++        BlockFace hitFace = null;
++        if (position.type == MovingObjectPosition.EnumMovingObjectType.BLOCK) {
++            BlockPosition pos = position.a();
++            hitBlock = entity.world.getWorld().getBlockAt(pos.getX(), pos.getY(), pos.getZ());
++            hitFace = CraftBlock.notchToBlockFace(position.direction);
++        }
++
++        org.bukkit.entity.Entity hitEntity = null;
++        if (position.entity != null) {
++            hitEntity = position.entity.getBukkitEntity();
++        }
++        ProjectileHitEvent event = new ProjectileHitEvent((Projectile) entity.getBukkitEntity(), hitEntity, hitBlock, hitFace);
++    // PandaSpigot end
+         entity.world.getServer().getPluginManager().callEvent(event);
+         return event;
+     }
