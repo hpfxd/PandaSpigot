@@ -1,0 +1,107 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Techcable <Techcable@outlook.com>
+Date: Fri, 16 Dec 2016 21:25:39 -0600
+Subject: [PATCH] Add ProjectileCollideEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
+index d00c13962674f6c1031c16c5f01004b897d6cf13..d45deff6c1358a441d3d7a659fca9c9c7b595c0f 100644
+--- a/src/main/java/net/minecraft/server/EntityArrow.java
++++ b/src/main/java/net/minecraft/server/EntityArrow.java
+@@ -230,6 +230,15 @@ public class EntityArrow extends Entity implements IProjectile {
+             }
+             // PaperSpigot end
+ 
++            // PandaSpigot start - Call ProjectileCollideEvent
++            if (movingobjectposition != null && movingobjectposition.entity != null) {
++                com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideEvent(this, movingobjectposition);
++                if (event.isCancelled()) {
++                    movingobjectposition = null;
++                }
++            }
++            // PandaSpigot end
++
+             if (movingobjectposition != null) {
+                 org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // CraftBukkit - Call event // PandaSpigot - movingobjectposition
+                 if (movingobjectposition.entity != null) {
+diff --git a/src/main/java/net/minecraft/server/EntityFireball.java b/src/main/java/net/minecraft/server/EntityFireball.java
+index 99924ee78596778501d71cfb5868b0296ef986f2..2524e2b8d8e03e4c97464eb74a964b595584f8a7 100644
+--- a/src/main/java/net/minecraft/server/EntityFireball.java
++++ b/src/main/java/net/minecraft/server/EntityFireball.java
+@@ -126,6 +126,15 @@ public abstract class EntityFireball extends Entity {
+                 movingobjectposition = new MovingObjectPosition(entity);
+             }
+ 
++            // PandaSpigot start - Call ProjectileCollideEvent
++            if (movingobjectposition != null && movingobjectposition.entity != null) {
++                com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideEvent(this, movingobjectposition);
++                if (event.isCancelled()) {
++                    movingobjectposition = null;
++                }
++            }
++            // PandaSpigot end
++
+             if (movingobjectposition != null) {
+                 this.a(movingobjectposition);
+ 
+diff --git a/src/main/java/net/minecraft/server/EntityFishingHook.java b/src/main/java/net/minecraft/server/EntityFishingHook.java
+index ef1a551b7a7790303cddf115c418e34534084091..6eca198f9f026c82b8b31d446c3953dabdc956cf 100644
+--- a/src/main/java/net/minecraft/server/EntityFishingHook.java
++++ b/src/main/java/net/minecraft/server/EntityFishingHook.java
+@@ -195,6 +195,15 @@ public class EntityFishingHook extends Entity {
+             }
+             // PaperSpigot end
+ 
++            // PandaSpigot start - Call ProjectileCollideEvent
++            if (movingobjectposition != null && movingobjectposition.entity != null) {
++                com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideEvent(this, movingobjectposition);
++                if (event.isCancelled()) {
++                    movingobjectposition = null;
++                }
++            }
++            // PandaSpigot end
++
+             if (movingobjectposition != null) {
+                 org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileHitEvent(this, movingobjectposition); // CraftBukkit - Call event // PandaSpigot - movingobjectposition
+                 if (movingobjectposition.entity != null) {
+diff --git a/src/main/java/net/minecraft/server/EntityProjectile.java b/src/main/java/net/minecraft/server/EntityProjectile.java
+index 7a82be1ef09b272189326072a81ea1138dc6a9fb..fba0c18c6e1128d2f627c176531e4afe54bcd7df 100644
+--- a/src/main/java/net/minecraft/server/EntityProjectile.java
++++ b/src/main/java/net/minecraft/server/EntityProjectile.java
+@@ -155,6 +155,15 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
+         }
+         // PaperSpigot end
+ 
++        // PandaSpigot start - Call ProjectileCollideEvent
++        if (movingobjectposition != null && movingobjectposition.entity != null) {
++            com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callProjectileCollideEvent(this, movingobjectposition);
++            if (event.isCancelled()) {
++                movingobjectposition = null;
++            }
++        }
++        // PandaSpigot end
++
+         if (movingobjectposition != null) {
+             if (movingobjectposition.type == MovingObjectPosition.EnumMovingObjectType.BLOCK && this.world.getType(movingobjectposition.a()).getBlock() == Blocks.PORTAL) {
+                 this.d(movingobjectposition.a());
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index c1db7fe84f36283d9ef6606d321e9480eb433d1d..82ad58bc282f523548d3318c4e52fc1e3cbf7bcc 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -752,6 +752,16 @@ public class CraftEventFactory {
+         return CraftItemStack.asNMSCopy(bitem);
+     }
+ 
++    // PandaSpigot start
++    public static com.destroystokyo.paper.event.entity.ProjectileCollideEvent callProjectileCollideEvent(Entity entity, MovingObjectPosition position) {
++        Projectile projectile = (Projectile) entity.getBukkitEntity();
++        org.bukkit.entity.Entity collided = position.entity.getBukkitEntity();
++        com.destroystokyo.paper.event.entity.ProjectileCollideEvent event = new com.destroystokyo.paper.event.entity.ProjectileCollideEvent(projectile, collided);
++        Bukkit.getPluginManager().callEvent(event);
++        return event;
++    }
++    // PandaSpigot end
++
+     public static ProjectileLaunchEvent callProjectileLaunchEvent(Entity entity) {
+         Projectile bukkitEntity = (Projectile) entity.getBukkitEntity();
+         ProjectileLaunchEvent event = new ProjectileLaunchEvent(bukkitEntity);
