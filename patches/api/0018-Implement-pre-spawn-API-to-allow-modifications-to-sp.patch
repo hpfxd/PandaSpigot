@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Xor Boole <mcyoung@mit.edu>
+Date: Tue, 6 Dec 2016 21:38:05 +1100
+Subject: [PATCH] Implement pre-spawn API to allow modifications to spawned
+ entities.
+
+
+diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
+index 325d65a37dc5e38bf64cb88b936d2a258be182ab..e1d61e63798aa7e70974e52a7a49f590ec78e5ff 100644
+--- a/src/main/java/org/bukkit/World.java
++++ b/src/main/java/org/bukkit/World.java
+@@ -712,6 +712,26 @@ public interface World extends PluginMessageRecipient, Metadatable {
+      */
+     public <T extends Entity> T spawn(Location location, Class<T> clazz) throws IllegalArgumentException;
+ 
++    // PandaSpigot start
++    /**
++     * Spawn an entity of a specific class at the given {@link Location}, with
++     * the supplied function run before the entity is added to the world.
++     * <br>
++     * Note that when the function is run, the entity will not be actually in
++     * the world. Any operation involving such as teleporting the entity is undefined
++     * until after this function returns.
++     *
++     * @param location the {@link Location} to spawn the entity at
++     * @param clazz the class of the {@link Entity} to spawn
++     * @param function the function to be run before the entity is spawned.
++     * @param <T> the class of the {@link Entity} to spawn
++     * @return an instance of the spawned {@link Entity}
++     * @throws IllegalArgumentException if either parameter is null or the
++     *     {@link Entity} requested cannot be spawned
++     */
++    public <T extends Entity> T spawn(Location location, Class<T> clazz, java.util.function.Consumer<T> function) throws IllegalArgumentException;
++    // PandaSpigot end
++
+     /**
+      * Spawn a {@link FallingBlock} entity at the given {@link Location} of
+      * the specified {@link Material}. The material dictates what is falling.
