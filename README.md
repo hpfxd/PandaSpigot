@@ -23,6 +23,46 @@ See a full list of patches [here](./patches/).
 ## Using
 You can download the latest pre-built artifact [here](https://nightly.link/hpfxd/PandaSpigot/workflows/build/master/Server%20JAR.zip).
 
+## API
+See our API patches [here](./patches/api/).
+<details>
+<summary>Maven</summary>
+
+```xml
+<repositories>
+    <repository>
+        <id>hpfxd-repo</id>
+        <url>https://repo.hpfxd.com</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>com.hpfxd.pandaspigot</groupId>
+        <artifactId>pandaspigot-api</artifactId>
+        <version>1.8.8-R0.1-SNAPSHOT</version>
+        <scope>provided</scope>
+    </dependency>
+</dependencies>
+```
+</details>
+
+<details>
+<summary>Gradle (kts)</summary>
+
+```kotlin
+repositories {
+    mavenCentral()
+    maven(url = "https://repo.hpfxd.com")
+    maven(url = "https://oss.sonatype.org/content/repositories/snapshots") // for bungeecord-chat
+}
+
+dependencies {
+    compileOnly("com.hpfxd.pandaspigot:pandaspigot-api:1.8.8-R0.1-SNAPSHOT")
+}
+```
+</details>
+
 ## Building
 To compile PandaSpigot, you'll need:
 - JDK 8 (or above)
