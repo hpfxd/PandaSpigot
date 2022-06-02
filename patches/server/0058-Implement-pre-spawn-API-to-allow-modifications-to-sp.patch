@@ -1,0 +1,62 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Xor Boole <mcyoung@mit.edu>
+Date: Tue, 6 Dec 2016 21:38:05 +1100
+Subject: [PATCH] Implement pre-spawn API to allow modifications to spawned
+ entities.
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 7640070937b361aeda4d200710deddfbbbc4fb42..f663a6468b40e8ddd1fee3ad46381d8eede45e64 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -881,7 +881,14 @@ public class CraftWorld implements World {
+     }
+ 
+     public <T extends Entity> T spawn(Location location, Class<T> clazz) throws IllegalArgumentException {
+-        return spawn(location, clazz, SpawnReason.CUSTOM);
++        // PandaSpigot start - function param
++        return spawn(location, clazz, null, SpawnReason.CUSTOM);
++    }
++
++    @Override
++    public <T extends Entity> T spawn(Location location, Class<T> clazz, java.util.function.Consumer<T> function) throws IllegalArgumentException {
++        return spawn(location, clazz, function, SpawnReason.CUSTOM);
++        // PandaSpigot end
+     }
+ 
+     public FallingBlock spawnFallingBlock(Location location, org.bukkit.Material material, byte data) throws IllegalArgumentException {
+@@ -1151,20 +1158,32 @@ public class CraftWorld implements World {
+ 
+     @SuppressWarnings("unchecked")
+     public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason) throws IllegalArgumentException {
++        // PandaSpigot start - function param
++        return addEntity(entity, reason, null);
++    }
++
++    @SuppressWarnings("unchecked")
++    public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason, java.util.function.Consumer<T> function) throws IllegalArgumentException {
++        // PandaSpigot end
+         Preconditions.checkArgument(entity != null, "Cannot spawn null entity");
+ 
+         if (entity instanceof EntityInsentient) {
+             ((EntityInsentient) entity).prepare(getHandle().E(new BlockPosition(entity)), (GroupDataEntity) null);
+         }
++        // PandaSpigot start
++        if (function != null) {
++            function.accept((T) entity.getBukkitEntity());
++        }
++        // PandaSpigot end
+ 
+         world.addEntity(entity, reason);
+         return (T) entity.getBukkitEntity();
+     }
+ 
+-    public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason) throws IllegalArgumentException {
++    public <T extends Entity> T spawn(Location location, Class<T> clazz, java.util.function.Consumer<T> function, SpawnReason reason) throws IllegalArgumentException { // PandaSpigot - function param
+         net.minecraft.server.Entity entity = createEntity(location, clazz);
+ 
+-        return addEntity(entity, reason);
++        return addEntity(entity, reason, function); // PandaSpigot - function param
+     }
+ 
+     public ChunkSnapshot getEmptyChunkSnapshot(int x, int z, boolean includeBiome, boolean includeBiomeTempRain) {
