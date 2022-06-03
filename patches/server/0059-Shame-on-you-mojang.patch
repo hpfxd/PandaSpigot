@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Sun, 29 May 2022 12:38:58 -0300
+Subject: [PATCH] Shame on you mojang
+
+Backported from Paper#0202.
+
+diff --git a/src/main/java/net/minecraft/server/BlockBeacon.java b/src/main/java/net/minecraft/server/BlockBeacon.java
+index a73d7b13a8dce788127c73ec1ae7a077d04777e2..cb5857d4ff19cbd9c3987fbd4364b18193ab1276 100644
+--- a/src/main/java/net/minecraft/server/BlockBeacon.java
++++ b/src/main/java/net/minecraft/server/BlockBeacon.java
+@@ -62,8 +62,10 @@ public class BlockBeacon extends BlockContainer {
+     }
+ 
+     public static void f(final World world, final BlockPosition blockposition) {
++        /** // PandaSpigot start - Shame on you mojang
+         HttpUtilities.a.submit(new Runnable() {
+             public void run() {
++        */ // PandaSpigot end
+                 Chunk chunk = world.getChunkAtWorldCoords(blockposition);
+ 
+                 for (int i = blockposition.getY() - 1; i >= 0; --i) {
+@@ -76,8 +78,10 @@ public class BlockBeacon extends BlockContainer {
+                     IBlockData iblockdata = world.getType(blockposition1);
+ 
+                     if (iblockdata.getBlock() == Blocks.BEACON) {
++                        /** // PandaSpigot start - Shame on you mojang
+                         ((WorldServer) world).postToMainThread(new Runnable() {
+                             public void run() {
++                        */ // PandaSpigot end
+                                 TileEntity tileentity = world.getTileEntity(blockposition);
+ 
+                                 if (tileentity instanceof TileEntityBeacon) {
+@@ -85,12 +89,16 @@ public class BlockBeacon extends BlockContainer {
+                                     world.playBlockAction(blockposition, Blocks.BEACON, 1, 0);
+                                 }
+ 
++                        /** // PandaSpigot start - Shame on you mojang
+                             }
+                         });
++                        */ // PandaSpigot end
+                     }
+                 }
+ 
++        /** // PandaSpigot start - Shame on you mojang
+             }
+         });
++        */ // PandaSpigot end
+     }
+ }
