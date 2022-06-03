@@ -1,9 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: uRyanxD <familiarodrigues123ro@gmail.com>
-Date: Sat, 28 May 2022 17:18:57 -0300
+From: Martin Panzer <postremus1996@googlemail.com>
+Date: Mon, 23 May 2016 12:12:37 +0200
 Subject: [PATCH] Faster redstone torch rapid clock removal
 
-Backported from Paper#0137.
+Only resize the the redstone torch list once, since resizing arrays / lists is costly
 
 diff --git a/src/main/java/net/minecraft/server/BlockRedstoneTorch.java b/src/main/java/net/minecraft/server/BlockRedstoneTorch.java
 index 78c6d195a4fe0960b1c5e38d711fe7c723c3a5d3..99d7320be7fd5eb2814c1ca5758f61de56174e65 100644
