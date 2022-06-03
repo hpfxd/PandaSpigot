@@ -1,19 +1,25 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: uRyanxD <familiarodrigues123ro@gmail.com>
-Date: Sun, 29 May 2022 12:38:58 -0300
-Subject: [PATCH] Shame on you mojang
+From: Aikar <aikar@aikar.co>
+Date: Sun, 5 Feb 2017 19:17:28 -0500
+Subject: [PATCH] Shame on you Mojang
 
-Backported from Paper#0202.
+Someone wrote some horrible code that throws a world accessing task
+onto the HTTP DOWNLOADER Thread Pool, for an activity that is not even
+heavy enough to warrant async operation.
+
+This then triggers async chunk loads!
+
+What in the hell were you thinking?
 
 diff --git a/src/main/java/net/minecraft/server/BlockBeacon.java b/src/main/java/net/minecraft/server/BlockBeacon.java
-index a73d7b13a8dce788127c73ec1ae7a077d04777e2..cb5857d4ff19cbd9c3987fbd4364b18193ab1276 100644
+index a73d7b13a8dce788127c73ec1ae7a077d04777e2..4871c4ddf9477ee8c228de7346adbf07972f93df 100644
 --- a/src/main/java/net/minecraft/server/BlockBeacon.java
 +++ b/src/main/java/net/minecraft/server/BlockBeacon.java
 @@ -62,8 +62,10 @@ public class BlockBeacon extends BlockContainer {
      }
  
      public static void f(final World world, final BlockPosition blockposition) {
-+        /** // PandaSpigot start - Shame on you mojang
++        /* // PandaSpigot start
          HttpUtilities.a.submit(new Runnable() {
              public void run() {
 +        */ // PandaSpigot end
@@ -24,7 +30,7 @@ index a73d7b13a8dce788127c73ec1ae7a077d04777e2..cb5857d4ff19cbd9c3987fbd4364b181
                      IBlockData iblockdata = world.getType(blockposition1);
  
                      if (iblockdata.getBlock() == Blocks.BEACON) {
-+                        /** // PandaSpigot start - Shame on you mojang
++                        /* // PandaSpigot start
                          ((WorldServer) world).postToMainThread(new Runnable() {
                              public void run() {
 +                        */ // PandaSpigot end
@@ -35,14 +41,14 @@ index a73d7b13a8dce788127c73ec1ae7a077d04777e2..cb5857d4ff19cbd9c3987fbd4364b181
                                      world.playBlockAction(blockposition, Blocks.BEACON, 1, 0);
                                  }
  
-+                        /** // PandaSpigot start - Shame on you mojang
++                        /* // PandaSpigot start
                              }
                          });
 +                        */ // PandaSpigot end
                      }
                  }
  
-+        /** // PandaSpigot start - Shame on you mojang
++        /* // PandaSpigot start
              }
          });
 +        */ // PandaSpigot end
