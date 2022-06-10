@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Parker Hawke <hawkeboyz2@hotmail.com>
+Date: Mon, 22 Nov 2021 15:03:21 +1100
+Subject: [PATCH] Add Player#sendEquipmentChange
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 376617c0d0edfe284c9d401464d031e89fdab6cb..02786fb58fc0feed92dfdb75724688a5d938a9ea 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1058,6 +1058,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+             this.setOp(true);
+         }
+     }
++
++    @Override
++    public void sendEquipmentChange(org.bukkit.entity.LivingEntity entity, org.bukkit.inventory.EquipmentSlot slot, org.bukkit.inventory.ItemStack item) {
++        Preconditions.checkArgument(entity != null, "entity must not be null");
++        Preconditions.checkArgument(slot != null, "slot must not be null");
++        Preconditions.checkArgument(item != null, "item must not be null");
++
++        if (getHandle().playerConnection == null) return;
++
++        ItemStack stack = org.bukkit.craftbukkit.inventory.CraftItemStack.asNMSCopy(item);
++        getHandle().playerConnection.sendPacket(new PacketPlayOutEntityEquipment(entity.getEntityId(), org.bukkit.craftbukkit.CraftEquipmentSlot.getSlotIndex(slot), stack));
++    }
+     // PandaSpigot end
+ 
+     public void removeDisconnectingPlayer(Player player) {

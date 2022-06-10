@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Perzan <PerzanDevelopment@gmail.com>
+Date: Mon, 22 Nov 2021 15:03:24 +1100
+Subject: [PATCH] Add Player#sendEquipmentChange
+
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 6c79c28a45156113599e181e99f30667c28a95c1..01063d39fcc5d0d925810fd4a245d777ef6702d7 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1212,6 +1212,17 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+      * @param profile The new profile to use
+      */
+     void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile);
++
++    /**
++     * Send the equipment change of an entity. This fakes the equipment change
++     * of an entity for a user. This will not actually change the inventory of
++     * the specified entity in any way.
++     *
++     * @param entity The entity that the player will see the change for
++     * @param slot The slot of the spoofed equipment change
++     * @param item The ItemStack to display for the player
++     */
++    public void sendEquipmentChange(LivingEntity entity, org.bukkit.inventory.EquipmentSlot slot, org.bukkit.inventory.ItemStack item);
+     // PandaSpigot end
+ 
+     // Spigot start
