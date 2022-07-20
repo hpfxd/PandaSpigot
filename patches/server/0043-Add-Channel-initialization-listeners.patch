@@ -5,7 +5,7 @@ Subject: [PATCH] Add Channel initialization listeners
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index ca903bb95495937ee525fc9ac75c1201788ede43..1229538c3aa61fbbdb88f74dbc13bafdb5b6aec6 100644
+index a7bf4c818c339ea49cb665203d8fc984bc3b4fb0..b1e7b55bb5bb8e7da71f5f7399ef89f83d3b0d82 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -39,6 +39,8 @@ dependencies {

@@ -5,7 +5,7 @@ Subject: [PATCH] PandaSpigot Configuration
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 2b4ec47e30e2429cb9ac4d3a168b4c117b90e77e..ca259194c7ea854e31f87ba1fbb7693c4095f2dc 100644
+index ead2d2b9578cd2eedbab774c3369b9985905dac3..ae0659ef3b8819d94b5235d3d8bc838a80ed1675 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -12,6 +12,12 @@ repositories {
@@ -153,10 +153,10 @@ index 0000000000000000000000000000000000000000..9afaf630481a9533fb014f306d4d90b8
 +public class PandaSpigotWorldConfig {
 +}
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 8e57df176bcb04b7309a476a5472a41e5e46f8ae..97699e7f86cef3ab8c4560066f0ef93c18a8f5ad 100644
+index 2c9d1944f186b66726fec19d07601d2bb6507380..fcd5f097a6d04de4ff1d4151a51f8a6a7aa65d91 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -196,6 +196,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -198,6 +198,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
              }
              bindAddress = new java.net.InetSocketAddress(inetaddress, this.R());
              }
@@ -206,7 +206,7 @@ index 6f021d50d2d91497992c794161918c25f187cfdb..7da53bccec38c626005c9d7f81096763
  
          pluginManager.clearPlugins();
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index c936219196ea403a9d247ad6c8c0ffee79411da2..eea9477ee7c6f40b26db0177ccdcc67b0744cc3a 100644
+index 5c980fe2907d2ff01be793ab0654ab198f46e519..fc6061a800b6e8a61eda70aadc6abb3627805916 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -130,6 +130,14 @@ public class Main {

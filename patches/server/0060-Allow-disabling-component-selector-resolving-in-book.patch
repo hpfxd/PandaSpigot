@@ -5,7 +5,7 @@ Subject: [PATCH] Allow disabling component selector resolving in books
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
-index fcf7738c75f21ad23693d903b476c65b4a207a84..d9601dbc194a622ceb3f7a7c740729cb8b890e8f 100644
+index fcf7738c75f21ad23693d903b476c65b4a207a84..8d071fdd1ae8aaa97003f0b56d7e206e6dd4b44f 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
 @@ -119,4 +119,6 @@ public class PandaSpigotConfig {

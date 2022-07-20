@@ -10,10 +10,10 @@ This feature can be enabled by setting the "server-ip" field in server.propertie
 Currently, this feature is only supported on Linux environments with Epoll available.
 
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..8e57df176bcb04b7309a476a5472a41e5e46f8ae 100644
+index 8e8330fbd317807c4e8ad7f8910fd86fff9a43d3..2c9d1944f186b66726fec19d07601d2bb6507380 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -163,6 +163,28 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -165,6 +165,28 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
  
              this.r = WorldSettings.a(i);
              DedicatedServer.LOGGER.info("Default game type: " + this.r);
@@ -42,7 +42,7 @@ index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..8e57df176bcb04b7309a476a5472a41e
              InetAddress inetaddress = null;
  
              if (this.getServerIp().length() > 0) {
-@@ -172,11 +194,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -174,11 +196,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
              if (this.R() < 0) {
                  this.setPort(this.propertyManager.getInt("server-port", 25565));
              }
@@ -57,7 +57,7 @@ index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..8e57df176bcb04b7309a476a5472a41e
              // PaperSpigot start
              org.github.paperspigot.PaperSpigotConfig.init((File) options.valueOf("paper-settings"));
              org.github.paperspigot.PaperSpigotConfig.registerCommands();
-@@ -188,7 +208,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -190,7 +210,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
  
          if (!org.spigotmc.SpigotConfig.lateBind) {
              try {
@@ -66,7 +66,7 @@ index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..8e57df176bcb04b7309a476a5472a41e
              } catch (IOException ioexception) {
                  DedicatedServer.LOGGER.warn("**** FAILED TO BIND TO PORT!");
                  DedicatedServer.LOGGER.warn("The exception was: {}", new Object[] { ioexception.toString()});
-@@ -294,7 +314,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -296,7 +316,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
  
          if (org.spigotmc.SpigotConfig.lateBind) {
              try {

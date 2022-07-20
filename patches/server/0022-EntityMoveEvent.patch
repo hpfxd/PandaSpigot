@@ -32,10 +32,10 @@ index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..cd95aa17291d31e3cebe9f6488a43923
  
      protected void doTick() {}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 59f9709ee55e41cf8c15326f31b8c3f1a56f4bdd..35a692b6e1b201db03b6295003625ad8d02948e5 100644
+index 12eb4fd70c12a6294ac4ed25fcc61087a4b2d7dc..a2020d0f3a44d8402874ee6886972d15d42f3751 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -831,6 +831,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -925,6 +925,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
  
              // if (i == 0 || this.getAllowNether()) {
                  WorldServer worldserver = this.worlds.get(i);
