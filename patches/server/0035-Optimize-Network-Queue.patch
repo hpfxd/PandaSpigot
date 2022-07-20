@@ -45,10 +45,10 @@ index 0000000000000000000000000000000000000000..c8540d16defdc633113b504616794f44
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 7183ae86f4a08576f98fa888de0b07045acef578..1bbdafb43a1d8cbba5df8c59e8fbfa0050258d35 100644
+index b784f8174b94c6fab41ed3262009383a2ffba3cc..26f1e07cefd54afe3df1b8ce8e4d58b26619c8d3 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -100,7 +100,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -100,7 +100,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
      private long X = 0L;
      private final GameProfileRepository Y;
      private final UserCache Z;
