@@ -5,7 +5,7 @@ Subject: [PATCH] MC-135506: Experience should save as Integers
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityExperienceOrb.java b/src/main/java/net/minecraft/server/EntityExperienceOrb.java
-index aefa9fa878ed66f9eeeea64ea7a78b5be3ee8ab8..0e79db9dc3e0481ef335e67ef41f57a67f81c9bd 100644
+index aefa9fa878ed66f9eeeea64ea7a78b5be3ee8ab8..1852aabfaa239242849978bc6592bb4c195d21e8 100644
 --- a/src/main/java/net/minecraft/server/EntityExperienceOrb.java
 +++ b/src/main/java/net/minecraft/server/EntityExperienceOrb.java
 @@ -145,13 +145,13 @@ public class EntityExperienceOrb extends Entity {
@@ -13,7 +13,7 @@ index aefa9fa878ed66f9eeeea64ea7a78b5be3ee8ab8..0e79db9dc3e0481ef335e67ef41f57a6
          nbttagcompound.setShort("Health", (short) ((byte) this.d));
          nbttagcompound.setShort("Age", (short) this.b);
 -        nbttagcompound.setShort("Value", (short) this.value);
-+        nbttagcompound.setInt("Value", (short) this.value); // PandaSpigot - save as Integer
++        nbttagcompound.setInt("Value", this.value); // PandaSpigot - save as Integer
      }
  
      public void a(NBTTagCompound nbttagcompound) {
