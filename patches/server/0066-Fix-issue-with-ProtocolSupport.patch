@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Wed, 19 Oct 2022 19:21:01 -0300
+Subject: [PATCH] Fix issue with ProtocolSupport
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java b/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..77274a982bb3537020689f45bac86923079b6be0
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java
+@@ -0,0 +1,10 @@
++package com.hpfxd.pandaspigot;
++
++import org.bukkit.Bukkit;
++
++public class CompatHacks {
++    private CompatHacks() {}
++    public static boolean hasProtocolSupport() {
++        return Bukkit.getPluginManager().isPluginEnabled("ProtocolSupport");
++    }
++}
+\ No newline at end of file
+diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+index 6c46349fb24856bb2b0f94d84536f64d96daeece..c224114f0374644b1c92d3cd5868ea4da9ff271f 100644
+--- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
++++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+@@ -26,12 +26,27 @@ import java.nio.channels.FileChannel;
+ // PandaSpigot end
+ 
+ import org.bukkit.craftbukkit.inventory.CraftItemStack; // CraftBukkit
++// PandaSpigot start
++import com.hpfxd.pandaspigot.CompatHacks;
++// PandaSpigot end
+ 
+ public class PacketDataSerializer extends ByteBuf {
+ 
+     private final ByteBuf a;
+ 
++    // PandaSpigot start
++    private final boolean allowLargePackets;
+     public PacketDataSerializer(ByteBuf bytebuf) {
++        /*
++         * By default, we limit the size of the received byte array to Short.MAX_VALUE, which is 31 KB.
++         * However, we make an exception when ProtocolSupport is installed, to allow 1.7 clients to work,
++         * and limit them to 31 MEGABYTES as they seem to need to send larger packets sometimes.
++         * Although a 31 MB limit leaves the server slightly vulnerable,
++         * it's still much better than the old system of having no limit,
++         * which would leave the server vulnerable to packets up to 2 GIGABYTES in size.
++         */
++        this.allowLargePackets = CompatHacks.hasProtocolSupport();
++        // PandaSpigot end
+         this.a = bytebuf;
+     }
+ 
+@@ -50,12 +65,17 @@ public class PacketDataSerializer extends ByteBuf {
+         this.writeBytes(abyte);
+     }
+ 
++    // PandaSpigot start
++    private static final int DEFAULT_LIMIT = Short.MAX_VALUE;
++    private static final int LARGE_PACKET_LIMIT = Short.MAX_VALUE * 1024;
+     // Paper start
+     public byte[] a() {
+-        return readByteArray(Short.MAX_VALUE);
++        int limit = allowLargePackets ? LARGE_PACKET_LIMIT : DEFAULT_LIMIT;
++        return readByteArray(limit);
++        // PandaSpigot end
+     }
+ 
+-    public byte[]readByteArray(int limit) {
++    public byte[] readByteArray(int limit) { // PandaSpigot - fix space
+         int len = this.e();
+         if (len > limit) throw new DecoderException("The received a byte array longer than allowed " + len + " > " + limit);
+         byte[] abyte = new byte[len];
