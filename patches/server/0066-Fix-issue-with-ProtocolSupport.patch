@@ -3,6 +3,13 @@ From: Thinkofdeath <thinkofdeath@spigotmc.org>
 Date: Wed, 19 Oct 2022 19:21:01 -0300
 Subject: [PATCH] Fix issue with ProtocolSupport
 
+This is a particularly severe/exploitable issue -- clients can send packets forcing the server to allocate any valid array size, without actually sending any data for it to fill. This is fixed by limiting the size of read byte arrays to at most Short.MAX_VALUE (31 KB).
+
+However, we have to make an exception for 1.7 ProtocolSupport clients,
+or they will crash. For them we limit the packets to 31 MB, which should
+still be plenty although it leaves the server slightly more vulnearable.
+
+The arrays in encryption packets are limited to 256 bytes.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java b/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java
 new file mode 100644
