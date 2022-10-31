@@ -29,18 +29,10 @@ index 0000000000000000000000000000000000000000..77274a982bb3537020689f45bac86923
 +}
 \ No newline at end of file
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-index 6c46349fb24856bb2b0f94d84536f64d96daeece..c224114f0374644b1c92d3cd5868ea4da9ff271f 100644
+index 6c46349fb24856bb2b0f94d84536f64d96daeece..60107fe183cb1e6afdb908d326dd52372c461752 100644
 --- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
 +++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-@@ -26,12 +26,27 @@ import java.nio.channels.FileChannel;
- // PandaSpigot end
- 
- import org.bukkit.craftbukkit.inventory.CraftItemStack; // CraftBukkit
-+// PandaSpigot start
-+import com.hpfxd.pandaspigot.CompatHacks;
-+// PandaSpigot end
- 
- public class PacketDataSerializer extends ByteBuf {
+@@ -31,7 +31,19 @@ public class PacketDataSerializer extends ByteBuf {
  
      private final ByteBuf a;
  
@@ -55,12 +47,12 @@ index 6c46349fb24856bb2b0f94d84536f64d96daeece..c224114f0374644b1c92d3cd5868ea4d
 +         * it's still much better than the old system of having no limit,
 +         * which would leave the server vulnerable to packets up to 2 GIGABYTES in size.
 +         */
-+        this.allowLargePackets = CompatHacks.hasProtocolSupport();
++        this.allowLargePackets = com.hpfxd.pandaspigot.CompatHacks.hasProtocolSupport();
 +        // PandaSpigot end
          this.a = bytebuf;
      }
  
-@@ -50,12 +65,17 @@ public class PacketDataSerializer extends ByteBuf {
+@@ -50,12 +62,17 @@ public class PacketDataSerializer extends ByteBuf {
          this.writeBytes(abyte);
      }
  
