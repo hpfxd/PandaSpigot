@@ -1,7 +1,6 @@
-name: Build
+name: Check
 
-on:
-  - push
+on: [pull_request]
 
 jobs:
   build:
@@ -39,17 +38,3 @@ jobs:
         uses: gradle/gradle-build-action@v2
         with:
           arguments: build
-
-      - name: Paperclip
-        run: |
-          cp -f ./scripts/basepaperclip.sh ./base/Paper/paperclip.sh
-          cd ./base/Paper
-          ./paperclip.sh
-          cd ../../
-          mv -v "./PandaSpigot-Server/build/libs/pandaspigot.jar" "./PandaSpigot-Server/build/libs/pandaspigot-$GITHUB_RUN_NUMBER.jar"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: Server JAR
-          path: PandaSpigot-Server/build/libs/pandaspigot-${{ github.run_number }}.jar

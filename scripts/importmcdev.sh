@@ -24,7 +24,6 @@ function import {
     if [[ ! -f "$target" ]]; then
         export importedmcdev="$importedmcdev $1"
         export MODLOG="$MODLOG  Imported $file from mc-dev\n";
-        echo "Copying $base to $target"
         cp "$base" "$target"
     fi
 }
