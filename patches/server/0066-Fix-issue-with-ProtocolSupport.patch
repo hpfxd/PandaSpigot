@@ -29,14 +29,16 @@ index 0000000000000000000000000000000000000000..77274a982bb3537020689f45bac86923
 +}
 \ No newline at end of file
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-index 6c46349fb24856bb2b0f94d84536f64d96daeece..60107fe183cb1e6afdb908d326dd52372c461752 100644
+index 6c46349fb24856bb2b0f94d84536f64d96daeece..ca71c3eecd8fb67ac26f253ca9c6682041e39f19 100644
 --- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
 +++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-@@ -31,7 +31,19 @@ public class PacketDataSerializer extends ByteBuf {
+@@ -31,7 +31,21 @@ public class PacketDataSerializer extends ByteBuf {
  
      private final ByteBuf a;
  
-+    // PandaSpigot start
++    // PandaSpigot start - large packet limit
++    private static final int DEFAULT_LIMIT = Short.MAX_VALUE;
++    private static final int LARGE_PACKET_LIMIT = Short.MAX_VALUE * 1024;
 +    private final boolean allowLargePackets;
      public PacketDataSerializer(ByteBuf bytebuf) {
 +        /*
@@ -48,23 +50,16 @@ index 6c46349fb24856bb2b0f94d84536f64d96daeece..60107fe183cb1e6afdb908d326dd5237
 +         * which would leave the server vulnerable to packets up to 2 GIGABYTES in size.
 +         */
 +        this.allowLargePackets = com.hpfxd.pandaspigot.CompatHacks.hasProtocolSupport();
-+        // PandaSpigot end
++    // PandaSpigot end
          this.a = bytebuf;
      }
  
-@@ -50,12 +62,17 @@ public class PacketDataSerializer extends ByteBuf {
-         this.writeBytes(abyte);
-     }
+@@ -52,10 +66,10 @@ public class PacketDataSerializer extends ByteBuf {
  
-+    // PandaSpigot start
-+    private static final int DEFAULT_LIMIT = Short.MAX_VALUE;
-+    private static final int LARGE_PACKET_LIMIT = Short.MAX_VALUE * 1024;
      // Paper start
      public byte[] a() {
 -        return readByteArray(Short.MAX_VALUE);
-+        int limit = allowLargePackets ? LARGE_PACKET_LIMIT : DEFAULT_LIMIT;
-+        return readByteArray(limit);
-+        // PandaSpigot end
++        return readByteArray(this.allowLargePackets ? LARGE_PACKET_LIMIT : DEFAULT_LIMIT); // PandaSpigot - large packet limit
      }
  
 -    public byte[]readByteArray(int limit) {
