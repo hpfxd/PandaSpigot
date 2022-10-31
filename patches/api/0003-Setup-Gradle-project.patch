@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..3051b31c9c47071970514cd44d7e71aa539f8a11
+index 0000000000000000000000000000000000000000..ba19534e727cceab9c67ce82566c9a12b2150dff
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,123 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    `maven-publish`
@@ -63,7 +63,8 @@ index 0000000000000000000000000000000000000000..3051b31c9c47071970514cd44d7e71aa
 +    withType<Javadoc> {
 +        (options as StandardJavadocDocletOptions).let {
 +            // hide warnings
-+            it.addStringOption("Xdoclint:none", "-quiet")
++            it.addBooleanOption("Xdoclint:none", true)
++            it.addStringOption("Xmaxwarns", "1")
 +
 +            it.links(
 +                "https://guava.dev/releases/21.0/api/docs/",
