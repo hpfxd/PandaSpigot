@@ -32,7 +32,7 @@ See our API patches [here](./patches/api/).
 <repositories>
     <repository>
         <id>hpfxd-repo</id>
-        <url>https://repo.hpfxd.com</url>
+        <url>https://repo.hpfxd.com/releases/</url>
     </repository>
 </repositories>
 
@@ -53,8 +53,7 @@ See our API patches [here](./patches/api/).
 ```kotlin
 repositories {
     mavenCentral()
-    maven(url = "https://repo.hpfxd.com")
-    maven(url = "https://oss.sonatype.org/content/repositories/snapshots") // for bungeecord-chat
+    maven(url = "https://repo.hpfxd.com/releases/")
 }
 
 dependencies {
