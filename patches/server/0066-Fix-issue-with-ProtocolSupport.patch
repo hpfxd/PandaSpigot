@@ -13,10 +13,10 @@ The arrays in encryption packets are limited to 256 bytes.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java b/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..77274a982bb3537020689f45bac86923079b6be0
+index 0000000000000000000000000000000000000000..c45655f5232934db455aaa5d2d3ff721a5733051
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java
-@@ -0,0 +1,10 @@
+@@ -0,0 +1,11 @@
 +package com.hpfxd.pandaspigot;
 +
 +import org.bukkit.Bukkit;
@@ -27,7 +27,7 @@ index 0000000000000000000000000000000000000000..77274a982bb3537020689f45bac86923
 +        return Bukkit.getPluginManager().isPluginEnabled("ProtocolSupport");
 +    }
 +}
-\ No newline at end of file
++
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
 index 6c46349fb24856bb2b0f94d84536f64d96daeece..ad33280bb8baab581a4ac17b5fe78022134c676b 100644
 --- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
