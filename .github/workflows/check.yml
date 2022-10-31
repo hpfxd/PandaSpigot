@@ -1,9 +1,6 @@
-name: Build
+name: Check
 
-on:
-  push:
-    branches:
-      - master
+on: [pull_request]
 
 jobs:
   build:
@@ -34,17 +31,3 @@ jobs:
         with:
           arguments: build
           read-only: false
-
-      - name: Paperclip
-        run: |
-          cp -f ./scripts/basepaperclip.sh ./base/Paper/paperclip.sh
-          cd ./base/Paper
-          ./paperclip.sh
-          cd ../../
-          mv -v "./PandaSpigot-Server/build/libs/pandaspigot.jar" "./PandaSpigot-Server/build/libs/pandaspigot-$GITHUB_RUN_NUMBER.jar"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: Server JAR
-          path: PandaSpigot-Server/build/libs/pandaspigot-${{ github.run_number }}.jar
