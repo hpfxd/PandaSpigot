@@ -1,5 +1,7 @@
 rootProject.name = "pandaspigot"
 
+includeBuild("build-logic")
+
 this.setupSubproject("pandaspigot-server", "PandaSpigot-Server")
 this.setupSubproject("pandaspigot-api", "PandaSpigot-API")
 
