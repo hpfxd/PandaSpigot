@@ -19,7 +19,7 @@ log_error() {
 function cleanupPatches {
     cd "$1"
     for patch in *.patch; do
-        diffs=$(git diff --staged "$patch" | grep --color=none -E "^(\+|\-)" | grep --color=none -Ev "(\-\-\- a|\+\+\+ b|^.index)")
+        diffs=$(git diff --staged "$patch" | grep --color=none -E "^(\+|-)" | grep --color=none -Ev "(--- a|\+\+\+ b|^.index)")
 
         if [ "x$diffs" == "x" ] ; then
             git reset HEAD $patch >/dev/null
