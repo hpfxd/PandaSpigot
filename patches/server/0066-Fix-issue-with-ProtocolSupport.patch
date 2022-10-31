@@ -29,7 +29,7 @@ index 0000000000000000000000000000000000000000..77274a982bb3537020689f45bac86923
 +}
 \ No newline at end of file
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-index 6c46349fb24856bb2b0f94d84536f64d96daeece..ca71c3eecd8fb67ac26f253ca9c6682041e39f19 100644
+index 6c46349fb24856bb2b0f94d84536f64d96daeece..ad33280bb8baab581a4ac17b5fe78022134c676b 100644
 --- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
 +++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
 @@ -31,7 +31,21 @@ public class PacketDataSerializer extends ByteBuf {
@@ -54,7 +54,7 @@ index 6c46349fb24856bb2b0f94d84536f64d96daeece..ca71c3eecd8fb67ac26f253ca9c66820
          this.a = bytebuf;
      }
  
-@@ -52,10 +66,10 @@ public class PacketDataSerializer extends ByteBuf {
+@@ -52,7 +66,7 @@ public class PacketDataSerializer extends ByteBuf {
  
      // Paper start
      public byte[] a() {
@@ -62,8 +62,4 @@ index 6c46349fb24856bb2b0f94d84536f64d96daeece..ca71c3eecd8fb67ac26f253ca9c66820
 +        return readByteArray(this.allowLargePackets ? LARGE_PACKET_LIMIT : DEFAULT_LIMIT); // PandaSpigot - large packet limit
      }
  
--    public byte[]readByteArray(int limit) {
-+    public byte[] readByteArray(int limit) { // PandaSpigot - fix space
-         int len = this.e();
-         if (len > limit) throw new DecoderException("The received a byte array longer than allowed " + len + " > " + limit);
-         byte[] abyte = new byte[len];
+     public byte[]readByteArray(int limit) {
