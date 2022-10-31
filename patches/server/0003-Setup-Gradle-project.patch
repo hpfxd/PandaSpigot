@@ -6,12 +6,12 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..4202b9d909165a7458130166dac745c33cb3db02
+index 0000000000000000000000000000000000000000..e35f2f4fa0f1dbc84dedcdd05b7219643121fe2d
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,114 @@
 +plugins {
-+    id("com.hpfxd.pandaspigot.java-conventions")
++    id("pandaspigot.conventions")
 +    id("com.github.johnrengelman.shadow") version "7.1.0"
 +}
 +
