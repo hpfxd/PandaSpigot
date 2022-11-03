@@ -23,7 +23,7 @@ jarpath="$workdir/$minecraftversion/$minecraftversion"
 echo "Downloading unmapped vanilla jar..."
 if [ ! -f  "$jarpath.jar" ]; then
     mkdir -p "$workdir/$minecraftversion"
-    curl -s -o "$jarpath.jar" "https://s3.amazonaws.com/Minecraft.Download/versions/$minecraftversion/minecraft_server.$minecraftversion.jar"
+    curl -s -o "$jarpath.jar" "https://piston-data.mojang.com/v1/objects/5fafba3f58c40dc51b5c3ca72a98f62dfdae1db7/server.jar"
     if [ "$?" != "0" ]; then
         echo "Failed to download the vanilla server jar. Check connectivity or try again later."
         exit 1
