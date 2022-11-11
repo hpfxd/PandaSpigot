@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Fri, 11 Nov 2022 23:08:10 +0100
+Subject: [PATCH] Fix AIOOBE in inventory handling
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index e2499f5f9c4b289e41c0f8fb922ed085047c7099..4674d334e0e96810bd6e50b9ddd7582eef728c21 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -1505,7 +1505,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+                     }
+                     if (packetplayinwindowclick.c() == 0 || packetplayinwindowclick.c() == 1) {
+                         action = InventoryAction.NOTHING; // Don't want to repeat ourselves
+-                        if (packetplayinwindowclick.b() == -999) {
++                        if (packetplayinwindowclick.b() < 0) { // Paper - GH-404
+                             if (player.inventory.getCarried() != null) {
+                                 action = packetplayinwindowclick.c() == 0 ? InventoryAction.DROP_ALL_CURSOR : InventoryAction.DROP_ONE_CURSOR;
+                             }
