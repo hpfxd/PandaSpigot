@@ -5,7 +5,7 @@ Subject: [PATCH] Fix AIOOBE in inventory handling
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index e2499f5f9c4b289e41c0f8fb922ed085047c7099..87ad4a9ee7323d6c67e893df222f89c1fcd2e9a3 100644
+index 15f7c315df23eac08e12ce752b1b1bb23fd25aba..14afdc7cbb88150f4711811a06fa149c36cec8b9 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -1505,7 +1505,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
