@@ -1,15 +1,15 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: hpfxd <me@hpfxd.com>
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
 Date: Wed, 3 Nov 2021 20:58:47 -0400
 Subject: [PATCH] Optimize BlockPosition helper methods
 
 See https://bugs.mojang.com/browse/MC-136025
 
 diff --git a/src/main/java/net/minecraft/server/BlockPosition.java b/src/main/java/net/minecraft/server/BlockPosition.java
-index 0d0e0abb644754e49543fa7b630174f614fdaf45..ec40091fe45dd67d6415a5cd39c98556ceb2707b 100644
+index 0d0e0abb644754e49543fa7b630174f614fdaf45..45c4ad8a3fcb531236f962cb571126d15e938e5b 100644
 --- a/src/main/java/net/minecraft/server/BlockPosition.java
 +++ b/src/main/java/net/minecraft/server/BlockPosition.java
-@@ -52,55 +52,72 @@ public class BlockPosition extends BaseBlockPosition {
+@@ -52,59 +52,96 @@ public class BlockPosition extends BaseBlockPosition {
      }
  
      public BlockPosition up() {
@@ -95,3 +95,28 @@ index 0d0e0abb644754e49543fa7b630174f614fdaf45..ec40091fe45dd67d6415a5cd39c98556
      }
  
      public BlockPosition shift(EnumDirection enumdirection, int i) {
+-        return i == 0 ? this : new BlockPosition(this.getX() + enumdirection.getAdjacentX() * i, this.getY() + enumdirection.getAdjacentY() * i, this.getZ() + enumdirection.getAdjacentZ() * i);
++        // PandaSpigot start - Optimize BlockPosition
++        if (i == 0) {
++            return this;
++        }
++        switch(enumdirection) {
++            case UP:
++                return new BlockPosition(this.getX(), this.getY() + i, this.getZ());
++            case DOWN:
++                return new BlockPosition(this.getX(), this.getY() - i, this.getZ());
++            case NORTH:
++                return new BlockPosition(this.getX(), this.getY(), this.getZ() - i);
++            case SOUTH:
++                return new BlockPosition(this.getX(), this.getY(), this.getZ() + i);
++            case WEST:
++                return new BlockPosition(this.getX() - i, this.getY(), this.getZ());
++            case EAST:
++                return new BlockPosition(this.getX() + i, this.getY(), this.getZ());
++            default:
++                return new BlockPosition(this.getX() + enumdirection.getAdjacentX() * i, this.getY() + enumdirection.getAdjacentY() * i, this.getZ() + enumdirection.getAdjacentZ() * i);
++        }
++        // PandaSpigot end
+     }
+ 
+     public BlockPosition c(BaseBlockPosition baseblockposition) {
