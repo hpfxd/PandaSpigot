@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sun, 20 Nov 2022 17:08:05 +0100
+Subject: [PATCH] optimize GameRules TreeMap to LinkedHashMap
+
+
+diff --git a/src/main/java/net/minecraft/server/GameRules.java b/src/main/java/net/minecraft/server/GameRules.java
+index 1c89c90581cf6e703f84b2acc436a0585452da4e..4b44c56d599daa4376724c1df9eb27106677bf1e 100644
+--- a/src/main/java/net/minecraft/server/GameRules.java
++++ b/src/main/java/net/minecraft/server/GameRules.java
+@@ -6,7 +6,7 @@ import java.util.TreeMap;
+ 
+ public class GameRules {
+ 
+-    private TreeMap<String, GameRules.GameRuleValue> a = new TreeMap();
++    private java.util.LinkedHashMap<String, GameRules.GameRuleValue> a = new java.util.LinkedHashMap<>(); // PandaSpigot - remove slow TreeMap
+ 
+     public GameRules() {
+         this.a("doFireTick", "true", GameRules.EnumGameRuleType.BOOLEAN_VALUE);

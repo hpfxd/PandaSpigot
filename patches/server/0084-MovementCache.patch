@@ -1,0 +1,163 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sun, 20 Nov 2022 17:07:36 +0100
+Subject: [PATCH] MovementCache
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/movement/MovementCache.java b/src/main/java/com/hpfxd/pandaspigot/movement/MovementCache.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1b3366aebd61579db37e86d2a4088c632619a89f
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/movement/MovementCache.java
+@@ -0,0 +1,51 @@
++package com.hpfxd.pandaspigot.movement;
++
++import net.minecraft.server.AxisAlignedBB;
++import net.minecraft.server.Entity;
++
++public class MovementCache {
++
++    private AxisAlignedBB bb;
++    private double locX, locY, locZ, lastX, lastY, lastZ;
++    private double motX, motY, motZ, lastMotX, lastMotY, lastMotZ;
++    private boolean onGround;
++
++    public boolean move(Entity entity) {
++        if (entity.locX == lastX    && entity.locY == lastY    && entity.locZ == lastZ    &&
++            entity.motX == lastMotX && entity.motY == lastMotY && entity.motZ == lastMotZ) {
++            entity.boundingBox = bb;
++            entity.onGround = onGround;
++            entity.locX = locX;
++            entity.locY = locY;
++            entity.locZ = locZ;
++            entity.motX = motX;
++            entity.motY = motY;
++            entity.motZ = motZ;
++            return true;
++        }
++
++        return false;
++    }
++
++    public void cache(Entity entity) {
++        onGround = entity.onGround;
++        bb = entity.boundingBox;
++        lastX = entity.lastX;
++        lastY = entity.lastY;
++        lastZ = entity.lastZ;
++        lastMotX = entity.lastMotX;
++        lastMotY = entity.lastMotY;
++        lastMotZ = entity.lastMotZ;
++        locX = entity.locX;
++        locY = entity.locY;
++        locZ = entity.locZ;
++        motX = entity.motX;
++        motY = entity.motY;
++        motZ = entity.motZ;
++    }
++
++    public void clear() {
++        lastX = Double.MAX_VALUE;
++    }
++
++}
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index b699b5f4643dd308daf90d7d8f203fdefb7b1dee..2af229ae96ada845af8a9d9ce313cef618c3a790 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -82,7 +82,10 @@ public abstract class Entity implements ICommandListener {
+     public float pitch;
+     public float lastYaw;
+     public float lastPitch;
+-    private AxisAlignedBB boundingBox;
++    public AxisAlignedBB boundingBox; // PandaSpigot - private -> public
++    public double lastMotX;
++    public double lastMotY;
++    public double lastMotZ;
+     public boolean onGround;
+     public boolean positionChanged;
+     public boolean E;
+@@ -452,6 +455,14 @@ public abstract class Entity implements ICommandListener {
+             this.recalcPosition();
+         } else {
+             if(d0 * d0 + d1 * d1 + d2 * d2 < 0.0001D) return; // PandaSpigot - see if distance is more then 0.0001 to not calculate collisions that are not meaningfull
++            // Pandaspigot start - Movement Cache
++            this.lastMotX = this.motX;
++            this.lastMotY = this.motY;
++            this.lastMotZ = this.motZ;
++            if (world.movementCache.move(this)) {
++                return;
++            }
++            // PandaSpigot end
+             // CraftBukkit start - Don't do anything if we aren't moving
+             // We need to do this regardless of whether or not we are moving thanks to portals
+             try {
+@@ -683,7 +694,7 @@ public abstract class Entity implements ICommandListener {
+             if (d7 != d1) {
+                 block.a(this.world, this);
+             }
+-
++            world.movementCache.cache(this);  // PandaSpigot - Movement Cache
+             // CraftBukkit start
+             if (positionChanged && getBukkitEntity() instanceof Vehicle) {
+                 Vehicle vehicle = (Vehicle) this.getBukkitEntity();
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index f430f6b25c20c22721a164c7033b063f34714670..d75e77b5202739df9faa57a514e10ef12dd2f479 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -34,6 +34,7 @@ import java.util.concurrent.Callable;
+ import java.util.concurrent.Executors;
+ import java.util.concurrent.FutureTask;
+ import javax.imageio.ImageIO;
++
+ import org.apache.commons.lang3.Validate;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
+@@ -46,6 +47,7 @@ import joptsimple.OptionSet;
+ 
+ import org.bukkit.craftbukkit.Main;
+ import co.aikar.timings.SpigotTimings; // Spigot
++import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
+ // CraftBukkit end
+ 
+ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.ReentrantIAsyncHandler<com.hpfxd.pandaspigot.tickloop.TasksPerTick> implements ICommandListener, IAsyncTaskHandler, IMojangStatistics { // PandaSpigot - Modern tick loop
+@@ -1005,6 +1007,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
+                 this.methodProfiler.b();
+                 this.methodProfiler.b();
+                 worldserver.explosionDensityCache.clear(); // PaperSpigot - Optimize explosions
++                worldserver.movementCache.clear(); // PandaSpigot - Movement Cache
+             // } // CraftBukkit
+ 
+             // this.i[i][this.ticks % 100] = System.nanoTime() - j; // CraftBukkit
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 14afdc7cbb88150f4711811a06fa149c36cec8b9..a2c7bba9159733055065d6a891cfb5b2515b9baf 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -421,6 +421,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+                         this.player.bF();
+                     }
+ 
++                    this.player.world.movementCache.clear(); // PandaSpigt - Movement Cache
+                     this.player.move(d11, d12, d13);
+                     this.player.onGround = packetplayinflying.f();
+                     double d16 = d12;
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index d3ff4a4593cc52414b17a43e685bb0eb9dd42a74..64adeb1af90f40c6efd0194add93e68cbcf3d1bd 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -140,6 +140,7 @@ public abstract class World implements IBlockAccess {
+     private int tileTickPosition;
+     public ExecutorService lightingExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("PaperSpigot - Lighting Thread").build()); // PaperSpigot - Asynchronous lighting updates
+     public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
++    public final com.hpfxd.pandaspigot.movement.MovementCache movementCache = new com.hpfxd.pandaspigot.movement.MovementCache(); // PandaSpigot - Movement Cache
+ 
+     public static long chunkToKey(int x, int z)
+     {
+@@ -425,6 +426,7 @@ public abstract class World implements IBlockAccess {
+                     this.x(blockposition);
+                     this.methodProfiler.b();
+                 }
++                movementCache.clear(); // PandaSpigot - Movement Cache
+ 
+                 /*
+                 if ((i & 2) != 0 && (!this.isClientSide || (i & 4) == 0) && chunk.isReady()) {

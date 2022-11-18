@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sun, 13 Nov 2022 16:57:01 +0100
+Subject: [PATCH] optimize idle furnaces
+
+kill the code earlier if we detect a empty bucket on large world this could save some time and generation of not usefull FurnaceBurnEvent calls (could break in rare cases if they check against empty buckets)
+
+diff --git a/src/main/java/net/minecraft/server/TileEntityFurnace.java b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+index 0e3f35a6eee539511f996687d36e5bfe160c1751..7485eade8b3dcb898aa351940b554cd101c3e00b 100644
+--- a/src/main/java/net/minecraft/server/TileEntityFurnace.java
++++ b/src/main/java/net/minecraft/server/TileEntityFurnace.java
+@@ -206,7 +206,7 @@ public class TileEntityFurnace extends TileEntityContainer implements IUpdatePla
+                 if (!this.isBurning() && this.cookTime > 0) {
+                     this.cookTime = MathHelper.clamp(this.cookTime - 2, 0, this.cookTimeTotal);
+                 }
+-            } else {
++            } else if (this.items[1].getItem() != Items.BUCKET ){ // PandaSpigot - check early if item in burn slot is a empty bucket
+                 // CraftBukkit start - Handle multiple elapsed ticks
+                 if (this.burnTime <= 0 && this.canBurn()) { // CraftBukkit - == to <=
+                     CraftItemStack fuel = CraftItemStack.asCraftMirror(this.items[1]);

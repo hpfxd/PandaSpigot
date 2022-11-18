@@ -1,0 +1,61 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Mon, 23 May 2022 00:09:13 +0200
+Subject: [PATCH] Optimize getChunkAt calls
+
+getChunkAt is called for the same chunk often, by getType for example
+so if we cache the last used keyed chunk
+it doesn't have to iterate over the whole chunks map again and again for that time and just return the cached result if key matches
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index df28cca6175ff3ddf4992c44a0760ef17310b03e..98e356265c94afc31ff5a74fbe6cedc593e48983 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -32,6 +32,7 @@ public class Chunk {
+     private boolean h;
+     public final World world;
+     public final int[] heightMap;
++    public final long chunkKey; // PandaSpigot
+     public final int locX;
+     public final int locZ;
+     private boolean k;
+@@ -144,6 +145,7 @@ public class Chunk {
+         this.locX = i;
+         this.locZ = j;
+         this.heightMap = new int[256];
++        this.chunkKey = org.bukkit.craftbukkit.util.LongHash.toLong(this.locX, this.locZ); // PandaSpigot
+ 
+         for (int k = 0; k < this.entitySlices.length; ++k) {
+             this.entitySlices[k] = new org.bukkit.craftbukkit.util.UnsafeList(); // Spigot
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index 9d31e75170c96103cd74557323af84dfbd9964ab..ecfdf0943e8d677e471b444faf85fef17e37ae34 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -34,7 +34,26 @@ public class ChunkProviderServer implements IChunkProvider {
+     public IChunkProvider chunkProvider;
+     private IChunkLoader chunkLoader;
+     public boolean forceChunkLoad = false; // CraftBukkit - true -> false
+-    public LongObjectHashMap<Chunk> chunks = new LongObjectHashMap<Chunk>();
++    // PandaSpigot - start
++    protected Chunk lastChunkByPos = null;
++    public LongObjectHashMap<Chunk> chunks = new LongObjectHashMap<Chunk>() {
++        @Override
++        public Chunk get( long key ) {
++            if(lastChunkByPos != null && key == lastChunkByPos.chunkKey) {
++                return lastChunkByPos;
++            }
++            return lastChunkByPos = super.get( key );
++        }
++
++        @Override
++        public Chunk remove( long key ) {
++            if(lastChunkByPos != null && key == lastChunkByPos.chunkKey) {
++                lastChunkByPos = null;
++            }
++            return super.remove( key );
++        }
++    };
++    // PandaSpigot - end
+     public WorldServer world;
+ 
+     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, IChunkProvider ichunkprovider) {

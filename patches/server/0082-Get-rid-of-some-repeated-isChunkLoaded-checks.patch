@@ -1,0 +1,120 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sun, 20 Nov 2022 12:27:06 +0100
+Subject: [PATCH] Get rid of some repeated isChunkLoaded checks
+
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index ca5a66c922c39a767a562dd31f1867a73e086384..150720d064aeda349fbce021e366589fb0e5948c 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -283,7 +283,7 @@ public class Chunk {
+ 
+     private void h(boolean flag) {
+         this.world.methodProfiler.a("recheckGaps");
+-        if (this.world.areChunksLoaded(new BlockPosition(this.locX * 16 + 8, 0, this.locZ * 16 + 8), 16)) {
++        if (this.areNeighborsLoaded(1)) { // PandaSpigot
+             for (int i = 0; i < 16; ++i) {
+                 for (int j = 0; j < 16; ++j) {
+                     if (this.g[i + j * 16]) {
+@@ -334,7 +334,13 @@ public class Chunk {
+     }
+ 
+     private void a(int i, int j, int k, int l) {
+-        if (l > k && this.world.areChunksLoaded(new BlockPosition(i, 0, j), 16)) {
++        // PandaSpigot start
++        if (l > k) {
++            Chunk chunk = this.world.getChunkIfLoaded(i >> 4, j >> 4);
++            if(chunk == null || !chunk.areNeighborsLoaded(1)) {
++                return;
++            }
++        // PandaSpigot end
+             for (int i1 = k; i1 < l; ++i1) {
+                 this.world.updateLight(EnumSkyBlock.SKY, new BlockPosition(i, i1, j)); // PaperSpigot - Asynchronous lighting updates
+             }
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 55599331492b78c68aa223bce604d38c63feb584..d3ff4a4593cc52414b17a43e685bb0eb9dd42a74 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -741,10 +741,16 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public BlockPosition getHighestBlockYAt(BlockPosition blockposition) {
++    // PandaSpigot start
++        return this.getHighestBlockYAt(blockposition, false);
++    }
++
++    public BlockPosition getHighestBlockYAt(BlockPosition blockposition, boolean chunksHaveAlreadyBeenChecked) {
++    // PandaSpigot end
+         int i;
+ 
+         if (blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() < 30000000) {
+-            if (this.isChunkLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4, true)) {
++            if (!chunksHaveAlreadyBeenChecked && this.isChunkLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4, true)) {
+                 i = this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4).b(blockposition.getX() & 15, blockposition.getZ() & 15);
+             } else {
+                 i = 0;
+@@ -757,8 +763,14 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public int b(int i, int j) {
++    // PandaSpigot start
++        return this.g(i, j, false);
++    }
++
++    public int g(int i, int j, boolean chunksHaveAlreadyBeenChecked) {
++    // PandaSpigot end
+         if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
+-            if (!this.isChunkLoaded(i >> 4, j >> 4, true)) {
++            if (!chunksHaveAlreadyBeenChecked && !this.isChunkLoaded(i >> 4, j >> 4, true)) {
+                 return 0;
+             } else {
+                 Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
+@@ -2352,6 +2364,7 @@ public abstract class World implements IBlockAccess {
+         // odds of growth happening vs growth happening in vanilla
+         this.growthOdds = this.modifiedOdds = Math.max( 35, Math.min( 100, ( ( chunksPerPlayer + 1 ) * 100F ) / 15F ) );
+         // Spigot end
++        Chunk chunkObj = null; // PandaSpigot
+         for (i = 0; i < this.players.size(); ++i) {
+             entityhuman = (EntityHuman) this.players.get(i);
+             j = MathHelper.floor(entityhuman.locX / 16.0D);
+@@ -2369,7 +2382,7 @@ public abstract class World implements IBlockAccess {
+                 int dx = ( random.nextBoolean() ? 1 : -1 ) * random.nextInt( randRange );
+                 int dz = ( random.nextBoolean() ? 1 : -1 ) * random.nextInt( randRange );
+                 long hash = chunkToKey( dx + j, dz + k );
+-                if ( !chunkTickList.contains( hash ) && this.chunkProvider.isChunkLoaded(dx + j, dz + k ) )
++                if ( !chunkTickList.contains( hash ) && ((chunkObj = this.getChunkIfLoaded(dx + j, dz + k)) != null) && chunkObj.areNeighborsLoaded(1) ) // PandaSpigot
+                 {
+                     chunkTickList.put( hash, (short) -1 ); // no players
+                 }
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 0700b5aec26a6a4ba4db4d3c66b8b15c295c5a03..6136a51a773da15cc3b070a864c45d7f030b83b9 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -403,19 +403,19 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                 long chunkCoord = iter.key();
+                 int chunkX = World.keyToX( chunkCoord );
+                 int chunkZ = World.keyToZ( chunkCoord );
+-                // If unloaded, or in procedd of being unloaded, drop it
+-                if ( ( !this.chunkProvider.isChunkLoaded( chunkX, chunkZ ) ) || ( this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ ) ) )
+-                {
+-                    iter.remove();
+-                    continue;
+-                }
+                 // Spigot end
+                 // ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator.next();
+                 int k = chunkX * 16;
+                 int l = chunkZ * 16;
+ 
+                 this.methodProfiler.a("getChunk");
+-                Chunk chunk = this.getChunkAt(chunkX, chunkZ);
++                // PandaSpigot start
++                Chunk chunk = this.getChunkIfLoaded(chunkX, chunkZ);
++                if (chunk == null || !chunk.areNeighborsLoaded(1) || this.chunkProviderServer.unloadQueue.contains(chunkX, chunkZ)) {
++                    iter.remove();
++                    continue;
++                }
++                // PandaSpigot end
+                 // CraftBukkit end
+ 
+                 this.a(k, l, chunk);
