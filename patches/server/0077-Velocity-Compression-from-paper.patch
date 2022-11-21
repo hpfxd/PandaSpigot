@@ -137,7 +137,7 @@ index 6850db3d35f01fa5cff2f20f42e6fa13ffbfad83..85a267d76acd83e56685591f84ebc6bf
              if (this.channel.pipeline().get("decompress") instanceof PacketDecompressor) {
                  this.channel.pipeline().remove("decompress");
 diff --git a/src/main/java/net/minecraft/server/PacketCompressor.java b/src/main/java/net/minecraft/server/PacketCompressor.java
-index 8107890ffbc205f5ce7e22c04d62fb8b16d087c2..8f0cfd1e67dcf49af27c90b911d5fc5cfb9b4388 100644
+index 8107890ffbc205f5ce7e22c04d62fb8b16d087c2..bcea728f40268d2fc5e52c934f931204eeda9dc2 100644
 --- a/src/main/java/net/minecraft/server/PacketCompressor.java
 +++ b/src/main/java/net/minecraft/server/PacketCompressor.java
 @@ -1,5 +1,6 @@
@@ -152,10 +152,10 @@ index 8107890ffbc205f5ce7e22c04d62fb8b16d087c2..8f0cfd1e67dcf49af27c90b911d5fc5c
  public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
  
 -    private final byte[] a = new byte[8192];
-+    private final byte[] a; // Paper
++    private final byte[] a; // PandaSpigot
      private final Deflater b;
      private int c;
-+    private final com.velocitypowered.natives.compression.VelocityCompressor compressor; // Paper
++    private final com.velocitypowered.natives.compression.VelocityCompressor compressor; // PandaSpigot
  
      public PacketCompressor(int i) {
 -        this.c = i;
@@ -249,7 +249,7 @@ index 8107890ffbc205f5ce7e22c04d62fb8b16d087c2..8f0cfd1e67dcf49af27c90b911d5fc5c
 -    }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketDecompressor.java b/src/main/java/net/minecraft/server/PacketDecompressor.java
-index 300d46475a682fbeb4db3e21e64f3c18e21a14c7..5a944b2351d0c8a0b6507ee28306a3ed616544da 100644
+index 300d46475a682fbeb4db3e21e64f3c18e21a14c7..95e14e4aca6da795f6658b4d6c300052762e2d51 100644
 --- a/src/main/java/net/minecraft/server/PacketDecompressor.java
 +++ b/src/main/java/net/minecraft/server/PacketDecompressor.java
 @@ -1,5 +1,7 @@
@@ -264,7 +264,7 @@ index 300d46475a682fbeb4db3e21e64f3c18e21a14c7..5a944b2351d0c8a0b6507ee28306a3ed
      private final Inflater a;
      private int b;
  
-+    private final com.velocitypowered.natives.compression.VelocityCompressor compressor; // Paper
++    private final com.velocitypowered.natives.compression.VelocityCompressor compressor; // PandaSpigot
      public PacketDecompressor(int i) {
 +        this( null, i );
 +    }
@@ -322,7 +322,7 @@ index 300d46475a682fbeb4db3e21e64f3c18e21a14c7..5a944b2351d0c8a0b6507ee28306a3ed
      public void a(int i) {
          this.b = i;
 diff --git a/src/main/java/net/minecraft/server/PacketDecrypter.java b/src/main/java/net/minecraft/server/PacketDecrypter.java
-index 4d02db906ec31f627454fde8c5ca9f268b68e933..aaedf9aab35aad0026dd9a9f2bfb8c347424116d 100644
+index 4d02db906ec31f627454fde8c5ca9f268b68e933..6e390a136579f9b403280f7ccc253311d297df37 100644
 --- a/src/main/java/net/minecraft/server/PacketDecrypter.java
 +++ b/src/main/java/net/minecraft/server/PacketDecrypter.java
 @@ -1,5 +1,7 @@
@@ -333,7 +333,7 @@ index 4d02db906ec31f627454fde8c5ca9f268b68e933..aaedf9aab35aad0026dd9a9f2bfb8c34
  import io.netty.buffer.ByteBuf;
  import io.netty.channel.ChannelHandlerContext;
  import io.netty.handler.codec.MessageToMessageDecoder;
-@@ -8,17 +10,30 @@ import javax.crypto.Cipher;
+@@ -8,17 +10,32 @@ import javax.crypto.Cipher;
  
  public class PacketDecrypter extends MessageToMessageDecoder<ByteBuf> {
  
@@ -342,8 +342,10 @@ index 4d02db906ec31f627454fde8c5ca9f268b68e933..aaedf9aab35aad0026dd9a9f2bfb8c34
  
 -    public PacketDecrypter(Cipher cipher) {
 -        this.a = new PacketEncryptionHandler(cipher);
-+    public PacketDecrypter( VelocityCipher cipher) { // Paper
-+        this.cipher = cipher; // PandaSpigot
++    // PandaSpigot start - Velocity compression
++    public PacketDecrypter( VelocityCipher cipher) {
++        this.cipher = cipher;
++        // PandaSpigot end
      }
  
 -    protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
@@ -372,10 +374,10 @@ index 4d02db906ec31f627454fde8c5ca9f268b68e933..aaedf9aab35aad0026dd9a9f2bfb8c34
      }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketEncrypter.java b/src/main/java/net/minecraft/server/PacketEncrypter.java
-index b32a7e67666d372cc9f080b60897f28fb59736fd..5b6bc3bbea0f1755430b830a0ff5631a2cdea68b 100644
+index b32a7e67666d372cc9f080b60897f28fb59736fd..4c95d15af78e7dd274db23081d6f1f1a3a42133c 100644
 --- a/src/main/java/net/minecraft/server/PacketEncrypter.java
 +++ b/src/main/java/net/minecraft/server/PacketEncrypter.java
-@@ -1,23 +1,39 @@
+@@ -1,23 +1,41 @@
  package net.minecraft.server;
  
 +import com.velocitypowered.natives.encryption.VelocityCipher;
@@ -391,12 +393,14 @@ index b32a7e67666d372cc9f080b60897f28fb59736fd..5b6bc3bbea0f1755430b830a0ff5631a
  
 -    private final PacketEncryptionHandler a;
 +public class PacketEncrypter extends MessageToMessageEncoder<ByteBuf> {
-+    private final VelocityCipher cipher; // Paper
++    private final VelocityCipher cipher; // PandaSpigot
  
 -    public PacketEncrypter(Cipher cipher) {
 -        this.a = new PacketEncryptionHandler(cipher);
-+    public PacketEncrypter(VelocityCipher ciper) { // Paper
-+        this.cipher = ciper; // Paper
++    // PandaSpigot start - Velocity compression
++    public PacketEncrypter( VelocityCipher cipher) {
++        this.cipher = cipher;
++        // PandaSpigot end
      }
  
 -    protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
