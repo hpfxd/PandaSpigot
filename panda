@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
 
+# resolve shell-specifics
+case "$(echo "$SHELL" | sed -E 's|/usr(/local)?||g')" in
+    "/bin/zsh")
+        RCPATH="$HOME/.zshrc"
+        SOURCE="${BASH_SOURCE[0]:-${(%):-%N}}"
+    ;;
+    *)
+        RCPATH="$HOME/.bashrc"
+        if [[ -f "$HOME/.bash_aliases" ]]; then
+            RCPATH="$HOME/.bash_aliases"
+        fi
+        SOURCE="${BASH_SOURCE[0]}"
+    ;;
+esac
+
 # get base dir regardless of execution location
-SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
     DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
     SOURCE="$(readlink "$SOURCE")"
@@ -9,73 +23,200 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SOURCE=$([[ "$SOURCE" = /* ]] && echo "$SOURCE" || echo "$PWD/${SOURCE#./}")
 basedir=$(dirname "$SOURCE")
+gitcmd="git -c commit.gpgsign=false"
 
-. "$basedir/scripts/init.sh"
+source "$basedir/scripts/functions.sh"
 
-paperstash() {
-    STASHED=$(git stash)
-}
+"$basedir"/scripts/requireDeps.sh || exit 1
 
-paperunstash() {
-    if [[ "$STASHED" != "No local changes to save" ]] ; then
-        git stash pop
-    fi
-}
-
-buildpaperclipjar() {
-    cp -f scripts/basepaperclip.sh base/Paper/paperclip.sh
-    cd base/Paper
-    ./paperclip.sh
-    cd "$basedir"
-}
-
+failed=0
 case "$1" in
-    "setup")
-        cd "$basedir"
-        scripts/upstream.sh
-    ;;
-    "build")
-        log_info "Preparing to build PandaSpigot"
-        cd "$basedir"
-        scripts/upstream.sh
-        scripts/apply.sh "$basedir"
-        ./gradlew build
-        buildpaperclipjar
-    ;;
     "rb" | "rbp" | "rebuild")
     (
         set -e
         cd "$basedir"
-        scripts/rebuildpatches.sh "$basedir"
-    )
+        scripts/rebuildPatches.sh "$basedir" $2 || exit 1
+    ) || failed=1
     ;;
-    "p" | "patch" | "apply")
+    "rbf" | "rbfull")
     (
         set -e
         cd "$basedir"
-        scripts/apply.sh "$basedir"
-        log_info "    Run './panda jar' to create a runnable JAR."
-    )
+        scripts/rebuildPatches.sh "$basedir" "nofilter" || exit 1
+    ) || failed=1
+    ;;
+    "p" | "patch")
+    (
+        set -e
+        cd "$basedir"
+        scripts/build.sh "$basedir" || exit 1
+    ) || failed=1
     ;;
     "j" | "jar")
     (
         set -e
         cd "$basedir"
-        ./gradlew build
-        buildpaperclipjar
+        scripts/build.sh "$basedir" "--jar" || exit 1
+    ) || failed=1
+    ;;
+    "b" | "build")
+    (
+        set -e
+        cd "$basedir"
+        scripts/build.sh "$basedir" || exit 1
+        (cd PandaSpigot-API ; mvn clean install) || exit 1
+        (cd PandaSpigot-Server ; mvn clean package) || exit 1
+        echo "PandaSpigot jar successfully built"
+        ls -la PandaSpigot-Server/target/paper*.jar
+    ) || failed=1
+    ;;
+    "i" | "install")
+    (
+        set -e
+        cd "$basedir"
+        scripts/build.sh "$basedir" || exit 1
+        mvn clean install || exit 1
+        echo "PandaSpigot jar successfully built and installed to local repo"
+    ) || failed=1
+    ;;
+    "pc" | "paperclip")
+    (
+        set -e
+        cd "$basedir"
+        scripts/paperclip.sh "$basedir" || exit 1
+    ) || failed=1
+    ;;
+    "make")
+    (
+        if [[ "$2" = "bacon" ]] ; then
+            set -e
+            cd "$basedir"
+            scripts/build.sh "$basedir" "--jar"
+        fi
     )
     ;;
+    "r" | "root")
+        cd "$basedir"
+    ;;
+    "a" | "api")
+        cd "$basedir/PandaSpigot-API"
+    ;;
+    "s" | "server")
+        cd "$basedir/PandaSpigot-Server"
+    ;;
+    "c" | "clean")
+        rm -rf PandaSpigot-API
+        rm -rf PandaSpigot-Server
+        rm -rf base
+        echo "Cleaned build files"
+    ;;
+    "con" | "continue")
+        if [ -d ".git/rebase-apply" ]; then
+            git -c commit.gpgsign=false am --continue
+        elif [ -d ".git/rebase-merge" ]; then
+            git -c commit.gpgsign=false rebase --continue
+        fi
+    ;;
+    "e" | "edit")
+        case "$2" in
+            "s" | "server")
+            mkdir -p "$basedir/work/Temp"
+            echo "$basedir/PandaSpigot-Server" > "$basedir/work/Temp/PAPER_LAST_EDIT"
+            cd "$basedir/PandaSpigot-Server"
+            (
+                set -e
+
+                paperstash
+                $gitcmd rebase -i upstream/upstream
+                paperunstash
+            )
+            ;;
+            "a" | "api")
+            mkdir -p "$basedir/work/Temp"
+            echo "$basedir/PandaSpigot-API" > "$basedir/work/Temp/PAPER_LAST_EDIT"
+            cd "$basedir/PandaSpigot-API"
+            (
+                set -e
+
+                paperstash
+                $gitcmd rebase -i upstream/upstream
+                paperunstash
+            )
+            ;;
+            "c" | "continue")
+            cd "$( < "$basedir/work/Temp/PAPER_LAST_EDIT")"
+            rm -f "$basedir/work/Temp/PAPER_LAST_EDIT"
+            (
+                set -e
+
+                $gitcmd add .
+                $gitcmd commit --amend
+                $gitcmd rebase --continue
+
+                cd "$basedir"
+                scripts/rebuildPatches.sh "$basedir"
+            )
+            ;;
+            *)
+                echo "You must edit either the api or server."
+            ;;
+        esac
+    ;;
+    "setup")
+        if [[ -f "$RCPATH" ]] ; then
+            NAME="panda"
+            if [[ ! -z "${2+x}" ]] ; then
+                NAME="$2"
+            fi
+            (grep "alias $NAME=" "$RCPATH" > /dev/null) && (sed -i "s|alias $NAME=.*|alias $NAME='. $SOURCE'|g" "$RCPATH") || (echo "alias $NAME='. $SOURCE'" >> "$RCPATH")
+            alias "$NAME=. $SOURCE"
+            echo "You can now just type '$NAME' at any time to access the panda tool."
+        else
+          echo "We were unable to setup the panda build tool alias: $RCPATH is missing"
+        fi
+    ;;
     *)
-        echo "PandaSpigot build tool."
+        echo "PandaSpigot build tool command. This provides a variety of commands to build and manage the PandaSpigot build"
+        echo "environment. For all of the functionality of this command to be available, you must first run the"
+        echo "'setup' command. View below for details. For essential building and patching, you do not need to do the setup."
         echo ""
-        echo " Commands:"
-        echo "  * setup        | Setup the build environment"
-        echo "  * build        | Setup the build environment, apply patches, and create a runnable JAR"
-        echo "  * p, patch     | Apply patches"
-        echo "  * rb, rebuild  | Rebuild patches"
-        echo "  * j, jar       | Create a runnable JAR"
+        echo " Normal commands:"
+        echo "  * rb, rebuild         | Rebuild patches, can be called from anywhere."
+        echo "  * p, patch            | Apply all patches to the project without building it. Can be run from anywhere."
+        echo "  * j, jar              | Apply all patches and build the project, paperclip.jar will be output. Can be run from anywhere."
+        echo "  * i, install          | Build and install panda into the local repo. Can be run from anywhere."
+        echo "  * c, clean            | Removes all generated files, PandaSpigot-API, PandaSpigot-Server, and work."
+        echo "  * con, continue       | Shortcut command for running git am --continue, or git rebase --continue."
+        echo ""
+        echo " These commands require the setup command before use:"
+        echo "  * r, root             | Change directory to the root of the project."
+        echo "  * a. api              | Move to the PandaSpigot-API directory."
+        echo "  * s, server           | Move to the PandaSpigot-Server directory."
+        echo "  * e, edit             | Use to edit a specific patch, give it the argument \"server\" or \"api\""
+        echo "                        | respectively to edit the correct project. Use the argument \"continue\" after"
+        echo "                        | the changes have been made to finish and rebuild patches. Can be called from anywhere."
+        echo ""
+        echo "  * setup               | Add an alias to $RCPATH to allow full functionality of this script. Run as:"
+        echo "                        |     . ./panda setup"
+        echo "                        | After you run this command you'll be able to just run 'panda' from anywhere."
+        echo "                        | The default name for the resulting alias is 'panda', you can give an argument to override"
+        echo "                        | this default, such as:"
+        echo "                        |     . ./panda setup example"
+        echo "                        | Which will allow you to run 'example' instead."
     ;;
 esac
 
+unset RCPATH
+unset SOURCE
+unset basedir
+unset -f color
+unset -f colorend
 unset -f paperstash
 unset -f paperunstash
+if [[ "$failed" == "1" ]]; then
+	unset failed
+	false
+else
+	unset failed
+	true
+fi
