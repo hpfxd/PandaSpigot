@@ -6,10 +6,10 @@ Subject: [PATCH] unused creating of BlockPosition objects
 which are never used but used in some critical places like with navigation
 
 diff --git a/src/main/java/net/minecraft/server/BlockPosition.java b/src/main/java/net/minecraft/server/BlockPosition.java
-index ec40091fe45dd67d6415a5cd39c98556ceb2707b..651a4bc15a52e1f4a3ee76a4baf0065dc040348e 100644
+index 45c4ad8a3fcb531236f962cb571126d15e938e5b..f3acd14788ff407ba13af1d5761cf99f590d7be5 100644
 --- a/src/main/java/net/minecraft/server/BlockPosition.java
 +++ b/src/main/java/net/minecraft/server/BlockPosition.java
-@@ -141,8 +141,10 @@ public class BlockPosition extends BaseBlockPosition {
+@@ -161,8 +161,10 @@ public class BlockPosition extends BaseBlockPosition {
      }
  
      public static Iterable<BlockPosition> a(BlockPosition blockposition, BlockPosition blockposition1) {
