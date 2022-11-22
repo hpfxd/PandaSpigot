@@ -6,7 +6,7 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..004bb1a1f406a1875b10f7cd030dce7526000808
+index 0000000000000000000000000000000000000000..5dccf69fb435c8903790841703263b739280c9a6
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,114 @@
@@ -27,8 +27,8 @@ index 0000000000000000000000000000000000000000..004bb1a1f406a1875b10f7cd030dce75
 +    // Minecraft libraries:
 +    implementation("com.mojang:netty:1.7.7")
 +    implementation("com.mojang:authlib:1.5.21")
-+    implementation("org.apache.logging.log4j:log4j-api:2.17.1")
-+    implementation("org.apache.logging.log4j:log4j-core:2.17.1")
++    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
++    implementation("org.apache.logging.log4j:log4j-core:2.17.0")
 +    implementation("org.apache.commons:commons-lang3:3.3.2")
 +    implementation("commons-io:commons-io:2.4")
 +    implementation("commons-codec:commons-codec:1.9")

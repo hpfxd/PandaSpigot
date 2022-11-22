@@ -18,7 +18,7 @@ index 864b3bc1375cb72588b63855eee8fa4ff569a5d3..7d19ec833d61c2f75b5eb75d7eb291c7
  
      public CrashReport b(CrashReport crashreport) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 69485fa696f27c965dd576d9cda7b4b56ef57032..6f021d50d2d91497992c794161918c25f187cfdb 100644
+index 69485fa696f27c965dd576d9cda7b4b56ef57032..ad8c5da90fc64825185aedcfdf89a6ff013a7a81 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -127,7 +127,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
@@ -26,19 +26,10 @@ index 69485fa696f27c965dd576d9cda7b4b56ef57032..6f021d50d2d91497992c794161918c25
  public final class CraftServer implements Server {
      private static final Player[] EMPTY_PLAYER_ARRAY = new Player[0];
 -    private final String serverName = "CraftBukkit";
-+    private final String serverName = "PandaSpigot";
++    private final String serverName = "PandaSpigot"; // PandaSpigot
      private final String serverVersion;
      private final String bukkitVersion = Versioning.getBukkitVersion();
      private final Logger logger = Logger.getLogger("Minecraft");
-@@ -1407,7 +1407,7 @@ public final class CraftServer implements Server {
- 
-         for (JsonListEntry entry : playerList.getProfileBans().getValues()) {
-             result.add(getOfflinePlayer((GameProfile) entry.getKey()));
--        }        
-+        }
- 
-         return result;
-     }
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java b/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
 index 3a4b14246bb99b989a4685242ccedd0030e481aa..da66025a18b23e249ce13a8b998d24b112cb969e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/Versioning.java
@@ -52,3 +43,37 @@ index 3a4b14246bb99b989a4685242ccedd0030e481aa..da66025a18b23e249ce13a8b998d24b1
          Properties properties = new Properties();
  
          if (stream != null) {
+diff --git a/src/main/java/org/spigotmc/WatchdogThread.java b/src/main/java/org/spigotmc/WatchdogThread.java
+index c8f619a7eddd0fbfe10e13164c946b50734e3100..879e29592d9f6c4be7bd5d5dfbf83be1eb732799 100644
+--- a/src/main/java/org/spigotmc/WatchdogThread.java
++++ b/src/main/java/org/spigotmc/WatchdogThread.java
+@@ -19,7 +19,7 @@ public class WatchdogThread extends Thread
+ 
+     private WatchdogThread(long timeoutTime, boolean restart)
+     {
+-        super( "PaperSpigot Watchdog Thread" );
++        super( "PandaSpigot Watchdog Thread" ); // PandaSpigot
+         this.timeoutTime = timeoutTime;
+         this.restart = restart;
+     }
+@@ -56,9 +56,9 @@ public class WatchdogThread extends Thread
+             {
+                 Logger log = Bukkit.getServer().getLogger();
+                 log.log( Level.SEVERE, "The server has stopped responding!" );
+-                log.log( Level.SEVERE, "Please report this to PaperSpigot directly!" );
++                log.log( Level.SEVERE, "Please report this in https://github.com/hpfxd/PandaSpigot/issues!" ); // PandaSpigot
+                 log.log( Level.SEVERE, "Be sure to include ALL relevant console errors and Minecraft crash reports" );
+-                log.log( Level.SEVERE, "PaperSpigot version: " + Bukkit.getServer().getVersion() );
++                log.log( Level.SEVERE, "PandaSpigot version: " + Bukkit.getServer().getVersion() ); // PandaSpigot
+                 //
+                 if(net.minecraft.server.World.haveWeSilencedAPhysicsCrash)
+                 {
+@@ -68,7 +68,7 @@ public class WatchdogThread extends Thread
+                 }
+                 //
+                 log.log( Level.SEVERE, "------------------------------" );
+-                log.log( Level.SEVERE, "Server thread dump (Look for plugins here before reporting to PaperSpigot!):" );
++                log.log( Level.SEVERE, "Server thread dump (Look for plugins here before reporting to PandaSpigot!):" ); // PandaSpigot
+                 dumpThread( ManagementFactory.getThreadMXBean().getThreadInfo( MinecraftServer.getServer().primaryThread.getId(), Integer.MAX_VALUE ), log );
+                 log.log( Level.SEVERE, "------------------------------" );
+                 //
