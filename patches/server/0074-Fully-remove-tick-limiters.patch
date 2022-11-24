@@ -5,14 +5,14 @@ Subject: [PATCH] Fully remove tick limiters
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 0292af17e6fda22b878019b6921bcdf1ed91d099..0c2af14ac5b8c598279072e90d7bbb3714f9b885 100644
+index 0292af17e6fda22b878019b6921bcdf1ed91d099..e69a40865377fde640c19f4c245f4918ebd38849 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -135,9 +135,11 @@ public abstract class World implements IBlockAccess {
      private final byte chunkTickRadius;
      public static boolean haveWeSilencedAPhysicsCrash;
      public static String blockLocation;
-+    /* // PandaSpigot start - Fully remove spigot tick limiter
++    /* // PandaSpigot start - Fully remove tick limiter
      private org.spigotmc.TickLimiter entityLimiter;
      private org.spigotmc.TickLimiter tileLimiter;
      private int tileTickPosition;
@@ -24,7 +24,7 @@ index 0292af17e6fda22b878019b6921bcdf1ed91d099..0c2af14ac5b8c598279072e90d7bbb37
          // CraftBukkit end
          this.keepSpawnInMemory = this.paperSpigotConfig.keepSpawnInMemory; // PaperSpigot
          timings = new co.aikar.timings.WorldTimingsHandler(this); // Spigot - code below can generate new world and access timings
-+        /* // PandaSpigot start - Fully remove spigot tick limiter
++        /* // PandaSpigot start - Fully remove tick limiter
          this.entityLimiter = new org.spigotmc.TickLimiter(spigotConfig.entityMaxTickTime);
          this.tileLimiter = new org.spigotmc.TickLimiter(spigotConfig.tileMaxTickTime);
 +        */ // PandaSpigot end
