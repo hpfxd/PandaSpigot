@@ -5,7 +5,7 @@ Subject: [PATCH] Fully remove tick limiters
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 0292af17e6fda22b878019b6921bcdf1ed91d099..2989a292d0ada271e4ba3b538a3c4f94fafa2998 100644
+index 0292af17e6fda22b878019b6921bcdf1ed91d099..0e8925a10d43aacbeda7e4d00454cbbc09ea3a03 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -135,9 +135,11 @@ public abstract class World implements IBlockAccess {
@@ -53,8 +53,7 @@ index 0292af17e6fda22b878019b6921bcdf1ed91d099..2989a292d0ada271e4ba3b538a3c4f94
 -        int tilesThisCycle = 0;
 +        // int tilesThisCycle = 0; // PandaSpigot - Fully remove tick limiters
          for (tileTickPosition = 0; tileTickPosition < tileEntityList.size(); tileTickPosition++) { // PaperSpigot - Disable tick limiters
--            tileTickPosition = (tileTickPosition < tileEntityList.size()) ? tileTickPosition : 0;
-+            // tileTickPosition = (tileTickPosition < tileEntityList.size()) ? tileTickPosition : 0; // // PandaSpigot - Fully remove tick limiters
+             tileTickPosition = (tileTickPosition < tileEntityList.size()) ? tileTickPosition : 0;
              TileEntity tileentity = (TileEntity) this.tileEntityList.get(tileTickPosition);
              // Spigot start
              if (tileentity == null) {
