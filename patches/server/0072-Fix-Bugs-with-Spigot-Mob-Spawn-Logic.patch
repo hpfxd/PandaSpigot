@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Thu, 24 Nov 2022 12:24:55 -0300
+Subject: [PATCH] Fix Bugs with Spigot Mob Spawn Logic
+
+Spigot drastically altered vanilla mob spawn logic and caused a few issues.
+1) Used only spawnable chunks vs entire world for entity counting, resulting in ignoring
+other entities in the world, and causing the world to go over its intended limit.
+
+Specially with servers using smaller mob spawn ranges than view distance, as well as affects spawning API
+
+2) Spigot was using 16x16 division instead of vanilla 17x17 division.
+
+This patch returns mob counting to use all loaded chunks, and 17x17 division.
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index 03fe76355813497a5db33ad185db0e4b40c6f85a..cd94a24b5fa3d616f7efc25ba64cfc5d9ede9a4a 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -784,7 +784,7 @@ public class Chunk {
+             i = this.entitySlices.length - 1;
+         }
+ 
+-        this.entitySlices[i].remove(entity);
++        if (!this.entitySlices[i].remove(entity)) return; // PandaSpigot
+         // PaperSpigot start - update counts
+         if (entity instanceof EntityItem) {
+             itemCounts[i]--;
+diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
+index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..c2b0f12950b19efb11648b112c43dee05e2d3291 100644
+--- a/src/main/java/net/minecraft/server/SpawnerCreature.java
++++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
+@@ -23,6 +23,15 @@ public final class SpawnerCreature {
+     // Spigot start - get entity count only from chunks being processed in b
+     private int getEntityCount(WorldServer server, Class oClass)
+     {
++        // PandaSpigot start - use entire world, not just active chunks. Spigot broke vanilla expectations.
++        if (true) {
++            return server
++                    .chunkProviderServer
++                    .chunks.values()
++                    .stream()
++                    .collect(java.util.stream.Collectors.summingInt(c -> c.entityCount.get(oClass)));
++        }
++        // PandaSpigot end
+         int i = 0;
+         Iterator<Long> it = this.b.iterator();
+         while ( it.hasNext() )
+@@ -119,7 +128,7 @@ public final class SpawnerCreature {
+                     k = worldserver.a(enumcreaturetype.a());
+                     int l1 = limit * i / a; // CraftBukkit - use per-world limits
+ 
+-                    if ((mobcnt = getEntityCount(worldserver, enumcreaturetype.a())) <= limit * i / 256) {
++                    if ((mobcnt = getEntityCount(worldserver, enumcreaturetype.a())) <= limit * i / 289) { // PandaSpigot - use 17x17 like vanilla (a at top of file)
+                         Iterator iterator1 = this.b.iterator();
+ 
+                         int moblimit = (limit * i / 256) - mobcnt + 1; // Spigot - up to 1 more than limit
