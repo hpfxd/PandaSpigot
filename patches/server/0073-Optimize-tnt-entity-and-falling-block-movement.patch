@@ -21,7 +21,7 @@ index 14f65a41a7711afd45fbd09007e385dfd6291719..692dae61c78a495432f6ffa99e85179c
 +    public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
  }
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 58e485c2e5845dda15c33ee1beb170860535f88b..1a36f05c0330c79d1268b0db5ca2c08129797a7e 100644
+index 58e485c2e5845dda15c33ee1beb170860535f88b..5a4ffd67262f63a1f43932103b24502295cd37cd 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -529,7 +529,16 @@ public abstract class Entity implements ICommandListener {
@@ -34,7 +34,7 @@ index 58e485c2e5845dda15c33ee1beb170860535f88b..1a36f05c0330c79d1268b0db5ca2c081
 +            double xLenght = totalArea.d - totalArea.a;
 +            double yLenght = totalArea.e - totalArea.b;
 +            double zLenght = totalArea.f - totalArea.c;
-+            boolean axisScan = com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().optimizeTntMovement && xLenght * yLenght * zLenght > 10;
++            boolean axisScan = com.hpfxd.pandaspigot.config.PandaSpigotWorldConfig.get().optimizeTntMovement && xLenght * yLenght * zLenght > 10;
 +
 +            List list = this.world.getCubes(this, axisScan ? this.getBoundingBox().a(0, d1, 0) : totalArea);
 +            // PandaSpigot end
@@ -61,7 +61,7 @@ index 58e485c2e5845dda15c33ee1beb170860535f88b..1a36f05c0330c79d1268b0db5ca2c081
                  axisalignedbb2 = (AxisAlignedBB) iterator1.next();
              }
 diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
-index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..054aacfb280eb3de718d8e7d173ba153c73349cc 100644
+index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..10270ac3725554b7660df5e8d040f4960ad37194 100644
 --- a/src/main/java/net/minecraft/server/Explosion.java
 +++ b/src/main/java/net/minecraft/server/Explosion.java
 @@ -54,6 +54,9 @@ public class Explosion {
@@ -70,7 +70,7 @@ index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..054aacfb280eb3de718d8e7d173ba153
  
 +        // PandaSpigot start - get block of the explosion and skip calculating what blocks to blow up in water/lava
 +        Block block = world.getChunkAt((int) posX >> 4, (int) posZ >> 4).getBlockData(new BlockPosition(posX, posY, posZ)).getBlock();
-+        if (!com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().optimizeLiquidExplosions || !block.getMaterial().isLiquid()) {
++        if (!com.hpfxd.pandaspigot.config.PandaSpigotWorldConfig.get().optimizeLiquidExplosions || !block.getMaterial().isLiquid()) {
          for (int k = 0; k < 16; ++k) {
              for (i = 0; i < 16; ++i) {
                  for (j = 0; j < 16; ++j) {
