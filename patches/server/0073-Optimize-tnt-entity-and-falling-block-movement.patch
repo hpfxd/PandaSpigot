@@ -1,0 +1,97 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: nirmal <upwardshybriding@gmail.com>
+Date: Thu, 24 Nov 2022 12:45:14 -0300
+Subject: [PATCH] Optimize tnt entity and falling block movement
+
+Skip calculating what blocks to blow up in water/liquid.
+This is configurable using the "tnt.optimize-movement" and
+"tnt.optimize-liquid-explosions" options respectively.
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 14f65a41a7711afd45fbd09007e385dfd6291719..692dae61c78a495432f6ffa99e85179c009bdb13 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -52,4 +52,8 @@ public class PandaSpigotWorldConfig {
+         public double extraHorizontal = 0.425;
+         public double extraVertical = 0.085;
+     }
++
++    public boolean optimizeTntMovement = false; // May not fully emulate vanilla behavior
++
++    public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
+ }
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 58e485c2e5845dda15c33ee1beb170860535f88b..1a36f05c0330c79d1268b0db5ca2c08129797a7e 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -529,7 +529,16 @@ public abstract class Entity implements ICommandListener {
+                 }
+             }
+ 
+-            List list = this.world.getCubes(this, this.getBoundingBox().a(d0, d1, d2));
++            // PandaSpigot start - do axis by axis scan if the entity is travelling a large area
++            AxisAlignedBB totalArea = this.getBoundingBox().a(d0, d1, d2);
++            double xLenght = totalArea.d - totalArea.a;
++            double yLenght = totalArea.e - totalArea.b;
++            double zLenght = totalArea.f - totalArea.c;
++            boolean axisScan = com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().optimizeTntMovement && xLenght * yLenght * zLenght > 10;
++
++            List list = this.world.getCubes(this, axisScan ? this.getBoundingBox().a(d0, d1, d2) : totalArea);
++            // PandaSpigot end
++
+             AxisAlignedBB axisalignedbb = this.getBoundingBox();
+ 
+             AxisAlignedBB axisalignedbb1;
+@@ -541,6 +550,8 @@ public abstract class Entity implements ICommandListener {
+             this.a(this.getBoundingBox().c(0.0D, d1, 0.0D));
+             boolean flag1 = this.onGround || d7 != d1 && d7 < 0.0D;
+ 
++            if (axisScan) list = this.world.getCubes(this, this.getBoundingBox().a(d0, 0, 0)); // PandaSpigot - get x axis blocks
++
+             AxisAlignedBB axisalignedbb2;
+             Iterator iterator1;
+ 
+@@ -550,6 +561,8 @@ public abstract class Entity implements ICommandListener {
+ 
+             this.a(this.getBoundingBox().c(d0, 0.0D, 0.0D));
+ 
++            if (axisScan) list = this.world.getCubes(this, this.getBoundingBox().a(0, 0, d2)); // PandaSpigot - get z axis blocks
++
+             for (iterator1 = list.iterator(); iterator1.hasNext(); d2 = axisalignedbb2.c(this.getBoundingBox(), d2)) {
+                 axisalignedbb2 = (AxisAlignedBB) iterator1.next();
+             }
+diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
+index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..054aacfb280eb3de718d8e7d173ba153c73349cc 100644
+--- a/src/main/java/net/minecraft/server/Explosion.java
++++ b/src/main/java/net/minecraft/server/Explosion.java
+@@ -54,6 +54,9 @@ public class Explosion {
+         int i;
+         int j;
+ 
++        // PandaSpigot start - get block of the explosion and skip calculating what blocks to blow up in water/lava
++        Block block = world.getChunkAt((int) posX >> 4, (int) posZ >> 4).getBlockData(new BlockPosition(posX, posY, posZ)).getBlock();
++        if (!com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().optimizeLiquidExplosions || !block.getMaterial().isLiquid()) {
+         for (int k = 0; k < 16; ++k) {
+             for (i = 0; i < 16; ++i) {
+                 for (j = 0; j < 16; ++j) {
+@@ -93,6 +96,7 @@ public class Explosion {
+                 }
+             }
+         }
++        } // PandaSpigot end
+ 
+         this.blocks.addAll(hashset);
+         float f3 = this.size * 2.0F;
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 202035d459817f59e70662cc7adb7a7471b66ac6..0292af17e6fda22b878019b6921bcdf1ed91d099 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -1270,6 +1270,8 @@ public abstract class World implements IBlockAccess {
+         // Spigot end
+ 
+         if (entity instanceof EntityItem) return arraylist; // PaperSpigot - Optimize item movement
++        if (entity instanceof EntityTNTPrimed) return arraylist; // PandaSpigot - Optimize tnt entity movement
++        if (entity instanceof EntityFallingBlock) return arraylist; // PandaSpigot - Optimize falling block movement
+ 
+         double d0 = 0.25D;
+         List list = this.getEntities(entity, axisalignedbb.grow(d0, d0, d0));
