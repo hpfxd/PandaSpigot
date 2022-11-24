@@ -36,7 +36,7 @@ index 58e485c2e5845dda15c33ee1beb170860535f88b..1a36f05c0330c79d1268b0db5ca2c081
 +            double zLenght = totalArea.f - totalArea.c;
 +            boolean axisScan = com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().optimizeTntMovement && xLenght * yLenght * zLenght > 10;
 +
-+            List list = this.world.getCubes(this, axisScan ? this.getBoundingBox().a(d0, d1, d2) : totalArea);
++            List list = this.world.getCubes(this, axisScan ? this.getBoundingBox().a(0, d1, 0) : totalArea);
 +            // PandaSpigot end
 +
              AxisAlignedBB axisalignedbb = this.getBoundingBox();
