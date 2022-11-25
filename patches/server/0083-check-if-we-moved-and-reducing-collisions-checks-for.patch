@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sun, 20 Nov 2022 16:26:40 +0100
+Subject: [PATCH] check if we moved and reducing collisions checks for very
+ fraction movements
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index ba606b7788a72d8fab40c1454af5da6ff4732e98..b699b5f4643dd308daf90d7d8f203fdefb7b1dee 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -445,11 +445,13 @@ public abstract class Entity implements ICommandListener {
+ 
+ 
+     public void move(double d0, double d1, double d2) {
++        if (d0 == 0 && d1 == 0 && d2 == 0 && this.vehicle == null && this.passenger == null) { return; } // PandaSpigot - Check earlier if we moved or not
+         if (this.loadChunks) loadChunks(); // PaperSpigot - Load chunks
+         if (this.noclip) {
+             this.a(this.getBoundingBox().c(d0, d1, d2));
+             this.recalcPosition();
+         } else {
++            if(d0 * d0 + d1 * d1 + d2 * d2 < 0.0001D) return; // PandaSpigot - see if distance is more then 0.0001 to not calculate collisions that are not meaningfull
+             // CraftBukkit start - Don't do anything if we aren't moving
+             // We need to do this regardless of whether or not we are moving thanks to portals
+             try {
+@@ -461,10 +463,6 @@ public abstract class Entity implements ICommandListener {
+                 this.appendEntityCrashDetails(crashreportsystemdetails);
+                 throw new ReportedException(crashreport);
+             }
+-            // Check if we're moving
+-            if (d0 == 0 && d1 == 0 && d2 == 0 && this.vehicle == null && this.passenger == null) {
+-                return;
+-            }
+             // CraftBukkit end
+             this.world.methodProfiler.a("move");
+             double d3 = this.locX;

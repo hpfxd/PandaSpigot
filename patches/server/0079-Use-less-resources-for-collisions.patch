@@ -1,0 +1,101 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sat, 19 Nov 2022 16:20:00 +0100
+Subject: [PATCH] Use less resources for collisions
+
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index 98e356265c94afc31ff5a74fbe6cedc593e48983..ca5a66c922c39a767a562dd31f1867a73e086384 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -512,6 +512,15 @@ public class Chunk {
+         }
+         return Blocks.AIR.getBlockData();
+     }
++    public IBlockData getBlockData(int blockposition_x, int blockposition_y, int blockposition_z) {
++        if (blockposition_y >= 0 && blockposition_y >> 4 < this.sections.length) {
++            ChunkSection chunksection = this.sections[blockposition_y >> 4];
++            if (chunksection != null) {
++                return chunksection.getType(blockposition_x & 15, blockposition_y & 15, blockposition_z & 15);
++            }
++        }
++        return Blocks.AIR.getBlockData();
++    }
+     public IBlockData getBlockDataSlow(final BlockPosition blockposition) {
+         // PaperSpigot end
+         if (this.world.G() == WorldType.DEBUG_ALL_BLOCK_STATES) {
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 58e485c2e5845dda15c33ee1beb170860535f88b..ba606b7788a72d8fab40c1454af5da6ff4732e98 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -803,7 +803,7 @@ public abstract class Entity implements ICommandListener {
+                 for (int j = blockposition.getY(); j <= blockposition1.getY(); ++j) {
+                     for (int k = blockposition.getZ(); k <= blockposition1.getZ(); ++k) {
+                         BlockPosition blockposition2 = new BlockPosition(i, j, k);
+-                        IBlockData iblockdata = this.world.getType(blockposition2);
++                        IBlockData iblockdata = this.world.getType(i, j, k);
+ 
+                         try {
+                             iblockdata.getBlock().a(this.world, blockposition2, iblockdata, this);
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index bcef02857e4e66ce06a1ec5c46f593b960f46c22..323f33bcdc1b4aae449c4e1c9e4b5a8709376b36 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -363,6 +363,9 @@ public abstract class World implements IBlockAccess {
+         return this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4);
+     }
+ 
++    public Chunk getChunkAtWorldCoords(int blockposition_x, int blockposition_y, int blockposition_z) {
++        return this.getChunkAt(blockposition_x >> 4, blockposition_z >> 4);
++    }
+     public Chunk getChunkAt(int i, int j) {
+         return this.chunkProvider.getOrCreateChunk(i, j);
+     }
+@@ -835,7 +838,12 @@ public abstract class World implements IBlockAccess {
+     {
+         return getType( blockposition, true );
+     }
+-    
++
++    public IBlockData getType(int blockposition_x, int blockposition_y, int blockposition_z)
++    {
++        return getType( blockposition_x, blockposition_y, blockposition_z, true );
++    }
++
+     public IBlockData getType(BlockPosition blockposition, boolean useCaptured) {
+         // CraftBukkit start - tree generation
+         if (captureTreeGeneration && useCaptured) {
+@@ -858,6 +866,33 @@ public abstract class World implements IBlockAccess {
+         }
+     }
+ 
++    public IBlockData getType(int blockposition_x, int blockposition_y, int blockposition_z, boolean useCaptured) {
++        // CraftBukkit start - tree generation
++        if (captureTreeGeneration && useCaptured) {
++            // Spigot end
++            Iterator<BlockState> it = capturedBlockStates.iterator();
++            while (it.hasNext()) {
++                BlockState previous = it.next();
++                if (previous.getX() == blockposition_x && previous.getY() == blockposition_y && previous.getZ() == blockposition_z) {
++                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
++                }
++            }
++        }
++        // CraftBukkit end
++        if(!(blockposition_x >= -30000000 && blockposition_z >= -30000000
++            && blockposition_x < 30000000 && blockposition_z < 30000000
++            && blockposition_y >= 0 && blockposition_y < 256))
++        {
++            return Blocks.AIR.getBlockData();
++        }
++        else
++        {
++            Chunk chunk = this.getChunkAtWorldCoords(blockposition_x, blockposition_y, blockposition_z);
++
++            return chunk.getBlockData(blockposition_x, blockposition_y, blockposition_z);
++        }
++    }
++
+     public boolean w() {
+         return this.I < 4;
+     }

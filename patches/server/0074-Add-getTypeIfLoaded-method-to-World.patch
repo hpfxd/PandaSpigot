@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Fri, 17 Jun 2022 18:35:40 +0200
+Subject: [PATCH] Add getTypeIfLoaded method to World
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index b75d78da71f24a0b02bf709d026389add0556489..9fe04ea8741f04311e0f522f81611f7a81ffc369 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -766,6 +766,31 @@ public abstract class World implements IBlockAccess {
+         return this.worldProvider.p()[this.getLightLevel(blockposition)];
+     }
+ 
++    // PandaSpigot start - only get chunk if loaded
++    private IBlockData getCapturedBlockType(int x, int y, int z) {
++        Iterator<BlockState> it = this.capturedBlockStates.iterator();
++        while (it.hasNext()) {
++            BlockState previous = it.next();
++            if (previous.getX() == x && previous.getY() == y && previous.getZ() == z)
++                return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
++        }
++        return null;
++    }
++    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
++        if (this.captureTreeGeneration) {
++            IBlockData previous = getCapturedBlockType(x, y, z);
++            if (previous != null)
++                return previous;
++        }
++        Chunk chunk = ((ChunkProviderServer)this.chunkProvider).getChunkIfLoaded(x >> 4, z >> 4);
++        if (chunk != null)
++            return chunk.getBlockData(blockposition);
++        return null;
++    }
++    // PandaSpigot end
+     // Spigot start
+     public IBlockData getType(BlockPosition blockposition)
+     {

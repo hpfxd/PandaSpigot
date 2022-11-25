@@ -1,0 +1,453 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 30 Jul 2022 12:43:55 +0200
+Subject: [PATCH] Velocity Compression from paper
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 7c8803f4ba837249f3a71f72d53e243b3920bd3f..b01d4b53ed5c5c815f110673ed4bf4c087a8daf6 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -7,6 +7,7 @@ val minecraftVersion = "1_8_R3"
+ 
+ repositories {
+     maven(url = "https://libraries.minecraft.net")
++    maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
+ }
+ 
+ dependencies {
+@@ -43,6 +44,11 @@ dependencies {
+ 
+     implementation("net.kyori:adventure-key:4.10.1") // PandaSpigot - Add Channel initialization listeners
+ 
++    // PandaSpigot start - Use Velocity natives & compression
++    implementation("com.velocitypowered:velocity-native:1.1.0-SNAPSHOT") {
++                isTransitive = false
++    }
++    // PandaSpigot end
+     testImplementation("junit:junit:4.11")
+     testImplementation("org.hamcrest:hamcrest-library:1.3")
+ }
+diff --git a/src/main/java/com/hpfxd/pandaspigot/network/CryptException.java b/src/main/java/com/hpfxd/pandaspigot/network/CryptException.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1419337bc7606df79e10603ced195d5b9386ec68
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/network/CryptException.java
+@@ -0,0 +1,8 @@
++package com.hpfxd.pandaspigot.network;
++
++
++public class CryptException extends Exception {
++    public CryptException(Throwable throwable) {
++        super(throwable);
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
+index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..4fbd486a59c38005f16471ac2fd98d27c57a8f6d 100644
+--- a/src/main/java/net/minecraft/server/LoginListener.java
++++ b/src/main/java/net/minecraft/server/LoginListener.java
+@@ -197,9 +197,15 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+         if (!Arrays.equals(this.e, packetlogininencryptionbegin.b(privatekey))) {
+             throw new IllegalStateException("Invalid nonce!");
+         } else {
+-            this.loginKey = packetlogininencryptionbegin.a(privatekey);
+-            this.g = LoginListener.EnumProtocolState.AUTHENTICATING;
+-            this.networkManager.a(this.loginKey);
++           // PandaSpigot start - Velocity Compression
++           try {
++               this.loginKey = packetlogininencryptionbegin.a(privatekey);
++               this.g = LoginListener.EnumProtocolState.AUTHENTICATING;
++               this.networkManager.a(this.loginKey);
++           } catch (Exception ex) {
++               throw new IllegalStateException("Protocol error", ex);
++           }
++           // PandaSpigot end
+             authenticatorPool.execute(new Runnable() { // PandaSpigot - Cache authenticator threads
+                 public void run() {
+                     GameProfile gameprofile = LoginListener.this.i;
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index 6850db3d35f01fa5cff2f20f42e6fa13ffbfad83..85a267d76acd83e56685591f84ebc6bf65518ede 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -2,6 +2,9 @@ package net.minecraft.server;
+ 
+ import com.google.common.collect.Queues;
+ import com.google.common.util.concurrent.ThreadFactoryBuilder;
++import com.hpfxd.pandaspigot.network.CryptException;
++import com.velocitypowered.natives.compression.VelocityCompressor;
++import com.velocitypowered.natives.util.Natives;
+ import io.netty.channel.Channel;
+ import io.netty.channel.ChannelFuture;
+ import io.netty.channel.ChannelFutureListener;
+@@ -506,10 +509,21 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+         return this.channel instanceof LocalChannel || this.channel instanceof LocalServerChannel;
+     }
+ 
+-    public void a(SecretKey secretkey) {
+-        this.o = true;
+-        this.channel.pipeline().addBefore("splitter", "decrypt", new PacketDecrypter(MinecraftEncryption.a(2, secretkey)));
+-        this.channel.pipeline().addBefore("prepender", "encrypt", new PacketEncrypter(MinecraftEncryption.a(1, secretkey)));
++    // PandaSpigot start - Velocity Compression
++    public void a(SecretKey secretkey) throws CryptException {
++        if (!this.o) {
++            try {
++                com.velocitypowered.natives.encryption.VelocityCipher decryption = com.velocitypowered.natives.util.Natives.cipher.get().forDecryption(secretkey);
++                com.velocitypowered.natives.encryption.VelocityCipher encryption = com.velocitypowered.natives.util.Natives.cipher.get().forEncryption(secretkey);
++
++                this.o = true;
++                this.channel.pipeline().addBefore("splitter", "decrypt", new PacketDecrypter(decryption));
++                this.channel.pipeline().addBefore("prepender", "encrypt", new PacketEncrypter(encryption));
++            } catch (java.security.GeneralSecurityException e) {
++                throw new CryptException(e);
++            }
++        }
++        // PandaSpigot end
+     }
+ 
+     public boolean isConnected() { return this.g(); } // PandaSpigot - OBFHELPER
+@@ -534,18 +548,25 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     }
+ 
+     public void a(int i) {
+-        if (i >= 0) {
++        // PandaSpigot start - Velocity Compression
++        this.setupCompression(i);
++    }
++
++    public void setupCompression(int compressionThreshold) {
++        if (compressionThreshold >= 0) {
++            VelocityCompressor compressor = Natives.compress.get().create(-1);
+             if (this.channel.pipeline().get("decompress") instanceof PacketDecompressor) {
+-                ((PacketDecompressor) this.channel.pipeline().get("decompress")).a(i);
++                ((PacketDecompressor) this.channel.pipeline().get("decompress")).a(compressionThreshold);
+             } else {
+-                this.channel.pipeline().addBefore("decoder", "decompress", new PacketDecompressor(i));
++                this.channel.pipeline().addBefore("decoder", "decompress", new PacketDecompressor(compressor, compressionThreshold)); // Paper
+             }
+ 
+             if (this.channel.pipeline().get("compress") instanceof PacketCompressor) {
+-                ((PacketCompressor) this.channel.pipeline().get("decompress")).a(i);
++                ((PacketCompressor) this.channel.pipeline().get("decompress")).a(compressionThreshold);
+             } else {
+-                this.channel.pipeline().addBefore("encoder", "compress", new PacketCompressor(i));
++                this.channel.pipeline().addBefore("encoder", "compress", new PacketCompressor(compressionThreshold));
+             }
++            // PandaSpigot end - Velocity Compression
+         } else {
+             if (this.channel.pipeline().get("decompress") instanceof PacketDecompressor) {
+                 this.channel.pipeline().remove("decompress");
+diff --git a/src/main/java/net/minecraft/server/PacketCompressor.java b/src/main/java/net/minecraft/server/PacketCompressor.java
+index 8107890ffbc205f5ce7e22c04d62fb8b16d087c2..bcea728f40268d2fc5e52c934f931204eeda9dc2 100644
+--- a/src/main/java/net/minecraft/server/PacketCompressor.java
++++ b/src/main/java/net/minecraft/server/PacketCompressor.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.server;
+ 
++import com.velocitypowered.natives.compression.VelocityCompressor;
+ import io.netty.buffer.ByteBuf;
+ import io.netty.channel.ChannelHandlerContext;
+ import io.netty.handler.codec.MessageToByteEncoder;
+@@ -7,16 +8,28 @@ import java.util.zip.Deflater;
+ 
+ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+ 
+-    private final byte[] a = new byte[8192];
++    private final byte[] a; // PandaSpigot
+     private final Deflater b;
+     private int c;
++    private final com.velocitypowered.natives.compression.VelocityCompressor compressor; // PandaSpigot
+ 
+     public PacketCompressor(int i) {
+-        this.c = i;
++        this( null, i );
++    }
++    public PacketCompressor( VelocityCompressor compressor, int compressionThreshold) {
++    this.c = compressionThreshold;
++    if ( compressor == null ) {
++        this.a = new byte[8192];
+         this.b = new Deflater();
+     }
++    else {
++        this.a = null;
++        this.b = null;
++    }
++    this.compressor = compressor;
++    }
+ 
+-    protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
++    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
+         int i = bytebuf.readableBytes();
+         PacketDataSerializer packetdataserializer = new PacketDataSerializer(bytebuf1);
+ 
+@@ -24,29 +37,58 @@ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+             packetdataserializer.b(0);
+             packetdataserializer.writeBytes(bytebuf);
+         } else {
+-            byte[] abyte = new byte[i];
++            if (this.b != null) {
++                byte[] abyte = new byte[i];
+ 
+             bytebuf.readBytes(abyte);
+             packetdataserializer.b(abyte.length);
+             this.b.setInput(abyte, 0, i);
+             this.b.finish();
+ 
+-            while (!this.b.finished()) {
+-                int j = this.b.deflate(this.a);
++                while (!this.b.finished()) {
++                    int j = this.b.deflate(this.a);
+ 
+-                packetdataserializer.writeBytes(this.a, 0, j);
+-            }
++                    packetdataserializer.writeBytes(this.a, 0, j);
++                }
+ 
+-            this.b.reset();
++                this.b.reset();
++                return;
++            }
++            packetdataserializer.b(i);
++            ByteBuf compatibleIn = com.velocitypowered.natives.util.MoreByteBufUtils.ensureCompatible(channelhandlercontext.alloc(),this.compressor,bytebuf);
++            try {
++                this.compressor.deflate(compatibleIn,bytebuf1);
++            }
++            finally {
++                compatibleIn.release();
++            }
++        }
++    }
++    @Override
++    protected ByteBuf allocateBuffer(ChannelHandlerContext ctx, ByteBuf msg, boolean preferDirect) throws Exception {
++        if ( this.compressor != null ) {
++            // We allocate bytes to be compressed plus 1 byte. This covers two cases:
++            //
++            // - Compression
++            //    According to https://github.com/ebiggers/libdeflate/blob/master/libdeflate.h#L103,
++            //    if the data compresses well (and we do not have some pathological case) then the maximum
++            //    size the compressed size will ever be is the input size minus one.
++            // - Uncompressed
++            //    This is fairly obvious - we will then have one more than the uncompressed size.
++            int initialBufferSize = msg.readableBytes() + 1;
++            return com.velocitypowered.natives.util.MoreByteBufUtils.preferredBuffer( ctx.alloc(), this.compressor, initialBufferSize );
+         }
++        return super.allocateBuffer(ctx, msg, preferDirect);
++    }
+ 
++    @Override
++    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
++        if (this.compressor != null) {
++            this.compressor.close();
++        }
+     }
+ 
+     public void a(int i) {
+         this.c = i;
+     }
+-
+-    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
+-        this.a(channelhandlercontext, object, bytebuf);
+-    }
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketDecompressor.java b/src/main/java/net/minecraft/server/PacketDecompressor.java
+index 300d46475a682fbeb4db3e21e64f3c18e21a14c7..95e14e4aca6da795f6658b4d6c300052762e2d51 100644
+--- a/src/main/java/net/minecraft/server/PacketDecompressor.java
++++ b/src/main/java/net/minecraft/server/PacketDecompressor.java
+@@ -1,5 +1,7 @@
+ package net.minecraft.server;
+ 
++import com.velocitypowered.natives.compression.VelocityCompressor;
++import com.velocitypowered.natives.util.MoreByteBufUtils;
+ import io.netty.buffer.ByteBuf;
+ import io.netty.buffer.Unpooled;
+ import io.netty.channel.ChannelHandlerContext;
+@@ -13,9 +15,14 @@ public class PacketDecompressor extends ByteToMessageDecoder {
+     private final Inflater a;
+     private int b;
+ 
++    private final com.velocitypowered.natives.compression.VelocityCompressor compressor; // PandaSpigot
+     public PacketDecompressor(int i) {
++        this( null, i );
++    }
++    public PacketDecompressor( VelocityCompressor compressor , int i) {
+         this.b = i;
+-        this.a = new Inflater();
++        this.a = compressor == null ? new Inflater() : null;
++        this.compressor = compressor;
+     }
+ 
+     protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
+@@ -34,6 +41,9 @@ public class PacketDecompressor extends ByteToMessageDecoder {
+                     throw new DecoderException("Badly compressed packet - size of " + i + " is larger than protocol maximum of " + 2097152);
+                 }
+ 
++
++                // PandaSpigot start - Velocity compression
++                if ( this.a != null ) {
+                 byte[] abyte = new byte[packetdataserializer.readableBytes()];
+ 
+                 packetdataserializer.readBytes(abyte);
+@@ -43,10 +53,34 @@ public class PacketDecompressor extends ByteToMessageDecoder {
+                 this.a.inflate(abyte1);
+                 list.add(Unpooled.wrappedBuffer(abyte1));
+                 this.a.reset();
++                    return;
++                }
++                int claimedUncompressedSize = i; // OBFHELPER
++                ByteBuf compatibleIn = MoreByteBufUtils.ensureCompatible( packetdataserializer.alloc(), this.compressor, bytebuf );
++                ByteBuf uncompressed = MoreByteBufUtils.preferredBuffer( packetdataserializer.alloc(), this.compressor, claimedUncompressedSize );
++                try {
++                    this.compressor.inflate( compatibleIn, uncompressed, claimedUncompressedSize );
++                    list.add( uncompressed );
++                    bytebuf.clear();
++                }
++                catch ( Exception e ) {
++                    uncompressed.release();
++                    throw e;
++                }
++                finally {
++                    compatibleIn.release();
++                }
++                // PandaSpigot end
+             }
+ 
+         }
+     }
++   @Override
++   public void handlerRemoved0(ChannelHandlerContext ctx) throws Exception {
++       if (this.compressor != null) {
++           this.compressor.close();
++        }
++    }
+ 
+     public void a(int i) {
+         this.b = i;
+diff --git a/src/main/java/net/minecraft/server/PacketDecrypter.java b/src/main/java/net/minecraft/server/PacketDecrypter.java
+index 4d02db906ec31f627454fde8c5ca9f268b68e933..6e390a136579f9b403280f7ccc253311d297df37 100644
+--- a/src/main/java/net/minecraft/server/PacketDecrypter.java
++++ b/src/main/java/net/minecraft/server/PacketDecrypter.java
+@@ -1,5 +1,7 @@
+ package net.minecraft.server;
+ 
++import com.velocitypowered.natives.encryption.VelocityCipher;
++import com.velocitypowered.natives.util.MoreByteBufUtils;
+ import io.netty.buffer.ByteBuf;
+ import io.netty.channel.ChannelHandlerContext;
+ import io.netty.handler.codec.MessageToMessageDecoder;
+@@ -8,17 +10,32 @@ import javax.crypto.Cipher;
+ 
+ public class PacketDecrypter extends MessageToMessageDecoder<ByteBuf> {
+ 
+-    private final PacketEncryptionHandler a;
++    private final VelocityCipher cipher; // PandaSpigot
+ 
+-    public PacketDecrypter(Cipher cipher) {
+-        this.a = new PacketEncryptionHandler(cipher);
++    // PandaSpigot start - Velocity compression
++    public PacketDecrypter( VelocityCipher cipher) {
++        this.cipher = cipher;
++        // PandaSpigot end
+     }
+ 
+-    protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
+-        list.add(this.a.a(channelhandlercontext, bytebuf));
++
++    protected void decode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, List<Object> list) throws Exception {
++        // PandaSpigot start
++        ByteBuf compatible = MoreByteBufUtils.ensureCompatible(channelHandlerContext.alloc(), cipher, byteBuf);
++        try {
++            cipher.process(compatible);
++            list.add(compatible);
++        } catch (Exception e) {
++            compatible.release(); // compatible will never be used if we throw an exception
++            throw e;
++        }
++        // PandaSpigot end
+     }
+ 
+-    protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf object, List list) throws Exception {
+-        this.a(channelhandlercontext, object, list);
++    // PandaSpigot start - Velocity Compression
++    @Override
++    public void handlerRemoved(ChannelHandlerContext ctx) {
++        cipher.close();
++    // PandaSpigot end
+     }
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketEncrypter.java b/src/main/java/net/minecraft/server/PacketEncrypter.java
+index b32a7e67666d372cc9f080b60897f28fb59736fd..4c95d15af78e7dd274db23081d6f1f1a3a42133c 100644
+--- a/src/main/java/net/minecraft/server/PacketEncrypter.java
++++ b/src/main/java/net/minecraft/server/PacketEncrypter.java
+@@ -1,23 +1,41 @@
+ package net.minecraft.server;
+ 
++import com.velocitypowered.natives.encryption.VelocityCipher;
++import com.velocitypowered.natives.util.MoreByteBufUtils;
+ import io.netty.buffer.ByteBuf;
+ import io.netty.channel.ChannelHandlerContext;
+ import io.netty.handler.codec.MessageToByteEncoder;
+-import javax.crypto.Cipher;
++import io.netty.handler.codec.MessageToMessageEncoder;
+ 
+-public class PacketEncrypter extends MessageToByteEncoder<ByteBuf> {
++import javax.crypto.Cipher;
+ 
+-    private final PacketEncryptionHandler a;
++public class PacketEncrypter extends MessageToMessageEncoder<ByteBuf> {
++    private final VelocityCipher cipher; // PandaSpigot
+ 
+-    public PacketEncrypter(Cipher cipher) {
+-        this.a = new PacketEncryptionHandler(cipher);
++    // PandaSpigot start - Velocity compression
++    public PacketEncrypter( VelocityCipher cipher) {
++        this.cipher = cipher;
++        // PandaSpigot end
+     }
+ 
+-    protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
+-        this.a.a(bytebuf, bytebuf1);
++
++    protected void encode(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf, java.util.List<Object> list) throws Exception { // Paper
++        // PandaSpigot start - Velocity Compression
++        ByteBuf compatible = MoreByteBufUtils.ensureCompatible(channelHandlerContext.alloc(), cipher, byteBuf);
++        try {
++            cipher.process(compatible);
++            list.add(compatible);
++        } catch (Exception e) {
++            compatible.release(); // compatible will never be used if we throw an exception
++            throw e;
++        }
++        // PandaSpigot end
+     }
+ 
+-    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
+-        this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
++
++    // PandaSpigot start - Velocity Compression
++   @Override
++   public void handlerRemoved(ChannelHandlerContext ctx) {
++       cipher.close();// PandaSpigot end
+     }
+ }
+diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
+index 3401addb448a9c731aec768edbe1008e9df80d17..2c8c39a2179e011d6f1c0266e68f6b72d8292f15 100644
+--- a/src/main/java/net/minecraft/server/ServerConnection.java
++++ b/src/main/java/net/minecraft/server/ServerConnection.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import com.google.common.collect.Lists;
+ import com.google.common.util.concurrent.ThreadFactoryBuilder;
++import com.velocitypowered.natives.util.Natives;
+ import io.netty.bootstrap.ServerBootstrap;
+ import io.netty.channel.Channel;
+ import io.netty.channel.ChannelException;
+@@ -106,6 +107,10 @@ public class ServerConnection {
+                 ServerConnection.e.info("Using default channel type");
+             }
+ 
++           // PandaSpigot start - indicate Velocity natives in use
++           e.info("PandaSpigot: Using " + Natives.compress.getLoadedVariant() + " compression from Velocity.");
++           e.info("PandaSpigot: Using " + Natives.cipher.getLoadedVariant() + " cipher from Velocity.");
++           // PandaSpigot end
+             this.g.add(((ServerBootstrap) ((ServerBootstrap) (new ServerBootstrap()).channel(oclass)).childHandler(new ChannelInitializer() {
+                 protected void initChannel(Channel channel) throws Exception {
+                     try {

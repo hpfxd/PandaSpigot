@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sat, 19 Nov 2022 17:04:49 +0100
+Subject: [PATCH] unused creating of BlockPosition objects
+
+which are never used but used in some critical places like with navigation
+
+diff --git a/src/main/java/net/minecraft/server/BlockPosition.java b/src/main/java/net/minecraft/server/BlockPosition.java
+index 45c4ad8a3fcb531236f962cb571126d15e938e5b..f3acd14788ff407ba13af1d5761cf99f590d7be5 100644
+--- a/src/main/java/net/minecraft/server/BlockPosition.java
++++ b/src/main/java/net/minecraft/server/BlockPosition.java
+@@ -161,8 +161,10 @@ public class BlockPosition extends BaseBlockPosition {
+     }
+ 
+     public static Iterable<BlockPosition> a(BlockPosition blockposition, BlockPosition blockposition1) {
+-        final BlockPosition blockposition2 = new BlockPosition(Math.min(blockposition.getX(), blockposition1.getX()), Math.min(blockposition.getY(), blockposition1.getY()), Math.min(blockposition.getZ(), blockposition1.getZ()));
+-        final BlockPosition blockposition3 = new BlockPosition(Math.max(blockposition.getX(), blockposition1.getX()), Math.max(blockposition.getY(), blockposition1.getY()), Math.max(blockposition.getZ(), blockposition1.getZ()));
++        // PandaSpigot start - unused at all so why create them
++        /*final BlockPosition blockposition2 = new BlockPosition(Math.min(blockposition.getX(), blockposition1.getX()), Math.min(blockposition.getY(), blockposition1.getY()), Math.min(blockposition.getZ(), blockposition1.getZ()));
++        final BlockPosition blockposition3 = new BlockPosition(Math.max(blockposition.getX(), blockposition1.getX()), Math.max(blockposition.getY(), blockposition1.getY()), Math.max(blockposition.getZ(), blockposition1.getZ()));*/
++        // PandaSpigot end
+ 
+         return new Iterable() {
+             public Iterator<BlockPosition> iterator() {

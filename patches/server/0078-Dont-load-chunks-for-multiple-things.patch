@@ -1,0 +1,69 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Fri, 18 Nov 2022 12:38:10 +0100
+Subject: [PATCH] Dont load chunks for multiple things
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockChest.java b/src/main/java/net/minecraft/server/BlockChest.java
+index eed516e223607e84bb475c51cef21e7f0b1073c2..a0949b11a89d0fbd9f93cb20ba219756892643cb 100644
+--- a/src/main/java/net/minecraft/server/BlockChest.java
++++ b/src/main/java/net/minecraft/server/BlockChest.java
+@@ -50,9 +50,12 @@ public class BlockChest extends BlockContainer {
+         while (iterator.hasNext()) {
+             EnumDirection enumdirection = (EnumDirection) iterator.next();
+             BlockPosition blockposition1 = blockposition.shift(enumdirection);
+-            IBlockData iblockdata1 = world.getType(blockposition1);
++            // PandaSpigot start - Dont load chunks for chests
++            final IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition1);
+ 
+-            if (iblockdata1.getBlock() == this) {
++            Block block = iblockdata1.getBlock();
++            if (block == this) {
++            // PandaSpigot end
+                 this.e(world, blockposition1, iblockdata1);
+             }
+         }
+diff --git a/src/main/java/net/minecraft/server/BlockLeaves.java b/src/main/java/net/minecraft/server/BlockLeaves.java
+index 7bf9018bae77e97ce5d2991897edf186ef1ed741..5e412ee9e22b9c3f47ea76effc22924c7f8716f4 100644
+--- a/src/main/java/net/minecraft/server/BlockLeaves.java
++++ b/src/main/java/net/minecraft/server/BlockLeaves.java
+@@ -69,7 +69,7 @@ public abstract class BlockLeaves extends BlockTransparent {
+                     for (k1 = -b0; k1 <= b0; ++k1) {
+                         for (l1 = -b0; l1 <= b0; ++l1) {
+                             for (i2 = -b0; i2 <= b0; ++i2) {
+-                                Block block = world.getType(blockposition_mutableblockposition.c(j + k1, k + l1, l + i2)).getBlock();
++                                Block block = world.getTypeIfLoaded(blockposition_mutableblockposition.c(j + k1, k + l1, l + i2)).getBlock(); // PandaSpigot
+ 
+                                 if (block != Blocks.LOG && block != Blocks.LOG2) {
+                                     if (block.getMaterial() == Material.LEAVES) {
+diff --git a/src/main/java/net/minecraft/server/ChunkCache.java b/src/main/java/net/minecraft/server/ChunkCache.java
+index 45d385d31296eda75aa30500118c21406df5fe43..c03343c42fc1d9c4ba558e737bf8a412b6658344 100644
+--- a/src/main/java/net/minecraft/server/ChunkCache.java
++++ b/src/main/java/net/minecraft/server/ChunkCache.java
+@@ -23,7 +23,7 @@ public class ChunkCache implements IBlockAccess {
+ 
+         for (l = this.a; l <= j; ++l) {
+             for (i1 = this.b; i1 <= k; ++i1) {
+-                this.c[l - this.a][i1 - this.b] = world.getChunkAt(l, i1);
++                this.c[l - this.a][i1 - this.b] = world.getChunkIfLoaded(l, i1); // PandaSpigot - Do not load chunks for pathfinding
+             }
+         }
+ 
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 511879b03320924fb1c3b1e258479cf976d56b75..bcef02857e4e66ce06a1ec5c46f593b960f46c22 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -2721,8 +2721,11 @@ public abstract class World implements IBlockAccess {
+ 
+         for (int i1 = i; i1 <= j; ++i1) {
+             for (int j1 = k; j1 <= l; ++j1) {
+-                if (this.isChunkLoaded(i1, j1, true)) {
+-                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, arraylist, predicate);
++                // PandaSpigot start - Dont load chunks for multiple things
++                Chunk chunk = this.getChunkIfLoaded(i1,j1);
++                if(chunk != null) {
++                    chunk.a(entity, axisalignedbb, arraylist, predicate);
++                // PandaSpigot - end
+                 }
+             }
+         }
