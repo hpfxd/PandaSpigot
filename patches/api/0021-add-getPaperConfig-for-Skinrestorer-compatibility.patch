@@ -5,14 +5,13 @@ Subject: [PATCH] add getPaperConfig for Skinrestorer compatibility
 
 
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 2662f9c005ac1c7712f55e9cb264f4f07e80aea9..c902c8075200223e59ae6015abd1811a73056dfe 100644
+index 2662f9c005ac1c7712f55e9cb264f4f07e80aea9..c2b87d9c10252fe2d720b85d7521041db8488409 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
-@@ -994,7 +994,12 @@ public interface Server extends PluginMessageRecipient {
-         {
+@@ -995,6 +995,12 @@ public interface Server extends PluginMessageRecipient {
              throw new UnsupportedOperationException("Not supported yet.");
          }
--
+ 
 +        // PandaSpigot start
 +        public org.bukkit.configuration.file.YamlConfiguration getPaperConfig()
 +        {
