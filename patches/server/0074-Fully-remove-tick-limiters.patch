@@ -5,14 +5,14 @@ Subject: [PATCH] Fully remove tick limiters
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 0292af17e6fda22b878019b6921bcdf1ed91d099..abb8a34b26c886a7265bb5f0519f7441d788a29a 100644
+index 0292af17e6fda22b878019b6921bcdf1ed91d099..db4c0ecb03978fe2ad1e9995ac9dc909eab85138 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -135,8 +135,10 @@ public abstract class World implements IBlockAccess {
      private final byte chunkTickRadius;
      public static boolean haveWeSilencedAPhysicsCrash;
      public static String blockLocation;
-+    /* // PandaSpigot start - Fully remove tick limiters
++    /* // PandaSpigot start - Remove tick limiters
      private org.spigotmc.TickLimiter entityLimiter;
      private org.spigotmc.TickLimiter tileLimiter;
 +    */ // PandaSpigot end

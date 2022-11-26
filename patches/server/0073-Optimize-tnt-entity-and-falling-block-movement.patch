@@ -61,16 +61,16 @@ index 58e485c2e5845dda15c33ee1beb170860535f88b..65a47de92274408c52de0d1b31a738ff
                  axisalignedbb2 = (AxisAlignedBB) iterator1.next();
              }
 diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
-index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..567bc3e40e081940ce340bceb2bbcafdf258cac5 100644
+index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..31ada30856d78ee2990ef44c0533c29d219291c7 100644
 --- a/src/main/java/net/minecraft/server/Explosion.java
 +++ b/src/main/java/net/minecraft/server/Explosion.java
 @@ -54,6 +54,9 @@ public class Explosion {
          int i;
          int j;
  
-+        // PandaSpigot start - get block of the explosion and skip calculating what blocks to blow up in water/lava
-+        Block block = world.getChunkAt((int) posX >> 4, (int) posZ >> 4).getBlockData(new BlockPosition(posX, posY, posZ)).getBlock();
-+        if (!this.world.pandaSpigotConfig.optimizeLiquidExplosions || !block.getMaterial().isLiquid()) {
++        Block block = world.getChunkAt((int) posX >> 4, (int) posZ >> 4).getBlockData(new BlockPosition(posX, posY, posZ)).getBlock(); // PandaSpigot - get block of the explosion
++
++        if (!this.world.pandaSpigotConfig.optimizeLiquidExplosions || !block.getMaterial().isLiquid()) { // PandaSpigot - skip calculating what blocks to blow up in water/lava
          for (int k = 0; k < 16; ++k) {
              for (i = 0; i < 16; ++i) {
                  for (j = 0; j < 16; ++j) {
