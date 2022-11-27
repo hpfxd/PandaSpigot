@@ -32,19 +32,16 @@ jobs:
       - name: Build
         uses: burrunan/gradle-cache-action@v1
         with:
-          arguments: build
+          arguments: build paperclipJar
           read-only: false
 
       - name: Paperclip
         run: |
-          cp -f ./scripts/basepaperclip.sh ./base/Paper/paperclip.sh
-          cd ./base/Paper
-          ./paperclip.sh
-          cd ../../
-          mv -v "./PandaSpigot-Server/build/libs/pandaspigot.jar" "./PandaSpigot-Server/build/libs/pandaspigot-$GITHUB_RUN_NUMBER.jar"
+          ./panda paperclip
+          mv -v "./paperclip.jar" "./pandaspigot-$GITHUB_RUN_NUMBER.jar"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Server JAR
-          path: PandaSpigot-Server/build/libs/pandaspigot-${{ github.run_number }}.jar
+          path: pandaspigot-${{ github.run_number }}.jar
