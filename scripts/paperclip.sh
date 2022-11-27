@@ -3,16 +3,15 @@
 (
 set -e
 basedir="$(cd "$1" && pwd -P)"
-workdir="$basedir/work"
-mcver=$(cat "$workdir/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
-paperjar="$basedir/Paper-Server/target/paper-$mcver.jar"
-vanillajar="$workdir/Minecraft/$mcver/$mcver.jar"
 
 (
-    cd "$workdir/Paperclip"
-    mvn clean package "-Dmcver=$mcver" "-Dpaperjar=$paperjar" "-Dvanillajar=$vanillajar"
-)
-cp "$workdir/Paperclip/assembly/target/paperclip-${mcver}.jar" "$basedir/paperclip.jar"
+    cd "$basedir"
+    ./gradlew paperclipJar
+) || (
+    echo "Failed to build Paperclip jar."
+    exit 1
+) || exit 1
+cp -v "$basedir/paperclip/build/libs/paperclip-1.8.8-R0.1-SNAPSHOT.jar" "$basedir/paperclip.jar"
 
 echo ""
 echo ""

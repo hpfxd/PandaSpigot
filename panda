@@ -59,23 +59,12 @@ case "$1" in
         scripts/build.sh "$basedir" "--jar" || exit 1
     ) || failed=1
     ;;
-    "b" | "build")
-    (
-        set -e
-        cd "$basedir"
-        scripts/build.sh "$basedir" || exit 1
-        (cd PandaSpigot-API ; mvn clean install) || exit 1
-        (cd PandaSpigot-Server ; mvn clean package) || exit 1
-        echo "PandaSpigot jar successfully built"
-        ls -la PandaSpigot-Server/target/paper*.jar
-    ) || failed=1
-    ;;
     "i" | "install")
     (
         set -e
         cd "$basedir"
         scripts/build.sh "$basedir" || exit 1
-        mvn clean install || exit 1
+        ./gradlew publishToMavenLocal || exit 1
         echo "PandaSpigot jar successfully built and installed to local repo"
     ) || failed=1
     ;;
@@ -184,7 +173,7 @@ case "$1" in
         echo "  * rb, rebuild         | Rebuild patches, can be called from anywhere."
         echo "  * p, patch            | Apply all patches to the project without building it. Can be run from anywhere."
         echo "  * j, jar              | Apply all patches and build the project, paperclip.jar will be output. Can be run from anywhere."
-        echo "  * i, install          | Build and install panda into the local repo. Can be run from anywhere."
+        echo "  * i, install          | Build and install PandaSpigot into the local repo. Can be run from anywhere."
         echo "  * c, clean            | Removes all generated files, PandaSpigot-API, PandaSpigot-Server, and work."
         echo "  * con, continue       | Shortcut command for running git am --continue, or git rebase --continue."
         echo ""

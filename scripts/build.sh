@@ -10,6 +10,6 @@ gitcmd="git -c commit.gpgsign=false"
     exit 1
 ) || exit 1
 if [ "$2" == "--jar" ]; then
-    mvn clean install && ./scripts/paperclip.sh "$basedir"
+    ./gradlew build && ./scripts/paperclip.sh "$basedir"
 fi
 ) || exit 1
