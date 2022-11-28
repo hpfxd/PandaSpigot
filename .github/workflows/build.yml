@@ -35,13 +35,13 @@ jobs:
           arguments: build paperclipJar
           read-only: false
 
-      - name: Paperclip
+      - name: Copy Paperclip jar
         run: |
-          ./panda paperclip
-          mv -v "./paperclip.jar" "./pandaspigot-$GITHUB_RUN_NUMBER.jar"
+          cp -v "./paperclip/build/libs/paperclip-1.8.8-R0.1-SNAPSHOT.jar" "./pandaspigot-$GITHUB_RUN_NUMBER.jar"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Server JAR
           path: pandaspigot-${{ github.run_number }}.jar
+          if-no-files-found: error
