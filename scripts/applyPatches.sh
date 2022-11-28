@@ -30,6 +30,7 @@ function applyPatch {
     cd "$basedir/$target"
 
     echo "Resetting $target to $what_name..."
+    $gitcmd remote rm origin > /dev/null 2>&1
     $gitcmd remote rm upstream > /dev/null 2>&1
     $gitcmd remote add upstream "$basedir/$what" >/dev/null 2>&1
     $gitcmd checkout master 2>/dev/null || $gitcmd checkout -b master
