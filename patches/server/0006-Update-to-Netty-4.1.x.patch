@@ -13,7 +13,7 @@ index 5dccf69fb435c8903790841703263b739280c9a6..e9ac28d62d71542a7c0c9529d8f0a6a8
  
      // Minecraft libraries:
 -    implementation("com.mojang:netty:1.7.7")
-+    implementation("io.netty:netty-all:4.1.69.Final") // PandaSpigot - Update Netty to 4.1.x
++    implementation("io.netty:netty-all:4.1.85.Final") // PandaSpigot - Update Netty to 4.1.x
      implementation("com.mojang:authlib:1.5.21")
      implementation("org.apache.logging.log4j:log4j-api:2.17.0")
      implementation("org.apache.logging.log4j:log4j-core:2.17.0")
