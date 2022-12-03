@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Fri, 17 Jun 2022 18:35:40 +0200
+Subject: [PATCH] Add getTypeIfLoaded to World
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index b75d78da71f24a0b02bf709d026389add0556489..ad97333c47582cb96709b478eb93659f16b717bf 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -766,6 +766,22 @@ public abstract class World implements IBlockAccess {
+         return this.worldProvider.p()[this.getLightLevel(blockposition)];
+     }
+ 
++    // PandaSpigot start - Add getTypeIfLoaded
++    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
++        if (this.captureTreeGeneration) {
++            for (BlockState previous : this.capturedBlockStates) {
++                if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
++                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
++                }
++            }
++        }
++        Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
++        return chunk == null ? null : chunk.getBlockData(blockposition);
++    }
++    // PandaSpigot end
+     // Spigot start
+     public IBlockData getType(BlockPosition blockposition)
+     {
