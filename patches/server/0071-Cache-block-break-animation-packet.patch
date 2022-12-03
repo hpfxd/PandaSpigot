@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Fri, 18 Nov 2022 02:04:58 +0100
+Subject: [PATCH] Cache block break animation packet
+
+
+diff --git a/src/main/java/net/minecraft/server/WorldManager.java b/src/main/java/net/minecraft/server/WorldManager.java
+index 55a2112d2ce3a5ccd4868888c4a529605ef54c34..923887bd010fa1fe1958a50ae39196bfa7f07bcd 100644
+--- a/src/main/java/net/minecraft/server/WorldManager.java
++++ b/src/main/java/net/minecraft/server/WorldManager.java
+@@ -61,6 +61,7 @@ public class WorldManager implements IWorldAccess {
+         if (entity instanceof EntityHuman) entityhuman = (EntityHuman) entity;
+         // CraftBukkit end
+ 
++        PacketPlayOutBlockBreakAnimation packet = null; // PandaSpigot - Cache block break animation packet
+         while (iterator.hasNext()) {
+             EntityPlayer entityplayer = (EntityPlayer) iterator.next();
+ 
+@@ -76,7 +77,10 @@ public class WorldManager implements IWorldAccess {
+                 // CraftBukkit end
+ 
+                 if (d0 * d0 + d1 * d1 + d2 * d2 < 1024.0D) {
+-                    entityplayer.playerConnection.sendPacket(new PacketPlayOutBlockBreakAnimation(i, blockposition, j));
++                    // PandaSpigot start - Cache block break animation packet
++                    if (packet == null) packet = new PacketPlayOutBlockBreakAnimation(i, blockposition, j);
++                    entityplayer.playerConnection.sendPacket(packet);
++                    // PandaSpigot end
+                 }
+             }
+         }
