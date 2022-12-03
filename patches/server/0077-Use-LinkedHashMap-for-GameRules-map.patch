@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sun, 20 Nov 2022 17:08:05 +0100
+Subject: [PATCH] Use LinkedHashMap for GameRules map
+
+
+diff --git a/src/main/java/net/minecraft/server/GameRules.java b/src/main/java/net/minecraft/server/GameRules.java
+index 1c89c90581cf6e703f84b2acc436a0585452da4e..19cc3b547d7d4913dca90a0077a64921d222ce90 100644
+--- a/src/main/java/net/minecraft/server/GameRules.java
++++ b/src/main/java/net/minecraft/server/GameRules.java
+@@ -6,7 +6,7 @@ import java.util.TreeMap;
+ 
+ public class GameRules {
+ 
+-    private TreeMap<String, GameRules.GameRuleValue> a = new TreeMap();
++    private java.util.Map<String, GameRules.GameRuleValue> a = new java.util.LinkedHashMap<>(); // PandaSpigot - Replace TreeMap with LinkedHashMap
+ 
+     public GameRules() {
+         this.a("doFireTick", "true", GameRules.EnumGameRuleType.BOOLEAN_VALUE);
