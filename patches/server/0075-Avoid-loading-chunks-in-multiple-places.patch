@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Fri, 18 Nov 2022 12:38:10 +0100
+Subject: [PATCH] Avoid loading chunks in multiple places
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockChest.java b/src/main/java/net/minecraft/server/BlockChest.java
+index eed516e223607e84bb475c51cef21e7f0b1073c2..456bd884a742b684f338b28da4bad0a9ef4ab37f 100644
+--- a/src/main/java/net/minecraft/server/BlockChest.java
++++ b/src/main/java/net/minecraft/server/BlockChest.java
+@@ -50,7 +50,7 @@ public class BlockChest extends BlockContainer {
+         while (iterator.hasNext()) {
+             EnumDirection enumdirection = (EnumDirection) iterator.next();
+             BlockPosition blockposition1 = blockposition.shift(enumdirection);
+-            IBlockData iblockdata1 = world.getType(blockposition1);
++            final IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition1); // PandaSpigot - Use getTypeIfLoaded
+ 
+             if (iblockdata1.getBlock() == this) {
+                 this.e(world, blockposition1, iblockdata1);
+diff --git a/src/main/java/net/minecraft/server/BlockLeaves.java b/src/main/java/net/minecraft/server/BlockLeaves.java
+index 7bf9018bae77e97ce5d2991897edf186ef1ed741..399c2bddd4e0ed27a98ab07a20d981f39683a4c3 100644
+--- a/src/main/java/net/minecraft/server/BlockLeaves.java
++++ b/src/main/java/net/minecraft/server/BlockLeaves.java
+@@ -69,7 +69,7 @@ public abstract class BlockLeaves extends BlockTransparent {
+                     for (k1 = -b0; k1 <= b0; ++k1) {
+                         for (l1 = -b0; l1 <= b0; ++l1) {
+                             for (i2 = -b0; i2 <= b0; ++i2) {
+-                                Block block = world.getType(blockposition_mutableblockposition.c(j + k1, k + l1, l + i2)).getBlock();
++                                Block block = world.getTypeIfLoaded(blockposition_mutableblockposition.c(j + k1, k + l1, l + i2)).getBlock(); // PandaSpigot - Use getTypeIfLoaded
+ 
+                                 if (block != Blocks.LOG && block != Blocks.LOG2) {
+                                     if (block.getMaterial() == Material.LEAVES) {
+diff --git a/src/main/java/net/minecraft/server/ChunkCache.java b/src/main/java/net/minecraft/server/ChunkCache.java
+index 45d385d31296eda75aa30500118c21406df5fe43..e953d6d80ef020f8e4540eae6881709fc8906b8f 100644
+--- a/src/main/java/net/minecraft/server/ChunkCache.java
++++ b/src/main/java/net/minecraft/server/ChunkCache.java
+@@ -23,7 +23,7 @@ public class ChunkCache implements IBlockAccess {
+ 
+         for (l = this.a; l <= j; ++l) {
+             for (i1 = this.b; i1 <= k; ++i1) {
+-                this.c[l - this.a][i1 - this.b] = world.getChunkAt(l, i1);
++                this.c[l - this.a][i1 - this.b] = world.getChunkIfLoaded(l, i1); // PandaSpigot - Don't load chunks for pathfinding
+             }
+         }
+ 
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index a92b1eb303e01bc42157fe384279d7ad42be03f8..9a7aa50a815d15f3e221a9f0883ad128275f2a87 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -2708,8 +2708,11 @@ public abstract class World implements IBlockAccess {
+ 
+         for (int i1 = i; i1 <= j; ++i1) {
+             for (int j1 = k; j1 <= l; ++j1) {
+-                if (this.isChunkLoaded(i1, j1, true)) {
+-                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, arraylist, predicate);
++                // PandaSpigot start - Use getChunkIfLoaded
++                Chunk chunk = this.getChunkIfLoaded(i1, j1);
++                if(chunk != null) {
++                    chunk.a(entity, axisalignedbb, arraylist, predicate);
++                // PandaSpigot end
+                 }
+             }
+         }
