@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sun, 4 Dec 2022 13:48:50 +0100
+Subject: [PATCH] Optimize Light Recalculations
+
+Optimizes to not repeatedly look up the same chunk for
+light lookups.
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index 3971e7dfdb9b05f44c8e0735d88e95da72be9f22..6ec93f532685e9b6e4c02c5581eb18c4914e7d54 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -334,7 +334,7 @@ public class Chunk {
+     private void a(int i, int j, int k, int l) {
+         if (l > k && this.world.areChunksLoaded(new BlockPosition(i, 0, j), 16)) {
+             for (int i1 = k; i1 < l; ++i1) {
+-                this.world.updateLight(EnumSkyBlock.SKY, new BlockPosition(i, i1, j)); // PaperSpigot - Asynchronous lighting updates
++                this.world.updateBrightness(EnumSkyBlock.SKY, new BlockPosition(i, i1, j),this); // PaperSpigot - Asynchronous lighting updates // PandaSpigot - pass chunk so we don't have to find it again while it's known
+             }
+ 
+             this.q = true;
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index a437c4de55f60dcf8cefd69c4fc724874e092785..49b09185bbfc6ae321fce48347ea1d64ddabb921 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -521,8 +521,9 @@ public abstract class World implements IBlockAccess {
+         }
+ 
+         if (!this.worldProvider.o()) {
+-            for (i1 = k; i1 <= l; ++i1) {
+-                this.updateLight(EnumSkyBlock.SKY, new BlockPosition(i, i1, j)); // PaperSpigot - Asynchronous lighting updates
++            Chunk chunk = getChunkIfLoaded(i >> 4, j >> 4); // PandaSpigot
++            for (i1 = k; chunk != null && i1 <= l; ++i1) { // PandaSpigot
++                this.updateBrightness(EnumSkyBlock.SKY, new BlockPosition(i, i1, j), chunk); // PaperSpigot - Asynchronous lighting updates // PandaSpigot - pass chunk so we don't have to find it again while it's known
+             }
+         }
+ 
+@@ -2677,9 +2678,16 @@ public abstract class World implements IBlockAccess {
+      * PaperSpigot - Asynchronous lighting updates
+      */
+     public boolean updateLight(final EnumSkyBlock enumskyblock, final BlockPosition position) {
++        //PandaSpigot start - optimize light update for already known chunks this is for legacy
++        final Chunk chunk = this.getChunkIfLoaded(position.getX() >> 4, position.getZ() >> 4);
++        // Paper start - optimize light updates where chunk is known
++        return updateBrightness(enumskyblock, position, chunk);
++    }
++    public boolean updateBrightness(EnumSkyBlock enumskyblock, BlockPosition position, Chunk chunk) {
++        //PandaSpigot end
+         int x = position.getX();
+         int z = position.getZ();
+-        final Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
++        //final Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4); // PandaSpigot - removed since its supplied or loaded for legacy before
+         if (chunk == null || !chunk.areNeighborsLoaded(1)) {
+             return false;
+         }
