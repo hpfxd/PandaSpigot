@@ -114,17 +114,41 @@ index f3afbbd3a20ebf7d51a8fac418cff3e6f59ab56f..a69f9632567b9d8f784b9f63003d6f6f
                  // CraftBukkit start - Place event
                  if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a.getCarried().getBlock(), this.a.getCarried().getBlock().toLegacyData(this.a.getCarried())).isCancelled()) {
                  world.setTypeAndData(blockposition, this.a.getCarried(), 3);
+diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
+index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..b42f7e1649f2c334985091d555f1b897a6173877 100644
+--- a/src/main/java/net/minecraft/server/SpawnerCreature.java
++++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
+@@ -132,7 +132,9 @@ public final class SpawnerCreature {
+                             int i2 = blockposition1.getX();
+                             int j2 = blockposition1.getY();
+                             int k2 = blockposition1.getZ();
+-                            Block block = worldserver.getType(blockposition1).getBlock();
++                            IBlockData iblockdata = worldserver.getWorldBorder().isInBounds(blockposition1.asLong()) ? worldserver.getTypeIfLoaded(blockposition1) : null; // PandaSpigot
++                            if(iblockdata == null) return 0; // PandaSpigot
++                            Block block = iblockdata.getBlock();
+ 
+                             if (!block.isOccluding()) {
+                                 int l2 = 0;
+@@ -157,7 +159,7 @@ public final class SpawnerCreature {
+                                                 float f = (float) j3 + 0.5F;
+                                                 float f1 = (float) l3 + 0.5F;
+ 
+-                                                if (!worldserver.isPlayerNearbyWhoAffectsSpawning((double) f, (double) k3, (double) f1, 24.0D) && blockposition.c((double) f, (double) k3, (double) f1) >= 576.0D) { // PaperSpigot - Affects Spawning API
++                                                if (worldserver.getWorldBorder().isInBounds(blockposition2.asLong()) && worldserver.getChunkIfLoaded(blockposition2.getX(),blockposition2.getY()) != null && !worldserver.isPlayerNearbyWhoAffectsSpawning((double) f, (double) k3, (double) f1, 24.0D) && blockposition.c((double) f, (double) k3, (double) f1) >= 576.0D) { // PaperSpigot - Affects Spawning API
+                                                     if (biomebase_biomemeta == null) {
+                                                         biomebase_biomemeta = worldserver.a(enumcreaturetype, blockposition2);
+                                                         if (biomebase_biomemeta == null) {
 diff --git a/src/main/java/net/minecraft/server/Village.java b/src/main/java/net/minecraft/server/Village.java
-index e67aa0423f6a28b286174662f29ffc32a74992d9..6ee07e7a8484fc79f79da6a0e688b907382cd1a7 100644
+index e67aa0423f6a28b286174662f29ffc32a74992d9..045fcb15b35770673b16dff0cc4324a377b0911e 100644
 --- a/src/main/java/net/minecraft/server/Village.java
 +++ b/src/main/java/net/minecraft/server/Village.java
-@@ -36,12 +36,35 @@ public class Village {
+@@ -36,12 +36,34 @@ public class Village {
          this.k = Lists.newArrayList();
          this.a = world;
      }
+-
 +    // PandaSpigot start
 +    private BlockPosition[] positions = null;
- 
 +    private void calculateNewCheckPositions() {
 +        if(this.d == null || this.d.equals(BlockPosition.ZERO)) {
 +            this.positions = null;
@@ -154,7 +178,7 @@ index e67aa0423f6a28b286174662f29ffc32a74992d9..6ee07e7a8484fc79f79da6a0e688b907
          this.g = i;
          this.m();
          this.l();
-@@ -341,6 +364,7 @@ public class Village {
+@@ -341,6 +363,7 @@ public class Village {
  
              this.e = Math.max(32, (int) Math.sqrt((double) j) + 1);
          }
@@ -162,7 +186,7 @@ index e67aa0423f6a28b286174662f29ffc32a74992d9..6ee07e7a8484fc79f79da6a0e688b907
      }
  
      public int a(String s) {
-@@ -395,6 +419,7 @@ public class Village {
+@@ -395,6 +418,7 @@ public class Village {
                  this.j.put(nbttagcompound2.getString("Name"), Integer.valueOf(nbttagcompound2.getInt("S")));
              }
          }
@@ -171,10 +195,30 @@ index e67aa0423f6a28b286174662f29ffc32a74992d9..6ee07e7a8484fc79f79da6a0e688b907
      }
  
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index a92b1eb303e01bc42157fe384279d7ad42be03f8..9a7aa50a815d15f3e221a9f0883ad128275f2a87 100644
+index a92b1eb303e01bc42157fe384279d7ad42be03f8..28d65f6286ac5f1071aac093cd5edf7d75b59de1 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -2708,8 +2708,11 @@ public abstract class World implements IBlockAccess {
+@@ -867,7 +867,8 @@ public abstract class World implements IBlockAccess {
+                 int i1 = MathHelper.floor(vec3d.b);
+                 int j1 = MathHelper.floor(vec3d.c);
+                 BlockPosition blockposition = new BlockPosition(l, i1, j1);
+-                IBlockData iblockdata = this.getType(blockposition);
++                IBlockData iblockdata = this.getTypeIfLoaded(blockposition); // PandaSpigot
++                if (iblockdata == null) return null; // PandaSpigot
+                 Block block = iblockdata.getBlock();
+ 
+                 if ((!flag1 || block.a(this, blockposition, iblockdata) != null) && block.a(iblockdata, flag)) {
+@@ -969,7 +970,8 @@ public abstract class World implements IBlockAccess {
+                     i1 = MathHelper.floor(vec3d.b) - (enumdirection == EnumDirection.UP ? 1 : 0);
+                     j1 = MathHelper.floor(vec3d.c) - (enumdirection == EnumDirection.SOUTH ? 1 : 0);
+                     blockposition = new BlockPosition(l, i1, j1);
+-                    IBlockData iblockdata1 = this.getType(blockposition);
++                    IBlockData iblockdata1 = this.getTypeIfLoaded(blockposition); // PandaSpigot - ray tracing into an unloaded chunk should be treated as a miss, this saves a ton of lag for when AI tries to raytrace near unloaded chunks.
++                    if (iblockdata1 == null) return null; // PandaSpigot
+                     Block block1 = iblockdata1.getBlock();
+ 
+                     if (!flag1 || block1.a(this, blockposition, iblockdata1) != null) {
+@@ -2708,8 +2710,11 @@ public abstract class World implements IBlockAccess {
  
          for (int i1 = i; i1 <= j; ++i1) {
              for (int j1 = k; j1 <= l; ++j1) {
