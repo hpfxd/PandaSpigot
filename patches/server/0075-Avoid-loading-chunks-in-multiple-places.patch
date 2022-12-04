@@ -114,6 +114,62 @@ index f3afbbd3a20ebf7d51a8fac418cff3e6f59ab56f..a69f9632567b9d8f784b9f63003d6f6f
                  // CraftBukkit start - Place event
                  if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a.getCarried().getBlock(), this.a.getCarried().getBlock().toLegacyData(this.a.getCarried())).isCancelled()) {
                  world.setTypeAndData(blockposition, this.a.getCarried(), 3);
+diff --git a/src/main/java/net/minecraft/server/Village.java b/src/main/java/net/minecraft/server/Village.java
+index e67aa0423f6a28b286174662f29ffc32a74992d9..6ee07e7a8484fc79f79da6a0e688b907382cd1a7 100644
+--- a/src/main/java/net/minecraft/server/Village.java
++++ b/src/main/java/net/minecraft/server/Village.java
+@@ -36,12 +36,35 @@ public class Village {
+         this.k = Lists.newArrayList();
+         this.a = world;
+     }
++    // PandaSpigot start
++    private BlockPosition[] positions = null;
+ 
++    private void calculateNewCheckPositions() {
++        if(this.d == null || this.d.equals(BlockPosition.ZERO)) {
++            this.positions = null;
++        } else {
++            this.positions = new BlockPosition[] { this.d.a(-this.e, 0, -this.e),
++                    this.d.a(-this.e, 0, this.e),
++                    this.d.a(this.e, 0, -this.e),
++                    this.d.a(this.e, 0, this.e),
++                    this.d};
++        }
++    }
++    public boolean isVillageAreaLoaded() {
++        for(int i = 0; this.positions != null && i < this.positions.length; i++) {
++            if(this.a.isLoaded(this.positions[i])) {
++                return true;
++            }
++        }
++        return false;
++    }
++    // PandaSpigot end
+     public void a(World world) {
+         this.a = world;
+     }
+ 
+     public void a(int i) {
++        if(!this.isVillageAreaLoaded()) { return; } // PandaSpigot - avoid loading chunks
+         this.g = i;
+         this.m();
+         this.l();
+@@ -341,6 +364,7 @@ public class Village {
+ 
+             this.e = Math.max(32, (int) Math.sqrt((double) j) + 1);
+         }
++        this.calculateNewCheckPositions(); // PandaSpigot
+     }
+ 
+     public int a(String s) {
+@@ -395,6 +419,7 @@ public class Village {
+                 this.j.put(nbttagcompound2.getString("Name"), Integer.valueOf(nbttagcompound2.getInt("S")));
+             }
+         }
++        this.calculateNewCheckPositions(); // PandaSpigot
+ 
+     }
+ 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
 index a92b1eb303e01bc42157fe384279d7ad42be03f8..9a7aa50a815d15f3e221a9f0883ad128275f2a87 100644
 --- a/src/main/java/net/minecraft/server/World.java
