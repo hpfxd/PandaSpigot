@@ -86,6 +86,34 @@ index 45d385d31296eda75aa30500118c21406df5fe43..e953d6d80ef020f8e4540eae6881709f
              }
          }
  
+diff --git a/src/main/java/net/minecraft/server/EntityEnderman.java b/src/main/java/net/minecraft/server/EntityEnderman.java
+index f3afbbd3a20ebf7d51a8fac418cff3e6f59ab56f..a69f9632567b9d8f784b9f63003d6f6f79c17e47 100644
+--- a/src/main/java/net/minecraft/server/EntityEnderman.java
++++ b/src/main/java/net/minecraft/server/EntityEnderman.java
+@@ -352,7 +352,8 @@ public class EntityEnderman extends EntityMonster {
+             int j = MathHelper.floor(this.enderman.locY + random.nextDouble() * 3.0D);
+             int k = MathHelper.floor(this.enderman.locZ - 2.0D + random.nextDouble() * 4.0D);
+             BlockPosition blockposition = new BlockPosition(i, j, k);
+-            IBlockData iblockdata = world.getType(blockposition);
++            IBlockData iblockdata = world.getTypeIfLoaded(blockposition); // PandaSpigot
++            if (iblockdata == null) return; // PandaSpigot
+             Block block = iblockdata.getBlock();
+ 
+             if (EntityEnderman.c.contains(block)) {
+@@ -386,10 +387,11 @@ public class EntityEnderman extends EntityMonster {
+             int j = MathHelper.floor(this.a.locY + random.nextDouble() * 2.0D);
+             int k = MathHelper.floor(this.a.locZ - 1.0D + random.nextDouble() * 2.0D);
+             BlockPosition blockposition = new BlockPosition(i, j, k);
+-            Block block = world.getType(blockposition).getBlock();
++            IBlockData iblockdata = world.getTypeIfLoaded(blockposition); // PandaSpigot - avoid loading chunks
++            if (iblockdata == null) return; // PandaSpigot - avoid loading chunks
+             Block block1 = world.getType(blockposition.down()).getBlock();
+ 
+-            if (this.a(world, blockposition, this.a.getCarried().getBlock(), block, block1)) {
++            if (this.a(world, blockposition, this.a.getCarried().getBlock(), iblockdata.getBlock(), block1)) { // PandaSpigot - avoid loading chunks
+                 // CraftBukkit start - Place event
+                 if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a.getCarried().getBlock(), this.a.getCarried().getBlock().toLegacyData(this.a.getCarried())).isCancelled()) {
+                 world.setTypeAndData(blockposition, this.a.getCarried(), 3);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
 index a92b1eb303e01bc42157fe384279d7ad42be03f8..9a7aa50a815d15f3e221a9f0883ad128275f2a87 100644
 --- a/src/main/java/net/minecraft/server/World.java
