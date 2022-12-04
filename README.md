@@ -1,4 +1,4 @@
-# PandaSpigot [![Build](https://github.com/hpfxd/PandaSpigot/actions/workflows/build.yml/badge.svg)](https://github.com/hpfxd/PandaSpigot/actions/workflows/build.yml)
+# PandaSpigot [![Build](https://img.shields.io/github/workflow/status/hpfxd/PandaSpigot/Build/master?label=Build)](https://github.com/hpfxd/PandaSpigot/actions/workflows/build.yml) [![Discord](https://img.shields.io/discord/1048733138655924274?label=Discord)](https://discord.gg/m6vCCX6Hvr) [![Servers](https://img.shields.io/bstats/servers/15154?label=Servers)](https://bstats.org/plugin/bukkit/PandaSpigot/15154)
 Fork of Paper for 1.8.8 focused on improved performance and stability.
 
 ## Highlights
@@ -22,6 +22,8 @@ See a full list of patches [here](./patches/).
 
 ## Using
 You can download the latest pre-built artifact [here](https://nightly.link/hpfxd/PandaSpigot/workflows/build/master/Server%20JAR.zip).
+
+For support, please join our [Discord](https://discord.gg/m6vCCX6Hvr).
 
 ## API
 See our API patches [here](./patches/api/).
