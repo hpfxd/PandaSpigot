@@ -61,7 +61,7 @@ index 854cf888d64e50bfd85420bb5dcc93860a64f132..c4be7d4e156d8d685ffb2b9fc5f0045e
                  axisalignedbb2 = (AxisAlignedBB) iterator1.next();
              }
 diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
-index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..d3a9cf0475a5381e83ccdeabda3bc3b4210ff9b5 100644
+index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..6671d4920f4b808d61fd458ef3f26f21a0e96322 100644
 --- a/src/main/java/net/minecraft/server/Explosion.java
 +++ b/src/main/java/net/minecraft/server/Explosion.java
 @@ -54,6 +54,9 @@ public class Explosion {
@@ -78,7 +78,7 @@ index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..d3a9cf0475a5381e83ccdeabda3bc3b4
                  }
              }
          }
-+        }
++        } // PandaSpigot
  
          this.blocks.addAll(hashset);
          float f3 = this.size * 2.0F;
