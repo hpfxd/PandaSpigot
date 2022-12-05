@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Mon, 5 Dec 2022 01:09:20 +0100
+Subject: [PATCH] Prevent heavy Nether Portal searches In most cases the short
+ search should be enough but it always fals back on the bigger search if
+ nothing is found so it shouldn't break anything
+
+
+diff --git a/src/main/java/net/minecraft/server/PortalTravelAgent.java b/src/main/java/net/minecraft/server/PortalTravelAgent.java
+index 72f3735b196cbd7d420c6338eb7aba01b40c7804..9392c5ba7687b69be9927b7958dd93cc937a286b 100644
+--- a/src/main/java/net/minecraft/server/PortalTravelAgent.java
++++ b/src/main/java/net/minecraft/server/PortalTravelAgent.java
+@@ -94,7 +94,12 @@ public class PortalTravelAgent {
+ 
+     public boolean b(Entity entity, float f) {
+         // CraftBukkit start - Modularize portal search process and entity teleportation
+-        BlockPosition found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
++        // PandaSpigot start - Search close first then do the big search if the close search fails
++        BlockPosition found = this.findPortal(entity.locX, entity.locY, entity.locZ, 10);
++        if (found == null) {
++            found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
++        }
++        // PandaSpigot end
+         if (found == null) {
+             return false;
+         }
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftTravelAgent.java b/src/main/java/org/bukkit/craftbukkit/CraftTravelAgent.java
+index cae65cf86fac24733b9732a6c66bed1e7b45a8a9..735fb3aca753090217e62325db7ace69e400a796 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftTravelAgent.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftTravelAgent.java
+@@ -44,7 +44,12 @@ public class CraftTravelAgent extends PortalTravelAgent implements TravelAgent {
+     @Override
+     public Location findPortal(Location location) {
+         PortalTravelAgent pta = ((CraftWorld) location.getWorld()).getHandle().getTravelAgent();
+-        BlockPosition found = pta.findPortal(location.getX(), location.getY(), location.getZ(), this.getSearchRadius());
++        // PandaSpigot start - Search close first then make the search larger
++        BlockPosition found = pta.findPortal(location.getX(), location.getY(), location.getZ(), 10);
++        if (found == null) {
++            found = pta.findPortal(location.getX(), location.getY(), location.getZ(), this.getSearchRadius());
++        }
++        // PandaSpigot end
+         return found != null ? new Location(location.getWorld(), found.getX(), found.getY(), found.getZ(), location.getYaw(), location.getPitch()) : null;
+     }
+ 
