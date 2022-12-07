@@ -9,7 +9,7 @@ Co-authored-by: bob7l
 Co-authored-by: RoccoDev
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
-index ae3cdaca275b1a50c5c37c3dd0021c4bd579d373..6611989740875db9d2e59d8a016f820449384024 100644
+index ae3cdaca275b1a50c5c37c3dd0021c4bd579d373..5322af4cbb29854417847992032b792a21aa0085 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
 @@ -125,4 +125,12 @@ public class PandaSpigotConfig {
@@ -17,13 +17,13 @@ index ae3cdaca275b1a50c5c37c3dd0021c4bd579d373..6611989740875db9d2e59d8a016f8204
          "the ability of plugins to log the IP addresses of players.")
      public boolean logPlayerIpAddresses = true;
 +
-+    private int maxPages = 50;
++    public int maxPages = 50;
 +
-+    private int maxPageLenght = 256;
++    public int maxPageLenght = 256;
 +
-+    private int maxTitleLenght = 16;
++    public int maxTitleLenght = 16;
 +
-+    private int maxAuthorLenght = 16;
++    public int maxAuthorLenght = 16;
  }
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
 index ad33280bb8baab581a4ac17b5fe78022134c676b..a6480484f2c2f55e6cb4ef682c99f56d46980a0e 100644
