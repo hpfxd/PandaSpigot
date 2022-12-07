@@ -61,15 +61,15 @@ function downloadLibraries {
     done
 }
 
-downloadLibraries "com.mojang" authlib
+#downloadLibraries "com.mojang" authlib
 
 # prep folders
 #mkdir -p "$workdir/ForgeFlower"
 mkdir -p "$spigotdecompiledir"
 mkdir -p "$forgedecompiledir"
 
-echo "Extracting NMS classes..."
 if [ ! -d "$classdir" ]; then
+    echo "Extracting NMS classes..."
     mkdir -p "$classdir"
     cd "$classdir"
     set +e

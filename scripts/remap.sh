@@ -16,8 +16,8 @@ decompiledir="$workdir/mc-dev"
 jarpath="$decompiledir/$minecraftversion"
 mkdir -p "$decompiledir"
 
-echo "Downloading unmapped vanilla jar..."
 if [ ! -f  "$jarpath.jar" ]; then
+    echo "Downloading unmapped vanilla jar..."
     curl -s -o "$jarpath.jar" "$minecraftserverurl"
     if [ "$?" != "0" ]; then
         echo "Failed to download the vanilla server jar. Check connectivity or try again later."
@@ -44,8 +44,8 @@ if [ "$checksum" != "$minecrafthash" ]; then
 fi
 
 # These specialsource commands are from https://hub.spigotmc.org/stash/projects/SPIGOT/repos/builddata/browse/info.json
-echo "Applying class mappings..."
 if [ ! -f "$jarpath-cl.jar" ]; then
+    echo "Applying class mappings..."
     java -jar "$basedir/bin/SpecialSource-2.jar" map -i "$jarpath.jar" -m "$classmappings" -o "$jarpath-cl.jar" 1>/dev/null
     if [ "$?" != "0" ]; then
         echo "Failed to apply class mappings."
@@ -53,8 +53,8 @@ if [ ! -f "$jarpath-cl.jar" ]; then
     fi
 fi
 
-echo "Applying member mappings..."
 if [ ! -f "$jarpath-m.jar" ]; then
+    echo "Applying member mappings..."
     java -jar "$basedir/bin/SpecialSource-2.jar" map -i "$jarpath-cl.jar" -m "$membermappings" -o "$jarpath-m.jar" 1>/dev/null
     if [ "$?" != "0" ]; then
         echo "Failed to apply member mappings."
@@ -62,8 +62,8 @@ if [ ! -f "$jarpath-m.jar" ]; then
     fi
 fi
 
-echo "Creating remapped jar..."
 if [ ! -f "$jarpath-mapped.jar" ]; then
+    echo "Creating remapped jar..."
     java -jar "$basedir/bin/SpecialSource.jar" --kill-lvt -i "$jarpath-m.jar" --access-transformer "$accesstransforms" -m "$packagemappings" -o "$jarpath-mapped.jar" 1>/dev/null
     if [ "$?" != "0" ]; then
         echo "Failed to create remapped jar."
