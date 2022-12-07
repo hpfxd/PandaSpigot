@@ -27,7 +27,7 @@ jobs:
         run: ./panda setup
 
       - name: Apply patches
-        run: ./panda patch
+        run: ./panda setup
 
       - name: Build
         uses: burrunan/gradle-cache-action@v1
