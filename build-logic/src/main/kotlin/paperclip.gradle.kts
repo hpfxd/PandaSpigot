@@ -7,7 +7,7 @@ import java.util.Properties
 
 tasks {
     register<Jar>("paperclipJar") {
-        outputs.cacheIf { false }
+        outputs.upToDateWhen { false }
         dependsOn("shadowJar", ":pandaspigot-server:shadowJar")
         doFirst {
             val shadowTask = project(":pandaspigot-server").tasks.getByName("shadowJar") as Jar
