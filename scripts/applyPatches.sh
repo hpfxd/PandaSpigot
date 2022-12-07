@@ -10,8 +10,6 @@ applycmd="$gitcmd am --3way --ignore-whitespace"
 # Windows detection to workaround ARG_MAX limitation
 windows="$([[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]] && echo "true" || echo "false")"
 
-echo "Rebuilding Forked projects.... "
-
 function applyPatch {
     what=$1
     what_name=$(basename "$what")
@@ -76,6 +74,8 @@ function applyPatch {
 }
 
 if [ "$2" == "--setup" ] || [ "$2" == "--jar" ]; then
+    echo "Rebuilding Forked projects.... "
+
     # Move into Paper dir
     cd "$workdir/Paper"
     basedir=$(pwd)
