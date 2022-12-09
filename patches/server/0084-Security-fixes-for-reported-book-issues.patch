@@ -79,7 +79,7 @@ index 14afdc7cbb88150f4711811a06fa149c36cec8b9..3c642ce9252346a8258c6ba8378c3a83
  
              try {
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
-index 0b5ada0118f521eaca65b0fd67ebf232fa183b1a..c7c21df8ab2297d799e0a2115598f9663cc4a0c7 100644
+index 0b5ada0118f521eaca65b0fd67ebf232fa183b1a..181c24371c3cdd9e8d7465c3a2bf11b7afc2956c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 @@ -33,8 +33,12 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
@@ -129,16 +129,15 @@ index 0b5ada0118f521eaca65b0fd67ebf232fa183b1a..c7c21df8ab2297d799e0a2115598f966
              }
          }
      }
-@@ -224,6 +228,12 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
-     }
+@@ -225,6 +229,11 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
  
      public void addPage(final String... pages) {
-+        // PandaSpigot start - Enforce proper limits on books
-+        if (this.pages.size() >= MAX_PAGES) {
-+            return;
-+        }
-+        // PandaSpigot end
-+
          for (String page : pages) {
++            // PandaSpigot start - Enforce proper limits on books
++            if (this.pages.size() >= MAX_PAGES) {
++                return;
++            }
++            // PandaSpigot end
              if (page == null) {
                  page = "";
+             } else if (page.length() > MAX_PAGE_LENGTH) {
