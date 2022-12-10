@@ -9,16 +9,6 @@ minecraftversion=$(cat "$workdir/Paper/BuildData/info.json"  | grep minecraftVer
 windows="$([[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]] && echo "true" || echo "false")"
 decompiledir="$workdir/mc-dev"
 spigotdecompiledir="$decompiledir/spigot"
-forgedecompiledir="$decompiledir/forge"
-forgeflowerversion="1.5.605.17"
-forgeflowerurl="https://maven.minecraftforge.net/net/minecraftforge/forgeflower/$forgeflowerversion/forgeflower-$forgeflowerversion.jar"
-# temp use patched version
-#forgeflowerurl="https://zachbr.keybase.pub/paper/forgeflower-patched/forgeflower-1.5.380.19.jar?dl=1"
-forgeflowerbin="$workdir/ForgeFlower/$forgeflowerversion.jar"
-# TODO: Make this better? We don't need spigot compat for this stage
-forgefloweroptions="-dgs=1 -hdc=0 -asc=1 -udv=1 -jvn=1"
-forgeflowercachefile="$decompiledir/forgeflowercache"
-forgeflowercachevalue="$forgeflowerurl - $forgeflowerversion - $forgefloweroptions";
 classdir="$decompiledir/classes"
 versionjson="$workdir/mc-dev/$minecraftversion.json"
 
@@ -64,9 +54,7 @@ function downloadLibraries {
 #downloadLibraries "com.mojang" authlib
 
 # prep folders
-#mkdir -p "$workdir/ForgeFlower"
 mkdir -p "$spigotdecompiledir"
-mkdir -p "$forgedecompiledir"
 
 if [ ! -d "$classdir" ]; then
     echo "Extracting NMS classes..."
@@ -81,40 +69,6 @@ if [ ! -d "$classdir" ]; then
     fi
     set -e
 fi
-
-#needsDecomp=0
-#if [ ! -f "$forgeflowercachefile" ]; then
-#    needsDecomp=1
-#elif [ "$(cat ${forgeflowercachefile})" != "$forgeflowercachevalue" ]; then
-#    needsDecomp=1
-#fi
-#if [ "$needsDecomp" == "1" ]; then
-#    # our local cache is now invalidated, we can update forgeflower to get better deobfuscation
-#    rm -rf "$forgedecompiledir/net"
-#fi
-#
-# Forge (for Paper mc-dev imports, and dev src folders for unimported files)
-#if [ ! -d "$forgedecompiledir/net" ] ; then
-#    echo "Decompiling classes (stage 1)..."
-#    cd "$basedir"
-#
-#    if [ ! -f "$forgeflowerbin" ]; then
-#        echo "Downloading ForgeFlower ($forgeflowerversion)..."
-#        curl -s -o "$forgeflowerbin" "$forgeflowerurl"
-#    fi
-#
-#    set +e
-#    java -Ddecomp.renameparams=true -jar "$forgeflowerbin" ${forgefloweroptions} -ind='    ' "$classdir" "$forgedecompiledir"
-#    if [ "$?" != "0" ]; then
-#        rm -rf "$forgedecompiledir/net"
-#        echo "Failed to decompile classes."
-#        exit 1
-#    fi
-#    echo "$forgeflowercachevalue" > "$forgeflowercachefile"
-#    set -e
-#fi
-
-# Spigot (for CraftBukkit patches)
 
 # if we see the old net folder, copy it to spigot to avoid redecompiling
 if [ -d "$decompiledir/net" ]; then
