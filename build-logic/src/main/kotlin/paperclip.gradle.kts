@@ -9,8 +9,23 @@ tasks {
     register<Jar>("paperclipJar") {
         outputs.upToDateWhen { false }
         dependsOn("shadowJar", ":pandaspigot-server:shadowJar")
+
+        from(zipTree((tasks["shadowJar"] as Jar).archiveFile.get()))
+
+        manifest {
+            from((tasks["jar"] as Jar).manifest)
+        }
+
+        rename { name ->
+            if (name.endsWith("-LICENSE.txt")) {
+                "META-INF/license/$name"
+            } else {
+                name
+            }
+        }
+
         doFirst {
-            val shadowTask = project(":pandaspigot-server").tasks.getByName("shadowJar") as Jar
+            val shadowTask = project(":pandaspigot-server").tasks["shadowJar"] as Jar
             val diffFile = temporaryDir.resolve("pandaspigot.patch")
             val propertiesFile = temporaryDir.resolve("patch.properties")
 
