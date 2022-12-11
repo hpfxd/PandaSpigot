@@ -1,0 +1,44 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Sculas <sculas@github.com>
+Date: Sun, 11 Dec 2022 14:32:50 -0300
+Subject: [PATCH] TCP Options
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+index ae3cdaca275b1a50c5c37c3dd0021c4bd579d373..c69ef08217fb8cc9e31bc6ca3a2e5c71f3836094 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+@@ -125,4 +125,13 @@ public class PandaSpigotConfig {
+     @Comment("Whether player IP addresses should be logged by the server. This does not impact\n" +
+         "the ability of plugins to log the IP addresses of players.")
+     public boolean logPlayerIpAddresses = true;
++
++    public boolean enableTcpFastOpen = false;
++
++    @Comment("Modes:\n" +
++    "0 - Disabled;\n" +
++    "1 - TFO is enabled for outgoing connections (clients);\n" +
++    "2 - TFO is enabled for incoming connections (servers);\n" +
++    "3 - TFO is enabled for both clients and servers.")
++    public int modeTcpFastOpen = 0;
+ }
+diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
+index 3401addb448a9c731aec768edbe1008e9df80d17..db226e1929cfd2b70f19a14bf2dee837d48cae77 100644
+--- a/src/main/java/net/minecraft/server/ServerConnection.java
++++ b/src/main/java/net/minecraft/server/ServerConnection.java
+@@ -109,7 +109,14 @@ public class ServerConnection {
+             this.g.add(((ServerBootstrap) ((ServerBootstrap) (new ServerBootstrap()).channel(oclass)).childHandler(new ChannelInitializer() {
+                 protected void initChannel(Channel channel) throws Exception {
+                     try {
+-                        channel.config().setOption(ChannelOption.TCP_NODELAY, Boolean.valueOf(true));
++                        // PandaSpigot start - TCP Options
++                        io.netty.channel.ChannelConfig config = channel.config();
++                        config.setOption(ChannelOption.TCP_NODELAY, true);
++                        config.setOption(ChannelOption.TCP_FASTOPEN, com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().modeTcpFastOpen);
++                        config.setOption(ChannelOption.TCP_FASTOPEN_CONNECT, com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().enableTcpFastOpen);
++                        config.setOption(ChannelOption.IP_TOS, 0x18);
++                        config.setAllocator(io.netty.buffer.ByteBufAllocator.DEFAULT);
++                        // PandaSpigot end
+                     } catch (ChannelException channelexception) {
+                         ;
+                     }
