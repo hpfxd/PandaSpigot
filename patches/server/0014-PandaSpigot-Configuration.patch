@@ -21,9 +21,9 @@ index 79908ee3377373f69fdb4378a420f6ad791bcfac..44ab18b8221ea7ef899c80abf4eadfe5
      // Minecraft libraries:
      implementation("io.netty:netty-all:4.1.85.Final") // PandaSpigot - Update Netty to 4.1.x
      implementation("com.mojang:authlib:1.5.21")
-@@ -57,6 +63,13 @@ tasks {
+@@ -56,6 +62,13 @@ tasks {
+         mergeServiceFiles()
          append("META-INF/io.netty.versions.properties")
-         archiveBaseName.set("pandaspigot")
          archiveClassifier.set("") // without "-all"
 +        // PandaSpigot start - Configuration
 +        arrayOf(
@@ -186,7 +186,7 @@ index 8f3511f800818c36b9387b92376e0b9785ec52b5..375d991f1ede3b352027192f5eccd8a8
          this.world = new CraftWorld((WorldServer) this, gen, env);
          this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 6f021d50d2d91497992c794161918c25f187cfdb..7da53bccec38c626005c9d7f81096763a8a3d95e 100644
+index ad8c5da90fc64825185aedcfdf89a6ff013a7a81..1caffab6e75abf6010e8f1f2d2a29a2a22692fb7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -714,6 +714,7 @@ public final class CraftServer implements Server {

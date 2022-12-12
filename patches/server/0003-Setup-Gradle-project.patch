@@ -6,7 +6,7 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..5dccf69fb435c8903790841703263b739280c9a6
+index 0000000000000000000000000000000000000000..3938905ca58c3d1cd1db4fa9632637b7a43ff8c5
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,114 @@
@@ -67,7 +67,6 @@ index 0000000000000000000000000000000000000000..5dccf69fb435c8903790841703263b73
 +tasks {
 +    shadowJar {
 +        mergeServiceFiles()
-+        archiveBaseName.set("pandaspigot")
 +        archiveClassifier.set("") // without "-all"
 +
 +        val cbLibsPkg = "org.bukkit.craftbukkit.libs"
@@ -92,6 +91,7 @@ index 0000000000000000000000000000000000000000..5dccf69fb435c8903790841703263b73
 +    }
 +
 +    jar {
++        archiveClassifier.set("original")
 +        manifest {
 +            val git = Git(rootProject.layout.projectDirectory)
 +            val gitHash = git("rev-parse", "--short=7", "HEAD").getText().trim()
