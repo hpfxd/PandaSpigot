@@ -9,3 +9,5 @@ run/
 # gradle
 .gradle/
 build/
+
+paperclip.jar

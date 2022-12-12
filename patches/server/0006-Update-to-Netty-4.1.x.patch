@@ -5,7 +5,7 @@ Subject: [PATCH] Update to Netty 4.1.x
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 5dccf69fb435c8903790841703263b739280c9a6..e9ac28d62d71542a7c0c9529d8f0a6a8c4fdde45 100644
+index 3938905ca58c3d1cd1db4fa9632637b7a43ff8c5..80e4ffb001a239b589001ae672a671d32194e964 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -13,7 +13,7 @@ dependencies {
@@ -30,9 +30,9 @@ index 5dccf69fb435c8903790841703263b739280c9a6..e9ac28d62d71542a7c0c9529d8f0a6a8
      shadowJar {
          mergeServiceFiles()
 +        append("META-INF/io.netty.versions.properties")
-         archiveBaseName.set("pandaspigot")
          archiveClassifier.set("") // without "-all"
  
+         val cbLibsPkg = "org.bukkit.craftbukkit.libs"
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
 index e2eb305468ff76026dc9b24d59394cfc94501273..b48eeb63ad61b18a630f2feb4fd6203e5e3e6c80 100644
 --- a/src/main/java/net/minecraft/server/PacketDataSerializer.java

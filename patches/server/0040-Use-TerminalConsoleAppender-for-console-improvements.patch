@@ -60,9 +60,9 @@ index e37f9548dd7c0ea21299b7310083369b9afe220e..f6e34733002ef815b4496a686319ccf5
          mergeServiceFiles()
          append("META-INF/io.netty.versions.properties")
 +        transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer()) // PandaSpigot - Use TerminalConsoleAppender
-         archiveBaseName.set("pandaspigot")
          archiveClassifier.set("") // without "-all"
          // PandaSpigot start - Configuration
+         arrayOf(
 diff --git a/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..25a515b681bbbb70946f2ec73647a6f184f81b3c
