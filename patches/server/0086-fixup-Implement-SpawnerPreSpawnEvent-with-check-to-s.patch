@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Mon, 19 Dec 2022 23:54:49 +0100
+Subject: [PATCH] fixup! Implement SpawnerPreSpawnEvent with check to see if
+ there are listeners for it so we can limit the amount of events fired
+
+
+diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
+index c84d4172e217db987271f2e26f3a8befefac288c..fad53e6e97520579f3f9b8ba2f1c7fbed6e6f047 100644
+--- a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
++++ b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
+@@ -92,6 +92,7 @@ public abstract class MobSpawnerAbstract {
+                 boolean flag = false;
+ 
+                 for (int i = 0; i < this.spawnCount; ++i) {
++                    // PandaSpigot start - add check to avoid firing if non listeners
+                     if(SpawnerPreSpawnEvent.getHandlerList().getRegisteredListeners().length > 0) {
+                         // TacoSpigot start
+                         SpawnerPreSpawnEvent event = new SpawnerPreSpawnEvent(new org.bukkit.Location(this.a().getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()), org.bukkit.entity.EntityType.fromName(this.getMobName()));
+@@ -103,6 +104,7 @@ public abstract class MobSpawnerAbstract {
+                         }
+                         // TacoSpigot end
+                     }
++                    // PandaSpigot end
+                     Entity entity = EntityTypes.createEntityByName(this.getMobName(), this.a());
+ 
+                     if (entity == null) {
