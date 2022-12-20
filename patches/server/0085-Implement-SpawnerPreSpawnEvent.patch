@@ -6,7 +6,7 @@ Subject: [PATCH] Implement SpawnerPreSpawnEvent with check to see if there are
 
 
 diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..c84d4172e217db987271f2e26f3a8befefac288c 100644
+index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..fad53e6e97520579f3f9b8ba2f1c7fbed6e6f047 100644
 --- a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
 +++ b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
 @@ -5,6 +5,7 @@ import java.util.Iterator;
@@ -17,10 +17,11 @@ index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..c84d4172e217db987271f2e26f3a8bef
  import org.bukkit.craftbukkit.event.CraftEventFactory;
  import org.bukkit.event.entity.CreatureSpawnEvent;
  import org.bukkit.event.entity.SpawnerSpawnEvent;
-@@ -91,6 +92,17 @@ public abstract class MobSpawnerAbstract {
+@@ -91,6 +92,19 @@ public abstract class MobSpawnerAbstract {
                  boolean flag = false;
  
                  for (int i = 0; i < this.spawnCount; ++i) {
++                    // PandaSpigot start - add check to avoid firing if non listeners
 +                    if(SpawnerPreSpawnEvent.getHandlerList().getRegisteredListeners().length > 0) {
 +                        // TacoSpigot start
 +                        SpawnerPreSpawnEvent event = new SpawnerPreSpawnEvent(new org.bukkit.Location(this.a().getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()), org.bukkit.entity.EntityType.fromName(this.getMobName()));
@@ -32,6 +33,7 @@ index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..c84d4172e217db987271f2e26f3a8bef
 +                        }
 +                        // TacoSpigot end
 +                    }
++                    // PandaSpigot end
                      Entity entity = EntityTypes.createEntityByName(this.getMobName(), this.a());
  
                      if (entity == null) {
