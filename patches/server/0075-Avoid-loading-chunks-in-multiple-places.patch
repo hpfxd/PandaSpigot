@@ -118,9 +118,18 @@ index f3afbbd3a20ebf7d51a8fac418cff3e6f59ab56f..6d5fec85c8a79df2ea299c31196bab58
                  if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a.getCarried().getBlock(), this.a.getCarried().getBlock().toLegacyData(this.a.getCarried())).isCancelled()) {
                  world.setTypeAndData(blockposition, this.a.getCarried(), 3);
 diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..4938c36cc963972c4c1ae2a095c70f5007c21bed 100644
+index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..657c0f52783bcb2eb0f798bfdac6523cb403332b 100644
 --- a/src/main/java/net/minecraft/server/SpawnerCreature.java
 +++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
+@@ -73,7 +73,7 @@ public final class SpawnerCreature {
+                             long chunkCoords = LongHash.toLong(i1 + l, k + j);
+                             if (!this.b.contains(chunkCoords)) {
+                                 ++i;
+-                                if (!flag3 && worldserver.getWorldBorder().isInBounds(i1 + l, k + j)) {
++                                if (!flag3 && worldserver.isChunkLoaded(i1 + l, k + j, true) && worldserver.getWorldBorder().isInBounds(i1 + l, k + j)) { // PandaSpigot
+                                     this.b.add(chunkCoords);
+                                 }
+                             }
 @@ -112,7 +112,7 @@ public final class SpawnerCreature {
                  if (limit == 0) {
                      continue;
