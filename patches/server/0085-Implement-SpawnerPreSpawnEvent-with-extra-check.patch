@@ -1,9 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: mechoriet <kevinworm92@gmail.com>
 Date: Mon, 19 Dec 2022 23:48:44 +0100
-Subject: [PATCH] Implement SpawnerPreSpawnEvent with check to see if there are
- listeners for it so we can limit the amount of events fired
+Subject: [PATCH] Implement SpawnerPreSpawnEvent with extra check
 
+to see if there are listeners for it so we can limit the amount of events fired
 
 diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
 index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..54257945eb5709670888e8888c5fa09628c6345e 100644
