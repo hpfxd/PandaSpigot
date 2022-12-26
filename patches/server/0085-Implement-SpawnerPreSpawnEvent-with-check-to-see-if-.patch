@@ -6,25 +6,17 @@ Subject: [PATCH] Implement SpawnerPreSpawnEvent with check to see if there are
 
 
 diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..fad53e6e97520579f3f9b8ba2f1c7fbed6e6f047 100644
+index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..54257945eb5709670888e8888c5fa09628c6345e 100644
 --- a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
 +++ b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-@@ -5,6 +5,7 @@ import java.util.Iterator;
- import java.util.List;
- 
- // CraftBukkit start
-+import net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent;
- import org.bukkit.craftbukkit.event.CraftEventFactory;
- import org.bukkit.event.entity.CreatureSpawnEvent;
- import org.bukkit.event.entity.SpawnerSpawnEvent;
-@@ -91,6 +92,19 @@ public abstract class MobSpawnerAbstract {
+@@ -91,6 +91,19 @@ public abstract class MobSpawnerAbstract {
                  boolean flag = false;
  
                  for (int i = 0; i < this.spawnCount; ++i) {
 +                    // PandaSpigot start - add check to avoid firing if non listeners
-+                    if(SpawnerPreSpawnEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                    if( net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent.getHandlerList().getRegisteredListeners().length > 0) {
 +                        // TacoSpigot start
-+                        SpawnerPreSpawnEvent event = new SpawnerPreSpawnEvent(new org.bukkit.Location(this.a().getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()), org.bukkit.entity.EntityType.fromName(this.getMobName()));
++                        net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent event = new  net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent(new org.bukkit.Location(this.a().getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()), org.bukkit.entity.EntityType.fromName(this.getMobName()));
 +                        this.a().getServer().getPluginManager().callEvent(event);
 +
 +                        if (event.isCancelled()) {
