@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Tue, 27 Dec 2022 14:20:44 +0100
+Subject: [PATCH] Reduce memory footprint of  NBTTagCompound
+
+
+diff --git a/src/main/java/net/minecraft/server/NBTTagCompound.java b/src/main/java/net/minecraft/server/NBTTagCompound.java
+index 22d7c2ab36f11f93c0b9d08b786c784562ef7077..c124446220accda057ab547ae9eab3330dc1295f 100644
+--- a/src/main/java/net/minecraft/server/NBTTagCompound.java
++++ b/src/main/java/net/minecraft/server/NBTTagCompound.java
+@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
+ 
+ public class NBTTagCompound extends NBTBase {
+ 
+-    private Map<String, NBTBase> map = Maps.newHashMap();
++    private Map<String, NBTBase> map = Maps.newHashMapWithExpectedSize(8);
+ 
+     public NBTTagCompound() {}
+ 
