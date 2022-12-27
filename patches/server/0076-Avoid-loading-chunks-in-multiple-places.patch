@@ -65,6 +65,56 @@ index 76cd512964ce86c8488e0985fd43afc0050bb4a2..dfcf556b6bb82a5ff971fee645323d46
              }
  
              return i;
+diff --git a/src/main/java/net/minecraft/server/BlockFluids.java b/src/main/java/net/minecraft/server/BlockFluids.java
+index db73f5d9cc85579037c3d95509a1227946cb08d6..4e969f25255144c04596851ed124ef6d97e1611a 100644
+--- a/src/main/java/net/minecraft/server/BlockFluids.java
++++ b/src/main/java/net/minecraft/server/BlockFluids.java
+@@ -85,7 +85,13 @@ public abstract class BlockFluids extends Block {
+             int k;
+ 
+             if (j < 0) {
+-                if (!iblockaccess.getType(blockposition1).getBlock().getMaterial().isSolid()) {
++                // PandaSpigot start
++                IBlockData iblockdata = iblockaccess.getTypeIfLoaded(blockposition1);
++                if (iblockdata == null) {
++                    continue;
++                }
++                if (!iblockdata.getBlock().getMaterial().isSolid()) {
++                    // PandaSpigot end
+                     j = this.f(iblockaccess, blockposition1.down());
+                     if (j >= 0) {
+                         k = j - (i - 8);
+@@ -139,7 +145,13 @@ public abstract class BlockFluids extends Block {
+             for (int j = 0; j < i; ++j) {
+                 EnumDirection enumdirection = aenumdirection[j];
+ 
+-                if (enumdirection != EnumDirection.DOWN && world.getType(blockposition.shift(enumdirection)).getBlock().getMaterial() == Material.WATER) {
++                // PandaSpigot start
++                IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition.shift(enumdirection));
++                if (iblockdata1 == null) {
++                    continue;
++                }
++                if (enumdirection != EnumDirection.DOWN && iblockdata1.getBlock().getMaterial() == Material.WATER) {
++                    // PandaSpigot end
+                     flag = true;
+                     break;
+                 }
+@@ -149,13 +161,13 @@ public abstract class BlockFluids extends Block {
+                 Integer integer = (Integer) iblockdata.get(BlockFluids.LEVEL);
+ 
+                 if (integer.intValue() == 0) {
+-                    world.setTypeUpdate(blockposition, Blocks.OBSIDIAN.getBlockData());
++                    if (world.setTypeUpdateIfLoaded(blockposition, Blocks.OBSIDIAN.getBlockData())) // Paper
+                     this.fizz(world, blockposition);
+                     return true;
+                 }
+ 
+                 if (integer.intValue() > 0) { // PaperSpigot
+-                    world.setTypeUpdate(blockposition, Blocks.COBBLESTONE.getBlockData());
++                    if (world.setTypeUpdateIfLoaded(blockposition, Blocks.COBBLESTONE.getBlockData())) // Paper
+                     this.fizz(world, blockposition);
+                     return true;
+                 }
 diff --git a/src/main/java/net/minecraft/server/BlockLeaves.java b/src/main/java/net/minecraft/server/BlockLeaves.java
 index 7bf9018bae77e97ce5d2991897edf186ef1ed741..399c2bddd4e0ed27a98ab07a20d981f39683a4c3 100644
 --- a/src/main/java/net/minecraft/server/BlockLeaves.java
@@ -224,10 +274,10 @@ index e67aa0423f6a28b286174662f29ffc32a74992d9..22c3ac7a71043ab82e7d3c95c71e02fa
      }
  
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index a92b1eb303e01bc42157fe384279d7ad42be03f8..7ee64cd6d6845a715a7c21e47ef731854aa3a022 100644
+index 66b6a53c1938c7e018553c728fa2db82cf3dd8ac..9416c32bf7a93ce02812b0d94d9f68d07436ba64 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -867,7 +867,10 @@ public abstract class World implements IBlockAccess {
+@@ -939,7 +939,10 @@ public abstract class World implements IBlockAccess {
                  int i1 = MathHelper.floor(vec3d.b);
                  int j1 = MathHelper.floor(vec3d.c);
                  BlockPosition blockposition = new BlockPosition(l, i1, j1);
@@ -239,7 +289,7 @@ index a92b1eb303e01bc42157fe384279d7ad42be03f8..7ee64cd6d6845a715a7c21e47ef73185
                  Block block = iblockdata.getBlock();
  
                  if ((!flag1 || block.a(this, blockposition, iblockdata) != null) && block.a(iblockdata, flag)) {
-@@ -969,7 +972,10 @@ public abstract class World implements IBlockAccess {
+@@ -1041,7 +1044,10 @@ public abstract class World implements IBlockAccess {
                      i1 = MathHelper.floor(vec3d.b) - (enumdirection == EnumDirection.UP ? 1 : 0);
                      j1 = MathHelper.floor(vec3d.c) - (enumdirection == EnumDirection.SOUTH ? 1 : 0);
                      blockposition = new BlockPosition(l, i1, j1);
@@ -251,7 +301,7 @@ index a92b1eb303e01bc42157fe384279d7ad42be03f8..7ee64cd6d6845a715a7c21e47ef73185
                      Block block1 = iblockdata1.getBlock();
  
                      if (!flag1 || block1.a(this, blockposition, iblockdata1) != null) {
-@@ -2708,8 +2714,11 @@ public abstract class World implements IBlockAccess {
+@@ -2780,8 +2786,11 @@ public abstract class World implements IBlockAccess {
  
          for (int i1 = i; i1 <= j; ++i1) {
              for (int j1 = k; j1 <= l; ++j1) {
