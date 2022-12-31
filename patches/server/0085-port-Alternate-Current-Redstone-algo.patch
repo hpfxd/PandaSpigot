@@ -15,16 +15,6 @@ Author: Space Walker <spacedoesrs@gmail.com>
 Original license: MIT
 Original project: https://github.com/SpaceWalkerRS/alternate-current
 
-diff --git a/.gradle/ideaInitScripts/ijtgtmapper.gradle b/.gradle/ideaInitScripts/ijtgtmapper.gradle
-new file mode 100644
-index 0000000000000000000000000000000000000000..71f15fb7e87c252df22bc1f14d7637c9cad4ee12
---- /dev/null
-+++ b/.gradle/ideaInitScripts/ijtgtmapper.gradle
-@@ -0,0 +1,3 @@
-+ext.pathMapper = [:]
-+ext.pathMapper.put("<<target java executable path>>", '/usr/lib/jvm/java-8-openjdk-amd64/bin/java')
-+ext.mapPath = { path -> pathMapper.get(path) ?: path }
-\ No newline at end of file
 diff --git a/src/main/java/alternate/current/util/BlockUtil.java b/src/main/java/alternate/current/util/BlockUtil.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..220838cee2ea683d78e4e8784736cdba2584a0f7
@@ -2080,18 +2070,6 @@ index 532188e2850d45a3cf62cc02d8370b3ecd534e24..688f6cc8657ee7bd5acbad221e049c59
      public int b(IBlockAccess iblockaccess, BlockPosition blockposition, IBlockData iblockdata, EnumDirection enumdirection) {
          return !this.Q ? 0 : this.a(iblockaccess, blockposition, iblockdata, enumdirection);
      }
-diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index a437c4de55f60dcf8cefd69c4fc724874e092785..deddcaab2895ca3591b2392b0fd8bdcb9ef64ab0 100644
---- a/src/main/java/net/minecraft/server/World.java
-+++ b/src/main/java/net/minecraft/server/World.java
-@@ -178,7 +178,6 @@ public abstract class World implements IBlockAccess {
-     public Chunk getChunkIfLoaded(int x, int z) {
-         return ((ChunkProviderServer) this.chunkProvider).getChunkIfLoaded(x, z);
-     }
--
-     protected World(IDataManager idatamanager, WorldData worlddata, WorldProvider worldprovider, MethodProfiler methodprofiler, boolean flag, ChunkGenerator gen, org.bukkit.World.Environment env) {
-         this.spigotConfig = new org.spigotmc.SpigotWorldConfig( worlddata.getName() ); // Spigot
-         this.paperSpigotConfig = new org.github.paperspigot.PaperSpigotWorldConfig( worlddata.getName() ); // PaperSpigot
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
 index 0700b5aec26a6a4ba4db4d3c66b8b15c295c5a03..fa312d9c084e273abce089866e438c3b75e6306a 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
