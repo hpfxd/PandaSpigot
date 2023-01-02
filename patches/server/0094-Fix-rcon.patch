@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: skbeh <60107333+skbeh@users.noreply.github.com>
+Date: Mon, 2 Jan 2023 09:54:24 +0800
+Subject: [PATCH] Fix rcon
+
+
+diff --git a/src/main/java/net/minecraft/server/RemoteControlSession.java b/src/main/java/net/minecraft/server/RemoteControlSession.java
+index 1b45f81b6a63662db999f7441c487bba24f19fea..23d86f061b3b32569fca3c0d0b9e539a43174b8b 100644
+--- a/src/main/java/net/minecraft/server/RemoteControlSession.java
++++ b/src/main/java/net/minecraft/server/RemoteControlSession.java
+@@ -33,6 +33,7 @@ public class RemoteControlSession extends RemoteConnectionThread {
+ 
+     public void run() {
+         while (true) {
++            boolean closeConnection = true; // PandaSpigot - Fix rcon
+             try {
+                 if (!this.a) {
+                     break;
+@@ -66,10 +67,12 @@ public class RemoteControlSession extends RemoteConnectionThread {
+                             } catch (Exception exception) {
+                                 this.a(l, "Error executing: " + s + " (" + exception.getMessage() + ")");
+                             }
++                            closeConnection = false; // PandaSpigot - Fix rcon
+                             continue;
+                         }
+ 
+                         this.f();
++                        closeConnection = false; // PandaSpigot - Fix rcon
+                         continue;
+ 
+                     case 3:
+@@ -79,16 +82,18 @@ public class RemoteControlSession extends RemoteConnectionThread {
+                         if (0 != s1.length() && s1.equals(this.l)) {
+                             this.i = true;
+                             this.a(l, 2, "");
++                            closeConnection = false; // PandaSpigot - Fix rcon
+                             continue;
+                         }
+ 
+                         this.i = false;
+                         this.f();
++                        closeConnection = false; // PandaSpigot - Fix rcon
+                         continue;
+ 
+                     default:
+                         this.a(l, String.format("Unknown request %s", new Object[] { Integer.toHexString(i1)}));
+-                        continue;
++                        break; // PandaSpigot - Fix rcon
+                     }
+                 }
+             } catch (SocketTimeoutException sockettimeoutexception) {
+@@ -99,7 +104,11 @@ public class RemoteControlSession extends RemoteConnectionThread {
+                 RemoteControlSession.h.error("Exception whilst parsing RCON input", exception1);
+                 break;
+             } finally {
+-                this.g();
++                // PandaSpigot start - Fix rcon
++                if (closeConnection) {
++                    this.g();
++                }
++                // PandaSpigot end - Fix rcon
+             }
+ 
+             return;
