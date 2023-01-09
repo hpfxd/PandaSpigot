@@ -5,15 +5,17 @@ Subject: [PATCH] Kick after receiving invalid creative action packet
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 3904c77141ec3b778dc6cc2fd256961b7598ab31..a95943728c02937f041e6433a54d08d7f861b817 100644
+index 3904c77141ec3b778dc6cc2fd256961b7598ab31..3fbfb3016239e1849c2331a31e902bc33208e1da 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1875,6 +1875,8 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -1875,6 +1875,10 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
                      entityitem.j();
                  }
              }
++        // PandaSpigot start
 +        } else {
-+            disconnect("Not in creative mode"); // PandaSpigot
++            disconnect("Not in creative mode");
++        // PandaSpigot end
          }
  
      }
