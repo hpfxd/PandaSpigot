@@ -22,12 +22,12 @@ This patch contains heavy inspiration from:
 https://github.com/PaperMC/Paper/blob/master/patches/server/0137-Use-TerminalConsoleAppender-for-console-improvements.patch
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index e37f9548dd7c0ea21299b7310083369b9afe220e..f6e34733002ef815b4496a686319ccf5d1a347f9 100644
+index 3c4ef543265c993606fbf67548fa1106bc7eb76f..b0067f486d59eb40d11128cf60d1844f38423e3e 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -21,8 +21,10 @@ dependencies {
      // Minecraft libraries:
-     implementation("io.netty:netty-all:4.1.85.Final") // PandaSpigot - Update Netty to 4.1.x
+     implementation("io.netty:netty-all:4.1.86.Final") // PandaSpigot - Update Netty to 4.1.x
      implementation("com.mojang:authlib:1.5.21")
 -    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
 -    implementation("org.apache.logging.log4j:log4j-core:2.17.0")
