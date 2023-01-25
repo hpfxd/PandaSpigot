@@ -118,7 +118,7 @@ index f3afbbd3a20ebf7d51a8fac418cff3e6f59ab56f..6d5fec85c8a79df2ea299c31196bab58
                  if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a.getCarried().getBlock(), this.a.getCarried().getBlock().toLegacyData(this.a.getCarried())).isCancelled()) {
                  world.setTypeAndData(blockposition, this.a.getCarried(), 3);
 diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..4938c36cc963972c4c1ae2a095c70f5007c21bed 100644
+index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..232f3d3d45abb766ef1451c5e5eedc13888617c1 100644
 --- a/src/main/java/net/minecraft/server/SpawnerCreature.java
 +++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
 @@ -112,7 +112,7 @@ public final class SpawnerCreature {
@@ -130,28 +130,15 @@ index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..4938c36cc963972c4c1ae2a095c70f50
                  // CraftBukkit end
  
                  if ((!enumcreaturetype.d() || flag1) && (enumcreaturetype.d() || flag) && (!enumcreaturetype.e() || flag2)) {
-@@ -132,7 +132,11 @@ public final class SpawnerCreature {
-                             int i2 = blockposition1.getX();
-                             int j2 = blockposition1.getY();
-                             int k2 = blockposition1.getZ();
--                            Block block = worldserver.getType(blockposition1).getBlock();
-+                            // PandaSpigot start - avoid loading chunks
-+                            IBlockData iblockdata = worldserver.getWorldBorder().isInBounds(blockposition1.asLong()) ? worldserver.getTypeIfLoaded(blockposition1) : null;
-+                            if(iblockdata == null) return 0;
-+                            Block block = iblockdata.getBlock();
-+                            // PandaSpigot end
- 
-                             if (!block.isOccluding()) {
-                                 int l2 = 0;
-@@ -157,7 +161,7 @@ public final class SpawnerCreature {
+@@ -151,7 +151,7 @@ public final class SpawnerCreature {
+                                         if (i4 < 4) {
+                                             label108: {
+                                                 j3 += worldserver.random.nextInt(b1) - worldserver.random.nextInt(b1);
+-                                                k3 += worldserver.random.nextInt(1) - worldserver.random.nextInt(1);
++                                                //k3 += worldserver.random.nextInt(1) - worldserver.random.nextInt(1);
+                                                 l3 += worldserver.random.nextInt(b1) - worldserver.random.nextInt(b1);
+                                                 BlockPosition blockposition2 = new BlockPosition(j3, k3, l3);
                                                  float f = (float) j3 + 0.5F;
-                                                 float f1 = (float) l3 + 0.5F;
- 
--                                                if (!worldserver.isPlayerNearbyWhoAffectsSpawning((double) f, (double) k3, (double) f1, 24.0D) && blockposition.c((double) f, (double) k3, (double) f1) >= 576.0D) { // PaperSpigot - Affects Spawning API
-+                                                if (worldserver.getWorldBorder().isInBounds(blockposition2.asLong()) && worldserver.getChunkIfLoaded(blockposition2.getX(),blockposition2.getY()) != null && !worldserver.isPlayerNearbyWhoAffectsSpawning((double) f, (double) k3, (double) f1, 24.0D) && blockposition.c((double) f, (double) k3, (double) f1) >= 576.0D) { // PaperSpigot - Affects Spawning API
-                                                     if (biomebase_biomemeta == null) {
-                                                         biomebase_biomemeta = worldserver.a(enumcreaturetype, blockposition2);
-                                                         if (biomebase_biomemeta == null) {
 diff --git a/src/main/java/net/minecraft/server/Village.java b/src/main/java/net/minecraft/server/Village.java
 index e67aa0423f6a28b286174662f29ffc32a74992d9..22c3ac7a71043ab82e7d3c95c71e02fa8b8927ef 100644
 --- a/src/main/java/net/minecraft/server/Village.java
