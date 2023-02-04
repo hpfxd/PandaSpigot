@@ -5,15 +5,15 @@ Subject: [PATCH] Fix AIOOBE in inventory handling
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 15f7c315df23eac08e12ce752b1b1bb23fd25aba..14afdc7cbb88150f4711811a06fa149c36cec8b9 100644
+index 15f7c315df23eac08e12ce752b1b1bb23fd25aba..557bb0d99b227ed0a70b1855f9ddab88f94dc134 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -1505,7 +1505,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
-                     }
-                     if (packetplayinwindowclick.c() == 0 || packetplayinwindowclick.c() == 1) {
-                         action = InventoryAction.NOTHING; // Don't want to repeat ourselves
+@@ -1600,7 +1600,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+                 } else if (packetplayinwindowclick.f() == 3) {
+                     if (packetplayinwindowclick.c() == 2) {
+                         click = ClickType.MIDDLE;
 -                        if (packetplayinwindowclick.b() == -999) {
 +                        if (packetplayinwindowclick.b() < 0) { // PandaSpigot - Paper Issue GH-404
-                             if (player.inventory.getCarried() != null) {
-                                 action = packetplayinwindowclick.c() == 0 ? InventoryAction.DROP_ALL_CURSOR : InventoryAction.DROP_ONE_CURSOR;
-                             }
+                             action = InventoryAction.NOTHING;
+                         } else {
+                             Slot slot = this.player.activeContainer.getSlot(packetplayinwindowclick.b());
