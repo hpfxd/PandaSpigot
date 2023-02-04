@@ -5,7 +5,7 @@ Subject: [PATCH] Optimise removeQueue
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 77068cd022e677fbf284df3d8aff95325089ce4f..0a4acf1e7b78eaeeca2606dbc46cdc5d703b8fad 100644
+index 5d96f8eda54f7ced88b2e1727baee570221aecce..c2f29bd6814fcf53a56953856e281093ae66cfeb 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -34,7 +34,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -40,7 +40,7 @@ index 77068cd022e677fbf284df3d8aff95325089ce4f..0a4acf1e7b78eaeeca2606dbc46cdc5d
  
              this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
          }
-@@ -916,7 +923,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -921,7 +928,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
          this.lastSentExp = -1;
          this.bM = -1.0F;
          this.bN = -1;
