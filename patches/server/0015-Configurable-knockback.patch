@@ -20,8 +20,10 @@ index 9afaf630481a9533fb014f306d4d90b8de80a129..0e781b78cb37bd85f9f753bd351d7c72
 +    
 +    @ConfigSerializable
 +    public static class KnockbackConfig {
-+        public double friction = 2.0;
++        public double horizontalFriction = 2.0;
++        public double verticalFriction = 2.0;
 +        public double horizontal = 0.35;
++        public double horizontalLimit = 0.4;
 +        public double vertical = 0.35;
 +        public double verticalLimit = 0.4;
 +        public double extraHorizontal = 0.425;
@@ -120,15 +122,25 @@ index c8b4e292849486eadfb437110466d6eafe275411..72c7e6fc8bb0a71877d6759af44d3903
 +            com.hpfxd.pandaspigot.config.PandaSpigotWorldConfig.KnockbackConfig knockbackConfig = entity.world.pandaSpigotConfig.knockback;
 +            double magnitude = MathHelper.sqrt(d0 * d0 + d1 * d1);
 +    
-+            double friction = knockbackConfig.friction;
-+            this.motX /= friction;
-+            this.motY /= friction;
-+            this.motZ /= friction;
++            double horizontalFriction = knockbackConfig.horizontalFriction;
++            double verticalFriction = knockbackConfig.horizontalFriction;
++
++            this.motX /= horizontalFriction;
++            this.motY /= verticalFriction;
++            this.motZ /= horizontalFriction;
 +    
 +            this.motX -= d0 / magnitude * knockbackConfig.horizontal;
 +            this.motY += knockbackConfig.vertical;
 +            this.motZ -= d1 / magnitude * knockbackConfig.horizontal;
 +    
++            if (this.motX > knockbackConfig.horizontalLimit) {
++                this.motX = knockbackConfig.horizontalLimit;
+             }
++             
++            if (this.motZ > knockbackConfig.horizontalLimit) {
++                this.motZ = knockbackConfig.horizontalLimit;
+             }
++             
 +            if (this.motY > knockbackConfig.verticalLimit) {
 +                this.motY = knockbackConfig.verticalLimit;
              }
