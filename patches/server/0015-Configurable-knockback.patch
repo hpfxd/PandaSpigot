@@ -121,10 +121,9 @@ index c8b4e292849486eadfb437110466d6eafe275411..72c7e6fc8bb0a71877d6759af44d3903
 +            // PandaSpigot start - Configurable knockback
 +            com.hpfxd.pandaspigot.config.PandaSpigotWorldConfig.KnockbackConfig knockbackConfig = entity.world.pandaSpigotConfig.knockback;
 +            double magnitude = MathHelper.sqrt(d0 * d0 + d1 * d1);
-+    
++
 +            double horizontalFriction = knockbackConfig.horizontalFriction;
 +            double verticalFriction = knockbackConfig.horizontalFriction;
-+
 +            this.motX /= horizontalFriction;
 +            this.motY /= verticalFriction;
 +            this.motZ /= horizontalFriction;
