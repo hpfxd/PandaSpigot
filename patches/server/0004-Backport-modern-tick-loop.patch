@@ -231,7 +231,7 @@ index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..6434b8613971a228fb0074390d8223bf
          Thread thread = new Thread("Server Infinisleeper") {
              {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..35ed8ca8f5c40f73c0256b48c0350f437a140f01 100644
+index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..eae936650fddd5ef418ee2ddd680d36e82045365 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -48,7 +48,7 @@ import org.bukkit.craftbukkit.Main;
@@ -469,22 +469,22 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..35ed8ca8f5c40f73c0256b48c0350f43
          this.methodProfiler.a("tallying");
          this.h[this.ticks % 100] = System.nanoTime() - i;
          this.methodProfiler.b();
-@@ -897,6 +1000,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
-         this.p.add(iupdateplayerlistbox);
-     }
+@@ -981,6 +1084,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+             });
+             */
  
-+    /* // PandaSpigot start - comment out
-     public static void main(final OptionSet options) { // CraftBukkit - replaces main(String[] astring)
-         DispenserRegistry.c();
++            /* // PandaSpigot start - comment out
+             DedicatedServer dedicatedserver = new DedicatedServer(options);
  
-@@ -1005,6 +1109,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+             if (options.has("port")) {
+@@ -1000,6 +1104,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+ 
+             dedicatedserver.primaryThread.start();
+             // CraftBukkit end
++            */ // PandaSpigot end
+         } catch (Exception exception) {
+             MinecraftServer.LOGGER.fatal("Failed to start the minecraft server", exception);
          }
- 
-     }
-+    */ // PandaSpigot end
- 
-     public void C() {
-         /* CraftBukkit start - prevent abuse
 @@ -1483,7 +1588,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      }
  
