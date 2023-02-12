@@ -23,10 +23,10 @@ index 0e781b78cb37bd85f9f753bd351d7c724a561bd7..023820936a0684c97fefb115e7ab10d3
      public KnockbackConfig knockback;
      
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index ec145f5551193ee9898c7b344b22fd725c2b054d..12eb4fd70c12a6294ac4ed25fcc61087a4b2d7dc 100644
+index f5bd918aad71d8f1c24c39bb786ef91eed7372b2..9e3bb94f11263c4614f18c282ae236d03599619a 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -905,7 +905,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
+@@ -906,7 +906,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
              long worldTime = world.getTime();
              final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
              for (EntityHuman entityhuman : world.players) {
