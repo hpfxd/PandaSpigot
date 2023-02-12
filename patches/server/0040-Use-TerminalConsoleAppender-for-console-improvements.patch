@@ -234,7 +234,7 @@ index 09085582a95fc4c61034db70dd543c5e7da8ede7..cd22366c7b066494192e0602da174701
          System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
          System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 27eda2ca8fe1fce9cc7635bf4cc1f7fd193c118e..fdfe1163e721474bce54cf5c11a69ea9bdd9e9bd 100644
+index ca182cd6cf4a6e86ffb7074524f587642fddd66c..d71dc092fd9bd33e885b7421421c0ea5cc22efb3 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;
@@ -271,7 +271,7 @@ index 27eda2ca8fe1fce9cc7635bf4cc1f7fd193c118e..fdfe1163e721474bce54cf5c11a69ea9
          Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
  
          //this.serverThread = primaryThread = new Thread(this, "Server thread"); // Moved from main // PandaSpigot - comment out; we assign above
-@@ -690,7 +692,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
+@@ -691,7 +693,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
              } finally {
                  // CraftBukkit start - Restore terminal to original settings
                  try {
@@ -280,7 +280,7 @@ index 27eda2ca8fe1fce9cc7635bf4cc1f7fd193c118e..fdfe1163e721474bce54cf5c11a69ea9
                  } catch (Exception ignored) {
                  }
                  // CraftBukkit end
-@@ -1308,7 +1310,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
+@@ -1309,7 +1311,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
      }
  
      public void sendMessage(IChatBaseComponent ichatbasecomponent) {
