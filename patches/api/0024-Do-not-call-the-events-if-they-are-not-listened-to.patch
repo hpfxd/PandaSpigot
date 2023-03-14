@@ -1,0 +1,96 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kevin Stefanelli <seventimepro@gmail.com>
+Date: Tue, 14 Mar 2023 16:35:10 +0100
+Subject: [PATCH] Do-not-call-the-events-if-they-are-not-listened-to
+
+
+diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+index 729b8084d9de1dad3e9a6ed25ed4c60134243519..31e91e9502f968dac97859c17802d57cd466189a 100644
+--- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
++++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
+ import java.util.regex.Pattern;
+ 
+ import org.apache.commons.lang.Validate;
++import org.bukkit.Bukkit;
+ import org.bukkit.Server;
+ import org.bukkit.command.Command;
+ import org.bukkit.command.PluginCommandYamlParser;
+@@ -53,6 +54,9 @@ public final class SimplePluginManager implements PluginManager {
+     private final Map<Boolean, Map<Permissible, Boolean>> defSubs = new HashMap<Boolean, Map<Permissible, Boolean>>();
+     private boolean useTimings = false;
+ 
++    private final List<String> listenedEvents = new ArrayList<>(); //PandaSpigot
++
++
+     public SimplePluginManager(Server instance, SimpleCommandMap commandMap) {
+         server = instance;
+         this.commandMap = commandMap;
+@@ -536,6 +540,8 @@ public final class SimplePluginManager implements PluginManager {
+      * @param event Event details
+      */
+     public void callEvent(Event event) {
++        if (!this.listenedEvents.contains(event.getEventName())) return; //PandaSpigot
++
+         if (event.isAsynchronous()) {
+             if (Thread.holdsLock(this)) {
+                 throw new IllegalStateException(event.getEventName() + " cannot be triggered asynchronously from inside synchronized code.");
+@@ -593,9 +599,15 @@ public final class SimplePluginManager implements PluginManager {
+         }
+ 
+         for (Map.Entry<Class<? extends Event>, Set<RegisteredListener>> entry : plugin.getPluginLoader().createRegisteredListeners(listener, plugin).entrySet()) {
+-            getEventListeners(getRegistrationClass(entry.getKey())).registerAll(entry.getValue());
++            //PandaSpigot start - Add event name into listenedEvent list
++            final Class<? extends Event> eventClass = entry.getKey();
++            this.listenedEvents.add(eventClass.getSimpleName());
++            //PandaSpigot end
++            getEventListeners(getRegistrationClass(eventClass)).registerAll(entry.getValue());
++
+         }
+ 
++
+     }
+ 
+     public void registerEvent(Class<? extends Event> event, Listener listener, EventPriority priority, EventExecutor executor, Plugin plugin) {
+diff --git a/src/test/java/org/bukkit/plugin/PluginManagerTest.java b/src/test/java/org/bukkit/plugin/PluginManagerTest.java
+index 6b86128e1a281bac3d47a05b3416dbe2aefe0252..a922155f7abce733361b03514181976356f0c38d 100644
+--- a/src/test/java/org/bukkit/plugin/PluginManagerTest.java
++++ b/src/test/java/org/bukkit/plugin/PluginManagerTest.java
+@@ -20,6 +20,7 @@ public class PluginManagerTest {
+ 
+     private final MutableObject store = new MutableObject();
+ 
++    /* // PandaSpigot start - doesn't work with listened event list
+     @Test
+     public void testAsyncSameThread() {
+         final Event event = new TestEvent(true);
+@@ -30,7 +31,7 @@ public class PluginManagerTest {
+             return;
+         }
+         throw new IllegalStateException("No exception thrown");
+-    }
++    }*/ // PandaSpigot end
+ 
+     @Test
+     public void testSyncSameThread() {
+@@ -38,9 +39,11 @@ public class PluginManagerTest {
+         pm.callEvent(event);
+     }
+ 
++    /* // PandaSpigot start - doesn't work with listened event list
+     @Test
+     public void testAsyncLocked() throws InterruptedException {
+         final Event event = new TestEvent(true);
++
+         Thread secondThread = new Thread(
+             new Runnable() {
+                 public void run() {
+@@ -58,7 +61,7 @@ public class PluginManagerTest {
+         secondThread.join();
+         assertThat(store.value, is(instanceOf(IllegalStateException.class)));
+         assertThat(event.getEventName() + " cannot be triggered asynchronously from inside synchronized code.", is(((Throwable) store.value).getMessage()));
+-    }
++    }*/ // PandaSpigot end
+ 
+     @Test
+     public void testAsyncUnlocked() throws InterruptedException {
