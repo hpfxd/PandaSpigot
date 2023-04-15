@@ -1,20 +1,14 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: necrozma <necrozma999@gmail.com>
-Date: Sat, 8 Apr 2023 04:32:10 -600
+Date: Sat, 8 Apr 2023 04:32:10 +0200
 Subject: [PATCH] Fix Entity Tracker Rounding
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index 0b90b6f30ea09fb117281d5ddd2fc752d2c139b5..b54cee3e7e829d6a80b07b80faea389d17097cdd 100644
 --- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 +++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-@@ -7,6 +7,7 @@
- import java.util.Set;
- import org.apache.logging.log4j.LogManager;
- import org.apache.logging.log4j.Logger;
-+import java.lang.Math;
- 
- // CraftBukkit start
- import org.bukkit.entity.Player;
-@@ -51,9 +52,11 @@
+@@ -51,9 +51,11 @@ public class EntityTrackerEntry {
          this.b = i;
          this.c = j;
          this.u = flag;
@@ -29,7 +23,7 @@ diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/ma
          this.yRot = MathHelper.d(entity.yaw * 256.0F / 360.0F);
          this.xRot = MathHelper.d(entity.pitch * 256.0F / 360.0F);
          this.i = MathHelper.d(entity.getHeadRotation() * 256.0F / 360.0F);
-@@ -114,9 +117,11 @@
+@@ -114,9 +116,11 @@ public class EntityTrackerEntry {
  
              if (this.tracker.vehicle == null) {
                  ++this.v;
@@ -44,7 +38,7 @@ diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/ma
                  int l = MathHelper.d(this.tracker.yaw * 256.0F / 360.0F);
                  int i1 = MathHelper.d(this.tracker.pitch * 256.0F / 360.0F);
                  int j1 = i - this.xLoc;
-@@ -226,9 +231,11 @@
+@@ -226,9 +230,11 @@ public class EntityTrackerEntry {
                      this.xRot = j;
                  }
  
