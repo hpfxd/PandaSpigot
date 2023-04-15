@@ -43,9 +43,9 @@ index a437c4de55f60dcf8cefd69c4fc724874e092785..97db7209bda87964c185ba135ba50ddf
      public boolean updateLight(final EnumSkyBlock enumskyblock, final BlockPosition position) {
 +        // PandaSpigot start - Optimize Light Recalculations
 +        Chunk chunk = this.getChunkIfLoaded(position.getX() >> 4, position.getZ() >> 4);
-+        return updateBrightness(enumskyblock, blockposition, chunk);
++        return updateBrightness(enumskyblock, position, chunk);
 +    }
-+    public boolean updateBrightness(EnumSkyBlock enumskyblock, BlockPosition blockposition, Chunk chunk) {
++    public boolean updateBrightness(EnumSkyBlock enumskyblock, BlockPosition position, Chunk chunk) {
 +        // PandaSpigot end
          int x = position.getX();
          int z = position.getZ();
