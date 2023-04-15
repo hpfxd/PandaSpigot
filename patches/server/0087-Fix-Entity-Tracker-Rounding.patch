@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: necrozma <necrozma999@gmail.com>
+Date: Sat, 8 Apr 2023 04:32:10 +0200
+Subject: [PATCH] Fix Entity Tracker Rounding
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index 0b90b6f30ea09fb117281d5ddd2fc752d2c139b5..b54cee3e7e829d6a80b07b80faea389d17097cdd 100644
+--- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+@@ -51,9 +51,11 @@ public class EntityTrackerEntry {
+         this.b = i;
+         this.c = j;
+         this.u = flag;
+-        this.xLoc = MathHelper.floor(entity.locX * 32.0D);
+-        this.yLoc = MathHelper.floor(entity.locY * 32.0D);
+-        this.zLoc = MathHelper.floor(entity.locZ * 32.0D);
++		// PandaSpigot start
++        this.xLoc = (int) Math.round(entity.locX * 32.0D);
++        this.yLoc = (int) Math.round(entity.locY * 32.0D);
++        this.zLoc = (int) Math.round(entity.locZ * 32.0D);
++		// PandaSpigot end
+         this.yRot = MathHelper.d(entity.yaw * 256.0F / 360.0F);
+         this.xRot = MathHelper.d(entity.pitch * 256.0F / 360.0F);
+         this.i = MathHelper.d(entity.getHeadRotation() * 256.0F / 360.0F);
+@@ -114,9 +116,11 @@ public class EntityTrackerEntry {
+ 
+             if (this.tracker.vehicle == null) {
+                 ++this.v;
+-                i = MathHelper.floor(this.tracker.locX * 32.0D);
+-                j = MathHelper.floor(this.tracker.locY * 32.0D);
+-                int k = MathHelper.floor(this.tracker.locZ * 32.0D);
++				// PandaSpigot start
++                i = (int) Math.round(this.tracker.locX * 32.0D);
++                j = (int) Math.round(this.tracker.locY * 32.0D);
++				int k = (int) Math.round(this.tracker.locZ * 32.0D);
++				// PandaSpigot end
+                 int l = MathHelper.d(this.tracker.yaw * 256.0F / 360.0F);
+                 int i1 = MathHelper.d(this.tracker.pitch * 256.0F / 360.0F);
+                 int j1 = i - this.xLoc;
+@@ -226,9 +230,11 @@ public class EntityTrackerEntry {
+                     this.xRot = j;
+                 }
+ 
+-                this.xLoc = MathHelper.floor(this.tracker.locX * 32.0D);
+-                this.yLoc = MathHelper.floor(this.tracker.locY * 32.0D);
+-                this.zLoc = MathHelper.floor(this.tracker.locZ * 32.0D);
++				// PandaSpigot start
++                this.xLoc = (int) Math.round(this.tracker.locX * 32.0D);
++                this.yLoc = (int) Math.round(this.tracker.locY * 32.0D);
++                this.zLoc = (int) Math.round(this.tracker.locZ * 32.0D);
++				// PandaSpigot end
+                 this.b();
+                 this.x = true;
+             }
