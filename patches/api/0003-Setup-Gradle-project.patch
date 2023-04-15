@@ -6,7 +6,7 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..ba19534e727cceab9c67ce82566c9a12b2150dff
+index 0000000000000000000000000000000000000000..9ae8ebea274e9b395ab0b9ad75b26c1969a880d5
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,123 @@
@@ -50,7 +50,7 @@ index 0000000000000000000000000000000000000000..ba19534e727cceab9c67ce82566c9a12
 +
 +    jar {
 +        from(generateApiVersioningFile.map { it.outputs.files.singleFile }) {
-+            into("META-INF/maven/${project.group}/${project.name.toLowerCase()}")
++            into("META-INF/maven/${project.group}/${project.name.lowercase()}")
 +        }
 +
 +        manifest {
