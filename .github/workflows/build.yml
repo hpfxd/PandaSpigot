@@ -30,8 +30,7 @@ jobs:
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
           path: ~/base
-        key: cache-paper-base-${{ github.ref_name }}
-        restore-keys: cache-paper-base-${{ github.ref_name }}
+          key: cache-paper-base-${{ github.ref_name }}
       - if: ${{ steps.cache-base.outputs.cache-hit != 'true' }}
         name: Setup build environment
         run: ./panda setup
@@ -48,7 +47,6 @@ jobs:
       - name: Copy Paperclip jar
         run: |
           cp -v "./paperclip/build/libs/paperclip-1.8.8-R0.1-SNAPSHOT.jar" "./pandaspigot-$GITHUB_RUN_NUMBER.jar"
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
