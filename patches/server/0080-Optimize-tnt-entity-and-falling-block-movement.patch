@@ -8,12 +8,12 @@ This is configurable using the "tnt.optimize-movement" and
 "tnt.optimize-liquid-explosions" options respectively.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 14f65a41a7711afd45fbd09007e385dfd6291719..692dae61c78a495432f6ffa99e85179c009bdb13 100644
+index 66f47e87963f5e1ba4ae919171b18cadb606724d..183a24a9ce67225c298557300ffe3b6c44bf2a65 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -52,4 +52,8 @@ public class PandaSpigotWorldConfig {
-         public double extraHorizontal = 0.425;
-         public double extraVertical = 0.085;
+         public double extraHorizontal = 0.5;
+         public double extraVertical = 0.1;
      }
 +
 +    public boolean optimizeTntMovement = false; // May not fully emulate vanilla behavior
