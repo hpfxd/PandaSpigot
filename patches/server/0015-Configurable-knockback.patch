@@ -8,7 +8,7 @@ This patch allows velocity applied when a player is hit to be modified in the co
 Reference: https://gist.github.com/YoungOG/e3265d98661957abece71594b70d6a01
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 9afaf630481a9533fb014f306d4d90b8de80a129..0e781b78cb37bd85f9f753bd351d7c724a561bd7 100644
+index 9afaf630481a9533fb014f306d4d90b8de80a129..b6875f4284b45349680c5df31e55ee75a0c9d21b 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -6,4 +6,16 @@ import org.spongepowered.configurate.objectmapping.meta.Comment;
@@ -21,11 +21,11 @@ index 9afaf630481a9533fb014f306d4d90b8de80a129..0e781b78cb37bd85f9f753bd351d7c72
 +    @ConfigSerializable
 +    public static class KnockbackConfig {
 +        public double friction = 2.0;
-+        public double horizontal = 0.35;
-+        public double vertical = 0.35;
++        public double horizontal = 0.4;
++        public double vertical = 0.4;
 +        public double verticalLimit = 0.4;
-+        public double extraHorizontal = 0.425;
-+        public double extraVertical = 0.085;
++        public double extraHorizontal = 0.5;
++        public double extraVertical = 0.1;
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
