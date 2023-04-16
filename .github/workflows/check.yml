@@ -26,7 +26,7 @@ jobs:
           cache-name: cache-paper-base
         with:
           # npm cache files are stored in `~/.npm` on Linux/macOS
-          path: ~/base
+          path: ./base
           key: cache-paper-base-pr
       - if: ${{ steps.cache-base.outputs.cache-hit != 'true' }}
         name: Setup build environment
