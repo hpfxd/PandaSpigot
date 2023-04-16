@@ -1,14 +1,15 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: HeathLoganCampbell <heathlogancampbell@github.com>
-Date: Sun, 16 Apr 2023 16:46:17 -0300
+Date: Sun, 16 Apr 2023 16:57:31 -0300
 Subject: [PATCH] Optimize weather update loops
 
+Co-authored-by: Mechoriet <kevinworm92@gmail.com>
 
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 0700b5aec26a6a4ba4db4d3c66b8b15c295c5a03..6928945c2806e6d53e3d4a5199abe42d91636b6f 100644
+index 0700b5aec26a6a4ba4db4d3c66b8b15c295c5a03..a446d197d7b53a43049adc40b6fd92dc6551ffcf 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -1158,17 +1158,29 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -1158,17 +1158,30 @@ public class WorldServer extends World implements IAsyncTaskHandler {
          // */
          if (flag != this.S()) {
              // Only send weather packets to those affected
@@ -18,10 +19,11 @@ index 0700b5aec26a6a4ba4db4d3c66b8b15c295c5a03..6928945c2806e6d53e3d4a5199abe42d
                  if (((EntityPlayer) this.players.get(i)).world == this) {
                      ((EntityPlayer) this.players.get(i)).setPlayerWeather((!flag ? WeatherType.DOWNFALL : WeatherType.CLEAR), false);
 +            */
-+            for (EntityHuman players : this.players) {
-+                if (players.world == this) {
-+                    ((EntityPlayer) players).setPlayerWeather((!flag ? WeatherType.DOWNFALL : WeatherType.CLEAR), false);
-+                    ((EntityPlayer) players).updateWeather(this.o, this.p, this.q, this.r);
++            for (EntityHuman player : this.players) {
++                if (player.world == this) {
++                    EntityPlayer entityplayer = (EntityPlayer) player;
++                    entityplayer.setPlayerWeather((!flag ? WeatherType.DOWNFALL : WeatherType.CLEAR), false);
++                    entityplayer.updateWeather(this.o, this.p, this.q, this.r);
 +            // PandaSpigot end
                  }
              }
