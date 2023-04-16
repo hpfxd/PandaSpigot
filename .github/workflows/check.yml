@@ -19,8 +19,17 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git config --global init.defaultBranch master
-
-      - name: Setup build environment
+      - name: Cache base/paper folder
+        id: cache-base
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-paper-base
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/base
+          key: cache-paper-base-pr
+      - if: ${{ steps.cache-base.outputs.cache-hit != 'true' }}
+        name: Setup build environment
         run: ./panda setup
 
       - name: Apply patches
