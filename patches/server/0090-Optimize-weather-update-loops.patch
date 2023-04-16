@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: HeathLoganCampbell <heathlogancampbell@github.com>
+Date: Sun, 16 Apr 2023 16:20:35 -0300
+Subject: [PATCH] Optimize weather update loops
+
+
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 0700b5aec26a6a4ba4db4d3c66b8b15c295c5a03..625ec7e1191c4df10ff681cd93720fb024fae82d 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -1158,17 +1158,31 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+         // */
+         if (flag != this.S()) {
+             // Only send weather packets to those affected
++            // PandaSpigot start - Optimize weather update loops
++            /*
+             for (int i = 0; i < this.players.size(); ++i) {
+                 if (((EntityPlayer) this.players.get(i)).world == this) {
+                     ((EntityPlayer) this.players.get(i)).setPlayerWeather((!flag ? WeatherType.DOWNFALL : WeatherType.CLEAR), false);
++            */
++            for (EntityHuman players : this.players) {
++                if (players.world == this) {
++                    ((EntityPlayer) players).setPlayerWeather((!flag ? WeatherType.DOWNFALL : WeatherType.CLEAR), false);
++                    ((EntityPlayer) players).updateWeather(this.o, this.p, this.q, this.r);
++                }
++            }
++            // PandaSpigot end
+                 }
+             }
+         }
++        // PandaSpigot start - Moved up
++        /*
+         for (int i = 0; i < this.players.size(); ++i) {
+             if (((EntityPlayer) this.players.get(i)).world == this) {
+                 ((EntityPlayer) this.players.get(i)).updateWeather(this.o, this.p, this.q, this.r);
+             }
+         }
++        */
++        // PandaSpigot end
+         // CraftBukkit end
+ 
+     }
