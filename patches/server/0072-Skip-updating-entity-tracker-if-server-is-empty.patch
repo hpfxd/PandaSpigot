@@ -5,16 +5,16 @@ Subject: [PATCH] Skip updating entity tracker if server is empty
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 5a3f3f762754374b0635b959c381aeffa682f56e..4aed68b628bd66731540f0e0b5a649717bc3c3ac 100644
+index b105de173338011651e19acc9ae3cd3e83765f2a..2012e43510acfe1c9b4b379feaff8fef8774d9aa 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -993,7 +993,9 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
                  }
                  try {
-                 // PandaSpigot end
+                     // PandaSpigot end
 +                if (this.getPlayerList().getPlayerCount() > 0) { // PandaSpigot - Skip updating entity tracker if zero players online
-                 worldserver.getTracker().updatePlayers();
+                     worldserver.getTracker().updatePlayers();
 +                } // PandaSpigot
-                 // PandaSpigot start - controlled flush for entity tracker packets
+                     // PandaSpigot start - controlled flush for entity tracker packets
                  } finally {
                      for (NetworkManager networkManager : disabledFlushes) {

@@ -5,15 +5,14 @@ Subject: [PATCH] Add Channel initialization listeners
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index c885576a2313cdee439dc9be82798d363f3e8e58..7c8803f4ba837249f3a71f72d53e243b3920bd3f 100644
+index b0067f486d59eb40d11128cf60d1844f38423e3e..8d09a48911368fb91e72c734d88c325078e89ea1 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -41,6 +41,8 @@ dependencies {
+@@ -41,6 +41,7 @@ dependencies {
      implementation("org.jline:jline-terminal-jansi:3.20.0")
      // PandaSpigot end
  
 +    implementation("net.kyori:adventure-key:4.10.1") // PandaSpigot - Add Channel initialization listeners
-+
      testImplementation("junit:junit:4.11")
      testImplementation("org.hamcrest:hamcrest-library:1.3")
  }
@@ -116,12 +115,12 @@ index 0000000000000000000000000000000000000000..81bd7edb536a8da2bb88b45d7e3cd8c0
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 000b2488b0806594bc2d15012c966357f4325f4a..36b5c37d5224ac4f474b5e48767e32f689f6681c 100644
+index 155ffc1ca43a0e09be865cbfa96eed658f04d024..e001df71cd56f3005b4774f4376e624797b7a6ef 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -131,6 +131,7 @@ public class ServerConnection {
-                     // PandaSpigot end
                      channel.pipeline().addLast("packet_handler", networkmanager);
+                     networkmanager.isPending = false; // PandaSpigot
                      networkmanager.a((PacketListener) (new HandshakeListener(ServerConnection.this.f, networkmanager)));
 +                    io.papermc.paper.network.ChannelInitializeListenerHolder.callListeners(channel); // PandaSpigot - Add Channel initialization listeners
                  }

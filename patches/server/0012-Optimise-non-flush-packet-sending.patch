@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Spottedleaf <spottedleaf@spottedleaf.dev>
-Date: Fri, 29 Oct 2021 08:25:50 -0400
+Date: Mon, 17 Apr 2023 23:19:46 +0200
 Subject: [PATCH] Optimise non-flush packet sending
 
 Places like entity tracking make heavy use of packet sending,
@@ -20,33 +20,33 @@ up on this optimisation before he came along.
 Locally this patch drops the entity tracker tick by a full 1.5x.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index ce27fe27a6250c24dac50e382b035858441414ce..f5607282de786598d06f68be292456ba7baf473a 100644
+index 9374f93bd11de1e2d91953a421ada4230c5e8b4b..d920204b8a61ab1dea08ed3229213e7969e4e9eb 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -311,7 +311,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -305,8 +305,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              }
              // PandaSpigot end
          } else {
 -            this.channel.eventLoop().execute(new Runnable() {
-+            Runnable command = new Runnable() { // PandaSpigot - optimize packets that are not flushed
-                 public void run() {
+-                public void run() {
++            Runnable command = () -> { // PandaSpigot - optimise packets that are not flushed
                      if (enumprotocol != enumprotocol1) {
                          NetworkManager.this.a(enumprotocol);
-@@ -344,7 +344,17 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                      }
-                     // PandaSpigot end
+@@ -337,8 +336,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+                     packet.onPacketDispatchFinish(player, null);
                  }
+                 // PandaSpigot end
+-                }
 -            });
-+            // PandaSpigot start - optimize packets that are not flushed
 +            };
++            // PandaSpigot start - optimise packets that are not flushed
 +            if (!flush) {
-+                // create a LazyRunnable that when executed, calls command.run()
 +                io.netty.util.concurrent.AbstractEventExecutor.LazyRunnable run = command::run;
 +                this.channel.eventLoop().execute(run);
-+            } else {
-+                // if flushing, just schedule like normal
++           } else {
 +                this.channel.eventLoop().execute(command);
-+            }
++           }
 +            // PandaSpigot end
          }
  

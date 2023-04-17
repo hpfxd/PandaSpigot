@@ -317,13 +317,13 @@ index c51a1f7d1a57acde1e5c7378fe35c30547107052..3f9cdbff6746ed0776b32d9649e5689f
      }
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index ac3828389190584842f3c9745bcb43ba63bdd71b..000b2488b0806594bc2d15012c966357f4325f4a 100644
+index 75dea22c49f89ea0190235e92baa67c99d31d7da..9087b16c6362e08c805e40364a26bac10648f1c0 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
-@@ -115,7 +115,14 @@ public class ServerConnection {
+@@ -114,7 +114,14 @@ public class ServerConnection {
                      }
  
-                     if (!disableFlushConsolidation) channel.pipeline().addFirst(new io.netty.handler.flush.FlushConsolidationHandler()); // PandaSpigot
+                     if (!disableFlushConsolidation) channel.pipeline().addFirst(new io.netty.handler.flush.FlushConsolidationHandler()); // Paper
 -                    channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30)).addLast("legacy_query", new LegacyPingHandler(ServerConnection.this)).addLast("splitter", new PacketSplitter()).addLast("decoder", new PacketDecoder(EnumProtocolDirection.SERVERBOUND)).addLast("prepender", new PacketPrepender()).addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
 +                    // PandaSpigot start - newlines
 +                    channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30))
