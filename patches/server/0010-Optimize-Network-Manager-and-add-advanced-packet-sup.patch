@@ -26,7 +26,7 @@ Also avoids spamming closed channel exception by rechecking closed state in disp
 and then catch exceptions and close if they fire.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..53abb92ba2589e853fd6cda957e4f7a73d75747e 100644
+index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..8f4f03326251f63f7b577cbea1d1fd76dc7229eb 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -144,7 +144,7 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..53abb92ba2589e853fd6cda957e4f7a7
 +        java.util.List<Packet> extraPackets = InnerUtil.buildExtraPackets(packet);
 +        boolean hasExtraPackets = extraPackets != null && !extraPackets.isEmpty();
 +        if (!hasExtraPackets) {
-+            this.i.add(new NetworkManager.QueuedPacket(packet, genericfuturelistener));
++            this.i.add(new NetworkManager.QueuedPacket(packet, listeners));
          } else {
 -            this.j.writeLock().lock();
 +            java.util.List<NetworkManager.QueuedPacket> packets = new java.util.ArrayList<>(1 + extraPackets.size());
