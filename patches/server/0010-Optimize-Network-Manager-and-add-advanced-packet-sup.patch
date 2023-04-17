@@ -336,26 +336,6 @@ index fdc142b75b78289f01a9e9fed6f36432624735db..f60249cc95578f04a722f7b4d8cbb57f
 +    default java.util.List<Packet> getExtraPackets() { return null; }
 +
  }
-diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 3c2d3197faa7e5212f7c6f9970e56426ae02ade7..411a6380c83549f6b387346406d878ad8e046765 100644
---- a/src/main/java/net/minecraft/server/PlayerList.java
-+++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -145,6 +145,7 @@ public abstract class PlayerList {
-         this.a(entityplayer, (EntityPlayer) null, worldserver);
-         PlayerConnection playerconnection = new PlayerConnection(this.server, networkmanager, entityplayer);
- 
-+        networkmanager.queueImmunity = true;
-         playerconnection.sendPacket(new PacketPlayOutLogin(entityplayer.getId(), entityplayer.playerInteractManager.getGameMode(), worlddata.isHardcore(), worldserver.worldProvider.getDimension(), worldserver.getDifficulty(), Math.min(this.getMaxPlayers(), 60), worlddata.getType(), worldserver.getGameRules().getBoolean("reducedDebugInfo"))); // CraftBukkit - cap player list to 60
-         entityplayer.getBukkitEntity().sendSupportedChannels(); // CraftBukkit
-         playerconnection.sendPacket(new PacketPlayOutCustomPayload("MC|Brand", (new PacketDataSerializer(Unpooled.buffer())).a(this.getServer().getServerModName())));
-@@ -152,6 +153,7 @@ public abstract class PlayerList {
-         playerconnection.sendPacket(new PacketPlayOutSpawnPosition(blockposition));
-         playerconnection.sendPacket(new PacketPlayOutAbilities(entityplayer.abilities));
-         playerconnection.sendPacket(new PacketPlayOutHeldItemSlot(entityplayer.inventory.itemInHandIndex));
-+        networkmanager.queueImmunity = false;
-         entityplayer.getStatisticManager().d();
-         entityplayer.getStatisticManager().updateStatistics(entityplayer);
-         this.sendScoreboard((ScoreboardServer) worldserver.getScoreboard(), entityplayer);
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
 index 578d03ead09c3c126fcd2da0657e1d94dbba9840..cc8bc4226e1822131d2ed56b3de7aa4fda9a34d8 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
