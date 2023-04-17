@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize Network Manager and add advanced packet support
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..bb341cc0a975be0163e973de45cc01b3f28801e9 100644
+index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..190050cea633c25aa80f0f29dc4429c219330ee0 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -108,7 +108,7 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..bb341cc0a975be0163e973de45cc01b3
 +            packets.add(new NetworkManager.QueuedPacket(packet, null));
 +
 +            for (int i = 0, len = extraPackets.size(); i < len;) {
-+                Packet extra = extraExtra.get(i);
++                Packet extra = extraPackets.get(i);
 +                boolean end = ++i == len;
 +                packets.add(new NetworkManager.QueuedPacket(extra, end ? genericfuturelistener : null));
 +            }
