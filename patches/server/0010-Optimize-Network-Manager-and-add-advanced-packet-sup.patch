@@ -316,27 +316,29 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..c5c98868a4ca3994a27978807222bcd3
          public QueuedPacket(Packet packet, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
              this.a = packet;
 diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
-index fdc142b75b78289f01a9e9fed6f36432624735db..f60249cc95578f04a722f7b4d8cbb57f2f77ae3d 100644
+index fdc142b75b78289f01a9e9fed6f36432624735db..ff3433c57568da2394a9c53f4ef76e7a4ad64d56 100644
 --- a/src/main/java/net/minecraft/server/Packet.java
 +++ b/src/main/java/net/minecraft/server/Packet.java
-@@ -9,4 +9,19 @@ public interface Packet<T extends PacketListener> {
+@@ -9,4 +9,21 @@ public interface Packet<T extends PacketListener> {
      void b(PacketDataSerializer packetdataserializer) throws IOException;
  
      void a(T t0);
 +
++    // PandaSpigot start
 +    /**
 +     * @param player Null if not at PLAY stage yet
 +     */
-+    default void onPacketDispatch(@javax.annotation.Nullable EntityPlayer player) {}
++    default void onPacketDispatch(EntityPlayer player) {}
 +
-+    /**
++        /**
 +     * @param player Null if not at PLAY stage yet
 +     * @param future Can be null if packet was cancelled
 +     */
-+    default void onPacketDispatchFinish(@javax.annotation.Nullable EntityPlayer player, @javax.annotation.Nullable io.netty.channel.ChannelFuture future) {}
++    default void onPacketDispatchFinish(EntityPlayer player, io.netty.channel.ChannelFuture future) {}
 +    default boolean hasFinishListener() { return false; }
 +    default boolean isReady() { return true; }
 +    default java.util.List<Packet> getExtraPackets() { return null; }
++    // PandaSpigot end
 +
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
