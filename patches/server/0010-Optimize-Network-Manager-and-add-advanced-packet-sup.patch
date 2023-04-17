@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize Network Manager and add advanced packet support
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..4a3f6837b16b23a48364436f4249c549c7c1dbfa 100644
+index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..2df3928b9f06da25d2220854765572b1f98c6c58 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -214,7 +214,7 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..4a3f6837b16b23a48364436f4249c549
 -                }
 -            } finally {
 -                this.j.readLock().unlock();
-+    // PandaSpigot start - rewrite this to be safer on
++    // PandaSpigot start - rewrite this to be safer if ran off main thread
 +    private boolean sendPacketQueue() { return this.m(); } // OBFHELPER // void -> boolean
 +    private boolean m() { // void -> boolean
 +        if (!isConnected()) {
