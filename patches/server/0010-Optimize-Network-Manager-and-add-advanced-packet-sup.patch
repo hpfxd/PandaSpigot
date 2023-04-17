@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize Network Manager and add advanced packet support
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..5b1be5eaf3c064b3382022bc566aceadab4ca40a 100644
+index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..d103cf570f39ddce4dd5a40d1f364793568f5cf5 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -22,9 +22,9 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..5b1be5eaf3c064b3382022bc566acead
      private boolean p;
      private static boolean enableExplicitFlush = Boolean.getBoolean("paper.explicit-flush"); // PandaSpigot - Disable explicit flushing
 +    // PandaSpigot start - Optimize network
-+    boolean isPending = true;
-+    boolean queueImmunity = false;
-+    EnumProtocol protocol;
++    public boolean isPending = true;
++    public boolean queueImmunity = false;
++    public EnumProtocol protocol;
 +    // PandaSpigot end
  
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
