@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize Network Manager and add advanced packet support
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..60f6b0942cdd5b66ba799219571f997f9f3a6b55 100644
+index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..43a9ef3c51b608095d81042345d81a8f1f067af8 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -93,7 +93,7 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..60f6b0942cdd5b66ba799219571f997f
 +        }
 +        packet.onPacketDispatch(getPlayer());
 +        if (connected && (InnerUtil.canSendImmediate(this, packet) || (
-+            MinecraftServer.getServer().isMainThread() && packet.isReady() && this.isEmpty() &&
++            MinecraftServer.getServer().isMainThread() && packet.isReady() && this.i.isEmpty() &&
 +            (packet.getExtraPackets() == null || packet.getExtraPackets().isEmpty())
 +        ))) {
 +            this.dispatchPacket(packet, genericfuturelistener);
