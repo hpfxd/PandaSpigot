@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize Network Manager and add advanced packet support
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..d5487c0a20b13c9dd9e41435b0707e1ef973ee60 100644
+index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..5970dbd731dfd602ee3afc9f0606078fb9705814 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -144,13 +144,13 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..d5487c0a20b13c9dd9e41435b0707e1e
                  channelfuture.addListeners(agenericfuturelistener);
              }
 +            if (packet.hasFinishListener()) {
-+                channelfuture.addListener((ChannelFutureListener) channelFuture -> packet.onPacketDispatchFinish(player, ChannelFuture));
++                channelfuture.addListener((ChannelFutureListener) channelFuture -> packet.onPacketDispatchFinish(player, channelFuture));
 +            }
  
              channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 +            } catch (Exception e) {
 +                g.error("NetworkException: " + player, e);
-+                close(new ChatMessage("disconnect.genericReason", "Internal Exception" + e.getMessage()));;
++                close(new ChatMessage("disconnect.genericReason", "Internal Exception: " + e.getMessage()));;
 +                packet.onPacketDispatchFinish(player, null);
 +            }
          } else {
@@ -171,13 +171,13 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..d5487c0a20b13c9dd9e41435b0707e1e
                          channelfuture.addListeners(agenericfuturelistener);
                      }
 +                    if (packet.hasFinishListener()) {
-+                        channelfuture.addListener((ChannelFutureListener) channelFuture -> packet.onPacketDispatchFinish(player, ChannelFuture));
++                        channelfuture.addListener((ChannelFutureListener) channelFuture -> packet.onPacketDispatchFinish(player, channelFuture));
 +                    }
  
                      channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 +                    } catch (Exception e) {
 +                        g.error("NetworkException: " + player, e);
-+                        close(new ChatMessage("disconnect.genericReason", "Internal Exception" + e.getMessage()));;
++                        close(new ChatMessage("disconnect.genericReason", "Internal Exception: " + e.getMessage()));;
 +                        packet.onPacketDispatchFinish(player, null);
 +                    }
                  }
