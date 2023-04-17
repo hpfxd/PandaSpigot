@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize Network Manager and add advanced packet support
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..9dd44244e13b90fcd9c8bd96189bbe5fef17a49a 100644
+index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..4a3f6837b16b23a48364436f4249c549c7c1dbfa 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -71,7 +71,7 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..9dd44244e13b90fcd9c8bd96189bbe5f
 +        }
 +
 +        private static boolean canSendImmediate(NetworkManager networkManager, Packet<?> packet) {
-+            return networkManager.isPending || networkManager.protocol != EnumProtocol.PLAY || networkManager.queueImmunity ||
++            return networkManager.isPending || networkManager.protocol != EnumProtocol.PLAY ||
 +                packet instanceof PacketPlayOutKeepAlive ||
 +                packet instanceof PacketPlayOutChat ||
 +                packet instanceof PacketPlayOutTabComplete;
