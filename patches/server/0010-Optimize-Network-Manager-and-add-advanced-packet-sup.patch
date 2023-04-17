@@ -316,30 +316,46 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..c5c98868a4ca3994a27978807222bcd3
          public QueuedPacket(Packet packet, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
              this.a = packet;
 diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
-index fdc142b75b78289f01a9e9fed6f36432624735db..ff3433c57568da2394a9c53f4ef76e7a4ad64d56 100644
+index fdc142b75b78289f01a9e9fed6f36432624735db..d60ec06b995eb477b555d222e99e208560656cef 100644
 --- a/src/main/java/net/minecraft/server/Packet.java
 +++ b/src/main/java/net/minecraft/server/Packet.java
-@@ -9,4 +9,21 @@ public interface Packet<T extends PacketListener> {
+@@ -9,4 +9,37 @@ public interface Packet<T extends PacketListener> {
      void b(PacketDataSerializer packetdataserializer) throws IOException;
  
      void a(T t0);
-+
++    
 +    // PandaSpigot start
 +    /**
-+     * @param player Null if not at PLAY stage yet
++     * @param player {@code null} if not at {@link EnumProtocol#PLAY} yet.
 +     */
 +    default void onPacketDispatch(EntityPlayer player) {}
-+
-+        /**
-+     * @param player Null if not at PLAY stage yet
-+     * @param future Can be null if packet was cancelled
++    
++    /**
++     * @param player {@code null} if not at {@link EnumProtocol#PLAY} yet.
++     * @param future Can be {@code null} if packet was cancelled.
 +     */
 +    default void onPacketDispatchFinish(EntityPlayer player, io.netty.channel.ChannelFuture future) {}
++    
++    /**
++     * @return Whether {@link #onPacketDispatchFinish(EntityPlayer, io.netty.channel.ChannelFuture)} should
++     * be called after this packet has been dispatched.
++     */
 +    default boolean hasFinishListener() { return false; }
++    
++    /**
++     * Checks whether this packet is ready to be sent.
++     * <p>
++     * If this returns {@code false}, the packet will be added to the queue, and checked every tick until it is ready.
++     *
++     * @return Whether this packet is ready.
++     */
 +    default boolean isReady() { return true; }
-+    default java.util.List<Packet> getExtraPackets() { return null; }
++    
++    /**
++     * @return A list of extra packets to be sent after this packet.
++     */
++    default java.util.List<Packet<?>> getExtraPackets() { return null; }
 +    // PandaSpigot end
-+
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
 index 578d03ead09c3c126fcd2da0657e1d94dbba9840..cc8bc4226e1822131d2ed56b3de7aa4fda9a34d8 100644
