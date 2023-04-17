@@ -6,7 +6,7 @@ Subject: [PATCH] Avoid blocking on Network Manager creation
 Per Paper issue 294
 
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 51a83ca54eb81608a68251f5b44dfec520f9b26a..3b4dd4b32c25db4e07deb83719c0039eefe26f8c 100644
+index b324a63cc4b9057859a37cf1467f4c989f771e31..83e13d04254d1c310ad3e606456e61e0b36e45d0 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -62,6 +62,16 @@ public class ServerConnection {
@@ -27,7 +27,7 @@ index 51a83ca54eb81608a68251f5b44dfec520f9b26a..3b4dd4b32c25db4e07deb83719c0039e
          this.f = minecraftserver;
          this.d = true;
 @@ -106,8 +116,11 @@ public class ServerConnection {
-                     if (!disableFlushConsolidation) channel.pipeline().addFirst(new io.netty.handler.flush.FlushConsolidationHandler()); // Paper
+                     if (!disableFlushConsolidation) channel.pipeline().addFirst(new io.netty.handler.flush.FlushConsolidationHandler()); // PandaSpigot
                      channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30)).addLast("legacy_query", new LegacyPingHandler(ServerConnection.this)).addLast("splitter", new PacketSplitter()).addLast("decoder", new PacketDecoder(EnumProtocolDirection.SERVERBOUND)).addLast("prepender", new PacketPrepender()).addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
                      NetworkManager networkmanager = new NetworkManager(EnumProtocolDirection.SERVERBOUND);
 -
