@@ -5,7 +5,7 @@ Subject: [PATCH] Optimize Network Manager and add advanced packet support
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..6a9870f277cc8c9c01c73b77b65434de4a9df308 100644
+index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..127eead729e20c99632a1703f4c96578a87d5159 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -119,7 +119,7 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..6a9870f277cc8c9c01c73b77b65434de
 +        this.sendPacketQueue();
      }
  
-+    private void dispatchPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>>[] genericFutureListener) { this.a(packet, genericFutureListener); }
++    private void dispatchPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>>[] agenericFutureListener) { this.a(packet, agenericFutureListener); } // PandaSpigot - OBFHELPER
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
          final EnumProtocol enumprotocol = EnumProtocol.a(packet);
          final EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
