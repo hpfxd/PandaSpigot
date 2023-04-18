@@ -23,10 +23,10 @@ This should solve some deadlock risks
 Also adds Netty Channel Flush Consolidation to reduce the amount of flushing
 
 Also avoids spamming closed channel exception by rechecking closed state in dispatch
-and then catch exceptions and close if they fire.hpfxd <me@hpfxd.com>
+and then catch exceptions and close if they fire.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8 100644
+index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..318572dafd41eed4cf534e7d7e5fd0ff15d6cd98 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -42,7 +42,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..5cfe9f4a1eefaa0260cfeeff68b260cb
      private IChatBaseComponent n;
      private boolean o;
      private boolean p;
-+   // PandaSpigot start - Optimize network
++    // PandaSpigot start - Optimize network
 +    public boolean isPending = true;
 +    public boolean queueImmunity = false;
 +    public EnumProtocol protocol;
@@ -184,7 +184,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..5cfe9f4a1eefaa0260cfeeff68b260cb
 +                return;
 +            }
 +            try {
-+                // PandaSpigot end
++            // PandaSpigot end
              ChannelFuture channelfuture = this.channel.writeAndFlush(packet);
  
              if (agenericfuturelistener != null) {
@@ -351,27 +351,44 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..5cfe9f4a1eefaa0260cfeeff68b260cb
          public QueuedPacket(Packet packet, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
              this.a = packet;
 diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
-index fdc142b75b78289f01a9e9fed6f36432624735db..8c9cd810779d1bbffb94dcab641602c05d19182d 100644
+index fdc142b75b78289f01a9e9fed6f36432624735db..bb18dac7a3554a8a6cb93d24bc539901a4d9a89b 100644
 --- a/src/main/java/net/minecraft/server/Packet.java
 +++ b/src/main/java/net/minecraft/server/Packet.java
-@@ -9,4 +9,19 @@ public interface Packet<T extends PacketListener> {
+@@ -9,4 +9,36 @@ public interface Packet<T extends PacketListener> {
      void b(PacketDataSerializer packetdataserializer) throws IOException;
  
      void a(T t0);
 +    // PandaSpigot start
 +    /**
-+     * @param player Null if not at PLAY stage yet
++     * @param player {@code null} if not at {@link EnumProtocol#PLAY} yet.
 +     */
-+    default void onPacketDispatch( EntityPlayer player) {}
++    default void onPacketDispatch(EntityPlayer player) {}
 +
 +    /**
-+     * @param player Null if not at PLAY stage yet
-+     * @param future Can be null if packet was cancelled
++     * @param player {@code null} if not at {@link EnumProtocol#PLAY} yet.
++     * @param future Can be {@code null} if packet was cancelled.
 +     */
-+    default void onPacketDispatchFinish( EntityPlayer player, io.netty.channel.ChannelFuture future) {}
++    default void onPacketDispatchFinish(EntityPlayer player, io.netty.channel.ChannelFuture future) {}
++
++    /**
++     * @return Whether {@link #onPacketDispatchFinish(EntityPlayer, io.netty.channel.ChannelFuture)} should
++     * be called after this packet has been dispatched.
++     */
 +    default boolean hasFinishListener() { return false; }
++
++    /**
++     * Checks whether this packet is ready to be sent.
++     * <p>
++     * If this returns {@code false}, the packet will be added to the queue, and checked every tick until it is ready.
++     *
++     * @return Whether this packet is ready.
++     */
 +    default boolean isReady() { return true; }
-+    default java.util.List<Packet> getExtraPackets() { return null; }
++
++    /**
++     * @return A list of extra packets to be sent after this packet.
++     */
++    default java.util.List<Packet<?>> getExtraPackets() { return null; }
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
