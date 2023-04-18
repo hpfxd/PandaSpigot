@@ -6,12 +6,12 @@ Subject: [PATCH] Avoid blocking on Network Manager creation
 Per Paper issue 294
 
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 69329da5a4c8e173c87961de50ea70351fd0e20a..dfe92f3cb3a5b02ee2480beb7e49f0c02acfa47f 100644
+index f118ba3eaec0948e838281c9608f0a45e753ded1..27da3a5c6caff3b4e2dbdc187bc44ee936dab211 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -63,6 +63,16 @@ public class ServerConnection {
      private final List<NetworkManager> h = Collections.synchronizedList(Lists.<NetworkManager>newArrayList());
-     private static final boolean disableFlushConsolidation = Boolean.getBoolean("Paper.disableFlushConsolidate"); // Paper
+     private static final boolean disableFlushConsolidation = Boolean.getBoolean("Paper.disableFlushConsolidate"); // PandaSpigot
  
 +    // PandaSpigot start - prevent blocking on adding a new network manager while the server is ticking
 +    private final java.util.Queue<NetworkManager> pending = new java.util.concurrent.ConcurrentLinkedQueue<>();

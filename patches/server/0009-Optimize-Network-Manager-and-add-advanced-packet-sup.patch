@@ -375,14 +375,14 @@ index fdc142b75b78289f01a9e9fed6f36432624735db..8c9cd810779d1bbffb94dcab641602c0
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 578d03ead09c3c126fcd2da0657e1d94dbba9840..69329da5a4c8e173c87961de50ea70351fd0e20a 100644
+index 578d03ead09c3c126fcd2da0657e1d94dbba9840..f118ba3eaec0948e838281c9608f0a45e753ded1 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -61,6 +61,7 @@ public class ServerConnection {
      public volatile boolean d;
      private final List<ChannelFuture> g = Collections.synchronizedList(Lists.<ChannelFuture>newArrayList());
      private final List<NetworkManager> h = Collections.synchronizedList(Lists.<NetworkManager>newArrayList());
-+    private static final boolean disableFlushConsolidation = Boolean.getBoolean("Paper.disableFlushConsolidate"); // Paper
++    private static final boolean disableFlushConsolidation = Boolean.getBoolean("Paper.disableFlushConsolidate"); // PandaSpigot
  
      public ServerConnection(MinecraftServer minecraftserver) {
          this.f = minecraftserver;
