@@ -26,7 +26,7 @@ Also avoids spamming closed channel exception by rechecking closed state in disp
 and then catch exceptions and close if they fire.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464cdb7ed19 100644
+index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..246494cdf91e2c10700523eeaaf8e9b82e65c112 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -38,10 +38,10 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
      public Channel channel;
      // Spigot Start // PAIL
      public SocketAddress l;
-@@ -75,6 +75,11 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -74,6 +74,11 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     private IChatBaseComponent n;
      private boolean o;
      private boolean p;
-     private static boolean enableExplicitFlush = Boolean.getBoolean("paper.explicit-flush"); // PandaSpigot - Disable explicit flushing
 +    // PandaSpigot start - Optimize network
 +    public boolean isPending = true;
 +    public boolean queueImmunity = false;
@@ -50,7 +50,7 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
  
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
-@@ -97,6 +102,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -96,6 +101,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      }
  
      public void a(EnumProtocol enumprotocol) {
@@ -58,11 +58,10 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
          this.channel.attr(NetworkManager.c).set(enumprotocol);
          this.channel.config().setAutoRead(true);
          NetworkManager.g.debug("Enabled auto read");
-@@ -135,39 +141,93 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-         NetworkManager.g.debug("Set listener of {} to {}", new Object[] { this, packetlistener});
+@@ -135,38 +141,87 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          this.m = packetlistener;
      }
--
+ 
 -    public void handle(Packet packet) {
 -        if (this.g()) {
 -            this.m();
@@ -81,17 +80,17 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
 +            return null;
 +        }
 +    }
-+    private static class InnerUtil { // Attempt to hide these methods from ProtocolLib, so it doesn't accidentally pick them up.
++    private static class InnerUtil { // Attempt to hide these methods from ProtocolLib so it doesn't accidently pick them up.
 +        private static java.util.List<Packet> buildExtraPackets(Packet packet) {
 +            java.util.List<Packet> extra = packet.getExtraPackets();
 +            if (extra == null || extra.isEmpty()) {
-+                return null;
++               return null;
              }
 +            java.util.List<Packet> ret = new java.util.ArrayList<>(1 + extra.size());
 +            buildExtraPackets0(extra, ret);
 +            return ret;
          }
-+        
+ 
 +        private static void buildExtraPackets0(java.util.List<Packet> extraPackets, java.util.List<Packet> into) {
 +            for (Packet extra : extraPackets) {
 +                into.add(extra);
@@ -101,7 +100,6 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
 +                }
 +            }
 +        }
-+        
 +        private static boolean canSendImmediate(NetworkManager networkManager, Packet<?> packet) {
 +            return networkManager.isPending || networkManager.protocol != EnumProtocol.PLAY ||
 +                    packet instanceof PacketPlayOutKeepAlive ||
@@ -109,37 +107,32 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
 +                    packet instanceof PacketPlayOutTabComplete ||
 +                    packet instanceof PacketPlayOutTitle;
 +        }
-+    }
-+    // PandaSpigot end
-+
-+    public void handle(Packet packet) {
-+        // PandaSpigot start
-+        this.a(packet, null, null);
-+        // PandaSpigot end
- 
      }
++    // PandaSpigot end
  
 -    public void a(Packet packet, GenericFutureListener<? extends Future<? super Void>> genericfuturelistener, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
 -        if (this.g()) {
 -            this.m();
 -            this.a(packet, (GenericFutureListener[]) ArrayUtils.add(agenericfuturelistener, 0, genericfuturelistener));
-+    public void a(Packet packet, GenericFutureListener<? extends Future<? super Void>> genericfuturelistener, GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
++    public void handle(Packet<?> packet) {
++        this.a(packet, null, (GenericFutureListener<? extends Future<? super Void>>) null); // PandaSpigot
++    }
++    public void a(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> genericfuturelistener, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
 +        // PandaSpigot start - handle oversized packets better
 +        GenericFutureListener<? extends Future<? super Void>>[] listeners = null;
 +        if (genericfuturelistener != null || agenericfuturelistener != null) { // cannot call ArrayUtils.add with both null arguments
 +            listeners = ArrayUtils.add(agenericfuturelistener, 0, genericfuturelistener);
 +        }
-+    
 +        boolean connected = this.isConnected();
-+        if (!connected && !this.preparing) {
++        if (!connected && !preparing) {
 +            return; // Do nothing
 +        }
 +        packet.onPacketDispatch(getPlayer());
 +        if (connected && (InnerUtil.canSendImmediate(this, packet) || (
-+                MinecraftServer.getServer().isMainThread() && packet.isReady() && this.i.isEmpty() &&
++            MinecraftServer.getServer().isMainThread() && packet.isReady() && this.i.isEmpty() &&
 +                        (packet.getExtraPackets() == null || packet.getExtraPackets().isEmpty())
 +        ))) {
-+            this.writePacket(packet, listeners,null);
++            this.dispatchPacket(packet, listeners);
 +            return;
 +        }
 +        // write the packets to the queue, then flush - antixray hooks there already
@@ -149,33 +142,30 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
 +            this.i.add(new NetworkManager.QueuedPacket(packet, listeners));
          } else {
 -            this.j.writeLock().lock();
--
++            java.util.List<NetworkManager.QueuedPacket> packets = new java.util.ArrayList<>(1 + extraPackets.size());
++            packets.add(new NetworkManager.QueuedPacket(packet, (GenericFutureListener<? extends Future<? super Void>>) null)); // delay the future listener until the end of the extra packets
+ 
 -            try {
 -                this.i.add(new NetworkManager.QueuedPacket(packet, (GenericFutureListener[]) ArrayUtils.add(agenericfuturelistener, 0, genericfuturelistener)));
 -            } finally {
 -                this.j.writeLock().unlock();
-+            java.util.List<NetworkManager.QueuedPacket> packets = new java.util.ArrayList<>(1 + extraPackets.size());
-+            packets.add(new NetworkManager.QueuedPacket(packet, (GenericFutureListener<? extends Future<? super Void>>[]) null)); // delay the future listener until the end of the extra packets
-+        
 +            for (int i = 0, len = extraPackets.size(); i < len;) {
 +                Packet extra = extraPackets.get(i);
 +                boolean end = ++i == len;
 +                packets.add(new NetworkManager.QueuedPacket(extra, end ? listeners : null)); // append listener to the end
              }
-+        
-+            this.i.addAll(packets); // atomic
++            this.i.addAll(packets);
          }
--
+ 
 +        this.sendPacketQueue();
 +        // PandaSpigot end
      }
--
-+    
+ 
 +    private void dispatchPacket(Packet<?> packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) { this.a(packet, agenericfuturelistener); } // PandaSpigot - OBFHELPER
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
          final EnumProtocol enumprotocol = EnumProtocol.a(packet);
          final EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
-@@ -177,18 +237,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -176,18 +231,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              this.channel.config().setAutoRead(false);
          }
  
@@ -184,25 +174,25 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
              if (enumprotocol != enumprotocol1) {
                  this.a(enumprotocol);
              }
+ 
 +            // PandaSpigot start
 +            if (!isConnected()) {
 +                packet.onPacketDispatchFinish(player, null);
 +                return;
 +            }
 +            try {
-+                // PandaSpigot end
- 
++            // PandaSpigot end
              ChannelFuture channelfuture = this.channel.writeAndFlush(packet);
  
              if (agenericfuturelistener != null) {
                  channelfuture.addListeners(agenericfuturelistener);
              }
+ 
 +            // PandaSpigot start
 +            if (packet.hasFinishListener()) {
 +                channelfuture.addListener((ChannelFutureListener) channelFuture -> packet.onPacketDispatchFinish(player, channelFuture));
 +            }
 +            // PandaSpigot end
- 
              channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
 +            // PandaSpigot start
 +            } catch (Exception e) {
@@ -214,36 +204,36 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
          } else {
              this.channel.eventLoop().execute(new Runnable() {
                  public void run() {
-@@ -196,35 +276,76 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -195,35 +270,77 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                          NetworkManager.this.a(enumprotocol);
                      }
  
-+                    // PandaSpigot start
-+                    if (!isConnected()) {
-+                        packet.onPacketDispatchFinish(player, null);
-+                        return;
-+                    }
-+                    try {
-+                        // PandaSpigot end
++                // PandaSpigot start
++                if (!isConnected()) {
++                    packet.onPacketDispatchFinish(player, null);
++                    return;
++                }
++                try {
++                // PandaSpigot end
                      ChannelFuture channelfuture = NetworkManager.this.channel.writeAndFlush(packet);
  
                      if (agenericfuturelistener != null) {
                          channelfuture.addListeners(agenericfuturelistener);
                      }
-+                    // PandaSpigot start
-+                    if (packet.hasFinishListener()) {
-+                        channelfuture.addListener((ChannelFutureListener) channelFuture -> packet.onPacketDispatchFinish(player, channelFuture));
-+                    }
-+                    // PandaSpigot end
  
++                // PandaSpigot start
++                if (packet.hasFinishListener()) {
++                    channelfuture.addListener((ChannelFutureListener) channelFuture -> packet.onPacketDispatchFinish(player, channelFuture));
++                }
++                // PandaSpigot end
                      channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-+                    // PandaSpigot start
-+                    } catch (Exception e) {
-+                        g.error("NetworkException: " + player, e);
-+                        close(new ChatMessage("disconnect.genericReason", "Internal Exception: " + e.getMessage()));;
-+                        packet.onPacketDispatchFinish(player, null);
-+                    }
-+                    // PandaSpigot end
++                // PandaSpigot start
++                } catch (Exception e) {
++                    g.error("NetworkException: " + player, e);
++                    close(new ChatMessage("disconnect.genericReason", "Internal Exception: " + e.getMessage()));;
++                    packet.onPacketDispatchFinish(player, null);
++                }
++                // PandaSpigot end
                  }
              });
          }
@@ -263,14 +253,14 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
 -            } finally {
 -                this.j.readLock().unlock();
 +    // PandaSpigot start - rewrite this to be safer if ran off main thread
-+    private boolean sendPacketQueue() { return this.m(); } // PandaSpigot - OBFHELPER // void -> boolean
-+    private boolean m() {
-+        if (!this.isConnected()) {
++    private boolean sendPacketQueue() { return this.m(); } // OBFHELPER // void -> boolean
++    private boolean m() { // void -> boolean
++        if (!isConnected()) {
 +            return true;
 +        }
 +        if (MinecraftServer.getServer().isMainThread()) {
-+            return this.processQueue();
-+        } else if (this.isPending) {
++            return processQueue();
++        } else if (isPending) {
 +            // Should only happen during login/status stages
 +            synchronized (this.i) {
 +                return this.processQueue();
@@ -285,18 +275,18 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
 +        java.util.Iterator<QueuedPacket> iterator = this.i.iterator();
 +        while (iterator.hasNext()) {
 +            NetworkManager.QueuedPacket queued = iterator.next(); // poll -> peek
-+    
 +            // Fix NPE (Spigot bug caused by handleDisconnection())
-+            if (false && queued == null) return true;
-+    
++            if (false && queued == null) {
++                return true;
+             }
+ 
 +            Packet<?> packet = queued.getPacket();
 +            if (!packet.isReady()) {
 +                return false;
 +            } else {
 +                iterator.remove();
 +                this.dispatchPacket(packet, queued.getGenericFutureListeners());
-             }
--
++            }
          }
 +        return true;
      }
@@ -304,30 +294,29 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
  
      public void a() {
          this.m();
-@@ -239,9 +360,22 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -238,9 +355,21 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          return this.l;
      }
  
 +    // PandaSpigot start
 +    public void clearPacketQueue() {
 +        EntityPlayer player = getPlayer();
-+        this.i.forEach(queuedPacket -> {
++        i.forEach(queuedPacket -> {
 +            Packet<?> packet = queuedPacket.getPacket();
 +            if (packet.hasFinishListener()) {
 +                packet.onPacketDispatchFinish(player, null);
 +            }
 +        });
-+        this.i.clear();
-+    }
-+    // PandaSpigot end
++        i.clear();
++    } // PandaSpigot end
      public void close(IChatBaseComponent ichatbasecomponent) {
          // Spigot Start
          this.preparing = false;
-+        this.clearPacketQueue(); // PandaSpigot
++        clearPacketQueue(); // PandaSpigot
          // Spigot End
          if (this.channel.isOpen()) {
              this.channel.close(); // We can't wait as this may be called from an event loop.
-@@ -260,6 +394,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -259,6 +388,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          this.channel.pipeline().addBefore("prepender", "encrypt", new PacketEncrypter(MinecraftEncryption.a(1, secretkey)));
      }
  
@@ -335,54 +324,55 @@ index 8f8b9aa731f2c97a3e32369bfd4d641a1f2ab412..f6e797f712f029a9bbe94739469c7464
      public boolean g() {
          return this.channel != null && this.channel.isOpen();
      }
-@@ -314,9 +449,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -313,9 +443,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                  } else if (this.getPacketListener() != null) {
                      this.getPacketListener().a(new ChatComponentText("Disconnected"));
                  }
 -                this.i.clear(); // Free up packet queue.
-+                this.clearPacketQueue(); // PandaSpigot
++                clearPacketQueue(); // PandaSpigot
              } else {
 -                NetworkManager.g.warn("handleDisconnection() called twice");
 +                //NetworkManager.g.warn("handleDisconnection() called twice"); // PandaSpigot - Do not log useless message
              }
  
          }
-@@ -335,6 +470,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-             this.a = packet;
-             this.b = agenericfuturelistener;
-         }
-+        public Packet getPacket() { return this.a; } // PandaSpigot - OBFHELPER
-+        public GenericFutureListener<? extends Future<? super Void>>[] getGenericFutureListeners() { return this.b; } // PandaSpigot - OBFHELPER
-     }
+@@ -327,8 +457,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
-     // Spigot Start
+     static class QueuedPacket {
+ 
+-        private final Packet a;
+-        private final GenericFutureListener<? extends Future<? super Void>>[] b;
++        private final Packet a; private final Packet<?> getPacket() { return this.a; } // PandaSpigot - OBFHELPER
++        private final GenericFutureListener<? extends Future<? super Void>>[] b; private final GenericFutureListener<? extends Future<? super Void>>[] getGenericFutureListeners() { return this.b; } // PandaSpigot - OBFHELPER
+ 
+         public QueuedPacket(Packet packet, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
+             this.a = packet;
 diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
-index fdc142b75b78289f01a9e9fed6f36432624735db..d60ec06b995eb477b555d222e99e208560656cef 100644
+index fdc142b75b78289f01a9e9fed6f36432624735db..bb18dac7a3554a8a6cb93d24bc539901a4d9a89b 100644
 --- a/src/main/java/net/minecraft/server/Packet.java
 +++ b/src/main/java/net/minecraft/server/Packet.java
-@@ -9,4 +9,37 @@ public interface Packet<T extends PacketListener> {
+@@ -9,4 +9,36 @@ public interface Packet<T extends PacketListener> {
      void b(PacketDataSerializer packetdataserializer) throws IOException;
  
      void a(T t0);
-+    
 +    // PandaSpigot start
 +    /**
 +     * @param player {@code null} if not at {@link EnumProtocol#PLAY} yet.
 +     */
 +    default void onPacketDispatch(EntityPlayer player) {}
-+    
++
 +    /**
 +     * @param player {@code null} if not at {@link EnumProtocol#PLAY} yet.
 +     * @param future Can be {@code null} if packet was cancelled.
 +     */
 +    default void onPacketDispatchFinish(EntityPlayer player, io.netty.channel.ChannelFuture future) {}
-+    
++
 +    /**
 +     * @return Whether {@link #onPacketDispatchFinish(EntityPlayer, io.netty.channel.ChannelFuture)} should
 +     * be called after this packet has been dispatched.
 +     */
 +    default boolean hasFinishListener() { return false; }
-+    
++
 +    /**
 +     * Checks whether this packet is ready to be sent.
 +     * <p>
@@ -391,7 +381,7 @@ index fdc142b75b78289f01a9e9fed6f36432624735db..d60ec06b995eb477b555d222e99e2085
 +     * @return Whether this packet is ready.
 +     */
 +    default boolean isReady() { return true; }
-+    
++
 +    /**
 +     * @return A list of extra packets to be sent after this packet.
 +     */
@@ -399,7 +389,7 @@ index fdc142b75b78289f01a9e9fed6f36432624735db..d60ec06b995eb477b555d222e99e2085
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 578d03ead09c3c126fcd2da0657e1d94dbba9840..f118ba3eaec0948e838281c9608f0a45e753ded1 100644
+index 578d03ead09c3c126fcd2da0657e1d94dbba9840..3910bafa064017f7b3966fec8e6139493d8333e2 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -61,6 +61,7 @@ public class ServerConnection {
@@ -410,7 +400,7 @@ index 578d03ead09c3c126fcd2da0657e1d94dbba9840..f118ba3eaec0948e838281c9608f0a45
  
      public ServerConnection(MinecraftServer minecraftserver) {
          this.f = minecraftserver;
-@@ -103,11 +104,13 @@ public class ServerConnection {
+@@ -103,6 +104,7 @@ public class ServerConnection {
                          ;
                      }
  
@@ -418,9 +408,3 @@ index 578d03ead09c3c126fcd2da0657e1d94dbba9840..f118ba3eaec0948e838281c9608f0a45
                      channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30)).addLast("legacy_query", new LegacyPingHandler(ServerConnection.this)).addLast("splitter", new PacketSplitter()).addLast("decoder", new PacketDecoder(EnumProtocolDirection.SERVERBOUND)).addLast("prepender", new PacketPrepender()).addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
                      NetworkManager networkmanager = new NetworkManager(EnumProtocolDirection.SERVERBOUND);
  
-                     ServerConnection.this.h.add(networkmanager);
-                     channel.pipeline().addLast("packet_handler", networkmanager);
-+                    networkmanager.isPending = false; // PandaSpigot
-                     networkmanager.a((PacketListener) (new HandshakeListener(ServerConnection.this.f, networkmanager)));
-                 }
-             }).group((EventLoopGroup) lazyinitvar.c()).localAddress(address)).bind().syncUninterruptibly()); // PandaSpigot - Unix domain socket support
