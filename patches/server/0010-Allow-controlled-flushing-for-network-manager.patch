@@ -8,10 +8,10 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index e46ed015ba584a84af52ab8a33d83e2b80a00851..ce27fe27a6250c24dac50e382b035858441414ce 100644
+index 246494cdf91e2c10700523eeaaf8e9b82e65c112..a23b96476acd2b01464a61e716277157aba4c979 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -81,6 +81,39 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -80,6 +80,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      public EnumProtocol protocol;
      // PandaSpigot end
  
@@ -20,14 +20,14 @@ index e46ed015ba584a84af52ab8a33d83e2b80a00851..ce27fe27a6250c24dac50e382b035858
 +    private final java.util.concurrent.atomic.AtomicInteger packetWrites = new java.util.concurrent.atomic.AtomicInteger();
 +    private int flushPacketsStart;
 +    private final Object flushLock = new Object();
-+    
++
 +    public void disableAutomaticFlush() {
 +        synchronized (this.flushLock) {
 +            this.flushPacketsStart = this.packetWrites.get(); // must be volatile and before canFlush = false
 +            this.canFlush = false;
 +        }
 +    }
-+    
++
 +    public void enableAutomaticFlush() {
 +        synchronized (this.flushLock) {
 +            this.canFlush = true;
@@ -36,7 +36,7 @@ index e46ed015ba584a84af52ab8a33d83e2b80a00851..ce27fe27a6250c24dac50e382b035858
 +            }
 +        }
 +    }
-+    
++
 +    private void flush() {
 +        if (this.channel.eventLoop().inEventLoop()) {
 +            this.channel.flush();
@@ -47,12 +47,11 @@ index e46ed015ba584a84af52ab8a33d83e2b80a00851..ce27fe27a6250c24dac50e382b035858
 +        }
 +    }
 +    // PandaSpigot end
-+
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
      }
-@@ -229,6 +262,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-     
+@@ -223,6 +255,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+ 
      private void dispatchPacket(Packet<?> packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) { this.a(packet, agenericfuturelistener); } // PandaSpigot - OBFHELPER
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
 +        // PandaSpigot start - add flush parameter
@@ -66,25 +65,25 @@ index e46ed015ba584a84af52ab8a33d83e2b80a00851..ce27fe27a6250c24dac50e382b035858
          final EnumProtocol enumprotocol = EnumProtocol.a(packet);
          final EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
  
-@@ -250,7 +291,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -244,7 +284,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+             }
              try {
-                 // PandaSpigot end
- 
+             // PandaSpigot end
 -            ChannelFuture channelfuture = this.channel.writeAndFlush(packet);
-+                ChannelFuture channelfuture = (flush) ? this.channel.writeAndFlush(packet) : this.channel.write(packet); // PandaSpigot - add flush parameter
++            ChannelFuture channelfuture = (flush) ? this.channel.writeAndFlush(packet) : this.channel.write(packet); // PandaSpigot - add flush parameter
  
              if (agenericfuturelistener != null) {
                  channelfuture.addListeners(agenericfuturelistener);
-@@ -283,7 +324,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-                     }
-                     try {
-                         // PandaSpigot end
+@@ -277,7 +317,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+                 }
+                 try {
+                 // PandaSpigot end
 -                    ChannelFuture channelfuture = NetworkManager.this.channel.writeAndFlush(packet);
 +                    ChannelFuture channelfuture = (flush) ? NetworkManager.this.channel.writeAndFlush(packet) : NetworkManager.this.channel.write(packet); // PandaSpigot - add flush parameter
  
                      if (agenericfuturelistener != null) {
                          channelfuture.addListeners(agenericfuturelistener);
-@@ -326,6 +367,11 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -320,6 +360,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      }
      private boolean processQueue() {
          if (this.i.isEmpty()) return true;
@@ -92,12 +91,11 @@ index e46ed015ba584a84af52ab8a33d83e2b80a00851..ce27fe27a6250c24dac50e382b035858
 +        final boolean needsFlush = this.canFlush; // make only one flush call per sendPacketQueue() call
 +        boolean hasWrotePacket = false;
 +        // PandaSpigot end
-+        
          // If we are on main, we are safe here in that nothing else should be processing queue off main anymore
          // But if we are not on main due to login/status, the parent is synchronized on packetQueue
          java.util.Iterator<QueuedPacket> iterator = this.i.iterator();
-@@ -337,10 +383,18 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-     
+@@ -332,10 +376,18 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+ 
              Packet<?> packet = queued.getPacket();
              if (!packet.isReady()) {
 +                // PandaSpigot start - make only one flush call per sendPacketQueue() call

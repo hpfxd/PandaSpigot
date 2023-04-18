@@ -20,33 +20,33 @@ up on this optimisation before he came along.
 Locally this patch drops the entity tracker tick by a full 1.5x.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index ce27fe27a6250c24dac50e382b035858441414ce..f5607282de786598d06f68be292456ba7baf473a 100644
+index a23b96476acd2b01464a61e716277157aba4c979..1dfd9f5ed6c2d5dd8735a4f01fe4c6c8ac14dbf3 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -311,7 +311,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -304,8 +304,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              }
              // PandaSpigot end
          } else {
 -            this.channel.eventLoop().execute(new Runnable() {
-+            Runnable command = new Runnable() { // PandaSpigot - optimize packets that are not flushed
-                 public void run() {
+-                public void run() {
++            Runnable command = () -> { // PandaSpigot - optimise packets that are not flushed
                      if (enumprotocol != enumprotocol1) {
                          NetworkManager.this.a(enumprotocol);
-@@ -344,7 +344,17 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                      }
-                     // PandaSpigot end
+@@ -336,8 +335,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+                     packet.onPacketDispatchFinish(player, null);
                  }
+                 // PandaSpigot end
+-                }
 -            });
-+            // PandaSpigot start - optimize packets that are not flushed
 +            };
++            // PandaSpigot start - optimise packets that are not flushed
 +            if (!flush) {
-+                // create a LazyRunnable that when executed, calls command.run()
 +                io.netty.util.concurrent.AbstractEventExecutor.LazyRunnable run = command::run;
 +                this.channel.eventLoop().execute(run);
-+            } else {
-+                // if flushing, just schedule like normal
++           } else {
 +                this.channel.eventLoop().execute(command);
-+            }
++           }
 +            // PandaSpigot end
          }
  
