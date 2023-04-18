@@ -8,10 +8,10 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8..fc6dea71ea0d1ec93d18c12952a1baed9d3234dc 100644
+index 5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8..f70d9258b0120c0654685b8eadf87be127a58edb 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -80,6 +80,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -80,6 +80,35 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      public EnumProtocol protocol;
      // PandaSpigot end
  
@@ -20,14 +20,12 @@ index 5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8..fc6dea71ea0d1ec93d18c12952a1baed
 +    private final java.util.concurrent.atomic.AtomicInteger packetWrites = new java.util.concurrent.atomic.AtomicInteger();
 +    private int flushPacketsStart;
 +    private final Object flushLock = new Object();
-+
 +    public void disableAutomaticFlush() {
 +        synchronized (this.flushLock) {
 +            this.flushPacketsStart = this.packetWrites.get(); // must be volatile and before canFlush = false
 +            this.canFlush = false;
 +        }
 +    }
-+
 +    public void enableAutomaticFlush() {
 +        synchronized (this.flushLock) {
 +            this.canFlush = true;
@@ -36,7 +34,6 @@ index 5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8..fc6dea71ea0d1ec93d18c12952a1baed
 +            }
 +        }
 +    }
-+
 +    private void flush() {
 +        if (this.channel.eventLoop().inEventLoop()) {
 +            this.channel.flush();
@@ -50,7 +47,7 @@ index 5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8..fc6dea71ea0d1ec93d18c12952a1baed
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
      }
-@@ -227,6 +259,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -227,6 +256,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
      private void dispatchPacket(Packet<?> packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) { this.a(packet, agenericfuturelistener); } // PandaSpigot - OBFHELPER
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
@@ -65,7 +62,7 @@ index 5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8..fc6dea71ea0d1ec93d18c12952a1baed
          final EnumProtocol enumprotocol = EnumProtocol.a(packet);
          final EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
  
-@@ -248,7 +288,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -248,7 +285,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              }
              try {
                  // PandaSpigot end
@@ -74,7 +71,7 @@ index 5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8..fc6dea71ea0d1ec93d18c12952a1baed
  
              if (agenericfuturelistener != null) {
                  channelfuture.addListeners(agenericfuturelistener);
-@@ -281,7 +321,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -281,7 +318,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                  }
                  try {
                      // PandaSpigot end
@@ -83,7 +80,7 @@ index 5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8..fc6dea71ea0d1ec93d18c12952a1baed
  
                      if (agenericfuturelistener != null) {
                          channelfuture.addListeners(agenericfuturelistener);
-@@ -324,6 +364,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -324,6 +361,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      }
      private boolean processQueue() {
          if (this.i.isEmpty()) return true;
@@ -94,7 +91,7 @@ index 5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8..fc6dea71ea0d1ec93d18c12952a1baed
          // If we are on main, we are safe here in that nothing else should be processing queue off main anymore
          // But if we are not on main due to login/status, the parent is synchronized on packetQueue
          java.util.Iterator<QueuedPacket> iterator = this.i.iterator();
-@@ -336,10 +380,18 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -336,10 +377,18 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
              Packet<?> packet = queued.getPacket();
              if (!packet.isReady()) {

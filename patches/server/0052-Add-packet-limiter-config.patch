@@ -305,10 +305,10 @@ index 0000000000000000000000000000000000000000..d61d44e8e1126ed3bea6e633cc0bdebb
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index f80ec234647c1be01548fdaad25eb7bd4ec5cc8f..80df7f37a3cb1dd098eb3b8bb18815258b0bfe74 100644
+index c07c05f80deac5ee2ebaac03692585b8ac77a7d1..1e570af909cd3d5eac62aae7715742aed160cc9b 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -113,6 +113,22 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -110,6 +110,22 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          }
      }
      // PandaSpigot end
@@ -331,7 +331,7 @@ index f80ec234647c1be01548fdaad25eb7bd4ec5cc8f..80df7f37a3cb1dd098eb3b8bb1881525
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
      }
-@@ -159,6 +175,44 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -156,6 +172,44 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
      protected void a(ChannelHandlerContext channelhandlercontext, Packet packet) throws Exception {
          if (this.channel.isOpen()) {
