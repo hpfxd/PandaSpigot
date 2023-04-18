@@ -115,10 +115,10 @@ index 0000000000000000000000000000000000000000..81bd7edb536a8da2bb88b45d7e3cd8c0
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 155ffc1ca43a0e09be865cbfa96eed658f04d024..e001df71cd56f3005b4774f4376e624797b7a6ef 100644
+index 0bcf1d732e2263471f741a3c634a020c758845d4..6af8d4f15c3dc80f85d385a3efbcc8ac5008aecb 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
-@@ -131,6 +131,7 @@ public class ServerConnection {
+@@ -132,6 +132,7 @@ public class ServerConnection {
                      channel.pipeline().addLast("packet_handler", networkmanager);
                      networkmanager.isPending = false; // PandaSpigot
                      networkmanager.a((PacketListener) (new HandshakeListener(ServerConnection.this.f, networkmanager)));

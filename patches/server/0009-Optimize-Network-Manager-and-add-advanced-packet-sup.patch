@@ -26,7 +26,7 @@ Also avoids spamming closed channel exception by rechecking closed state in disp
 and then catch exceptions and close if they fire.hpfxd <me@hpfxd.com>
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b8503660447d65c 100644
+index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..5cfe9f4a1eefaa0260cfeeff68b260cb36e2bbb8 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -58,7 +58,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b850366
          this.channel.attr(NetworkManager.c).set(enumprotocol);
          this.channel.config().setAutoRead(true);
          NetworkManager.g.debug("Enabled auto read");
-@@ -135,38 +141,90 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -135,38 +141,91 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          this.m = packetlistener;
      }
  
@@ -159,7 +159,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b850366
              }
 +            this.i.addAll(packets);
          }
--
+ 
 +        this.sendPacketQueue();
 +        // PandaSpigot end
      }
@@ -168,17 +168,16 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b850366
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
          final EnumProtocol enumprotocol = EnumProtocol.a(packet);
          final EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
-@@ -175,19 +233,37 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-             NetworkManager.g.debug("Disabled auto read");
+@@ -176,18 +235,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              this.channel.config().setAutoRead(false);
          }
--
+ 
 +        EntityPlayer player = getPlayer(); // PandaSpigot
          if (this.channel.eventLoop().inEventLoop()) {
              if (enumprotocol != enumprotocol1) {
                  this.a(enumprotocol);
              }
--
+ 
 +            // PandaSpigot start
 +            if (!isConnected()) {
 +                packet.onPacketDispatchFinish(player, null);
@@ -208,7 +207,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b850366
          } else {
              this.channel.eventLoop().execute(new Runnable() {
                  public void run() {
-@@ -195,35 +271,77 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -195,35 +274,77 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                          NetworkManager.this.a(enumprotocol);
                      }
  
@@ -298,7 +297,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b850366
  
      public void a() {
          this.m();
-@@ -238,9 +356,21 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -238,9 +359,21 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          return this.l;
      }
  
@@ -320,7 +319,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b850366
          // Spigot End
          if (this.channel.isOpen()) {
              this.channel.close(); // We can't wait as this may be called from an event loop.
-@@ -259,6 +389,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -259,6 +392,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          this.channel.pipeline().addBefore("prepender", "encrypt", new PacketEncrypter(MinecraftEncryption.a(1, secretkey)));
      }
  
@@ -328,7 +327,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b850366
      public boolean g() {
          return this.channel != null && this.channel.isOpen();
      }
-@@ -313,9 +444,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -313,9 +447,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                  } else if (this.getPacketListener() != null) {
                      this.getPacketListener().a(new ChatComponentText("Disconnected"));
                  }
@@ -340,7 +339,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b850366
              }
  
          }
-@@ -327,8 +458,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -327,8 +461,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
      static class QueuedPacket {
  
@@ -352,14 +351,13 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..1f978c35d301f382662220124b850366
          public QueuedPacket(Packet packet, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
              this.a = packet;
 diff --git a/src/main/java/net/minecraft/server/Packet.java b/src/main/java/net/minecraft/server/Packet.java
-index fdc142b75b78289f01a9e9fed6f36432624735db..ccfe4dca2228324e672d2a7a5d2ce628e3619069 100644
+index fdc142b75b78289f01a9e9fed6f36432624735db..8c9cd810779d1bbffb94dcab641602c05d19182d 100644
 --- a/src/main/java/net/minecraft/server/Packet.java
 +++ b/src/main/java/net/minecraft/server/Packet.java
-@@ -9,4 +9,20 @@ public interface Packet<T extends PacketListener> {
+@@ -9,4 +9,19 @@ public interface Packet<T extends PacketListener> {
      void b(PacketDataSerializer packetdataserializer) throws IOException;
  
      void a(T t0);
-+
 +    // PandaSpigot start
 +    /**
 +     * @param player Null if not at PLAY stage yet
@@ -377,19 +375,18 @@ index fdc142b75b78289f01a9e9fed6f36432624735db..ccfe4dca2228324e672d2a7a5d2ce628
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 578d03ead09c3c126fcd2da0657e1d94dbba9840..b324a63cc4b9057859a37cf1467f4c989f771e31 100644
+index 578d03ead09c3c126fcd2da0657e1d94dbba9840..69329da5a4c8e173c87961de50ea70351fd0e20a 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
-@@ -61,7 +61,7 @@ public class ServerConnection {
+@@ -61,6 +61,7 @@ public class ServerConnection {
      public volatile boolean d;
      private final List<ChannelFuture> g = Collections.synchronizedList(Lists.<ChannelFuture>newArrayList());
      private final List<NetworkManager> h = Collections.synchronizedList(Lists.<NetworkManager>newArrayList());
--
 +    private static final boolean disableFlushConsolidation = Boolean.getBoolean("Paper.disableFlushConsolidate"); // Paper
+ 
      public ServerConnection(MinecraftServer minecraftserver) {
          this.f = minecraftserver;
-         this.d = true;
-@@ -103,11 +103,13 @@ public class ServerConnection {
+@@ -103,11 +104,13 @@ public class ServerConnection {
                          ;
                      }
  
