@@ -389,7 +389,7 @@ index fdc142b75b78289f01a9e9fed6f36432624735db..bb18dac7a3554a8a6cb93d24bc539901
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 578d03ead09c3c126fcd2da0657e1d94dbba9840..f118ba3eaec0948e838281c9608f0a45e753ded1 100644
+index 578d03ead09c3c126fcd2da0657e1d94dbba9840..3910bafa064017f7b3966fec8e6139493d8333e2 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -61,6 +61,7 @@ public class ServerConnection {
@@ -400,7 +400,7 @@ index 578d03ead09c3c126fcd2da0657e1d94dbba9840..f118ba3eaec0948e838281c9608f0a45
  
      public ServerConnection(MinecraftServer minecraftserver) {
          this.f = minecraftserver;
-@@ -103,11 +104,13 @@ public class ServerConnection {
+@@ -103,6 +104,7 @@ public class ServerConnection {
                          ;
                      }
  
@@ -408,9 +408,3 @@ index 578d03ead09c3c126fcd2da0657e1d94dbba9840..f118ba3eaec0948e838281c9608f0a45
                      channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30)).addLast("legacy_query", new LegacyPingHandler(ServerConnection.this)).addLast("splitter", new PacketSplitter()).addLast("decoder", new PacketDecoder(EnumProtocolDirection.SERVERBOUND)).addLast("prepender", new PacketPrepender()).addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
                      NetworkManager networkmanager = new NetworkManager(EnumProtocolDirection.SERVERBOUND);
  
-                     ServerConnection.this.h.add(networkmanager);
-                     channel.pipeline().addLast("packet_handler", networkmanager);
-+                    networkmanager.isPending = false; // PandaSpigot
-                     networkmanager.a((PacketListener) (new HandshakeListener(ServerConnection.this.f, networkmanager)));
-                 }
-             }).group((EventLoopGroup) lazyinitvar.c()).localAddress(address)).bind().syncUninterruptibly()); // PandaSpigot - Unix domain socket support
