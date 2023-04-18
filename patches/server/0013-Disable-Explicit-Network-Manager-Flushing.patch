@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Aikar <aikar@aikar.co>
-Date: Mon, 17 Apr 2023 23:49:40 +0200
+Date: Fri, 29 Oct 2021 05:24:16 -0400
 Subject: [PATCH] Disable Explicit Network Manager Flushing
 
 This seems completely pointless, as packet dispatch uses .writeAndFlush.
