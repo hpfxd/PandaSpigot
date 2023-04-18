@@ -6,14 +6,13 @@ Subject: [PATCH] Consolidate flush calls for entity tracker packets
 Most server packets seem to be sent from here, so try to avoid expensive flush calls from them.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index eae936650fddd5ef418ee2ddd680d36e82045365..ff53e09ac16cce93cba6b6d9c74ea2019455b932 100644
+index eae936650fddd5ef418ee2ddd680d36e82045365..d8f1932d1058fc8a5820926212db8f9a8e4182dd 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -963,7 +963,26 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
                  this.methodProfiler.b();
                  this.methodProfiler.a("tracker");
                  worldserver.timings.tracker.startTiming(); // Spigot
--                worldserver.getTracker().updatePlayers();
 +                // PandaSpigot start - controlled flush for entity tracker packets
 +                List<NetworkManager> disabledFlushes = new ArrayList<>(worldserver.players.size());
 +                for (EntityHuman player : worldserver.players) {
@@ -26,7 +25,7 @@ index eae936650fddd5ef418ee2ddd680d36e82045365..ff53e09ac16cce93cba6b6d9c74ea201
 +                }
 +                try {
 +                    // PandaSpigot end
-+                    worldserver.getTracker().updatePlayers();
+                 worldserver.getTracker().updatePlayers();
 +                    // PandaSpigot start - controlled flush for entity tracker packets
 +                } finally {
 +                    for (NetworkManager networkManager : disabledFlushes) {
