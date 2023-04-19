@@ -6,7 +6,7 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..ba19534e727cceab9c67ce82566c9a12b2150dff
+index 0000000000000000000000000000000000000000..721187cf4ec4f86f708337a60cf5120729ae4f57
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,123 @@
@@ -67,8 +67,8 @@ index 0000000000000000000000000000000000000000..ba19534e727cceab9c67ce82566c9a12
 +            it.addStringOption("Xmaxwarns", "1")
 +
 +            it.links(
-+                "https://guava.dev/releases/21.0/api/docs/",
-+                "https://javadoc.io/doc/org.yaml/snakeyaml/1.28/",
++                "https://guava.dev/releases/17.0/api/docs/",
++                "https://javadoc.io/doc/org.yaml/snakeyaml/1.15/",
 +                "https://javadoc.io/doc/org.jetbrains/annotations-java5/21.0.1/",
 +                "https://javadoc.io/doc/net.md-5/bungeecord-chat/1.16-R0.4/",
 +            )
