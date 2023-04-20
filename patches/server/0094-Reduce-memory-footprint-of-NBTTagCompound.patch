@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: mechoriet <kevinworm92@gmail.com>
 Date: Tue, 27 Dec 2022 14:20:44 +0100
-Subject: [PATCH] Reduce memory footprint of  NBTTagCompound
+Subject: [PATCH] Reduce memory footprint of NBTTagCompound
 
 
 diff --git a/src/main/java/net/minecraft/server/NBTTagCompound.java b/src/main/java/net/minecraft/server/NBTTagCompound.java
