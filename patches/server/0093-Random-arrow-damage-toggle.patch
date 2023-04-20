@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: necrozma <necrozma999@gmail.com>
+Date: Thu, 20 Apr 2023 10:34:34 -0600
+Subject: [PATCH] Random arrow damage toggle
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 3e85450bbccc54414be7998562fadc92d2541fb4..360ed37b95fce68941c234615b465090b8ea7308 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -58,4 +58,8 @@ public class PandaSpigotWorldConfig {
+     public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
+ 
+     public boolean optimizeArmorStandMovement = false; // Doesn't fully emulate vanilla behavior, see TacoSpigot issue #1
++	
++    @Comment("This option controls whether or not there is a chance for arrow crits to deal extra damage.\n" +
++            "By default, this is true (vanilla behaviour)")
++    public boolean randomArrowDamage = true;
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
+index d45deff6c1358a441d3d7a659fca9c9c7b595c0f..60ba16d231e2d614f56aee3c7ba5c0d4715d0269 100644
+--- a/src/main/java/net/minecraft/server/EntityArrow.java
++++ b/src/main/java/net/minecraft/server/EntityArrow.java
+@@ -245,7 +245,7 @@ public class EntityArrow extends Entity implements IProjectile {
+                     f2 = MathHelper.sqrt(this.motX * this.motX + this.motY * this.motY + this.motZ * this.motZ);
+                     int k = MathHelper.f((double) f2 * this.damage);
+ 
+-                    if (this.isCritical()) {
++                    if (this.isCritical() && this.world.pandaSpigotConfig.randomArrowDamage) { // PandaSpigot
+                         k += this.random.nextInt(k / 2 + 2);
+                     }
+ 
