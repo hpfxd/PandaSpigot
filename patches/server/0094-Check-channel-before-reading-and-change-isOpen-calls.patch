@@ -1,0 +1,48 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Wed, 19 Apr 2023 21:50:45 +0200
+Subject: [PATCH] Check channel before reading and change isOpen calls to
+ IsActive
+
+
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index 87ecc1b9a46bfcc146b7b42f142cac46c02faa9c..fe7eb5cff44684256e1797c4a1522ac417dd055d 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -174,7 +174,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     }
+ 
+     protected void a(ChannelHandlerContext channelhandlercontext, Packet packet) throws Exception {
+-        if (this.channel.isOpen()) {
++        if (this.channel.isActive()) {
+             // PandaSpigot start - packet limiter
+             if (this.stopReadingPackets) {
+                 return;
+@@ -503,7 +503,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+ 
+     public boolean isConnected() { return this.g(); } // PandaSpigot - OBFHELPER
+     public boolean g() {
+-        return this.channel != null && this.channel.isOpen();
++        return this.channel != null && this.channel.isActive();
+     }
+ 
+     public boolean h() {
+@@ -548,7 +548,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     }
+ 
+     public void l() {
+-        if (this.channel != null && !this.channel.isOpen()) {
++        if (this.channel != null && !this.channel.isActive()) {
+             if (!this.p) {
+                 this.p = true;
+                 if (this.j() != null) {
+@@ -565,7 +565,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     }
+ 
+     protected void channelRead0(ChannelHandlerContext channelhandlercontext, Packet object) throws Exception { // CraftBukkit - fix decompile error
++        if(g()) { // PandaSpigot - Check if channel is opened before reading packet
+         this.a(channelhandlercontext, (Packet) object);
++        }
+     }
+ 
+     static class QueuedPacket {

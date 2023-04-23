@@ -5,10 +5,10 @@ Subject: [PATCH] EntityMoveEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..cd95aa17291d31e3cebe9f6488a43923a18facba 100644
+index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..077d17a62570057c54814b63d55c9a51cf90a131 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
 +++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -1665,6 +1665,22 @@ public abstract class EntityLiving extends Entity {
+@@ -1665,6 +1665,21 @@ public abstract class EntityLiving extends Entity {
          }
  
          this.world.methodProfiler.b();
@@ -18,8 +18,7 @@ index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..cd95aa17291d31e3cebe9f6488a43923
 +                org.bukkit.Location from = new org.bukkit.Location(this.world.getWorld(), this.lastX, this.lastY, this.lastZ, this.lastYaw, this.lastPitch);
 +                org.bukkit.Location to = new org.bukkit.Location (this.world.getWorld(), this.locX, this.locY, this.locZ, this.yaw, this.pitch);
 +                io.papermc.paper.event.entity.EntityMoveEvent event = new io.papermc.paper.event.entity.EntityMoveEvent((LivingEntity) this.getBukkitEntity(), from, to.clone());
-+                Bukkit.getPluginManager().callEvent(event);
-+                if (event.isCancelled()) {
++                if (CraftEventFactory.callEvent(event).isCancelled()) {
 +                    // if cancelled, set back to previous position
 +                    this.setLocation(from.getX(), from.getY(), from.getZ(), from.getYaw(), from.getPitch());
 +                } else if (!to.equals(event.getTo())) {
@@ -32,7 +31,7 @@ index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..cd95aa17291d31e3cebe9f6488a43923
  
      protected void doTick() {}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 9e3bb94f11263c4614f18c282ae236d03599619a..f6d1510fc16fc48be221cc7bb5968a132a2b9752 100644
+index b7decb879f530345b82722aeb1294864feecd2c2..66d4c410c2bcc345bf09e07a63de7534064524d2 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -926,6 +926,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree

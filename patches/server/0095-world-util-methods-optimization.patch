@@ -1,0 +1,169 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Wed, 19 Apr 2023 21:56:36 +0200
+Subject: [PATCH] world util methods optimization
+
+
+diff --git a/src/main/java/net/minecraft/server/IChunkProvider.java b/src/main/java/net/minecraft/server/IChunkProvider.java
+index c68ffe0e040f239f093a4543bc07463b27f96228..f6647ccdafd4ce9b91b94f4862b02bea870a07f8 100644
+--- a/src/main/java/net/minecraft/server/IChunkProvider.java
++++ b/src/main/java/net/minecraft/server/IChunkProvider.java
+@@ -10,6 +10,12 @@ public interface IChunkProvider {
+ 
+     Chunk getChunkAt(BlockPosition blockposition);
+ 
++    default Chunk getChunkIfLoaded(int i, int j) {
++        if (!this.isChunkLoaded(i, j)) {
++            return null;
++        }
++        return this.getOrCreateChunk(i, j);
++    }
+     void getChunkAt(IChunkProvider ichunkprovider, int i, int j);
+ 
+     boolean a(IChunkProvider ichunkprovider, Chunk chunk, int i, int j);
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index a6f10ae54e56f743045f2ddf146acf9d514d821d..b435b12c5ed06bffebdc3c06a26293a3f01e15f8 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -302,6 +302,9 @@ public abstract class World implements IBlockAccess {
+         return this.getType(blockposition).getBlock().getMaterial() == Material.AIR;
+     }
+ 
++    public boolean isLoaded(int x, int y, int z) {
++        return getChunkIfLoaded(x >> 4, z >> 4) != null; // PandaSpigot
++    }
+     public boolean isLoaded(BlockPosition blockposition) {
+         return getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4) != null; // PandaSpigot
+     }
+@@ -372,25 +375,89 @@ public abstract class World implements IBlockAccess {
+         return this.chunkProvider.getOrCreateChunk(i, j);
+     }
+ 
+-    public boolean setTypeAndData(BlockPosition blockposition, IBlockData iblockdata, int i) {
++    private void setCapturedBlockType(BlockPosition blockposition, IBlockData iblockdata, int i) {
++        BlockState blockstate = null;
++        Iterator<BlockState> it = capturedBlockStates.iterator();
++        while (it.hasNext()) {
++            BlockState previous = it.next();
++            if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
++                blockstate = previous;
++                it.remove();
++                break;
++            }
++        }
++        if (blockstate == null) {
++            blockstate = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(this, blockposition.getX(), blockposition.getY(), blockposition.getZ(), i);
++        }
++        blockstate.setTypeId(CraftMagicNumbers.getId(iblockdata.getBlock()));
++        blockstate.setRawData((byte) iblockdata.getBlock().toLegacyData(iblockdata));
++        this.capturedBlockStates.add(blockstate);
++    }
++
++    public boolean setTypeAndDataIfLoaded(BlockPosition blockposition, IBlockData iblockdata, int i) {
+         // CraftBukkit start - tree generation
+         if (this.captureTreeGeneration) {
+-            BlockState blockstate = null;
+-            Iterator<BlockState> it = capturedBlockStates.iterator();
+-            while (it.hasNext()) {
+-                BlockState previous = it.next();
+-                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
+-                    blockstate = previous;
+-                    it.remove();
+-                    break;
+-                }
+-            }
+-            if (blockstate == null) {
+-                blockstate = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(this, blockposition.getX(), blockposition.getY(), blockposition.getZ(), i);
+-            }
+-            blockstate.setTypeId(CraftMagicNumbers.getId(iblockdata.getBlock()));
+-            blockstate.setRawData((byte) iblockdata.getBlock().toLegacyData(iblockdata));
++            this.setCapturedBlockType(blockposition, iblockdata, i);
++            return true;
++        }
++        // CraftBukkit end
++        int x = blockposition.getX();
++        int y = blockposition.getY();
++        int z = blockposition.getZ();
++        Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
++        if (chunk == null) {
++            return false;
++        }
++
++        if (!this.isValidLocation(x, y, z)) {
++            return false;
++        }
++
++        if (!this.isClientSide && this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
++            return false;
++        }
++
++        Block block = iblockdata.getBlock();
++
++        // CraftBukkit start - capture blockstates
++        BlockState blockstate = null;
++        if (this.captureBlockStates) {
++            blockstate = org.bukkit.craftbukkit.block.CraftBlockState.getBlockState(this, x, y, z, i);
+             this.capturedBlockStates.add(blockstate);
++        }
++        IBlockData iblockdata1 = chunk.a(blockposition, iblockdata);
++
++        if (iblockdata1 == null) {
++            // CraftBukkit start - remove blockstate if failed
++            if (this.captureBlockStates) {
++                this.capturedBlockStates.remove(blockstate);
++            }
++            // CraftBukkit end
++            return false;
++        }
++        Block block1 = iblockdata1.getBlock();
++
++        if (block.p() != block1.p() || block.r() != block1.r()) {
++            this.methodProfiler.a("checkLight");
++            this.x(blockposition);
++            this.methodProfiler.b();
++        }
++
++        // CraftBukkit start
++        if (!this.captureBlockStates) { // Don't notify clients or update physics while capturing blockstates
++            // Modularize client and physic updates
++            notifyAndUpdatePhysics(blockposition, chunk, block1, block, i);
++        }
++        // CraftBukkit end
++
++        return true;
++    }
++    // Titanium end
++
++    public boolean setTypeAndData(BlockPosition blockposition, IBlockData iblockdata, int i) {
++        // CraftBukkit start - tree generation
++        if (this.captureTreeGeneration) {
++            this.setCapturedBlockType(blockposition, iblockdata, i); // Titanium
+             return true;
+         }
+         // CraftBukkit end
+@@ -763,7 +830,7 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public int b(int i, int j) {
+-        if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
++        if (isInWorldBounds(i,j)) {
+             if (!this.isChunkLoaded(i >> 4, j >> 4, true)) {
+                 return 0;
+             } else {
+@@ -1412,7 +1479,7 @@ public abstract class World implements IBlockAccess {
+                         blockposition_mutableblockposition.c(k1, i2, l1);
+                         IBlockData iblockdata;
+ 
+-                        if (k1 >= -30000000 && k1 < 30000000 && l1 >= -30000000 && l1 < 30000000) {
++                        if (isInWorldBounds(k1, l1)) {
+                             iblockdata = this.getType(blockposition_mutableblockposition);
+                         } else {
+                             iblockdata = Blocks.BEDROCK.getBlockData();
+@@ -3407,4 +3474,7 @@ public abstract class World implements IBlockAccess {
+ 
+         return k >= -short0 && k <= short0 && l >= -short0 && l <= short0 && this.keepSpawnInMemory; // CraftBukkit - Added 'this.keepSpawnInMemory'
+     }
++    private static boolean isInWorldBounds(int x, int z) {
++        return x >= -30000000 && z >= -30000000 && x < 30000000 && z < 30000000;
++    }
+ }

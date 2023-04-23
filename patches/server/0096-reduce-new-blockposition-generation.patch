@@ -1,0 +1,76 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Wed, 19 Apr 2023 21:57:05 +0200
+Subject: [PATCH] reduce new blockposition generation
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 0a4acf1e7b78eaeeca2606dbc46cdc5d703b8fad..66a76d11849314cd2bbd2d34c32a018e775df4a7 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -242,7 +242,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+                 ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator1.next();
+ 
+                 if (chunkcoordintpair != null) {
+-                    if (this.world.isLoaded(new BlockPosition(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4))) {
++                    if (this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) {
+                         chunk = this.world.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
+                         if (chunk.isReady()) {
+                             arraylist.add(chunk);
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index b435b12c5ed06bffebdc3c06a26293a3f01e15f8..5e3f4623c1416de8ffeddb7888b72db889d7f9d2 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -881,20 +881,30 @@ public abstract class World implements IBlockAccess {
+         return this.worldProvider.p()[this.getLightLevel(blockposition)];
+     }
+ 
++    private IBlockData getCapturedBlockType(int x, int y, int z) {
++        Iterator<BlockState> it = this.capturedBlockStates.iterator();
++        while (it.hasNext()) {
++            BlockState previous = it.next();
++            if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
++                return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
++            }
++        }
++        return null;
++    }
+     // PandaSpigot start - Add getTypeIfLoaded
+     public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
+         int x = blockposition.getX();
+         int y = blockposition.getY();
+         int z = blockposition.getZ();
+         if (this.captureTreeGeneration) {
+-            for (BlockState previous : this.capturedBlockStates) {
+-                if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
+-                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
+-                }
+-            }
++            IBlockData previous = this.getCapturedBlockType(x, y, z);
++            if (previous != null) return previous;
+         }
+         Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
+-        return chunk == null ? null : chunk.getBlockData(blockposition);
++        if (chunk != null) {
++            return this.isValidLocation(x, y, z) ? chunk.getBlockData(x, y, z) : Blocks.AIR.getBlockData();
++       }
++        return null;
+     }
+     // PandaSpigot end
+     // Spigot start
+@@ -916,13 +926,8 @@ public abstract class World implements IBlockAccess {
+         // CraftBukkit start - tree generation
+         if (captureTreeGeneration && useCaptured) {
+     // Spigot end
+-            Iterator<BlockState> it = capturedBlockStates.iterator();
+-            while (it.hasNext()) {
+-                BlockState previous = it.next();
+-                if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
+-                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
+-                }
+-            }
++            IBlockData previous = this.getCapturedBlockType(x, y, z);
++            if (previous != null) return previous;
+         }
+         // CraftBukkit end
+         if (!this.isValidLocation(x, y, z)) {
