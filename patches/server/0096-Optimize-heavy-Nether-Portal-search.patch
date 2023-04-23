@@ -1,10 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Mechoriet <kevinworm92@gmail.com>
 Date: Mon, 5 Dec 2022 01:09:20 +0100
-Subject: [PATCH] Prevent heavy Nether Portal searches In most cases the short
- search should be enough but it always fals back on the bigger search if
- nothing is found so it shouldn't break anything
+Subject: [PATCH] Optimize heavy Nether Portal search
 
+In most cases the short search should be enough but it always fals back on the bigger search if nothing is found so it shouldn't break anything
 
 diff --git a/src/main/java/net/minecraft/server/PortalTravelAgent.java b/src/main/java/net/minecraft/server/PortalTravelAgent.java
 index 72f3735b196cbd7d420c6338eb7aba01b40c7804..9392c5ba7687b69be9927b7958dd93cc937a286b 100644
