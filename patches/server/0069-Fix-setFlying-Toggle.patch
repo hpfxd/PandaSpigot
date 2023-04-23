@@ -5,10 +5,10 @@ Subject: [PATCH] Fix setFlying Toggle
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 02786fb58fc0feed92dfdb75724688a5d938a9ea..470740ed356de6deb654af5c416cb6770be80483 100644
+index b0bb8e5771677073443fcd0639dc6660cc99fad7..5dfacdde9d5702ed17c25980329803e57f1fb65a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -1307,7 +1307,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1313,7 +1313,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
  
      @Override
      public void setFlying(boolean value) {

@@ -5,10 +5,10 @@ Subject: [PATCH] Add Player#sendEquipmentChange
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 376617c0d0edfe284c9d401464d031e89fdab6cb..02786fb58fc0feed92dfdb75724688a5d938a9ea 100644
+index c588468c0af427efa3133e97de071544459a068a..b0bb8e5771677073443fcd0639dc6660cc99fad7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -1058,6 +1058,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1064,6 +1064,18 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
              this.setOp(true);
          }
      }
