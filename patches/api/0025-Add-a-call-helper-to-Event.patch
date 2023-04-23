@@ -6,14 +6,14 @@ Subject: [PATCH] Add a call helper to Event
 Reduces diff in Server patches
 
 diff --git a/src/main/java/org/bukkit/event/Event.java b/src/main/java/org/bukkit/event/Event.java
-index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..f08109df66ad00dfb4761689691a422bbf5fb965 100644
+index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..6e924697c62c557e4f2cda3946bc2ffad6a952e7 100644
 --- a/src/main/java/org/bukkit/event/Event.java
 +++ b/src/main/java/org/bukkit/event/Event.java
 @@ -75,6 +75,22 @@ public abstract class Event {
          return async;
      }
  
-+    // Paper start
++    // PandaSpigot start
 +    /**
 +     * Calls the event and tests if cancelled.
 +     *
@@ -27,7 +27,7 @@ index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..f08109df66ad00dfb4761689691a422b
 +            return true;
 +        }
 +    }
-+    // Paper end
++    // PandaSpigot end
 +
      public enum Result {
  

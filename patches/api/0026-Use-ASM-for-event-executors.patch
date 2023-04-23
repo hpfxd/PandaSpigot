@@ -370,7 +370,7 @@ index 3b2c99ea7b30c8c4c03ffaca91c83d2e63338396..62be2db44f11ad03b58071e8b88c2105
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
-index bc6b9d12fe2e008fbac6c7fcc30495e5ff3591c9..36c798f292a95a39433da33a29bd613b39bae4a8 100644
+index bc6b9d12fe2e008fbac6c7fcc30495e5ff3591c9..c09a6fe397885813f13e96fbaa91b2e68236bc60 100644
 --- a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
 +++ b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
 @@ -291,20 +291,7 @@ public final class JavaPluginLoader implements PluginLoader {
@@ -391,7 +391,7 @@ index bc6b9d12fe2e008fbac6c7fcc30495e5ff3591c9..36c798f292a95a39433da33a29bd613b
 -                    }
 -                }
 -            }, plugin, method, eventClass); // Spigot
-+            EventExecutor executor = new co.aikar.timings.TimedEventExecutor(EventExecutor.create(method, eventClass), plugin, method, eventClass); // Spigot // Paper - Use factory method `EventExecutor.create()`
++            EventExecutor executor = new co.aikar.timings.TimedEventExecutor(EventExecutor.create(method, eventClass), plugin, method, eventClass); // Spigot // PandaSpigot - Use factory method `EventExecutor.create()`
              if (false) { // Spigot - RL handles useTimings check now
                  eventSet.add(new TimedRegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
              } else {

@@ -5,14 +5,13 @@ Subject: [PATCH] skip event if no listeners
 
 
 diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
-index 729b8084d9de1dad3e9a6ed25ed4c60134243519..83a48cc0e1580098ab121cb474a2668b9951f231 100644
+index 729b8084d9de1dad3e9a6ed25ed4c60134243519..9095ce078739daeee32165fa30812b043e66fdfa 100644
 --- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 +++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
-@@ -554,7 +554,9 @@ public final class SimplePluginManager implements PluginManager {
-     private void fireEvent(Event event) {
+@@ -555,6 +555,9 @@ public final class SimplePluginManager implements PluginManager {
          HandlerList handlers = event.getHandlers();
          RegisteredListener[] listeners = handlers.getRegisteredListeners();
--
+ 
 +        if (listeners.length == 0) {
 +            return;
 +        }
