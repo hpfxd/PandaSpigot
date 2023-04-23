@@ -7,22 +7,17 @@ Added registered listeners check to avoid alloc if no plugins are
 listening.
 
 diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..9607c55cdc98efe103e17a939a20d82ff66a7b02 100644
+index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..cf3c704d9c8789579b3ba765a32fb4269d295cec 100644
 --- a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
 +++ b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-@@ -91,6 +91,17 @@ public abstract class MobSpawnerAbstract {
+@@ -91,6 +91,12 @@ public abstract class MobSpawnerAbstract {
                  boolean flag = false;
  
                  for (int i = 0; i < this.spawnCount; ++i) {
 +                    // PandaSpigot start - SpawnerPreSpawnEvent
-+                    if (net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent.getHandlerList().getRegisteredListeners().length > 0) {
-+                        net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent event = new net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent(new org.bukkit.Location(this.a().getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()), org.bukkit.entity.EntityType.fromName(this.getMobName()));
-+                        this.a().getServer().getPluginManager().callEvent(event);
-+
-+                        if (event.isCancelled()) {
-+                            flag = true;
-+                            break;
-+                        }
++                    if (CraftEventFactory.callEvent(new net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent(new org.bukkit.Location(this.a().getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()), org.bukkit.entity.EntityType.fromName(this.getMobName()))).isCancelled()) {
++                        flag = true;
++                        break;
 +                    }
 +                    // PandaSpigot end
                      Entity entity = EntityTypes.createEntityByName(this.getMobName(), this.a());

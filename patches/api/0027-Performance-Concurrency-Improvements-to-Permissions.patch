@@ -1,0 +1,77 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sun, 23 Apr 2023 13:07:05 +0200
+Subject: [PATCH] Performance & Concurrency Improvements to Permissions no
+ double lookup
+
+
+diff --git a/src/main/java/org/bukkit/permissions/PermissibleBase.java b/src/main/java/org/bukkit/permissions/PermissibleBase.java
+index 3b95061aad53083219ca653c1ab5c629c2254e05..1b248d44338c737edd1c87013ddd7b6988e16cec 100644
+--- a/src/main/java/org/bukkit/permissions/PermissibleBase.java
++++ b/src/main/java/org/bukkit/permissions/PermissibleBase.java
+@@ -68,8 +68,9 @@ public class PermissibleBase implements Permissible {
+ 
+         String name = inName.toLowerCase();
+ 
+-        if (isPermissionSet(name)) {
+-            return permissions.get(name).getValue();
++        PermissionAttachmentInfo info = permissions.get(name);
++        if(info != null) {
++            return info.getValue();
+         } else {
+             Permission perm = Bukkit.getServer().getPluginManager().getPermission(name);
+ 
+@@ -88,13 +89,14 @@ public class PermissibleBase implements Permissible {
+ 
+         String name = perm.getName().toLowerCase();
+ 
+-        if (isPermissionSet(name)) {
+-            return permissions.get(name).getValue();
++        PermissionAttachmentInfo info = permissions.get(name);
++        if(info != null) {
++            return info.getValue();
+         }
+         return perm.getDefault().getValue(isOp());
+     }
+ 
+-    public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
++    public synchronized PermissionAttachment addAttachment(Plugin plugin, String name, boolean value) {
+         if (name == null) {
+             throw new IllegalArgumentException("Permission name cannot be null");
+         } else if (plugin == null) {
+@@ -111,7 +113,7 @@ public class PermissibleBase implements Permissible {
+         return result;
+     }
+ 
+-    public PermissionAttachment addAttachment(Plugin plugin) {
++    public synchronized PermissionAttachment addAttachment(Plugin plugin) {
+         if (plugin == null) {
+             throw new IllegalArgumentException("Plugin cannot be null");
+         } else if (!plugin.isEnabled()) {
+@@ -126,7 +128,7 @@ public class PermissibleBase implements Permissible {
+         return result;
+     }
+ 
+-    public void removeAttachment(PermissionAttachment attachment) {
++    public synchronized void removeAttachment(PermissionAttachment attachment) {
+         if (attachment == null) {
+             throw new IllegalArgumentException("Attachment cannot be null");
+         }
+@@ -145,7 +147,7 @@ public class PermissibleBase implements Permissible {
+         }
+     }
+ 
+-    public void recalculatePermissions() {
++    public synchronized void recalculatePermissions() {
+         clearPermissions();
+         Set<Permission> defaults = Bukkit.getServer().getPluginManager().getDefaultPermissions(isOp());
+         Bukkit.getServer().getPluginManager().subscribeToDefaultPerms(isOp(), parent);
+@@ -228,7 +230,7 @@ public class PermissibleBase implements Permissible {
+         }
+     }
+ 
+-    public Set<PermissionAttachmentInfo> getEffectivePermissions() {
++    public synchronized Set<PermissionAttachmentInfo> getEffectivePermissions() {
+         return new HashSet<PermissionAttachmentInfo>(permissions.values());
+     }
+ 
