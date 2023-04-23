@@ -320,7 +320,7 @@ index 9034e1ad7a013c7288e68322a65798e40d8b851d..86ab9994079c6e18e3aed885db4171d0
      public EntityFishingHook hookedFish;
      public boolean affectsSpawning = true; // PaperSpigot
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 3b408b82ba482282b44214ea57769e9b79c5671d..ca182cd6cf4a6e86ffb7074524f587642fddd66c 100644
+index 0f893196390e04f8c512f401612c5d455e25bec1..75716099df3c3afc9e5857258ed6d1b271c4b957 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1641,6 +1641,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
@@ -420,7 +420,7 @@ index 77f5dcc67f716a517c0dec6c5308469a91bbbe23..04ca21949a7d63b4265de2321303a1c2
      	return getBlockFace(rotation);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 801e19baa711b517eb437a173ea1edcc38b2e7e8..376617c0d0edfe284c9d401464d031e89fdab6cb 100644
+index 801e19baa711b517eb437a173ea1edcc38b2e7e8..c588468c0af427efa3133e97de071544459a068a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -973,9 +973,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -454,7 +454,7 @@ index 801e19baa711b517eb437a173ea1edcc38b2e7e8..376617c0d0edfe284c9d401464d031e8
  
          getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
  
-@@ -1003,6 +1013,52 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -1003,6 +1013,58 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
              entry.updatePlayer(getHandle());
          }
      }
@@ -497,6 +497,12 @@ index 801e19baa711b517eb437a173ea1edcc38b2e7e8..376617c0d0edfe284c9d401464d031e8
 +        handle.updateAbilities();
 +        connection.sendPacket(new net.minecraft.server.PacketPlayOutPosition(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch(), new HashSet<>()));
 +        net.minecraft.server.MinecraftServer.getServer().getPlayerList().updateClient(handle);
++
++        // Resend their XP and effects because the respawn packet resets it
++        connection.sendPacket(new net.minecraft.server.PacketPlayOutExperience(handle.exp, handle.expTotal, handle.expLevel));
++        for (MobEffect mobEffect : handle.getEffects()) {
++            connection.sendPacket(new net.minecraft.server.PacketPlayOutEntityEffect(handle.getId(), mobEffect));
++        }
 +        
 +        if (this.isOp()) {
 +            this.setOp(false);
