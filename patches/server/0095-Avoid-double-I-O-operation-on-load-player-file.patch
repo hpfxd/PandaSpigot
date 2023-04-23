@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: mechoriet <kevinworm92@gmail.com>
 Date: Wed, 19 Apr 2023 21:27:52 +0200
-Subject: [PATCH] Avoid double I/O operation on load  player file
+Subject: [PATCH] Avoid double I/O operation on load player file
 
 
 diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java

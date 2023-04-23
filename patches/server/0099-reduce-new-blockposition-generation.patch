@@ -18,7 +18,7 @@ index 0a4acf1e7b78eaeeca2606dbc46cdc5d703b8fad..66a76d11849314cd2bbd2d34c32a018e
                          if (chunk.isReady()) {
                              arraylist.add(chunk);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index b435b12c5ed06bffebdc3c06a26293a3f01e15f8..5e3f4623c1416de8ffeddb7888b72db889d7f9d2 100644
+index 81b1eae4cce1221198bb7354f2443d013e709363..eec306e53ca23346936db86c19413da540f6e6d6 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -881,20 +881,30 @@ public abstract class World implements IBlockAccess {

@@ -22,7 +22,7 @@ index c68ffe0e040f239f093a4543bc07463b27f96228..f6647ccdafd4ce9b91b94f4862b02bea
  
      boolean a(IChunkProvider ichunkprovider, Chunk chunk, int i, int j);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index a6f10ae54e56f743045f2ddf146acf9d514d821d..b435b12c5ed06bffebdc3c06a26293a3f01e15f8 100644
+index dd9518077cd5b9686987e4db54692acc0bc6e291..81b1eae4cce1221198bb7354f2443d013e709363 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -302,6 +302,9 @@ public abstract class World implements IBlockAccess {
