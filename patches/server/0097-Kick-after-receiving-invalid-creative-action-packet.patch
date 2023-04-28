@@ -1,19 +1,18 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: RoccoDev <hey@rocco.dev>
 Date: Mon, 12 Dec 2022 15:30:23 -0300
-Subject: [PATCH] Kick the player who performs a creative action and is not in
- the creative
+Subject: [PATCH] Kick after receiving invalid creative action packet
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 23bd5d11f8b909817855f593adc51d3ca5d9f976..8223e2363a92b9e96198188cc4cafe5fb4c8556e 100644
+index 23bd5d11f8b909817855f593adc51d3ca5d9f976..77e778fa2b365928bc5b3fae54fbdfbc7d7230a3 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -1875,6 +1875,10 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
                      entityitem.j();
                  }
              }
-+        // PandaSpigot start - Kick the player who performs a creative action and is not in the creative
++        // PandaSpigot start - Kick after receiving invalid creative action packet
 +        } else {
 +            disconnect("Not in creative mode");
 +        // PandaSpigot end
