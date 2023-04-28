@@ -6,14 +6,14 @@ Subject: [PATCH] Reduce Chunk Hashing
 These changes are from Akarin, previously called TorchSpigot
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index 9d31e75170c96103cd74557323af84dfbd9964ab..99dc76b9a11b1e416e736790f0aa1143dc354eaf 100644
+index 9d31e75170c96103cd74557323af84dfbd9964ab..7085cb503db3e1e585417ce4300c6be075c7d2fe 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
 @@ -56,8 +56,9 @@ public class ChunkProviderServer implements IChunkProvider {
      }
  
      public void queueUnload(int i, int j) {
-+        long key = LongHash.toLong(i, j); // Pandaspigot - Only create key once
++        long key = LongHash.toLong(i, j); // PandaSpigot - Only create key once
          // PaperSpigot start - Asynchronous lighting updates
 -        Chunk chunk = chunks.get(LongHash.toLong(i, j));
 +        Chunk chunk = chunks.get(key); // PandaSpigot - Reuse key
