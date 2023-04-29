@@ -1,0 +1,96 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aviana Cruz <gwencroft@proton.me>
+Date: Sat, 29 Apr 2023 05:44:21 +0000
+Subject: [PATCH] Add support for io_uring
+
+This only works when not using unix domain socket
+and compression is disabled because
+the netty io_uring transport does not support
+unix domain socket and the client can not decode
+compressed packets sent with io_uring.
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 4ee06dc15f97bc1d995bd1339333aa57cf3fded7..1c308b619b554ab40a3fdf9eb2414b979a90f9a4 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -20,6 +20,10 @@ dependencies {
+ 
+     // Minecraft libraries:
+     implementation("io.netty:netty-all:4.1.92.Final") // PandaSpigot - Update Netty to 4.1.x
++    // PandaSpigot start - Add support for io_uring
++    implementation("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.21.Final:linux-x86_64")
++    implementation("io.netty.incubator:netty-incubator-transport-native-io_uring:0.0.21.Final:linux-aarch_64")
++    // PandaSpigot end - Add support for io_uring
+     implementation("com.mojang:authlib:1.5.21")
+     // PandaSpigot start - Update log4j
+     implementation("org.apache.logging.log4j:log4j-api:2.17.1")
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+index ae3cdaca275b1a50c5c37c3dd0021c4bd579d373..f0d603d13f197153a4a4ee7734a43754fba580d0 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+@@ -125,4 +125,6 @@ public class PandaSpigotConfig {
+     @Comment("Whether player IP addresses should be logged by the server. This does not impact\n" +
+         "the ability of plugins to log the IP addresses of players.")
+     public boolean logPlayerIpAddresses = true;
++
++    public boolean useIouring = false;
+ }
+diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
+index ae94817c51f57bef9f1b0b8687b645883f6ec985..76e7468baba1c865236e11d84d49c483b71fe5bb 100644
+--- a/src/main/java/net/minecraft/server/ServerConnection.java
++++ b/src/main/java/net/minecraft/server/ServerConnection.java
+@@ -48,6 +48,17 @@ public class ServerConnection {
+             return this.a();
+         }
+     };
++    // PandaSpigot start - Add support for io_uring
++    public static final LazyInitVar<io.netty.incubator.channel.uring.IOUringEventLoopGroup> SERVER_IO_URING_EVENT_GROUP = new LazyInitVar<io.netty.incubator.channel.uring.IOUringEventLoopGroup>() {
++        private io.netty.incubator.channel.uring.IOUringEventLoopGroup a() {
++            return new io.netty.incubator.channel.uring.IOUringEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty io_uring Server IO #%d").setDaemon(true).build());
++        }
++
++        protected io.netty.incubator.channel.uring.IOUringEventLoopGroup init() {
++            return this.a();
++        }
++    };
++    // PandaSpigot end - Add support for io_uring
+     public static final LazyInitVar<LocalEventLoopGroup> c = new LazyInitVar() {
+         protected LocalEventLoopGroup a() {
+             return new LocalEventLoopGroup(0, (new ThreadFactoryBuilder()).setNameFormat("Netty Local Server IO #%d").setDaemon(true).build());
+@@ -90,16 +101,28 @@ public class ServerConnection {
+             Class oclass;
+             LazyInitVar lazyinitvar;
+ 
+-            if (Epoll.isAvailable() && this.f.ai()) {
+-                // PandaSpigot start - Unix domain socket support
+-                if (address instanceof io.netty.channel.unix.DomainSocketAddress) {
+-                    oclass = io.netty.channel.epoll.EpollServerDomainSocketChannel.class;
++            // PandaSpigot start - Add support for io_uring
++            if ((io.netty.incubator.channel.uring.IOUring.isAvailable() || Epoll.isAvailable()) && this.f.ai()) {
++                if (com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().useIouring && io.netty.incubator.channel.uring.IOUring.isAvailable() && !(address instanceof io.netty.channel.unix.DomainSocketAddress) && this.f.aK() == -1) {
++                    oclass = io.netty.incubator.channel.uring.IOUringServerSocketChannel.class;
++                    lazyinitvar = ServerConnection.SERVER_IO_URING_EVENT_GROUP;
++                    ServerConnection.e.info("Using io_uring channel type");
++                } else if (Epoll.isAvailable()) {
++                    // PandaSpigot start - Unix domain socket support
++                    if (address instanceof io.netty.channel.unix.DomainSocketAddress) {
++                        oclass = io.netty.channel.epoll.EpollServerDomainSocketChannel.class;
++                    } else {
++                        oclass = EpollServerSocketChannel.class;
++                    }
++                    // PandaSpigot end
++                    lazyinitvar = ServerConnection.b;
++                    ServerConnection.e.info("Using epoll channel type");
+                 } else {
+-                    oclass = EpollServerSocketChannel.class;
++                    oclass = NioServerSocketChannel.class;
++                    lazyinitvar = ServerConnection.a;
++                    ServerConnection.e.info("Using default channel type");
+                 }
+-                // PandaSpigot end
+-                lazyinitvar = ServerConnection.b;
+-                ServerConnection.e.info("Using epoll channel type");
++                // PandaSpigot end - Add support for io_uring
+             } else {
+                 oclass = NioServerSocketChannel.class;
+                 lazyinitvar = ServerConnection.a;
