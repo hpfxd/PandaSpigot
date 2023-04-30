@@ -5,16 +5,18 @@ Subject: [PATCH] skip event if no listeners
 
 
 diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
-index 729b8084d9de1dad3e9a6ed25ed4c60134243519..9095ce078739daeee32165fa30812b043e66fdfa 100644
+index 729b8084d9de1dad3e9a6ed25ed4c60134243519..e6d565d8c5d44e183ef9834fc60f818e4be757e2 100644
 --- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
 +++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
-@@ -555,6 +555,9 @@ public final class SimplePluginManager implements PluginManager {
+@@ -555,6 +555,11 @@ public final class SimplePluginManager implements PluginManager {
          HandlerList handlers = event.getHandlers();
          RegisteredListener[] listeners = handlers.getRegisteredListeners();
  
++        // PandaSpigot start - skip everything
 +        if (listeners.length == 0) {
 +            return;
 +        }
++        // PandaSpigot end
          for (RegisteredListener registration : listeners) {
              if (!registration.getPlugin().isEnabled()) {
                  continue;
