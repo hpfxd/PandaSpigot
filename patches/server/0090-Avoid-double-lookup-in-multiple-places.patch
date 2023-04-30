@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sun, 4 Dec 2022 12:29:12 +0100
+Subject: [PATCH] Avoid double lookup in multiple places
+
+Co-authored-by: uRyanxD <familiarodrigues123ro@gmail.com>
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 0850eeca615b18cd9f9d4124604cbbefd8710abe..f811204fd911a6078205bb4f78346bb0fdb9a8dc 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -764,10 +764,13 @@ public abstract class World implements IBlockAccess {
+ 
+     public int b(int i, int j) {
+         if (i >= -30000000 && j >= -30000000 && i < 30000000 && j < 30000000) {
+-            if (!this.isChunkLoaded(i >> 4, j >> 4, true)) {
++            // PandaSpigot start - Avoid double lookup
++            Chunk chunk = this.getChunkIfLoaded(i >> 4, j >> 4)
++            if (chunk == null) {
++            // PandaSpigot end
+                 return 0;
+             } else {
+-                Chunk chunk = this.getChunkAt(i >> 4, j >> 4);
++                // Chunk chunk = this.getChunkAt(i >> 4, j >> 4); // PandaSpigot - Moved up
+ 
+                 return chunk.v();
+             }
+diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
+index d3767d2a8963e72253fd05b4d177acd7415158bb..758b36cb15f4007c517dd6c802fdd761a316bb6a 100644
+--- a/src/main/java/org/spigotmc/ActivationRange.java
++++ b/src/main/java/org/spigotmc/ActivationRange.java
+@@ -128,9 +128,12 @@ public class ActivationRange
+             {
+                 for ( int j1 = k; j1 <= l; ++j1 )
+                 {
+-                    if ( world.getWorld().isChunkLoaded( i1, j1 ) )
++                    // PandaSpigot start - Avoid double lookup
++                    Chunk chunk = world.getChunkIfLoaded( i1, j1 );
++                    if ( chunk != null )
+                     {
+-                        activateChunkEntities( world.getChunkAt( i1, j1 ) );
++                        activateChunkEntities( chunk  );
++                    // PandaSpigot end
+                     }
+                 }
+             }
