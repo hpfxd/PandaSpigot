@@ -123,18 +123,9 @@ index f3afbbd3a20ebf7d51a8fac418cff3e6f59ab56f..6d5fec85c8a79df2ea299c31196bab58
                  if (!org.bukkit.craftbukkit.event.CraftEventFactory.callEntityChangeBlockEvent(this.a, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this.a.getCarried().getBlock(), this.a.getCarried().getBlock().toLegacyData(this.a.getCarried())).isCancelled()) {
                  world.setTypeAndData(blockposition, this.a.getCarried(), 3);
 diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..9603798be9c1c60a8dfc7fa9c7c2e205b6df115a 100644
+index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..5dfc94b0d6dd44f2fa283a0c601f448be88a1aa4 100644
 --- a/src/main/java/net/minecraft/server/SpawnerCreature.java
 +++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
-@@ -112,7 +112,7 @@ public final class SpawnerCreature {
-                 if (limit == 0) {
-                     continue;
-                 }
--				int mobcnt = 0; // Spigot
-+                int mobcnt = 0; // Spigot
-                 // CraftBukkit end
- 
-                 if ((!enumcreaturetype.d() || flag1) && (enumcreaturetype.d() || flag) && (!enumcreaturetype.e() || flag2)) {
 @@ -151,7 +151,7 @@ public final class SpawnerCreature {
                                          if (i4 < 4) {
                                              label108: {
