@@ -17,7 +17,7 @@ index 03fe76355813497a5db33ad185db0e4b40c6f85a..df28cca6175ff3ddf4992c44a0760ef1
          int j = blockposition.getX() & 15;
          int k = blockposition.getY();
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index b75d78da71f24a0b02bf709d026389add0556489..97c7983a7f3e6fd16783b15999c393c72ac63bf2 100644
+index b75d78da71f24a0b02bf709d026389add0556489..b6b050d6a78cec5f235c4d8d5dca875fb083d94d 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -93,7 +93,7 @@ public abstract class World implements IBlockAccess {
@@ -84,18 +84,15 @@ index b75d78da71f24a0b02bf709d026389add0556489..97c7983a7f3e6fd16783b15999c393c7
      public int getLightLevel(BlockPosition blockposition) {
          return this.c(blockposition, true);
      }
-@@ -766,6 +807,25 @@ public abstract class World implements IBlockAccess {
+@@ -766,6 +807,22 @@ public abstract class World implements IBlockAccess {
          return this.worldProvider.p()[this.getLightLevel(blockposition)];
      }
  
 +    // PandaSpigot start - Add getTypeIfLoaded
 +    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
-+        int x = blockposition.getX();
-+        int y = blockposition.getY();
-+        int z = blockposition.getZ();
 +        if (this.captureTreeGeneration) {
 +            for (BlockState previous : this.capturedBlockStates) {
-+                if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
++                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
 +                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
 +                }
 +            }

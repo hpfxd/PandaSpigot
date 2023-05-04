@@ -42,7 +42,7 @@ index 58e485c2e5845dda15c33ee1beb170860535f88b..854cf888d64e50bfd85420bb5dcc9386
                          try {
                              iblockdata.getBlock().a(this.world, blockposition2, iblockdata, this);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 59218e61f14b169e81e594a4f584877c7cea8088..efe66c6b0ae314170b887d69fb26f9e0ac804b12 100644
+index f1173857ff7c2175d12d33bc38c60400ca3462b0..9080dce27c7e4355c0305106fa51a088ed97a39f 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -296,8 +296,13 @@ public abstract class World implements IBlockAccess {
@@ -75,7 +75,7 @@ index 59218e61f14b169e81e594a4f584877c7cea8088..efe66c6b0ae314170b887d69fb26f9e0
  
      public Chunk getChunkAt(int i, int j) {
          return this.chunkProvider.getOrCreateChunk(i, j);
-@@ -832,27 +842,37 @@ public abstract class World implements IBlockAccess {
+@@ -829,27 +839,37 @@ public abstract class World implements IBlockAccess {
          return getType( blockposition, true );
      }
      

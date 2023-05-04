@@ -192,10 +192,10 @@ index e67aa0423f6a28b286174662f29ffc32a74992d9..22c3ac7a71043ab82e7d3c95c71e02fa
      }
  
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 0fb80f432a992c6d94bd4a6c9ff14226333d529a..59218e61f14b169e81e594a4f584877c7cea8088 100644
+index b6b050d6a78cec5f235c4d8d5dca875fb083d94d..f1173857ff7c2175d12d33bc38c60400ca3462b0 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -876,7 +876,10 @@ public abstract class World implements IBlockAccess {
+@@ -873,7 +873,10 @@ public abstract class World implements IBlockAccess {
                  int i1 = MathHelper.floor(vec3d.b);
                  int j1 = MathHelper.floor(vec3d.c);
                  BlockPosition blockposition = new BlockPosition(l, i1, j1);
@@ -207,7 +207,7 @@ index 0fb80f432a992c6d94bd4a6c9ff14226333d529a..59218e61f14b169e81e594a4f584877c
                  Block block = iblockdata.getBlock();
  
                  if ((!flag1 || block.a(this, blockposition, iblockdata) != null) && block.a(iblockdata, flag)) {
-@@ -978,7 +981,10 @@ public abstract class World implements IBlockAccess {
+@@ -975,7 +978,10 @@ public abstract class World implements IBlockAccess {
                      i1 = MathHelper.floor(vec3d.b) - (enumdirection == EnumDirection.UP ? 1 : 0);
                      j1 = MathHelper.floor(vec3d.c) - (enumdirection == EnumDirection.SOUTH ? 1 : 0);
                      blockposition = new BlockPosition(l, i1, j1);
@@ -219,7 +219,7 @@ index 0fb80f432a992c6d94bd4a6c9ff14226333d529a..59218e61f14b169e81e594a4f584877c
                      Block block1 = iblockdata1.getBlock();
  
                      if (!flag1 || block1.a(this, blockposition, iblockdata1) != null) {
-@@ -2717,8 +2723,11 @@ public abstract class World implements IBlockAccess {
+@@ -2714,8 +2720,11 @@ public abstract class World implements IBlockAccess {
  
          for (int i1 = i; i1 <= j; ++i1) {
              for (int j1 = k; j1 <= l; ++j1) {
