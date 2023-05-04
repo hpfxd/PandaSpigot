@@ -5,10 +5,10 @@ Subject: [PATCH] Fix MC-117075: TE Unload Lag Spike
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index a28322963f7d06f74fc1ae57a40ee440d92d6785..cc6af728ffa4eaca180e8d623ab87bdfe890da29 100644
+index efe66c6b0ae314170b887d69fb26f9e0ac804b12..6ca9bfe1d65a965a80bd06aa8569ef564e90925c 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -1604,7 +1604,11 @@ public abstract class World implements IBlockAccess {
+@@ -1613,7 +1613,11 @@ public abstract class World implements IBlockAccess {
          this.M = true;
          // CraftBukkit start - From below, clean up tile entities before ticking them
          if (!this.c.isEmpty()) {

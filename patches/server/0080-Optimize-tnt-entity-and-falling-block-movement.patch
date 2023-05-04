@@ -8,7 +8,7 @@ This is configurable using the "tnt.optimize-movement" and
 "tnt.optimize-liquid-explosions" options respectively.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 66f47e87963f5e1ba4ae919171b18cadb606724d..183a24a9ce67225c298557300ffe3b6c44bf2a65 100644
+index 05c9ebb76a3cb19e887bea1311ac36035334b9a1..1e0393f667029809ac3476069cebe1ef34afadc8 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -52,4 +52,8 @@ public class PandaSpigotWorldConfig {
@@ -83,10 +83,10 @@ index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..6671d4920f4b808d61fd458ef3f26f21
          this.blocks.addAll(hashset);
          float f3 = this.size * 2.0F;
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index cc6af728ffa4eaca180e8d623ab87bdfe890da29..5c010f4811ca7d010f62bd06850ace98143c2b7f 100644
+index 6ca9bfe1d65a965a80bd06aa8569ef564e90925c..ef31987a36f3ed8b09d23dcb5f9b09c628160faa 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -1347,6 +1347,8 @@ public abstract class World implements IBlockAccess {
+@@ -1356,6 +1356,8 @@ public abstract class World implements IBlockAccess {
          // Spigot end
  
          if (entity instanceof EntityItem) return arraylist; // PaperSpigot - Optimize item movement
