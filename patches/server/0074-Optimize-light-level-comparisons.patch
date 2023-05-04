@@ -18,7 +18,7 @@ index b91b2200d56d9f0b4a50293fbc497a7aca7b9cec..f9429059302cfeba9d7ea6c1cb7f0dbe
  
              if (i < 7) {
 diff --git a/src/main/java/net/minecraft/server/BlockGrass.java b/src/main/java/net/minecraft/server/BlockGrass.java
-index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..dab4325048caa994ad31cd2a270748b4be1c36b3 100644
+index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..4b59adfa496450a048af6443eae12da3b894558a 100644
 --- a/src/main/java/net/minecraft/server/BlockGrass.java
 +++ b/src/main/java/net/minecraft/server/BlockGrass.java
 @@ -29,7 +29,8 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
@@ -27,7 +27,7 @@ index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..dab4325048caa994ad31cd2a270748b4
          if (!world.isClientSide) {
 -            if (world.getLightLevel(blockposition.up()) < 4 && world.getType(blockposition.up()).getBlock().p() > 2) {
 +            int lightLevel = -1; // PandaSpigot
-+            if (world.getType(blockposition.up()).getBlock().p() > 2 && (lightLevel = world.getLightLevel(blockposition.up())) < 4) { // PandaSpigot - Move light check to end to avoid unneeded light lookups
++            if (world.getType(blockposition.up()).c() > 2 && (lightLevel = world.getLightLevel(blockposition.up())) < 4) { // PandaSpigot - Move light check to end to avoid unneeded light lookups
                  // CraftBukkit start
                  // world.setTypeUpdate(blockposition, Blocks.DIRT.getBlockData());
                  org.bukkit.World bworld = world.getWorld();
@@ -59,7 +59,7 @@ index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..dab4325048caa994ad31cd2a270748b4
                              // world.setTypeUpdate(blockposition1, Blocks.GRASS.getBlockData());
                              org.bukkit.World bworld = world.getWorld();
 diff --git a/src/main/java/net/minecraft/server/BlockSapling.java b/src/main/java/net/minecraft/server/BlockSapling.java
-index 45fbf5c341fc6ea8163e4363f654772921332789..c8b8e5b0691cd009a362d54960303c876e811949 100644
+index 45fbf5c341fc6ea8163e4363f654772921332789..53e48b9f99f7819136cb978afac837e5385c01a0 100644
 --- a/src/main/java/net/minecraft/server/BlockSapling.java
 +++ b/src/main/java/net/minecraft/server/BlockSapling.java
 @@ -32,7 +32,7 @@ public class BlockSapling extends BlockPlant implements IBlockFragilePlantElemen
@@ -67,7 +67,7 @@ index 45fbf5c341fc6ea8163e4363f654772921332789..c8b8e5b0691cd009a362d54960303c87
          if (!world.isClientSide) {
              super.b(world, blockposition, iblockdata, random);
 -            if (world.getLightLevel(blockposition.up()) >= 9 && (random.nextInt(Math.max(2, (int) ((world.growthOdds / world.spigotConfig.saplingModifier * 7) + 0.5F))) == 0)) { // Spigot) {
-+            if (world.isLightLevel(blockposition.up(), 9) && (random.nextInt(Math.max(2, (int) ((world.growthOdds / world.spigotConfig.saplingModifier * 7) + 0.5F))) == 0)) { // Spigot) { // PandaSpigot - Use isLightLevel
++            if (world.isLightLevel(blockposition.up(), 9) && random.nextInt(Math.max(2, (int) ((world.growthOdds / world.spigotConfig.saplingModifier * 7) + 0.5F))) == 0) { // Spigot) { // PandaSpigot - Use isLightLevel
                  // CraftBukkit start
                  world.captureTreeGeneration = true;
                  // CraftBukkit end
