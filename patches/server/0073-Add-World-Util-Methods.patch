@@ -3,6 +3,7 @@ From: mechoriet <kevinworm92@gmail.com>
 Date: Fri, 17 Jun 2022 18:35:40 +0200
 Subject: [PATCH] Add World Util Methods
 
+Co-authored-by: uRyanxD <familiarodrigues123ro@gmail.com>
 
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
 index 03fe76355813497a5db33ad185db0e4b40c6f85a..df28cca6175ff3ddf4992c44a0760ef17310b03e 100644
