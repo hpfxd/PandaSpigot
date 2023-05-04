@@ -18,7 +18,7 @@ index b91b2200d56d9f0b4a50293fbc497a7aca7b9cec..f9429059302cfeba9d7ea6c1cb7f0dbe
  
              if (i < 7) {
 diff --git a/src/main/java/net/minecraft/server/BlockGrass.java b/src/main/java/net/minecraft/server/BlockGrass.java
-index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..96ae450d0b5c65b92e5fae4bad27d0d41786bfcd 100644
+index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..c81b82a8f785d4b2983a95a89f1276266468e8ce 100644
 --- a/src/main/java/net/minecraft/server/BlockGrass.java
 +++ b/src/main/java/net/minecraft/server/BlockGrass.java
 @@ -29,7 +29,8 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
@@ -31,7 +31,7 @@ index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..96ae450d0b5c65b92e5fae4bad27d0d4
                  // CraftBukkit start
                  // world.setTypeUpdate(blockposition, Blocks.DIRT.getBlockData());
                  org.bukkit.World bworld = world.getWorld();
-@@ -44,13 +45,20 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
+@@ -44,13 +45,23 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
                  }
                  // CraftBukkit end
              } else {
@@ -48,9 +48,12 @@ index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..96ae450d0b5c65b92e5fae4bad27d0d4
                          Block block = world.getType(blockposition1.up()).getBlock();
 -                        IBlockData iblockdata1 = world.getType(blockposition1);
 +                        IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition1);
++                        if (iblockdata1 == null) {
++                            return;
++                        }
  
 -                        if (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.DIRT && world.getLightLevel(blockposition1.up()) >= 4 && block.p() <= 2) {
-+                        if (iblockdata1 != null && iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.DIRT && block.getBlock().p() <= 2 && world.isLightLevel(blockposition1.up(), 4)) {
++                        if (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.DIRT && block.getBlock().p() <= 2 && world.isLightLevel(blockposition1.up(), 4)) {
 +                        // PandaSpigot end
                              // CraftBukkit start
                              // world.setTypeUpdate(blockposition1, Blocks.GRASS.getBlockData());
