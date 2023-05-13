@@ -5,7 +5,7 @@ Subject: [PATCH] Add getTypeIfLoaded to World
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index b75d78da71f24a0b02bf709d026389add0556489..ad97333c47582cb96709b478eb93659f16b717bf 100644
+index b75d78da71f24a0b02bf709d026389add0556489..a084ebc67f4fafce916d2ce02d19a09b30e5d5a4 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -766,6 +766,22 @@ public abstract class World implements IBlockAccess {
@@ -14,18 +14,18 @@ index b75d78da71f24a0b02bf709d026389add0556489..ad97333c47582cb96709b478eb93659f
  
 +    // PandaSpigot start - Add getTypeIfLoaded
 +    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
-+        int x = blockposition.getX();
-+        int y = blockposition.getY();
-+        int z = blockposition.getZ();
 +        if (this.captureTreeGeneration) {
 +            for (BlockState previous : this.capturedBlockStates) {
-+                if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
++                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
 +                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
 +                }
 +            }
 +        }
-+        Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
-+        return chunk == null ? null : chunk.getBlockData(blockposition);
++        Chunk chunk = this.getChunkIfLoaded(blockposition);
++        if (chunk != null) {
++            return this.isValidLocation(blockposition) ? chunk.getBlockData(blockposition) : Blocks.AIR.getBlockData();
++        }
++        return null;
 +    }
 +    // PandaSpigot end
      // Spigot start
