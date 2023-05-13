@@ -6,7 +6,7 @@ Subject: [PATCH] Avoid double lookup in multiple places
 Co-authored-by: uRyanxD <familiarodrigues123ro@gmail.com>
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 0850eeca615b18cd9f9d4124604cbbefd8710abe..5935d87420054309767bb4fd57bff46d6eefd347 100644
+index 00b9bb6298f64fccf2c9280466d2d73ee62c09e2..a93458c424326c5358de81dbd991905c424e8767 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -764,10 +764,13 @@ public abstract class World implements IBlockAccess {
@@ -26,7 +26,7 @@ index 0850eeca615b18cd9f9d4124604cbbefd8710abe..5935d87420054309767bb4fd57bff46d
                  return chunk.v();
              }
 diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
-index d3767d2a8963e72253fd05b4d177acd7415158bb..758b36cb15f4007c517dd6c802fdd761a316bb6a 100644
+index d3767d2a8963e72253fd05b4d177acd7415158bb..4a6a8574c08c63c92fabfa279991869d55621a99 100644
 --- a/src/main/java/org/spigotmc/ActivationRange.java
 +++ b/src/main/java/org/spigotmc/ActivationRange.java
 @@ -128,9 +128,12 @@ public class ActivationRange
@@ -39,7 +39,7 @@ index d3767d2a8963e72253fd05b4d177acd7415158bb..758b36cb15f4007c517dd6c802fdd761
 +                    if ( chunk != null )
                      {
 -                        activateChunkEntities( world.getChunkAt( i1, j1 ) );
-+                        activateChunkEntities( chunk  );
++                        activateChunkEntities( chunk );
 +                    // PandaSpigot end
                      }
                  }
