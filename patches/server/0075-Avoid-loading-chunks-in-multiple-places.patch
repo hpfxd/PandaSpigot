@@ -192,7 +192,7 @@ index e67aa0423f6a28b286174662f29ffc32a74992d9..22c3ac7a71043ab82e7d3c95c71e02fa
      }
  
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index a92b1eb303e01bc42157fe384279d7ad42be03f8..7ee64cd6d6845a715a7c21e47ef731854aa3a022 100644
+index 35b35f39e189570a74d3adcde9ebe412ac397f48..af0e8e2ad1313dcd70fbed683802eb798bccece3 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -867,7 +867,10 @@ public abstract class World implements IBlockAccess {
@@ -227,7 +227,7 @@ index a92b1eb303e01bc42157fe384279d7ad42be03f8..7ee64cd6d6845a715a7c21e47ef73185
 -                    this.getChunkAt(i1, j1).a(entity, axisalignedbb, arraylist, predicate);
 +                // PandaSpigot start - Use getChunkIfLoaded
 +                Chunk chunk = this.getChunkIfLoaded(i1, j1);
-+                if(chunk != null) {
++                if (chunk != null) {
 +                    chunk.a(entity, axisalignedbb, arraylist, predicate);
 +                // PandaSpigot end
                  }
