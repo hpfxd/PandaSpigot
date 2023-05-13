@@ -42,7 +42,7 @@ index 58e485c2e5845dda15c33ee1beb170860535f88b..854cf888d64e50bfd85420bb5dcc9386
                          try {
                              iblockdata.getBlock().a(this.world, blockposition2, iblockdata, this);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 9a7aa50a815d15f3e221a9f0883ad128275f2a87..3a5e5a14bee90e9351cd16445754e3005489669f 100644
+index 7ee64cd6d6845a715a7c21e47ef731854aa3a022..0b90806a80be86800a72f68ae691c8c339d45e43 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -290,8 +290,13 @@ public abstract class World implements IBlockAccess {
@@ -67,21 +67,20 @@ index 9a7aa50a815d15f3e221a9f0883ad128275f2a87..3a5e5a14bee90e9351cd16445754e300
 -        return this.getChunkAt(blockposition.getX() >> 4, blockposition.getZ() >> 4);
 +    // PandaSpigot start
 +        return this.getChunkAtWorldCoords(blockposition.getX(), blockposition.getZ());
-     }
++    }
 +    public Chunk getChunkAtWorldCoords(int x, int z) {
 +        return this.getChunkAt(x >> 4, z >> 4);
-+    }
+     }
 +    // PandaSpigot end
  
      public Chunk getChunkAt(int i, int j) {
          return this.chunkProvider.getOrCreateChunk(i, j);
-@@ -823,27 +833,37 @@ public abstract class World implements IBlockAccess {
+@@ -823,27 +833,36 @@ public abstract class World implements IBlockAccess {
          return getType( blockposition, true );
      }
      
 +    // PandaSpigot start
-+    public IBlockData getType(int blockposition_x, int blockposition_y, int blockposition_z)
-+    {
++    public IBlockData getType(int blockposition_x, int blockposition_y, int blockposition_z) {
 +        return getType( blockposition_x, blockposition_y, blockposition_z, true );
 +    }
 +

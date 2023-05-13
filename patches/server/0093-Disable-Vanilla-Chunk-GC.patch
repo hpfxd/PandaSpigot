@@ -6,7 +6,7 @@ Subject: [PATCH] Disable Vanilla Chunk GC
 Bukkit has its own system for this.
 
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index a446d197d7b53a43049adc40b6fd92dc6551ffcf..adf23f40860b64eccb642f9a7996578f45970e1a 100644
+index 0700b5aec26a6a4ba4db4d3c66b8b15c295c5a03..d68deb81f9f7dfb82591d5876daaac9a3a258dc6 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -964,6 +964,8 @@ public class WorldServer extends World implements IAsyncTaskHandler {
