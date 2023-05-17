@@ -18,7 +18,7 @@ index b91b2200d56d9f0b4a50293fbc497a7aca7b9cec..f9429059302cfeba9d7ea6c1cb7f0dbe
  
              if (i < 7) {
 diff --git a/src/main/java/net/minecraft/server/BlockGrass.java b/src/main/java/net/minecraft/server/BlockGrass.java
-index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..dea628f4b42fe850a995222607ce80de159808ae 100644
+index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..f38d0bf6a2b85ea0757319acb07fe32088481cd6 100644
 --- a/src/main/java/net/minecraft/server/BlockGrass.java
 +++ b/src/main/java/net/minecraft/server/BlockGrass.java
 @@ -29,7 +29,8 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
@@ -44,9 +44,9 @@ index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..dea628f4b42fe850a995222607ce80de
 +                // PandaSpigot end
                      for (int i = 0; i < Math.min(4, Math.max(20, (int) (4 * 100F / world.growthOdds))); ++i) { // Spigot
                          BlockPosition blockposition1 = blockposition.a(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
-+                        // PandaSpigot start
                          Block block = world.getType(blockposition1.up()).getBlock();
 -                        IBlockData iblockdata1 = world.getType(blockposition1);
++                        // PandaSpigot start
 +                        IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition1);
 +                        if (iblockdata1 == null) {
 +                            return;
