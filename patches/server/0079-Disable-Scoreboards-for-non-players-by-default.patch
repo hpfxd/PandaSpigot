@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sun, 4 Dec 2022 17:07:42 +0100
+Subject: [PATCH] Disable Scoreboards for non players by default
+
+Entities collision is checking for scoreboards setting.
+This is very heavy to do map lookups for every collision to check
+this setting.
+
+So avoid looking up scoreboards and short circuit to the "not on a team"
+logic which is most likely to be true.
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 14f65a41a7711afd45fbd09007e385dfd6291719..07664fc1ecaa80bc094d9830d2137a2da88cca2b 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -52,4 +52,6 @@ public class PandaSpigotWorldConfig {
+         public double extraHorizontal = 0.425;
+         public double extraVertical = 0.085;
+     }
++    @Comment("Allow non players on scoreboards")
++    public boolean nonPlayerEntitiesOnScoreboards = false;
+ }
+diff --git a/src/main/java/net/minecraft/server/CommandScoreboard.java b/src/main/java/net/minecraft/server/CommandScoreboard.java
+index 27d08a7de54de062041a107490a9d4684872ec8b..6eb6d1d97b228307855f4f816a256924d0c6d066 100644
+--- a/src/main/java/net/minecraft/server/CommandScoreboard.java
++++ b/src/main/java/net/minecraft/server/CommandScoreboard.java
+@@ -471,6 +471,7 @@ public class CommandScoreboard extends CommandAbstract {
+ 
+                     while (iterator.hasNext()) {
+                         Entity entity = (Entity) iterator.next();
++                        if (!entity.world.pandaSpigotConfig.nonPlayerEntitiesOnScoreboards && !(entity instanceof EntityHuman)) continue; // PandaSpigot
+                         String s2 = e(icommandlistener, entity.getUniqueID().toString());
+ 
+                         if (scoreboard.addPlayerToTeam(s2, s)) {
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index cd95aa17291d31e3cebe9f6488a43923a18facba..45be6a80f3043e5d87830fb381be9a1fa13b0860 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -1845,6 +1845,7 @@ public abstract class EntityLiving extends Entity {
+     }
+ 
+     public ScoreboardTeamBase getScoreboardTeam() {
++        if (!this.world.pandaSpigotConfig.nonPlayerEntitiesOnScoreboards && !(this instanceof EntityHuman)) return null; // PandaSpigot
+         return this.world.getScoreboard().getPlayerTeam(this.getUniqueID().toString());
+     }
+ 
