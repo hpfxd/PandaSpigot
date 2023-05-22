@@ -10,10 +10,10 @@ Content-Transfer-Encoding: 8bit
 particularly useful for multiworld servers with a lot of players should reduce work/iterating over bigger lists then necessary
 
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 9882c599533d8ef52369efb6404a967e736548e0..5e5ef1f97f725e184c8a635416d7d3c7f8b60841 100644
+index ada9cf25b091c2df24301bb5e82d1f76fbd929e5..693b6f4be0beb0654f6ed913109dc1918089f202 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -1047,12 +1047,29 @@ public abstract class PlayerList {
+@@ -1053,12 +1053,29 @@ public abstract class PlayerList {
      }
  
      public void sendPacketNearby(double d0, double d1, double d2, double d3, int i, Packet packet) {
@@ -45,7 +45,7 @@ index 9882c599533d8ef52369efb6404a967e736548e0..5e5ef1f97f725e184c8a635416d7d3c7
  
              // CraftBukkit start - Test if player receiving packet can see the source of the packet
              if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity())) {
-@@ -1060,7 +1077,7 @@ public abstract class PlayerList {
+@@ -1066,7 +1083,7 @@ public abstract class PlayerList {
              }
              // CraftBukkit end
  
@@ -99,7 +99,7 @@ index 923887bd010fa1fe1958a50ae39196bfa7f07bcd..2b75af88a86ef6a4d349578d1666726e
              if (entityplayer != null && entityplayer.world == this.world && entityplayer.getId() != i) {
                  double d0 = (double) blockposition.getX() - entityplayer.locX;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index adf23f40860b64eccb642f9a7996578f45970e1a..ea98e83b6396a255101211b809f34264a1acff7e 100644
+index d68deb81f9f7dfb82591d5876daaac9a3a258dc6..7d7167d2103a4d50e8b8b36df581b5f5edad3bf0 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -1044,7 +1044,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
