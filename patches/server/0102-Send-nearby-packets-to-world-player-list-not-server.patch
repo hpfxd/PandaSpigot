@@ -1,11 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: mechoriet <kevinworm92@gmail.com>
 Date: Sat, 29 Apr 2023 20:18:25 +0200
-Subject: [PATCH] =?UTF-8?q?Send=20nearby=20packets=20from=20world=20player?=
- =?UTF-8?q?=20list=20not=20server=20li=E2=80=A6=20=E2=80=A6st?=
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Subject: [PATCH] Send nearby packets to world player list not server
 
 particularly useful for multiworld servers with a lot of players should reduce work/iterating over bigger lists then necessary
 
