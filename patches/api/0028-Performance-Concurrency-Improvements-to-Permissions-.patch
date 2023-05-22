@@ -6,14 +6,13 @@ Subject: [PATCH] Performance & Concurrency Improvements to Permissions no
 
 
 diff --git a/src/main/java/org/bukkit/permissions/PermissibleBase.java b/src/main/java/org/bukkit/permissions/PermissibleBase.java
-index 3b95061aad53083219ca653c1ab5c629c2254e05..c6aac2389064e21355b00c4cd01600ac503e27b8 100644
+index 3b95061aad53083219ca653c1ab5c629c2254e05..bccffef87e066b4105adeec61e7c538751a74f83 100644
 --- a/src/main/java/org/bukkit/permissions/PermissibleBase.java
 +++ b/src/main/java/org/bukkit/permissions/PermissibleBase.java
-@@ -67,9 +67,11 @@ public class PermissibleBase implements Permissible {
-         }
+@@ -68,8 +68,11 @@ public class PermissibleBase implements Permissible {
  
          String name = inName.toLowerCase();
--
+ 
 -        if (isPermissionSet(name)) {
 -            return permissions.get(name).getValue();
 +        // PandaSpigot start
@@ -24,11 +23,10 @@ index 3b95061aad53083219ca653c1ab5c629c2254e05..c6aac2389064e21355b00c4cd01600ac
          } else {
              Permission perm = Bukkit.getServer().getPluginManager().getPermission(name);
  
-@@ -87,14 +89,16 @@ public class PermissibleBase implements Permissible {
-         }
+@@ -88,13 +91,16 @@ public class PermissibleBase implements Permissible {
  
          String name = perm.getName().toLowerCase();
--
+ 
 -        if (isPermissionSet(name)) {
 -            return permissions.get(name).getValue();
 +        // PandaSpigot start
@@ -45,7 +43,7 @@ index 3b95061aad53083219ca653c1ab5c629c2254e05..c6aac2389064e21355b00c4cd01600ac
          if (name == null) {
              throw new IllegalArgumentException("Permission name cannot be null");
          } else if (plugin == null) {
-@@ -111,7 +115,7 @@ public class PermissibleBase implements Permissible {
+@@ -111,7 +117,7 @@ public class PermissibleBase implements Permissible {
          return result;
      }
  
@@ -54,7 +52,7 @@ index 3b95061aad53083219ca653c1ab5c629c2254e05..c6aac2389064e21355b00c4cd01600ac
          if (plugin == null) {
              throw new IllegalArgumentException("Plugin cannot be null");
          } else if (!plugin.isEnabled()) {
-@@ -126,7 +130,7 @@ public class PermissibleBase implements Permissible {
+@@ -126,7 +132,7 @@ public class PermissibleBase implements Permissible {
          return result;
      }
  
@@ -63,7 +61,7 @@ index 3b95061aad53083219ca653c1ab5c629c2254e05..c6aac2389064e21355b00c4cd01600ac
          if (attachment == null) {
              throw new IllegalArgumentException("Attachment cannot be null");
          }
-@@ -145,7 +149,7 @@ public class PermissibleBase implements Permissible {
+@@ -145,7 +151,7 @@ public class PermissibleBase implements Permissible {
          }
      }
  
@@ -72,7 +70,7 @@ index 3b95061aad53083219ca653c1ab5c629c2254e05..c6aac2389064e21355b00c4cd01600ac
          clearPermissions();
          Set<Permission> defaults = Bukkit.getServer().getPluginManager().getDefaultPermissions(isOp());
          Bukkit.getServer().getPluginManager().subscribeToDefaultPerms(isOp(), parent);
-@@ -228,7 +232,7 @@ public class PermissibleBase implements Permissible {
+@@ -228,7 +234,7 @@ public class PermissibleBase implements Permissible {
          }
      }
  

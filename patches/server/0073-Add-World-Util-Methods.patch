@@ -37,7 +37,7 @@ index c68ffe0e040f239f093a4543bc07463b27f96228..f6647ccdafd4ce9b91b94f4862b02bea
  
      boolean a(IChunkProvider ichunkprovider, Chunk chunk, int i, int j);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index b02fed45319485f39d370d7be7fc3daac06fb9cd..02f751f27492a8d39784f56c7cb2aba9f2c62b5d 100644
+index b02fed45319485f39d370d7be7fc3daac06fb9cd..bc18c3306007577f09eecf3f235ad447fd36cd02 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -93,7 +93,7 @@ public abstract class World implements IBlockAccess {
@@ -172,12 +172,12 @@ index b02fed45319485f39d370d7be7fc3daac06fb9cd..02f751f27492a8d39784f56c7cb2aba9
 +
 +        return true;
 +    }
-+    // Titanium end
++    // PandaSpigot end
 +
 +    public boolean setTypeAndData(BlockPosition blockposition, IBlockData iblockdata, int i) {
 +        // CraftBukkit start - tree generation
 +        if (this.captureTreeGeneration) {
-+            this.setCapturedBlockType(blockposition, iblockdata, i); // Titanium
++            this.setCapturedBlockType(blockposition, iblockdata, i); // PandaSpigot
              return true;
          }
          // CraftBukkit end

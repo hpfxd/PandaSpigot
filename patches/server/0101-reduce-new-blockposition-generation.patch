@@ -5,7 +5,7 @@ Subject: [PATCH] reduce new blockposition generation
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index f56d93abeb5fb81c5d95813e09c012b4a444cda2..ddbaad4436c6761808d5ed1014e8141ec2b6dc91 100644
+index f56d93abeb5fb81c5d95813e09c012b4a444cda2..237a3f7f3cfcf81702ccffd3b0bd64a99ed8d4ab 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -242,7 +242,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -13,12 +13,12 @@ index f56d93abeb5fb81c5d95813e09c012b4a444cda2..ddbaad4436c6761808d5ed1014e8141e
  
                  if (chunkcoordintpair != null) {
 -                    if (this.world.isLoaded(new BlockPosition(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4))) {
-+                    if (this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) {
++                    if (this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) { // PandaSpigot - use xyz version instead of creating a throw away blockpos
                          chunk = this.world.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
                          if (chunk.isReady()) {
                              arraylist.add(chunk);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index d020d7e589a4c6ac8952efcc7fada19968d65eae..26cd0b0a94033b08147f7220b5f6d31474301360 100644
+index 7b1136ee0950b4788ed5ba6fef15de071e41bc45..7ae9bea73b8404cd5a998f33a034404eada1aaa4 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -890,14 +890,24 @@ public abstract class World implements IBlockAccess {
