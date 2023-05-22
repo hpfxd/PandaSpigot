@@ -22,10 +22,10 @@ index c68ffe0e040f239f093a4543bc07463b27f96228..f6647ccdafd4ce9b91b94f4862b02bea
  
      boolean a(IChunkProvider ichunkprovider, Chunk chunk, int i, int j);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index dd9518077cd5b9686987e4db54692acc0bc6e291..572072072dfb82190ddedeb273e2720aac9342f9 100644
+index d3ac12136be68e67b916d180487aa05100546b77..1fb23edf13afada17f8d383e7d04b339c6b323e8 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -302,7 +302,12 @@ public abstract class World implements IBlockAccess {
+@@ -308,7 +308,12 @@ public abstract class World implements IBlockAccess {
          return this.getType(blockposition).getBlock().getMaterial() == Material.AIR;
      }
  
@@ -38,7 +38,7 @@ index dd9518077cd5b9686987e4db54692acc0bc6e291..572072072dfb82190ddedeb273e2720a
          return getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4) != null; // PandaSpigot
      }
  
-@@ -372,25 +377,89 @@ public abstract class World implements IBlockAccess {
+@@ -378,25 +383,89 @@ public abstract class World implements IBlockAccess {
          return this.chunkProvider.getOrCreateChunk(i, j);
      }
  
@@ -144,7 +144,7 @@ index dd9518077cd5b9686987e4db54692acc0bc6e291..572072072dfb82190ddedeb273e2720a
              return true;
          }
          // CraftBukkit end
-@@ -763,7 +832,7 @@ public abstract class World implements IBlockAccess {
+@@ -770,7 +839,7 @@ public abstract class World implements IBlockAccess {
      }
  
      public int b(int i, int j) {
@@ -153,7 +153,7 @@ index dd9518077cd5b9686987e4db54692acc0bc6e291..572072072dfb82190ddedeb273e2720a
              if (!this.isChunkLoaded(i >> 4, j >> 4, true)) {
                  return 0;
              } else {
-@@ -1412,7 +1481,7 @@ public abstract class World implements IBlockAccess {
+@@ -1418,7 +1487,7 @@ public abstract class World implements IBlockAccess {
                          blockposition_mutableblockposition.c(k1, i2, l1);
                          IBlockData iblockdata;
  
@@ -162,7 +162,7 @@ index dd9518077cd5b9686987e4db54692acc0bc6e291..572072072dfb82190ddedeb273e2720a
                              iblockdata = this.getType(blockposition_mutableblockposition);
                          } else {
                              iblockdata = Blocks.BEDROCK.getBlockData();
-@@ -3407,4 +3476,7 @@ public abstract class World implements IBlockAccess {
+@@ -3413,4 +3482,7 @@ public abstract class World implements IBlockAccess {
  
          return k >= -short0 && k <= short0 && l >= -short0 && l <= short0 && this.keepSpawnInMemory; // CraftBukkit - Added 'this.keepSpawnInMemory'
      }

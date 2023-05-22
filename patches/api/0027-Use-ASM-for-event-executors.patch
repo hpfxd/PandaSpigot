@@ -5,15 +5,15 @@ Subject: [PATCH] Use ASM for event executors.
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index a739f2e6736456b3b03eee79771bac58e081e564..892b57a048ce2d14bbdd3e78709e13360c73da6c 100644
+index 22a5fe9c59d1b2a8283e1ebb503c77b2be892fb5..7bc6a7c5daf7f63aca77935a8634b2d2f64bd5e6 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -9,6 +9,8 @@ java {
  }
  
  dependencies {
-+    implementation("org.ow2.asm:asm:9.4") // PandaSpigot
-+    implementation("org.ow2.asm:asm-commons:9.4") // PandaSpigot
++    implementation("org.ow2.asm:asm:9.5") // PandaSpigot
++    implementation("org.ow2.asm:asm-commons:9.5") // PandaSpigot
      api("commons-lang:commons-lang:2.6")
      api("org.avaje:ebean:2.8.1")
      api("com.googlecode.json-simple:json-simple:1.1.1")
