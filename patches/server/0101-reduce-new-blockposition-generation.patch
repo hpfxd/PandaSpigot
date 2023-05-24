@@ -1,0 +1,72 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Wed, 19 Apr 2023 21:57:05 +0200
+Subject: [PATCH] reduce new blockposition generation
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index f56d93abeb5fb81c5d95813e09c012b4a444cda2..237a3f7f3cfcf81702ccffd3b0bd64a99ed8d4ab 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -242,7 +242,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+                 ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator1.next();
+ 
+                 if (chunkcoordintpair != null) {
+-                    if (this.world.isLoaded(new BlockPosition(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4))) {
++                    if (this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) { // PandaSpigot - use xyz version instead of creating a throw away blockpos
+                         chunk = this.world.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
+                         if (chunk.isReady()) {
+                             arraylist.add(chunk);
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 7b1136ee0950b4788ed5ba6fef15de071e41bc45..cf69968189095a09df1208417623c777f117ad6a 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -890,14 +890,27 @@ public abstract class World implements IBlockAccess {
+         return this.worldProvider.p()[this.getLightLevel(blockposition)];
+     }
+ 
++    // PandaSpigot start - dedupelicate code
++    private IBlockData getCapturedBlockType(int x, int y, int z) {
++        Iterator<BlockState> it = this.capturedBlockStates.iterator();
++        while (it.hasNext()) {
++            BlockState previous = it.next();
++            if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
++                return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
++            }
++        }
++        return null;
++    }
++    // PandaSpigot end
++
+     // PandaSpigot start - Add getTypeIfLoaded
+     public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
++        int x = blockposition.getX(); // PandsSpigot - temp set xyz till blockpos nuke
++        int y = blockposition.getY(); // PandsSpigot - temp set xyz till blockpos nuke
++        int z = blockposition.getZ(); // PandsSpigot - temp set xyz till blockpos nuke
+         if (this.captureTreeGeneration) {
+-            for (BlockState previous : this.capturedBlockStates) {
+-                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
+-                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
+-                }
+-            }
++            IBlockData previous = this.getCapturedBlockType(x, y, z); // PandaSpigot - use method
++            if (previous != null) return previous;
+         }
+         Chunk chunk = this.getChunkIfLoaded(blockposition);
+         if (chunk != null) {
+@@ -924,13 +937,8 @@ public abstract class World implements IBlockAccess {
+         // CraftBukkit start - tree generation
+         if (captureTreeGeneration && useCaptured) {
+     // Spigot end
+-            Iterator<BlockState> it = capturedBlockStates.iterator();
+-            while (it.hasNext()) {
+-                BlockState previous = it.next();
+-                if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
+-                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
+-                }
+-            }
++            IBlockData previous = this.getCapturedBlockType(x, y, z); // PandaSpigot - use method
++            if (previous != null) return previous;
+         }
+         // CraftBukkit end
+         if (!this.isValidLocation(x, y, z)) {

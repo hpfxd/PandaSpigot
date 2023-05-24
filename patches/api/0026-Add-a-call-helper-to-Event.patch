@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sun, 23 Apr 2023 11:59:58 +0200
+Subject: [PATCH] Add a call helper to Event
+
+Reduces diff in Server patches
+
+diff --git a/src/main/java/org/bukkit/event/Event.java b/src/main/java/org/bukkit/event/Event.java
+index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..6e924697c62c557e4f2cda3946bc2ffad6a952e7 100644
+--- a/src/main/java/org/bukkit/event/Event.java
++++ b/src/main/java/org/bukkit/event/Event.java
+@@ -75,6 +75,22 @@ public abstract class Event {
+         return async;
+     }
+ 
++    // PandaSpigot start
++    /**
++     * Calls the event and tests if cancelled.
++     *
++     * @return false if event was cancelled, if cancellable. otherwise true.
++     */
++    public boolean callEvent() {
++        org.bukkit.Bukkit.getPluginManager().callEvent(this);
++        if (this instanceof Cancellable) {
++            return !((Cancellable) this).isCancelled();
++        } else {
++            return true;
++        }
++    }
++    // PandaSpigot end
++
+     public enum Result {
+ 
+         /**

@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Wed, 19 Apr 2023 21:27:52 +0200
+Subject: [PATCH] Avoid double I/O operation on load player file
+
+
+diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+index ba13f3f20bb86f667178f51f4d3d1df63f5acf2d..7218f0c0dda6bdbacfcd0c5dd00796fdc27155ec 100644
+--- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
++++ b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+@@ -209,7 +209,8 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+             File file = new File(this.playerDir, entityhuman.getUniqueID().toString() + ".dat");
+             // Spigot Start
+             boolean usingWrongFile = false;
+-            if ( org.bukkit.Bukkit.getOnlineMode() && !file.exists() ) // PaperSpigot - Check online mode first
++            boolean normalFile = file.exists() && file.isFile(); // PandaSpigot
++            if ( org.bukkit.Bukkit.getOnlineMode() && !normalFile ) // PaperSpigot - Check online mode first // PandaSpigot
+             {
+                 file = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
+                 if ( file.exists() )
+@@ -220,7 +221,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+             }
+             // Spigot End
+ 
+-            if (file.exists() && file.isFile()) {
++            if ( normalFile ) { // PandaSpigot
+                 nbttagcompound = NBTCompressedStreamTools.a((InputStream) (new FileInputStream(file)));
+             }
+             // Spigot Start

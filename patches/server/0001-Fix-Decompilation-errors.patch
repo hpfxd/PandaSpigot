@@ -549,6 +549,19 @@ index 4bf790cdffdbc8950450644a813d9c7bb539793d..0446e2be5003e8aa785618de48767d16
              }
  
          }
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 0c49a256cc481af1ceb7a873b03763e1d942a362..7a7bb58d8632c34259215b1372140ececf5c825a 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -462,7 +462,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         EntityLiving entityliving = this.bt();
+ 
+         if (entityliving != null) {
+-            EntityTypes.MonsterEggInfo entitytypes_monsteregginfo = (EntityTypes.MonsterEggInfo) EntityTypes.eggInfo.get(Integer.valueOf(EntityTypes.a(entityliving)));
++            EntityTypes.MonsterEggInfo entitytypes_monsteregginfo = (EntityTypes.MonsterEggInfo) EntityTypes.eggInfo.get(EntityTypes.a(entityliving));
+ 
+             if (entitytypes_monsteregginfo != null) {
+                 this.b(entitytypes_monsteregginfo.e);
 diff --git a/src/main/java/net/minecraft/server/EntityTameableAnimal.java b/src/main/java/net/minecraft/server/EntityTameableAnimal.java
 index 2b170a15a42b257e92178df8124fd4ce64fa26c9..1cc087d0470c60e26f7c585e1d50156bce6b1f46 100644
 --- a/src/main/java/net/minecraft/server/EntityTameableAnimal.java
@@ -738,7 +751,7 @@ index 7eedbbd02f13f6796b6a8db2983a9934bc58c48c..4a84372130459a4fb2394a3fd6f57b1b
                  if (world.b(this.c.a(world, blockposition, iblockdata1)) && world.setTypeAndData(blockposition, iblockdata1, 3)) {
                      world.makeSound((double) ((float) blockposition.getX() + 0.5F), (double) ((float) blockposition.getY() + 0.5F), (double) ((float) blockposition.getZ() + 0.5F), this.c.stepSound.getPlaceSound(), (this.c.stepSound.getVolume1() + 1.0F) / 2.0F, this.c.stepSound.getVolume2() * 0.8F);
 diff --git a/src/main/java/net/minecraft/server/IteratorUtils.java b/src/main/java/net/minecraft/server/IteratorUtils.java
-index e1031f0872be2f5aea30c92ec4c63227ee0608c8..986650dca61f273eaa6ebb7f8c69dfc905971939 100644
+index 3385f02ed5238b787519a21a05a903235997f930..04d5ec4effaf69366125627802259387867763ae 100644
 --- a/src/main/java/net/minecraft/server/IteratorUtils.java
 +++ b/src/main/java/net/minecraft/server/IteratorUtils.java
 @@ -36,11 +36,11 @@ public class IteratorUtils {
@@ -2194,7 +2207,7 @@ index 3a341e236331d817be725292fc2ad472e2619d47..e873de6e4e55ef083304c7ffa7cb8c88
 -    }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
-index ac68ea9b48e02e4e3e79c7b8c7cdea92ec671edf..c91216d7ef8fb13d140f498a3b87f019f324ef16 100644
+index 0d9e640f107430f59124a3ad4932c831ebf02de7..7a106e45991f7933ae6a8c5d0b57c706a1660ebd 100644
 --- a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
 +++ b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
 @@ -26,8 +26,4 @@ public class PacketStatusOutServerInfo implements Packet<PacketStatusOutListener
@@ -2459,7 +2472,7 @@ index c547cc4904ba180bd67cbc937f6792f327bec26e..5ec2075778668991e752d7feb39a8668
      }
  
 diff --git a/src/main/java/net/minecraft/server/ServerPing.java b/src/main/java/net/minecraft/server/ServerPing.java
-index 034a559b2071489c2b1b19737c4abe2ef4250e0b..5e34b19c16e7f0eee24ce395153bf99978c2e94c 100644
+index 04e231807feb005ab4b9eac4f1b478b8615d3176..eeb81004490293619fdbd966c423bb9b8c74a061 100644
 --- a/src/main/java/net/minecraft/server/ServerPing.java
 +++ b/src/main/java/net/minecraft/server/ServerPing.java
 @@ -102,11 +102,11 @@ public class ServerPing {
@@ -2562,6 +2575,45 @@ index 63fbf9447e1b7250613ee39e72c3d7fae35f3081..906aa3d7e54887a29e241a90abe50e84
      }
  
      public void a(IJsonStatistic ijsonstatistic) {
+diff --git a/src/main/java/net/minecraft/server/StructureGenerator.java b/src/main/java/net/minecraft/server/StructureGenerator.java
+index e76acfc4f39287f8f3078ce1b2516d4ca8fc4c6c..91f2e401f2be2baf3cfc350b0c338f5fae2e9b2d 100644
+--- a/src/main/java/net/minecraft/server/StructureGenerator.java
++++ b/src/main/java/net/minecraft/server/StructureGenerator.java
+@@ -18,14 +18,14 @@ public abstract class StructureGenerator extends WorldGenBase {
+ 
+     protected final void a(World world, final int i, final int j, int k, int l, ChunkSnapshot chunksnapshot) {
+         this.a(world);
+-        if (!this.e.containsKey(Long.valueOf(ChunkCoordIntPair.a(i, j)))) {
++        if (!this.e.containsKey(ChunkCoordIntPair.a(i, j))) {
+             this.b.nextInt();
+ 
+             try {
+                 if (this.a(i, j)) {
+                     StructureStart structurestart = this.b(i, j);
+ 
+-                    this.e.put(Long.valueOf(ChunkCoordIntPair.a(i, j)), structurestart);
++                    this.e.put(ChunkCoordIntPair.a(i, j), structurestart);
+                     this.a(i, j, structurestart);
+                 }
+ 
+@@ -42,7 +42,7 @@ public abstract class StructureGenerator extends WorldGenBase {
+                         return this.a();
+                     }
+                 });
+-                crashreportsystemdetails.a("Chunk location", (Object) String.format("%d,%d", new Object[] { Integer.valueOf(i), Integer.valueOf(j)}));
++                crashreportsystemdetails.a("Chunk location", (Object) String.format("%d,%d", new Object[] {i, j}));
+                 crashreportsystemdetails.a("Chunk pos hash", new Callable() {
+                     public String a() throws Exception {
+                         return String.valueOf(ChunkCoordIntPair.a(i, j));
+@@ -226,7 +226,7 @@ public abstract class StructureGenerator extends WorldGenBase {
+                             StructureStart structurestart = WorldGenFactory.a(nbttagcompound1, world);
+ 
+                             if (structurestart != null) {
+-                                this.e.put(Long.valueOf(ChunkCoordIntPair.a(i, j)), structurestart);
++                                this.e.put(ChunkCoordIntPair.a(i, j), structurestart);
+                             }
+                         }
+                     }
 diff --git a/src/main/java/net/minecraft/server/WeightedRandom.java b/src/main/java/net/minecraft/server/WeightedRandom.java
 index 2bbcfa3c7bbb9f304f4817dd1f9a260e7df366b1..58789a31ed2d1fdda2c33a576957c3ed9e30ec78 100644
 --- a/src/main/java/net/minecraft/server/WeightedRandom.java
