@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sun, 21 May 2023 23:00:58 +0200
+Subject: [PATCH] Fix banning players by name
+
+
+diff --git a/src/main/java/net/minecraft/server/GameProfileBanList.java b/src/main/java/net/minecraft/server/GameProfileBanList.java
+index 63fec2a9f81ec43d04cc7203f1724840b09bc9ff..ce47a50a671059ee7d3273d852f36b4285d02798 100644
+--- a/src/main/java/net/minecraft/server/GameProfileBanList.java
++++ b/src/main/java/net/minecraft/server/GameProfileBanList.java
+@@ -51,4 +51,10 @@ public class GameProfileBanList extends JsonList<GameProfile, GameProfileBanEntr
+ 
+         return (GameProfile) gameprofilebanentry.getKey();
+     }
++
++    // PandaSpigot start - Fix banning
++    protected String a(GameProfile object) {
++        return this.b(object);
++    }
++    // PandaSpigot end
+ }
