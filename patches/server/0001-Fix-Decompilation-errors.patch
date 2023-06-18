@@ -619,17 +619,18 @@ index 7196025da85ff3acb9d9327813d78e498fd47a7d..393ffc8f1b4e31562f701bceaac6678a
          }
      }
 diff --git a/src/main/java/net/minecraft/server/GameProfileBanList.java b/src/main/java/net/minecraft/server/GameProfileBanList.java
-index 737035bf45620c03b1b4b2dbdb240036bf8b607a..63fec2a9f81ec43d04cc7203f1724840b09bc9ff 100644
+index 737035bf45620c03b1b4b2dbdb240036bf8b607a..125932c5ddbd3c195f28002007b14df96adce058 100644
 --- a/src/main/java/net/minecraft/server/GameProfileBanList.java
 +++ b/src/main/java/net/minecraft/server/GameProfileBanList.java
-@@ -51,8 +51,4 @@ public class GameProfileBanList extends JsonList<GameProfile, GameProfileBanEntr
- 
+@@ -52,7 +52,7 @@ public class GameProfileBanList extends JsonList<GameProfile, GameProfileBanEntr
          return (GameProfile) gameprofilebanentry.getKey();
      }
--
+ 
 -    protected String a(Object object) {
 -        return this.b((GameProfile) object);
--    }
++    protected String a(GameProfile object) {
++        return this.b(object);
+     }
  }
 diff --git a/src/main/java/net/minecraft/server/IChatBaseComponent.java b/src/main/java/net/minecraft/server/IChatBaseComponent.java
 index b187a851842baf97f9d9cda66803befe3378a29e..43fa6d6ca4ae8265a4a77ebce9f655a48c38929a 100644
@@ -738,7 +739,7 @@ index 7eedbbd02f13f6796b6a8db2983a9934bc58c48c..4a84372130459a4fb2394a3fd6f57b1b
                  if (world.b(this.c.a(world, blockposition, iblockdata1)) && world.setTypeAndData(blockposition, iblockdata1, 3)) {
                      world.makeSound((double) ((float) blockposition.getX() + 0.5F), (double) ((float) blockposition.getY() + 0.5F), (double) ((float) blockposition.getZ() + 0.5F), this.c.stepSound.getPlaceSound(), (this.c.stepSound.getVolume1() + 1.0F) / 2.0F, this.c.stepSound.getVolume2() * 0.8F);
 diff --git a/src/main/java/net/minecraft/server/IteratorUtils.java b/src/main/java/net/minecraft/server/IteratorUtils.java
-index e1031f0872be2f5aea30c92ec4c63227ee0608c8..986650dca61f273eaa6ebb7f8c69dfc905971939 100644
+index 3385f02ed5238b787519a21a05a903235997f930..04d5ec4effaf69366125627802259387867763ae 100644
 --- a/src/main/java/net/minecraft/server/IteratorUtils.java
 +++ b/src/main/java/net/minecraft/server/IteratorUtils.java
 @@ -36,11 +36,11 @@ public class IteratorUtils {
@@ -2194,7 +2195,7 @@ index 3a341e236331d817be725292fc2ad472e2619d47..e873de6e4e55ef083304c7ffa7cb8c88
 -    }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
-index ac68ea9b48e02e4e3e79c7b8c7cdea92ec671edf..c91216d7ef8fb13d140f498a3b87f019f324ef16 100644
+index 0d9e640f107430f59124a3ad4932c831ebf02de7..7a106e45991f7933ae6a8c5d0b57c706a1660ebd 100644
 --- a/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
 +++ b/src/main/java/net/minecraft/server/PacketStatusOutServerInfo.java
 @@ -26,8 +26,4 @@ public class PacketStatusOutServerInfo implements Packet<PacketStatusOutListener
@@ -2459,7 +2460,7 @@ index c547cc4904ba180bd67cbc937f6792f327bec26e..5ec2075778668991e752d7feb39a8668
      }
  
 diff --git a/src/main/java/net/minecraft/server/ServerPing.java b/src/main/java/net/minecraft/server/ServerPing.java
-index 034a559b2071489c2b1b19737c4abe2ef4250e0b..5e34b19c16e7f0eee24ce395153bf99978c2e94c 100644
+index 04e231807feb005ab4b9eac4f1b478b8615d3176..eeb81004490293619fdbd966c423bb9b8c74a061 100644
 --- a/src/main/java/net/minecraft/server/ServerPing.java
 +++ b/src/main/java/net/minecraft/server/ServerPing.java
 @@ -102,11 +102,11 @@ public class ServerPing {
