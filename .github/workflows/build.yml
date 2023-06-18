@@ -23,9 +23,25 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global init.defaultBranch master
 
+      - name: Check cache for Paper Base
+        id: cache-base-check
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-paper-base
+        with:
+          path: ./base
+          key: cache-paper-base-master
       - name: Setup build environment
+        if: ${{ steps.cache-base-check.outputs.cache-hit != 'true' }}
         run: ./panda setup
 
+      - name: Save cache for Paper Base
+        if: ${{ steps.cache-base-check.outputs.cache-hit != 'true' }}
+        id: cache-base-save
+        uses: actions/cache/save@v3
+        with:
+          path: ./base
+          key: ${{ steps.cache-base-check.outputs.cache-primary-key }}
       - name: Apply patches
         run: ./panda patch
 
