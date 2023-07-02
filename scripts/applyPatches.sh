@@ -116,7 +116,7 @@ fi
     applyPatch "base/Paper/PaperSpigot-Server" PandaSpigot-Server HEAD patches/server
     cd "$basedir"
 ) || (
-    echo "Failed to apply Paper Patches"
+    echo "Failed to apply PandaSpigot Patches"
     exit 1
 ) || exit 1
 ) || exit 1
