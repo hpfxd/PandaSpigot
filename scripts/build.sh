@@ -5,9 +5,7 @@ set -e
 basedir="$(cd "$1" && pwd -P)"
 gitcmd="git -c commit.gpgsign=false"
 
-$gitcmd submodule update --init
-cd "base/Paper"
-$gitcmd submodule update --init
+$gitcmd submodule update --init --recursive
 cd "$basedir"
 
 if [ "$2" == "--setup" ] || [ "$2" == "--jar" ]; then
