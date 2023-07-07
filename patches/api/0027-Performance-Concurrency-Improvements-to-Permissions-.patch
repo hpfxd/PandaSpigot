@@ -6,7 +6,7 @@ Subject: [PATCH] Performance & Concurrency Improvements to Permissions no
 
 
 diff --git a/src/main/java/org/bukkit/permissions/PermissibleBase.java b/src/main/java/org/bukkit/permissions/PermissibleBase.java
-index 3b95061aad53083219ca653c1ab5c629c2254e05..bccffef87e066b4105adeec61e7c538751a74f83 100644
+index 3b95061aad53083219ca653c1ab5c629c2254e05..aa607fe975b7740238082dc5034ad8556171108e 100644
 --- a/src/main/java/org/bukkit/permissions/PermissibleBase.java
 +++ b/src/main/java/org/bukkit/permissions/PermissibleBase.java
 @@ -68,8 +68,11 @@ public class PermissibleBase implements Permissible {
@@ -70,6 +70,24 @@ index 3b95061aad53083219ca653c1ab5c629c2254e05..bccffef87e066b4105adeec61e7c5387
          clearPermissions();
          Set<Permission> defaults = Bukkit.getServer().getPluginManager().getDefaultPermissions(isOp());
          Bukkit.getServer().getPluginManager().subscribeToDefaultPerms(isOp(), parent);
+@@ -192,7 +198,7 @@ public class PermissibleBase implements Permissible {
+         }
+     }
+ 
+-    public PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) {
++    public synchronized PermissionAttachment addAttachment(Plugin plugin, String name, boolean value, int ticks) { // PandaSpigot - synchronized
+         if (name == null) {
+             throw new IllegalArgumentException("Permission name cannot be null");
+         } else if (plugin == null) {
+@@ -210,7 +216,7 @@ public class PermissibleBase implements Permissible {
+         return result;
+     }
+ 
+-    public PermissionAttachment addAttachment(Plugin plugin, int ticks) {
++    public synchronized PermissionAttachment addAttachment(Plugin plugin, int ticks) { // PandaSpigot - synchronized
+         if (plugin == null) {
+             throw new IllegalArgumentException("Plugin cannot be null");
+         } else if (!plugin.isEnabled()) {
 @@ -228,7 +234,7 @@ public class PermissibleBase implements Permissible {
          }
      }

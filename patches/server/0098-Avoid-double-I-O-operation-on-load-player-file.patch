@@ -5,7 +5,7 @@ Subject: [PATCH] Avoid double I/O operation on load player file
 
 
 diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
-index ba13f3f20bb86f667178f51f4d3d1df63f5acf2d..7218f0c0dda6bdbacfcd0c5dd00796fdc27155ec 100644
+index ba13f3f20bb86f667178f51f4d3d1df63f5acf2d..7aec6bbfbe365b424c02e95c5e2b5b7badaec641 100644
 --- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
 +++ b/src/main/java/net/minecraft/server/WorldNBTStorage.java
 @@ -209,7 +209,8 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
@@ -13,7 +13,7 @@ index ba13f3f20bb86f667178f51f4d3d1df63f5acf2d..7218f0c0dda6bdbacfcd0c5dd00796fd
              // Spigot Start
              boolean usingWrongFile = false;
 -            if ( org.bukkit.Bukkit.getOnlineMode() && !file.exists() ) // PaperSpigot - Check online mode first
-+            boolean normalFile = file.exists() && file.isFile(); // PandaSpigot
++            boolean normalFile = file.isFile(); // PandaSpigot
 +            if ( org.bukkit.Bukkit.getOnlineMode() && !normalFile ) // PaperSpigot - Check online mode first // PandaSpigot
              {
                  file = new File( this.playerDir, UUID.nameUUIDFromBytes( ( "OfflinePlayer:" + entityhuman.getName() ).getBytes( "UTF-8" ) ).toString() + ".dat");
