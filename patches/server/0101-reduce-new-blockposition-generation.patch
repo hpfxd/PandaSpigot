@@ -18,10 +18,10 @@ index f56d93abeb5fb81c5d95813e09c012b4a444cda2..237a3f7f3cfcf81702ccffd3b0bd64a9
                          if (chunk.isReady()) {
                              arraylist.add(chunk);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 7b1136ee0950b4788ed5ba6fef15de071e41bc45..cf69968189095a09df1208417623c777f117ad6a 100644
+index 7b1136ee0950b4788ed5ba6fef15de071e41bc45..3028c007cf8426e34d6aa275b3acb82193b9a5ab 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -890,14 +890,27 @@ public abstract class World implements IBlockAccess {
+@@ -890,18 +890,31 @@ public abstract class World implements IBlockAccess {
          return this.worldProvider.p()[this.getLightLevel(blockposition)];
      }
  
@@ -40,9 +40,9 @@ index 7b1136ee0950b4788ed5ba6fef15de071e41bc45..cf69968189095a09df1208417623c777
 +
      // PandaSpigot start - Add getTypeIfLoaded
      public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
-+        int x = blockposition.getX(); // PandsSpigot - temp set xyz till blockpos nuke
-+        int y = blockposition.getY(); // PandsSpigot - temp set xyz till blockpos nuke
-+        int z = blockposition.getZ(); // PandsSpigot - temp set xyz till blockpos nuke
++        int x = blockposition.getX(); // PandaSpigot - temp set xyz till blockpos nuke
++        int y = blockposition.getY(); // PandaSpigot - temp set xyz till blockpos nuke
++        int z = blockposition.getZ(); // PandaSpigot - temp set xyz till blockpos nuke
          if (this.captureTreeGeneration) {
 -            for (BlockState previous : this.capturedBlockStates) {
 -                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
@@ -52,8 +52,14 @@ index 7b1136ee0950b4788ed5ba6fef15de071e41bc45..cf69968189095a09df1208417623c777
 +            IBlockData previous = this.getCapturedBlockType(x, y, z); // PandaSpigot - use method
 +            if (previous != null) return previous;
          }
-         Chunk chunk = this.getChunkIfLoaded(blockposition);
+-        Chunk chunk = this.getChunkIfLoaded(blockposition);
++        Chunk chunk = this.getChunkIfLoaded(x >> 4,z >> 4);
          if (chunk != null) {
+-            return this.isValidLocation(blockposition) ? chunk.getBlockData(blockposition) : Blocks.AIR.getBlockData();
++            return this.isValidLocation(x,y,z) ? chunk.getBlockData(x,y,z) : Blocks.AIR.getBlockData();
+         }
+         return null;
+     }
 @@ -924,13 +937,8 @@ public abstract class World implements IBlockAccess {
          // CraftBukkit start - tree generation
          if (captureTreeGeneration && useCaptured) {
