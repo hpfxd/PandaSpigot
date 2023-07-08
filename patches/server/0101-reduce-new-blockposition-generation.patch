@@ -18,10 +18,10 @@ index f56d93abeb5fb81c5d95813e09c012b4a444cda2..237a3f7f3cfcf81702ccffd3b0bd64a9
                          if (chunk.isReady()) {
                              arraylist.add(chunk);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 7b1136ee0950b4788ed5ba6fef15de071e41bc45..3028c007cf8426e34d6aa275b3acb82193b9a5ab 100644
+index d79c4afda2c65648b31deb7dbe277cf675c99afc..044814953743f2feed0aa5bc6d020ca74a9d9b2d 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -890,18 +890,31 @@ public abstract class World implements IBlockAccess {
+@@ -892,18 +892,31 @@ public abstract class World implements IBlockAccess {
          return this.worldProvider.p()[this.getLightLevel(blockposition)];
      }
  
@@ -60,7 +60,7 @@ index 7b1136ee0950b4788ed5ba6fef15de071e41bc45..3028c007cf8426e34d6aa275b3acb821
          }
          return null;
      }
-@@ -924,13 +937,8 @@ public abstract class World implements IBlockAccess {
+@@ -926,13 +939,8 @@ public abstract class World implements IBlockAccess {
          // CraftBukkit start - tree generation
          if (captureTreeGeneration && useCaptured) {
      // Spigot end

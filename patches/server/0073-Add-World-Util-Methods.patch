@@ -20,24 +20,27 @@ index 03fe76355813497a5db33ad185db0e4b40c6f85a..df28cca6175ff3ddf4992c44a0760ef1
          int j = blockposition.getX() & 15;
          int k = blockposition.getY();
 diff --git a/src/main/java/net/minecraft/server/IChunkProvider.java b/src/main/java/net/minecraft/server/IChunkProvider.java
-index c68ffe0e040f239f093a4543bc07463b27f96228..f6647ccdafd4ce9b91b94f4862b02bea870a07f8 100644
+index c68ffe0e040f239f093a4543bc07463b27f96228..208ecb17be61f35e880f2ed252b69093129623e8 100644
 --- a/src/main/java/net/minecraft/server/IChunkProvider.java
 +++ b/src/main/java/net/minecraft/server/IChunkProvider.java
-@@ -10,6 +10,12 @@ public interface IChunkProvider {
+@@ -10,6 +10,15 @@ public interface IChunkProvider {
  
      Chunk getChunkAt(BlockPosition blockposition);
  
++
++    // PandaSpigot start - add default method to getChunkIfLoaded
 +    default Chunk getChunkIfLoaded(int i, int j) {
 +        if (!this.isChunkLoaded(i, j)) {
 +            return null;
 +        }
 +        return this.getOrCreateChunk(i, j);
 +    }
++    // PandaSpigot end
      void getChunkAt(IChunkProvider ichunkprovider, int i, int j);
  
      boolean a(IChunkProvider ichunkprovider, Chunk chunk, int i, int j);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index b02fed45319485f39d370d7be7fc3daac06fb9cd..bc18c3306007577f09eecf3f235ad447fd36cd02 100644
+index b02fed45319485f39d370d7be7fc3daac06fb9cd..34b1700a9fe4db9a4ebfdb5c7979e4e873fd672e 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -93,7 +93,7 @@ public abstract class World implements IBlockAccess {
@@ -75,11 +78,13 @@ index b02fed45319485f39d370d7be7fc3daac06fb9cd..bc18c3306007577f09eecf3f235ad447
          return getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4) != null; // PandaSpigot
      }
  
-@@ -362,25 +373,89 @@ public abstract class World implements IBlockAccess {
+@@ -362,25 +373,92 @@ public abstract class World implements IBlockAccess {
          return this.chunkProvider.getOrCreateChunk(i, j);
      }
  
 -    public boolean setTypeAndData(BlockPosition blockposition, IBlockData iblockdata, int i) {
++
++    // PandaSpigot start - add captured versions
 +    private void setCapturedBlockType(BlockPosition blockposition, IBlockData iblockdata, int i) {
 +        BlockState blockstate = null;
 +        Iterator<BlockState> it = capturedBlockStates.iterator();
@@ -178,10 +183,11 @@ index b02fed45319485f39d370d7be7fc3daac06fb9cd..bc18c3306007577f09eecf3f235ad447
 +        // CraftBukkit start - tree generation
 +        if (this.captureTreeGeneration) {
 +            this.setCapturedBlockType(blockposition, iblockdata, i); // PandaSpigot
++        // PandaSpigot end
              return true;
          }
          // CraftBukkit end
-@@ -652,10 +727,46 @@ public abstract class World implements IBlockAccess {
+@@ -652,6 +730,41 @@ public abstract class World implements IBlockAccess {
          }
      }
  
@@ -223,12 +229,7 @@ index b02fed45319485f39d370d7be7fc3daac06fb9cd..bc18c3306007577f09eecf3f235ad447
      public int getLightLevel(BlockPosition blockposition) {
          return this.c(blockposition, true);
      }
- 
-+    public final int getLight(BlockPosition blockposition, boolean checkNeighbors) { return this.c(blockposition, checkNeighbors); } // PandaSpigot - OBFHELPER
-     public int c(BlockPosition blockposition, boolean flag) {
-         if (blockposition.getX() >= -30000000 && blockposition.getZ() >= -30000000 && blockposition.getX() < 30000000 && blockposition.getZ() < 30000000) {
-             if (flag && this.getType(blockposition).getBlock().s()) {
-@@ -766,6 +877,22 @@ public abstract class World implements IBlockAccess {
+@@ -766,6 +879,22 @@ public abstract class World implements IBlockAccess {
          return this.worldProvider.p()[this.getLightLevel(blockposition)];
      }
  
