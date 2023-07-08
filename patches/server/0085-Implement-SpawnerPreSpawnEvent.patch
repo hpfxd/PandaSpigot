@@ -7,15 +7,17 @@ Added registered listeners check to avoid alloc if no plugins are
 listening.
 
 diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..b1780579735e025f469f86642bf303a9ccb9b207 100644
+index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..8040bd85bd42b8f189c36356ec47aabc591c3a82 100644
 --- a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
 +++ b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
-@@ -91,6 +91,12 @@ public abstract class MobSpawnerAbstract {
+@@ -91,6 +91,14 @@ public abstract class MobSpawnerAbstract {
                  boolean flag = false;
  
                  for (int i = 0; i < this.spawnCount; ++i) {
 +                    // PandaSpigot start - SpawnerPreSpawnEvent
-+                    if (!new net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent(new org.bukkit.Location(this.a().getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()), org.bukkit.entity.EntityType.fromName(this.getMobName())).callEvent()) {
++                    net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent event = new net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent(new org.bukkit.Location(this.a().getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()), org.bukkit.entity.EntityType.fromName(this.getMobName()));
++                    this.a().getServer().getPluginManager().callEvent(event);
++                    if (event.isCancelled()) {
 +                        flag = true;
 +                        break;
 +                    }
