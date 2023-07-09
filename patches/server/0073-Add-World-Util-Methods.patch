@@ -40,7 +40,7 @@ index c68ffe0e040f239f093a4543bc07463b27f96228..208ecb17be61f35e880f2ed252b69093
  
      boolean a(IChunkProvider ichunkprovider, Chunk chunk, int i, int j);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index b02fed45319485f39d370d7be7fc3daac06fb9cd..34b1700a9fe4db9a4ebfdb5c7979e4e873fd672e 100644
+index 084f107bf019b0f2e00d17a470632780db490abc..b264e2d389a538c4ca96b3f738095ff0e6f4fe91 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -93,7 +93,7 @@ public abstract class World implements IBlockAccess {
@@ -65,7 +65,7 @@ index b02fed45319485f39d370d7be7fc3daac06fb9cd..34b1700a9fe4db9a4ebfdb5c7979e4e8
      public Chunk getChunkIfLoaded(int x, int z) {
          return ((ChunkProviderServer) this.chunkProvider).getChunkIfLoaded(x, z);
      }
-@@ -297,7 +303,12 @@ public abstract class World implements IBlockAccess {
+@@ -297,6 +303,12 @@ public abstract class World implements IBlockAccess {
          return this.getType(blockposition).getBlock().getMaterial() == Material.AIR;
      }
  
@@ -73,12 +73,12 @@ index b02fed45319485f39d370d7be7fc3daac06fb9cd..34b1700a9fe4db9a4ebfdb5c7979e4e8
 +    public boolean isLoaded(int x, int y, int z) {
 +        return getChunkIfLoaded(x >> 4, z >> 4) != null;
 +    }
++    // PandaSpigot end
++
      public boolean isLoaded(BlockPosition blockposition) {
-+    // PandaSpigot stop
          return getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4) != null; // PandaSpigot
      }
- 
-@@ -362,25 +373,92 @@ public abstract class World implements IBlockAccess {
+@@ -362,25 +374,92 @@ public abstract class World implements IBlockAccess {
          return this.chunkProvider.getOrCreateChunk(i, j);
      }
  
@@ -187,7 +187,7 @@ index b02fed45319485f39d370d7be7fc3daac06fb9cd..34b1700a9fe4db9a4ebfdb5c7979e4e8
              return true;
          }
          // CraftBukkit end
-@@ -652,6 +730,41 @@ public abstract class World implements IBlockAccess {
+@@ -652,6 +731,41 @@ public abstract class World implements IBlockAccess {
          }
      }
  
@@ -229,7 +229,7 @@ index b02fed45319485f39d370d7be7fc3daac06fb9cd..34b1700a9fe4db9a4ebfdb5c7979e4e8
      public int getLightLevel(BlockPosition blockposition) {
          return this.c(blockposition, true);
      }
-@@ -766,6 +879,22 @@ public abstract class World implements IBlockAccess {
+@@ -766,6 +880,22 @@ public abstract class World implements IBlockAccess {
          return this.worldProvider.p()[this.getLightLevel(blockposition)];
      }
  

@@ -5,7 +5,7 @@ Subject: [PATCH] reduce new blockposition generation
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index f56d93abeb5fb81c5d95813e09c012b4a444cda2..237a3f7f3cfcf81702ccffd3b0bd64a99ed8d4ab 100644
+index a4e8b6d1325d84e2cf733a25ebff48cbce53b6e6..1c8f1810cc40b25bbd8411b6826ba31e71c63759 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -242,7 +242,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -18,10 +18,10 @@ index f56d93abeb5fb81c5d95813e09c012b4a444cda2..237a3f7f3cfcf81702ccffd3b0bd64a9
                          if (chunk.isReady()) {
                              arraylist.add(chunk);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index d79c4afda2c65648b31deb7dbe277cf675c99afc..044814953743f2feed0aa5bc6d020ca74a9d9b2d 100644
+index 6cbb7789d08467bb292ecd7913d5db705ad98548..3d3d2fd3e71d0f264e039adbc430388630bca8fd 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -892,18 +892,31 @@ public abstract class World implements IBlockAccess {
+@@ -893,18 +893,31 @@ public abstract class World implements IBlockAccess {
          return this.worldProvider.p()[this.getLightLevel(blockposition)];
      }
  
@@ -60,7 +60,7 @@ index d79c4afda2c65648b31deb7dbe277cf675c99afc..044814953743f2feed0aa5bc6d020ca7
          }
          return null;
      }
-@@ -926,13 +939,8 @@ public abstract class World implements IBlockAccess {
+@@ -927,13 +940,8 @@ public abstract class World implements IBlockAccess {
          // CraftBukkit start - tree generation
          if (captureTreeGeneration && useCaptured) {
      // Spigot end
