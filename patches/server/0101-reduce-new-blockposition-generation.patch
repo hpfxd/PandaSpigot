@@ -5,7 +5,7 @@ Subject: [PATCH] reduce new blockposition generation
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index a4e8b6d1325d84e2cf733a25ebff48cbce53b6e6..1c8f1810cc40b25bbd8411b6826ba31e71c63759 100644
+index a4e8b6d1325d84e2cf733a25ebff48cbce53b6e6..53e2166fc914405d0d0e4a7fb55f15be23ddbe79 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -242,7 +242,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -13,12 +13,12 @@ index a4e8b6d1325d84e2cf733a25ebff48cbce53b6e6..1c8f1810cc40b25bbd8411b6826ba31e
  
                  if (chunkcoordintpair != null) {
 -                    if (this.world.isLoaded(new BlockPosition(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4))) {
-+                    if (this.world.isLoaded(chunkcoordintpair.x << 4, 0, chunkcoordintpair.z << 4)) { // PandaSpigot - use xyz version instead of creating a throw away blockpos
++                    if (this.world.isLoaded(chunkcoordintpair.x << 4, chunkcoordintpair.z << 4)) { // PandaSpigot - use xz version instead of creating a throw away blockpos
                          chunk = this.world.getChunkAt(chunkcoordintpair.x, chunkcoordintpair.z);
                          if (chunk.isReady()) {
                              arraylist.add(chunk);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 6cbb7789d08467bb292ecd7913d5db705ad98548..0ca49efb2e164787aa498f9035bec8386967783e 100644
+index 9aa3d283d98fb99f36432053868527b5b4712066..2b25dbb984f908d1eaa12dad03726c78206fb097 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -893,18 +893,31 @@ public abstract class World implements IBlockAccess {
@@ -53,10 +53,10 @@ index 6cbb7789d08467bb292ecd7913d5db705ad98548..0ca49efb2e164787aa498f9035bec838
 +            // PandaSpigot end
          }
 -        Chunk chunk = this.getChunkIfLoaded(blockposition);
-+        Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
++        Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4); // 
          if (chunk != null) {
 -            return this.isValidLocation(blockposition) ? chunk.getBlockData(blockposition) : Blocks.AIR.getBlockData();
-+            return this.isValidLocation(x ,y, z) ? chunk.getBlockData(x, y ,z) : Blocks.AIR.getBlockData();
++            return this.isValidLocation(x, y, z) ? chunk.getBlockData(x, y, z) : Blocks.AIR.getBlockData();
          }
          return null;
      }
