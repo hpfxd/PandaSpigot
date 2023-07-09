@@ -18,7 +18,7 @@ index a4e8b6d1325d84e2cf733a25ebff48cbce53b6e6..1c8f1810cc40b25bbd8411b6826ba31e
                          if (chunk.isReady()) {
                              arraylist.add(chunk);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 6cbb7789d08467bb292ecd7913d5db705ad98548..3d3d2fd3e71d0f264e039adbc430388630bca8fd 100644
+index 6cbb7789d08467bb292ecd7913d5db705ad98548..0ca49efb2e164787aa498f9035bec8386967783e 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -893,18 +893,31 @@ public abstract class World implements IBlockAccess {
@@ -26,10 +26,8 @@ index 6cbb7789d08467bb292ecd7913d5db705ad98548..3d3d2fd3e71d0f264e039adbc4303886
      }
  
 +    // PandaSpigot start - dedupelicate code
-+    private IBlockData getCapturedBlockType(int x, int y, int z) {
-+        Iterator<BlockState> it = this.capturedBlockStates.iterator();
-+        while (it.hasNext()) {
-+            BlockState previous = it.next();
++    private IBlockData getCapturedBlockType(int x, int, y, int z) {
++        for (BlockState previous : this.capturedBlockStates) {
 +            if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
 +                return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
 +            }
@@ -49,18 +47,20 @@ index 6cbb7789d08467bb292ecd7913d5db705ad98548..3d3d2fd3e71d0f264e039adbc4303886
 -                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
 -                }
 -            }
-+            IBlockData previous = this.getCapturedBlockType(x, y, z); // PandaSpigot - use method
++            // PandaSpigot start - dedupelicate code
++            IBlockData previous = this.getCapturedBlockType(x, y, z);
 +            if (previous != null) return previous;
++            // PandaSpigot end
          }
 -        Chunk chunk = this.getChunkIfLoaded(blockposition);
-+        Chunk chunk = this.getChunkIfLoaded(x >> 4,z >> 4);
++        Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
          if (chunk != null) {
 -            return this.isValidLocation(blockposition) ? chunk.getBlockData(blockposition) : Blocks.AIR.getBlockData();
-+            return this.isValidLocation(x,y,z) ? chunk.getBlockData(x,y,z) : Blocks.AIR.getBlockData();
++            return this.isValidLocation(x ,y, z) ? chunk.getBlockData(x, y ,z) : Blocks.AIR.getBlockData();
          }
          return null;
      }
-@@ -927,13 +940,8 @@ public abstract class World implements IBlockAccess {
+@@ -927,13 +940,10 @@ public abstract class World implements IBlockAccess {
          // CraftBukkit start - tree generation
          if (captureTreeGeneration && useCaptured) {
      // Spigot end
@@ -71,8 +71,10 @@ index 6cbb7789d08467bb292ecd7913d5db705ad98548..3d3d2fd3e71d0f264e039adbc4303886
 -                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
 -                }
 -            }
-+            IBlockData previous = this.getCapturedBlockType(x, y, z); // PandaSpigot - use method
++            // PandaSpigot start - dedupelicate code
++            IBlockData previous = this.getCapturedBlockType(x, y, z);
 +            if (previous != null) return previous;
++            // PandaSpigot end
          }
          // CraftBukkit end
          if (!this.isValidLocation(x, y, z)) {
