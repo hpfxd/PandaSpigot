@@ -6,7 +6,7 @@ Subject: [PATCH] Backport PlayerHandshakeEvent from Paper
 This patch was added in Paper 1.9.4, and is used by plugins such as BungeeGuard to listen to and modify handshake packets without requiring a packet listener such as ProtocolLib.
 
 diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index 215648ece51b9e0316bae17de60abccfd40f8b35..86983cf73637dee23bc0d2f24fa074c515237bbb 100644
+index 215648ece51b9e0316bae17de60abccfd40f8b35..e1a86a75524c3e3f3a9a4fbd447e01c7cb4d2b78 100644
 --- a/src/main/java/net/minecraft/server/HandshakeListener.java
 +++ b/src/main/java/net/minecraft/server/HandshakeListener.java
 @@ -72,8 +72,35 @@ public class HandshakeListener implements PacketHandshakingInListener {
@@ -20,8 +20,8 @@ index 215648ece51b9e0316bae17de60abccfd40f8b35..86983cf73637dee23bc0d2f24fa074c5
 +                if (com.destroystokyo.paper.event.player.PlayerHandshakeEvent.getHandlerList().getRegisteredListeners().length != 0) { // Hello? Can you hear me?
 +                    java.net.SocketAddress socketAddress = this.b.l;
 +                    String hostnameOfRemote = socketAddress instanceof java.net.InetSocketAddress ? ((java.net.InetSocketAddress) socketAddress).getHostString() : InetAddress.getLoopbackAddress().getHostAddress();
-+                    com.destroystokyo.paper.event.player.PlayerHandshakeEvent event = org.bukkit.craftbukkit.event.CraftEventFactory.callEvent(new com.destroystokyo.paper.event.player.PlayerHandshakeEvent(packethandshakinginsetprotocol.hostname, hostnameOfRemote, !proxyLogicEnabled));
-+                    if (!event.isCancelled()) {
++                    com.destroystokyo.paper.event.player.PlayerHandshakeEvent event = new com.destroystokyo.paper.event.player.PlayerHandshakeEvent(packethandshakinginsetprotocol.hostname, hostnameOfRemote, !proxyLogicEnabled);
++                    if (event.callEvent()) {
 +                        // If we've failed somehow, let the client know so and go no further.
 +                        if (event.isFailed()) {
 +                            chatcomponenttext = new ChatComponentText(event.getFailMessage());
