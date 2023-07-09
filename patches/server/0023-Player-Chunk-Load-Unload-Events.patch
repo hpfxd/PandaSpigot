@@ -21,7 +21,7 @@ index 7a7bb58d8632c34259215b1372140ececf5c825a..3afaee069eb978bf41e956e7f56b743f
                      }
                  } else {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..728798158522741ff3aa356793b7953093e059d1 100644
+index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..8fa746c98d6ab44d511d71e5d874ae7b677853c1 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -428,6 +428,11 @@ public class PlayerChunkMap {
@@ -29,7 +29,7 @@ index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..728798158522741ff3aa356793b79530
                  this.b.remove(entityplayer);
                  entityplayer.chunkCoordIntPairQueue.remove(this.location);
 +                // PandaSpigot start
-+                if (io.papermc.paper.event.packet.PlayerChunkUnLoadEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                if (io.papermc.paper.event.packet.PlayerChunkUnloadEvent.getHandlerList().getRegisteredListeners().length > 0) {
 +                    new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(chunk.bukkitChunk, entityplayer.getBukkitEntity()).callEvent();
 +                }
 +                // PandaSpigot end
