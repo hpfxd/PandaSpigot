@@ -192,7 +192,7 @@ index e67aa0423f6a28b286174662f29ffc32a74992d9..22c3ac7a71043ab82e7d3c95c71e02fa
      }
  
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 34b1700a9fe4db9a4ebfdb5c7979e4e873fd672e..2094dfc4ff5a35ee15bad27e8547480ac21254bb 100644
+index 129a7728de8f3d3776d4afaff714575b56976068..33034b183c2831b857ca014096c6c46b68fce5fc 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -945,7 +945,10 @@ public abstract class World implements IBlockAccess {
@@ -219,7 +219,7 @@ index 34b1700a9fe4db9a4ebfdb5c7979e4e873fd672e..2094dfc4ff5a35ee15bad27e8547480a
                      Block block1 = iblockdata1.getBlock();
  
                      if (!flag1 || block1.a(this, blockposition, iblockdata1) != null) {
-@@ -2785,8 +2791,11 @@ public abstract class World implements IBlockAccess {
+@@ -2783,8 +2789,11 @@ public abstract class World implements IBlockAccess {
  
          for (int i1 = i; i1 <= j; ++i1) {
              for (int j1 = k; j1 <= l; ++j1) {

@@ -5,17 +5,17 @@ Subject: [PATCH] Sound events
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 73de7d6d4dc619416363a7d8557b71b850313cfb..94f98081c02fd068d41d259915e15951826dcb52 100644
+index 73de7d6d4dc619416363a7d8557b71b850313cfb..f2442d75a73c6b6e6ae286f36b11992d11604637 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -944,20 +944,56 @@ public abstract class World implements IBlockAccess {
+@@ -944,20 +944,54 @@ public abstract class World implements IBlockAccess {
      }
  
      public void makeSound(Entity entity, String s, float f, float f1) {
 +        // PandaSpigot start - EntitySoundEvent
-+        com.hpfxd.pandaspigot.event.sound.EntitySoundEvent event = CraftEventFactory.callEvent(new com.hpfxd.pandaspigot.event.sound.EntitySoundEvent(
-+                entity.bukkitEntity, s, f, f1));
-+        if (event.isCancelled()) return;
++        com.hpfxd.pandaspigot.event.sound.EntitySoundEvent event = new com.hpfxd.pandaspigot.event.sound.EntitySoundEvent(
++                entity.bukkitEntity, s, f, f1);
++        if (!event.callEvent()) return;
 +    
 +        org.bukkit.Location loc = event.getLocation();
 +        s = event.getSound();
@@ -33,8 +33,7 @@ index 73de7d6d4dc619416363a7d8557b71b850313cfb..94f98081c02fd068d41d259915e15951
 +        // PandaSpigot start - PlayerSoundEvent
 +        com.hpfxd.pandaspigot.event.sound.PlayerSoundEvent event = new com.hpfxd.pandaspigot.event.sound.PlayerSoundEvent(
 +                (org.bukkit.entity.Player) entityhuman.bukkitEntity, s, f, f1);
-+        this.getServer().getPluginManager().callEvent(event);
-+        if (event.isCancelled()) return;
++        if (!event.callEvent()) return;
 +        
 +        org.bukkit.Location loc = event.getLocation();
 +        s = event.getSound();
@@ -52,8 +51,7 @@ index 73de7d6d4dc619416363a7d8557b71b850313cfb..94f98081c02fd068d41d259915e15951
 +        // PandaSpigot start - SoundEvent
 +        com.hpfxd.pandaspigot.event.sound.SoundEvent event = new com.hpfxd.pandaspigot.event.sound.SoundEvent(
 +                new org.bukkit.Location(this.world, d0, d1, d2), s, f, f1);
-+        this.getServer().getPluginManager().callEvent(event);
-+        if (event.isCancelled()) return;
++        if (!event.callEvent()) return;
 +        
 +        org.bukkit.Location loc = event.getLocation();
 +        d0 = loc.getX();
