@@ -5,26 +5,34 @@ Subject: [PATCH] Player Chunk Load/Unload Events
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 0c49a256cc481af1ceb7a873b03763e1d942a362..77068cd022e677fbf284df3d8aff95325089ce4f 100644
+index 7a7bb58d8632c34259215b1372140ececf5c825a..3afaee069eb978bf41e956e7f56b743f199b55fb 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -241,6 +241,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -241,6 +241,11 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
                              arraylist.add(chunk);
                              arraylist1.addAll(chunk.tileEntities.values()); // CraftBukkit - Get tile entities directly from the chunk instead of the world
                              iterator1.remove();
-+                            Bukkit.getPluginManager().callEvent(new io.papermc.paper.event.packet.PlayerChunkLoadEvent(chunk.bukkitChunk, this.getBukkitEntity())); // PandaSpigot
++                            // PandaSpigot start
++                            if (io.papermc.paper.event.packet.PlayerChunkLoadEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                                new io.papermc.paper.event.packet.PlayerChunkLoadEvent(chunk.bukkitChunk, this.getBukkitEntity()).callEvent();
++                            }
++                            // PandaSpigot end
                          }
                      }
                  } else {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..4bf77d3cec9c3a1f0048de7749432b9a6024b242 100644
+index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..728798158522741ff3aa356793b7953093e059d1 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -428,6 +428,7 @@ public class PlayerChunkMap {
+@@ -428,6 +428,11 @@ public class PlayerChunkMap {
                  this.players.remove(entityplayer); // CraftBukkit
                  this.b.remove(entityplayer);
                  entityplayer.chunkCoordIntPairQueue.remove(this.location);
-+                org.bukkit.Bukkit.getPluginManager().callEvent(new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(chunk.bukkitChunk, entityplayer.getBukkitEntity())); // PandaSpigot
++                // PandaSpigot start
++                if (io.papermc.paper.event.packet.PlayerChunkUnLoadEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                    new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(chunk.bukkitChunk, entityplayer.getBukkitEntity()).callEvent();
++                }
++                // PandaSpigot end
                  if (this.b.isEmpty()) {
                      long i = (long) this.location.x + 2147483647L | (long) this.location.z + 2147483647L << 32;
  
