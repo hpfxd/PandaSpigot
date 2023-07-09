@@ -18,7 +18,7 @@ index a4e8b6d1325d84e2cf733a25ebff48cbce53b6e6..53e2166fc914405d0d0e4a7fb55f15be
                          if (chunk.isReady()) {
                              arraylist.add(chunk);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 9aa3d283d98fb99f36432053868527b5b4712066..2b25dbb984f908d1eaa12dad03726c78206fb097 100644
+index 9aa3d283d98fb99f36432053868527b5b4712066..1b780854247693ddcc3bf5e412094c3f5102e60b 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -893,18 +893,31 @@ public abstract class World implements IBlockAccess {
@@ -26,7 +26,7 @@ index 9aa3d283d98fb99f36432053868527b5b4712066..2b25dbb984f908d1eaa12dad03726c78
      }
  
 +    // PandaSpigot start - dedupelicate code
-+    private IBlockData getCapturedBlockType(int x, int, y, int z) {
++    private IBlockData getCapturedBlockType(int x, int y, int z) {
 +        for (BlockState previous : this.capturedBlockStates) {
 +            if (previous.getX() == x && previous.getY() == y && previous.getZ() == z) {
 +                return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
