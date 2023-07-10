@@ -40,7 +40,7 @@ index c68ffe0e040f239f093a4543bc07463b27f96228..208ecb17be61f35e880f2ed252b69093
  
      boolean a(IChunkProvider ichunkprovider, Chunk chunk, int i, int j);
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 084f107bf019b0f2e00d17a470632780db490abc..e6619596d259d205aa846321fbb91271bdd501f6 100644
+index 084f107bf019b0f2e00d17a470632780db490abc..68594694bd325d817d05742403b123a31bdf757c 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -93,7 +93,7 @@ public abstract class World implements IBlockAccess {
@@ -229,22 +229,26 @@ index 084f107bf019b0f2e00d17a470632780db490abc..e6619596d259d205aa846321fbb91271
      public int getLightLevel(BlockPosition blockposition) {
          return this.c(blockposition, true);
      }
-@@ -766,6 +880,22 @@ public abstract class World implements IBlockAccess {
+@@ -766,6 +880,26 @@ public abstract class World implements IBlockAccess {
          return this.worldProvider.p()[this.getLightLevel(blockposition)];
      }
  
 +    // PandaSpigot start - Add getTypeIfLoaded
 +    public IBlockData getTypeIfLoaded(BlockPosition blockposition) {
++        return this.getTypeIfLoaded(blockposition.getX(), blockposition.getY(), blockposition.getZ());
++    }
++
++    public IBlockData getTypeIfLoaded(int x, int y, int z) {
 +        if (this.captureTreeGeneration) {
 +            for (BlockState previous : this.capturedBlockStates) {
-+                if (previous.getX() == blockposition.getX() && previous.getY() == blockposition.getY() && previous.getZ() == blockposition.getZ()) {
++                if (previous.getX() == x && previous.getY() == u && previous.getZ() == z) {
 +                    return CraftMagicNumbers.getBlock(previous.getTypeId()).fromLegacyData(previous.getRawData());
 +                }
 +            }
 +        }
-+        Chunk chunk = this.getChunkIfLoaded(blockposition);
++        Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
 +        if (chunk != null) {
-+            return this.isValidLocation(blockposition) ? chunk.getBlockData(blockposition) : Blocks.AIR.getBlockData();
++            return this.isValidLocation(x, y, z) ? chunk.getBlockData(x, y, z) : Blocks.AIR.getBlockData();
 +        }
 +        return null;
 +    }

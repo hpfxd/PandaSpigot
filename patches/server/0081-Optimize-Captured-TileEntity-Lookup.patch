@@ -10,10 +10,10 @@ Optimize to check if the captured list even has values in it, and also to
 just do a get call since the value can never be null.
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 13d8ebebec29d1f54a17d4080301766b1c157086..41b21a1bae1324cdc9615b6a456cbab37551844b 100644
+index d1dfd3bb127ad2598059f66dc0098a6222b8d662..4d568bae85b3c8ff7b9a270243d4451d6682818e 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -2167,12 +2167,15 @@ public abstract class World implements IBlockAccess {
+@@ -2171,12 +2171,15 @@ public abstract class World implements IBlockAccess {
              return null;
          } else {
              // CraftBukkit start

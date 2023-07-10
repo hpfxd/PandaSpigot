@@ -37,10 +37,10 @@ index 2ea4a5fd32629a7931189786f86dce99d1db6d63..f8415dd404e14d85290724e66abc8a1a
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 4a9e5a7cb571d204636c52621668e99868feefad..6cbb7789d08467bb292ecd7913d5db705ad98548 100644
+index d402f3699c4f48fc06368451b7ca3d8ce57f208a..603d31d78c682ede6f6006c7dc3fa806c74291ed 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -1427,6 +1427,7 @@ public abstract class World implements IBlockAccess {
+@@ -1431,6 +1431,7 @@ public abstract class World implements IBlockAccess {
          if (entity instanceof EntityItem) return arraylist; // PaperSpigot - Optimize item movement
          if (entity instanceof EntityTNTPrimed) return arraylist; // PandaSpigot - Optimize tnt entity movement
          if (entity instanceof EntityFallingBlock) return arraylist; // PandaSpigot - Optimize falling block movement
