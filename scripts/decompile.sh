@@ -61,7 +61,7 @@ if [ ! -d "$classdir" ]; then
     mkdir -p "$classdir"
     cd "$classdir"
     set +e
-    jar xf "$decompiledir/$minecraftversion-mapped.jar" net/minecraft yggdrasil_session_pubkey.der assets
+    jar xf "$decompiledir/$minecraftversion-mapped.jar" net/minecraft/server yggdrasil_session_pubkey.der assets
     if [ "$?" != "0" ]; then
         cd "$basedir"
         echo "Failed to extract NMS classes."
