@@ -6,7 +6,7 @@ Subject: [PATCH] Add a call helper to Event
 Reduces diff in Server patches
 
 diff --git a/src/main/java/org/bukkit/event/Event.java b/src/main/java/org/bukkit/event/Event.java
-index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..ab3d19b1fdb410c4c46b3856399daf862befdb34 100644
+index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..bef4acb21059443d89f8d138902f027fed31629b 100644
 --- a/src/main/java/org/bukkit/event/Event.java
 +++ b/src/main/java/org/bukkit/event/Event.java
 @@ -33,6 +33,22 @@ public abstract class Event {
@@ -17,7 +17,7 @@ index 6677e1bd6f5ae4385d3da9fe39caaa75468ee1fa..ab3d19b1fdb410c4c46b3856399daf86
 +    /**
 +     * Calls the event and tests if cancelled.
 +     * 
-+     * @return if event was cancelled, if cancellable. otherwise true.
++     * @return false if event was cancelled, if cancellable. otherwise true.
 +     */
 +    public boolean callEvent() {
 +        org.bukkit.Bukkit.getPluginManager().callEvent(this);
