@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: necrozma <necrozma999@gmail.com>
-Date: Tue, 11 Jul 2023 20:12:57 -0600
+Date: Fri, 14 Jul 2023 22:16:17 -0600
 Subject: [PATCH] Ensure correct attack damage on slot change
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index 86ab9994079c6e18e3aed885db4171d0d87b4c1a..d322591913675367e97ddf023fcb6c719e88b01a 100644
+index 86ab9994079c6e18e3aed885db4171d0d87b4c1a..10284da163e2f1d1b5f12ca738a8fc5580d1373b 100644
 --- a/src/main/java/net/minecraft/server/EntityHuman.java
 +++ b/src/main/java/net/minecraft/server/EntityHuman.java
 @@ -692,6 +692,7 @@ public abstract class EntityHuman extends EntityLiving {
@@ -16,23 +16,6 @@ index 86ab9994079c6e18e3aed885db4171d0d87b4c1a..d322591913675367e97ddf023fcb6c71
          this.inventory.itemInHandIndex = nbttagcompound.getInt("SelectedItemSlot");
          this.sleeping = nbttagcompound.getBoolean("Sleeping");
          this.sleepTicks = nbttagcompound.getShort("SleepTimer");
-@@ -957,6 +958,16 @@ public abstract class EntityHuman extends EntityLiving {
-     public void attack(Entity entity) {
-         if (entity.aD()) {
-             if (!entity.l(this)) {
-+                // PandaSpigot start - ensure attack damage attributes from previous held item are removed
-+                if (this.inventory.items[this.inventory.prevItemInHandIndex] != null) {
-+                    for (AttributeModifier attributemodifier : this.inventory.items[this.inventory.prevItemInHandIndex].B().get("generic.attackDamage")) {
-+                        this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).c(attributemodifier);
-+                    }
-+                }
-+                if (this.inventory.getItemInHand() != null) {
-+                    super.c.b(this.inventory.getItemInHand().B()); // ensure attack damage attributes from current held item are applied
-+                }
-+                // PandaSpigot end
-                 float f = (float) this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).getValue();
-                 byte b0 = 0;
-                 float f1 = 0.0F;
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
 index 94d8f2ffe938bd2d57d0297f9efc43ee55da3ba9..95c92fe5a1f1866da16fb991d29c6de1671684d6 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
@@ -47,17 +30,30 @@ index 94d8f2ffe938bd2d57d0297f9efc43ee55da3ba9..95c92fe5a1f1866da16fb991d29c6de1
      public final Map<Integer, MobEffect> effects = Maps.newHashMap();
      private final ItemStack[] h = new ItemStack[5];
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 23bd5d11f8b909817855f593adc51d3ca5d9f976..afd842f44d3acd8856543712a62b87cd7f8d6bcd 100644
+index 23bd5d11f8b909817855f593adc51d3ca5d9f976..eb56c4ee33c756bc7adfed0e76ef516b5c0566da 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -963,6 +963,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -963,8 +963,20 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
                  return;
              }
              // CraftBukkit end
 +            this.player.inventory.prevItemInHandIndex = this.player.inventory.itemInHandIndex; // PandaSpigot
              this.player.inventory.itemInHandIndex = packetplayinhelditemslot.a();
              this.player.resetIdleTimer();
++            // PandaSpigot start - ensure correct attack damage on slot change
++            ItemStack prevItemStack = this.player.inventory.items[this.player.inventory.prevItemInHandIndex];
++            if (prevItemStack != null) {
++                for (AttributeModifier attributemodifier : prevItemStack.B().get("generic.attackDamage")) {
++                    this.player.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).c(attributemodifier); // remove attack damage from previous held item
++                }
++            }
++            if (this.player.inventory.getItemInHand() != null) {
++                ((EntityLiving) this.player).c.b(this.player.inventory.getItemInHand().B()); // apply attack damage from current held item
++            }
++            // PandaSpigot end
          } else {
+             PlayerConnection.c.warn(this.player.getName() + " tried to set an invalid carried item");
+             this.disconnect("Invalid hotbar selection (Hacking?)"); // CraftBukkit //Spigot "Nope" -> Descriptive reason
 diff --git a/src/main/java/net/minecraft/server/PlayerInventory.java b/src/main/java/net/minecraft/server/PlayerInventory.java
 index 76fa51d97e9a938d4198bbe657d77900f6327744..3a8c600b7d80a46be0c33f0f6b50b751b764eb49 100644
 --- a/src/main/java/net/minecraft/server/PlayerInventory.java
