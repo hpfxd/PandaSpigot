@@ -5,7 +5,7 @@ Subject: [PATCH] Reduce new BlockPosition generation
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index a4e8b6d1325d84e2cf733a25ebff48cbce53b6e6..ad31812287141f9eec693cc321ceca8c25369b75 100644
+index 22eda596ea5b06f3346814e9d8cecb15f828f58d..82d0228978937e50c6b859b6047dd8b0fde7a38a 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -242,7 +242,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
