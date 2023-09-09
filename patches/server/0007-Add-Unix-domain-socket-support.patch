@@ -76,7 +76,7 @@ index 6434b8613971a228fb0074390d8223bfcefe4e9f..ee6a6b379575b0d0b10b96bac4ae8e1f
                  DedicatedServer.LOGGER.warn("**** FAILED TO BIND TO PORT!");
                  DedicatedServer.LOGGER.warn("The exception was: {}", new Object[] { ioexception.toString()});
 diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index 86983cf73637dee23bc0d2f24fa074c515237bbb..c89ad49882faca4376540009a96a479f456f3a8e 100644
+index e1a86a75524c3e3f3a9a4fbd447e01c7cb4d2b78..10a8c440f08535d90d8d1204a23c859ba296aa39 100644
 --- a/src/main/java/net/minecraft/server/HandshakeListener.java
 +++ b/src/main/java/net/minecraft/server/HandshakeListener.java
 @@ -29,6 +29,7 @@ public class HandshakeListener implements PacketHandshakingInListener {

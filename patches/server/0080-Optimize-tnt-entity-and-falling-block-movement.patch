@@ -83,10 +83,10 @@ index b7d410eeb974eee7b26dce8e3b02ff2051e74f93..6671d4920f4b808d61fd458ef3f26f21
          this.blocks.addAll(hashset);
          float f3 = this.size * 2.0F;
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index aeb99c6a4f336737b5b5b2175fb1cc8f0fa418b3..d1dfd3bb127ad2598059f66dc0098a6222b8d662 100644
+index e7ccc5ef7e288068cc5f08772eb8dd4ee6b6f3f7..db2d19ca09b3e721ecc291ad7bd887b3786b597c 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -1426,6 +1426,8 @@ public abstract class World implements IBlockAccess {
+@@ -1350,6 +1350,8 @@ public abstract class World implements IBlockAccess {
          // Spigot end
  
          if (entity instanceof EntityItem) return arraylist; // PaperSpigot - Optimize item movement
