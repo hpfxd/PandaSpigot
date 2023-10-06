@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Mechoriet <kevinworm92@gmail.com>
 Date: Fri, 6 Oct 2023 21:18:05 +0200
-Subject: [PATCH] Implement EntityPickUpEvent
+Subject: [PATCH] Implement EntityPickupItemEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
