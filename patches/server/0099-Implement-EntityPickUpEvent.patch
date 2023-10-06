@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Fri, 6 Oct 2023 21:18:05 +0200
+Subject: [PATCH] Implement EntityPickUpEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
+index 1f8b1c726ef7343ee7feb1e4ea4c1ef8cc453723..68f6e044a7637ad61a00a73bc2eb9d72253f69fb 100644
+--- a/src/main/java/net/minecraft/server/EntityItem.java
++++ b/src/main/java/net/minecraft/server/EntityItem.java
+@@ -3,6 +3,7 @@ package net.minecraft.server;
+ import java.util.Iterator;
+ import org.apache.logging.log4j.LogManager;
+ import org.apache.logging.log4j.Logger;
++import org.bukkit.event.entity.EntityPickupItemEvent;
+ import org.bukkit.event.player.PlayerPickupItemEvent; // CraftBukkit
+ 
+ public class EntityItem extends Entity {
+@@ -317,6 +318,14 @@ public class EntityItem extends Entity {
+                 if (event.isCancelled()) {
+                     return;
+                 }
++                // Call newer event afterwards
++                EntityPickupItemEvent entityEvent = new EntityPickupItemEvent(entityhuman.getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
++                // event.setCancelled(!entityhuman.canPickUpLoot); TODO
++                this.world.getServer().getPluginManager().callEvent(entityEvent);
++                if (entityEvent.isCancelled()) {
++                    return;
++                }
++                itemstack.count = canHold + remaining;
+ 
+                 // Possibly < 0; fix here so we do not have to modify code below
+                 this.pickupDelay = 0;
