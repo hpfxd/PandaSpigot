@@ -26,25 +26,17 @@ index 60ba16d231e2d614f56aee3c7ba5c0d4715d0269..ecde0d9ec034024355c09b249694ce11
              // CraftBukkit end
              boolean flag = this.fromPlayer == 1 || this.fromPlayer == 2 && entityhuman.abilities.canInstantlyBuild;
 diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
-index c1f100c3bd68329b77f9a899cc7353374064daf6..c7c9737675822d1326fc0ab4ccb76eb130d8477f 100644
+index c1f100c3bd68329b77f9a899cc7353374064daf6..0b6427cc5d0bbb81217f3da261c2e0f4a4fdca3a 100644
 --- a/src/main/java/net/minecraft/server/EntityInsentient.java
 +++ b/src/main/java/net/minecraft/server/EntityInsentient.java
-@@ -7,6 +7,7 @@ import java.util.UUID;
- // CraftBukkit start
- import org.bukkit.craftbukkit.event.CraftEventFactory;
- import org.bukkit.craftbukkit.entity.CraftLivingEntity;
-+import org.bukkit.entity.LivingEntity;
- import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
- import org.bukkit.event.entity.EntityTargetEvent;
- import org.bukkit.event.entity.EntityUnleashEvent;
-@@ -396,7 +397,14 @@ public abstract class EntityInsentient extends EntityLiving {
+@@ -396,7 +396,14 @@ public abstract class EntityInsentient extends EntityLiving {
                  }
              }
  
 -            if (flag && this.a(itemstack)) {
 +            // PandaSpigot start - EntityPickupItemEvent
 +            boolean canPickup = flag && this.a(itemstack);
-+            org.bukkit.event.entity.EntityPickupItemEvent entityEvent = new org.bukkit.event.entity.EntityPickupItemEvent((LivingEntity) this.getBukkitEntity(), (org.bukkit.entity.Item) entityitem.getBukkitEntity(), 0);
++            org.bukkit.event.entity.EntityPickupItemEvent entityEvent = new org.bukkit.event.entity.EntityPickupItemEvent((org.bukkit.entity.LivingEntity) this.getBukkitEntity(), (org.bukkit.entity.Item) entityitem.getBukkitEntity(), 0);
 +            entityEvent.setCancelled(!canPickup);
 +            this.world.getServer().getPluginManager().callEvent(entityEvent);
 +
