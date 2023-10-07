@@ -5,13 +5,14 @@ Subject: [PATCH] Implement EntityPickupItemEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
-index 60ba16d231e2d614f56aee3c7ba5c0d4715d0269..ca386a4a516ce82e2e2e599e3753beef5d446daf 100644
+index 60ba16d231e2d614f56aee3c7ba5c0d4715d0269..ecde0d9ec034024355c09b249694ce118b3b10bc 100644
 --- a/src/main/java/net/minecraft/server/EntityArrow.java
 +++ b/src/main/java/net/minecraft/server/EntityArrow.java
-@@ -442,6 +442,14 @@ public class EntityArrow extends Entity implements IProjectile {
+@@ -442,6 +442,16 @@ public class EntityArrow extends Entity implements IProjectile {
                  if (event.isCancelled()) {
                      return;
                  }
++                // PandaSpigot start - EntityPickupItemEvent
 +                // Call newer event afterwards
 +                org.bukkit.event.entity.EntityPickupItemEvent entityEvent = new org.bukkit.event.entity.EntityPickupItemEvent(entityhuman.getBukkitEntity(), event.getItem(), 0);
 +                // event.setCancelled(!entityhuman.canPickUpLoot); TODO
@@ -20,6 +21,7 @@ index 60ba16d231e2d614f56aee3c7ba5c0d4715d0269..ca386a4a516ce82e2e2e599e3753beef
 +                if (entityEvent.isCancelled()) {
 +                    return;
 +                }
++                // PandaSpigot end
              }
              // CraftBukkit end
              boolean flag = this.fromPlayer == 1 || this.fromPlayer == 2 && entityhuman.abilities.canInstantlyBuild;
@@ -52,13 +54,14 @@ index c1f100c3bd68329b77f9a899cc7353374064daf6..c7c9737675822d1326fc0ab4ccb76eb1
                      this.a(itemstack1, 0.0F);
                  }
 diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
-index 1f8b1c726ef7343ee7feb1e4ea4c1ef8cc453723..61ad7b545196ebcf5a72f90505097a3cadea6a30 100644
+index 1f8b1c726ef7343ee7feb1e4ea4c1ef8cc453723..a1ac66251044a5691baa6d2c44abaec847e224df 100644
 --- a/src/main/java/net/minecraft/server/EntityItem.java
 +++ b/src/main/java/net/minecraft/server/EntityItem.java
-@@ -317,6 +317,14 @@ public class EntityItem extends Entity {
+@@ -317,6 +317,16 @@ public class EntityItem extends Entity {
                  if (event.isCancelled()) {
                      return;
                  }
++                // PandaSpigot start - EntityPickupItemEvent
 +                // Call newer event afterwards
 +                org.bukkit.event.entity.EntityPickupItemEvent entityEvent = new org.bukkit.event.entity.EntityPickupItemEvent(entityhuman.getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
 +                // event.setCancelled(!entityhuman.canPickUpLoot); TODO
@@ -67,6 +70,7 @@ index 1f8b1c726ef7343ee7feb1e4ea4c1ef8cc453723..61ad7b545196ebcf5a72f90505097a3c
 +                    return;
 +                }
 +                itemstack.count = canHold + remaining;
++                // PandaSpigot end
  
                  // Possibly < 0; fix here so we do not have to modify code below
                  this.pickupDelay = 0;
