@@ -1,0 +1,77 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 7 Oct 2023 22:43:20 +0200
+Subject: [PATCH] fastutil - EntityPlayer more optimized entties checking
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..54ead77dbf1ef17121a2068947e5b1018f2fa3b0 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -232,9 +232,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         }
+ 
+         if (!this.chunkCoordIntPairQueue.isEmpty()) {
+-            ArrayList arraylist = Lists.newArrayList();
+-            Iterator iterator1 = this.chunkCoordIntPairQueue.iterator();
+-            ArrayList arraylist1 = Lists.newArrayList();
++            ArrayList<Chunk> arraylist = Lists.newArrayList();
++            Iterator<ChunkCoordIntPair> iterator1 = this.chunkCoordIntPairQueue.iterator();
++            ArrayList<TileEntity> arraylist1 = Lists.newArrayList();
+ 
+             Chunk chunk;
+ 
+@@ -262,20 +262,18 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+                 } else {
+                     this.playerConnection.sendPacket(new PacketPlayOutMapChunkBulk(arraylist));
+                 }
+-
+-                Iterator iterator2 = arraylist1.iterator();
+-
+-                while (iterator2.hasNext()) {
+-                    TileEntity tileentity = (TileEntity) iterator2.next();
+-
++                for (TileEntity tileentity : arraylist1) {
+                     this.a(tileentity);
+                 }
++                it.unimi.dsi.fastutil.longs.LongOpenHashSet chunkPosSet = new it.unimi.dsi.fastutil.longs.LongOpenHashSet(arraylist.size());
++                for (Chunk newChunk : arraylist) {
++                    chunkPosSet.add(this.chunkToLong(newChunk.locX, newChunk.locZ));
++                }
+ 
+-                iterator2 = arraylist.iterator();
+-
+-                while (iterator2.hasNext()) {
+-                    chunk = (Chunk) iterator2.next();
+-                    this.u().getTracker().a(this, chunk);
++                for (EntityTrackerEntry entitytrackerentry : this.u().getTracker().c) {
++                    if (entitytrackerentry.tracker != this && chunkPosSet.contains(this.chunkToLong(entitytrackerentry.tracker.ae, entitytrackerentry.tracker.ag))) {
++                        entitytrackerentry.updatePlayer(this);
++                    }
+                 }
+             }
+         }
+@@ -295,7 +293,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         }
+ 
+     }
+-
++    private long chunkToLong(int chunkX, int chunkZ) {
++        return (chunkX << 32L) + chunkZ - -2147483648L;
++    }
+     public void l() {
+         try {
+             super.t_();
+diff --git a/src/main/java/net/minecraft/server/EntityTracker.java b/src/main/java/net/minecraft/server/EntityTracker.java
+index d3afb43259dc34a63c561266efbf7e5050d9d213..7a6bd624cfe4a1e58155e0498f6d6c6387465db1 100644
+--- a/src/main/java/net/minecraft/server/EntityTracker.java
++++ b/src/main/java/net/minecraft/server/EntityTracker.java
+@@ -13,7 +13,7 @@ public class EntityTracker {
+ 
+     private static final Logger a = LogManager.getLogger();
+     private final WorldServer world;
+-    private Set<EntityTrackerEntry> c = new io.papermc.paper.util.maplist.ObjectMapList<>(); // PandaSpigot - FastUtil - ObjectMapList
++    public Set<EntityTrackerEntry> c = new io.papermc.paper.util.maplist.ObjectMapList<>(); // PandaSpigot - FastUtil - ObjectMapList
+     public IntHashMap<EntityTrackerEntry> trackedEntities = new IntHashMap();
+     private int e;
+ 

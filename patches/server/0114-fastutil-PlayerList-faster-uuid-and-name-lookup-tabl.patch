@@ -1,0 +1,147 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 7 Oct 2023 22:32:49 +0200
+Subject: [PATCH] fastutil - PlayerList faster uuid and name lookup tables
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 905a141d1bc731875fd739dc7ce0171db4cf9779..3c677b8bde482400e6cdb3818ce0a9cd036aece8 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -49,7 +49,89 @@ public abstract class PlayerList {
+     private static final SimpleDateFormat g = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
+     private final MinecraftServer server;
+     public final List<EntityPlayer> players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
+-    private final Map<UUID, EntityPlayer> j = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
++    public final Map<String, EntityPlayer> playerMap = new it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap<String, EntityPlayer>() {
++
++        private final java.util.concurrent.locks.ReentrantReadWriteLock lock = new java.util.concurrent.locks.ReentrantReadWriteLock();
++
++        @Override
++        public EntityPlayer put(String key, EntityPlayer value) {
++            lock.writeLock().lock();
++            try {
++                return super.put(key.toLowerCase(), value);
++            } finally {
++                lock.writeLock().unlock();
++            }
++        }
++
++        @Override
++        public EntityPlayer get(Object key) {
++            lock.readLock().lock();
++            try {
++                // put the .playerConnection check done in other places here
++                EntityPlayer player = super.get(key instanceof String ? ((String) key).toLowerCase() : key);
++                return (player != null && player.playerConnection != null) ? player : null;
++            } finally {
++                lock.readLock().unlock();
++            }
++        }
++
++        @Override
++        public boolean containsKey(Object key) {
++            return get(key) != null;
++        }
++
++        @Override
++        public EntityPlayer remove(Object key) {
++            lock.writeLock().lock();
++            try {
++                return super.remove(key instanceof String ? ((String) key).toLowerCase() : key);
++            } finally {
++                lock.writeLock().unlock();
++            }
++        }
++    };
++    public final Map<UUID, EntityPlayer> uuidMap = new it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap<UUID, EntityPlayer>() {
++
++        private final java.util.concurrent.locks.ReentrantReadWriteLock lock = new java.util.concurrent.locks.ReentrantReadWriteLock();
++
++        @Override
++        public EntityPlayer get(Object key) {
++            lock.readLock().lock();
++            try {
++                // put the .playerConnection check done in other places here
++                EntityPlayer player = super.get(key instanceof String ? ((String) key).toLowerCase() : key);
++                return (player != null && player.playerConnection != null) ? player : null;
++            } finally {
++                lock.readLock().unlock();
++            }
++        }
++
++        @Override
++        public EntityPlayer put(UUID key, EntityPlayer value) {
++            lock.writeLock().lock();
++            try {
++                return super.put(key, value);
++            } finally {
++                lock.writeLock().unlock();
++            }
++        }
++
++        @Override
++        public boolean containsKey(Object key) {
++            // WindSpigot - synchronize uuid map
++            return get(key) != null;
++        }
++
++        @Override
++        public EntityPlayer remove(Object key) {
++            lock.writeLock().lock();
++            try {
++                return super.remove(key);
++            } finally {
++                lock.writeLock().unlock();
++            }
++        }
++    };
+     private final GameProfileBanList k;
+     private final IpBanList l;
+     private final OpList operators;
+@@ -304,7 +386,8 @@ public abstract class PlayerList {
+     public void onPlayerJoin(EntityPlayer entityplayer, String joinMessage) { // CraftBukkit added param
+         this.players.add(entityplayer);
+         this.playersByName.put(entityplayer.getName(), entityplayer); // Spigot
+-        this.j.put(entityplayer.getUniqueID(), entityplayer);
++        this.playerMap.put(entityplayer.getName(), entityplayer);
++        this.uuidMap.put(entityplayer.getUniqueID(), entityplayer);
+         // this.sendAll(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, new EntityPlayer[] { entityplayer})); // CraftBukkit - replaced with loop below
+         WorldServer worldserver = this.server.getWorldServer(entityplayer.dimension);
+ 
+@@ -381,12 +464,14 @@ public abstract class PlayerList {
+         worldserver.kill(entityplayer);
+         worldserver.getPlayerChunkMap().removePlayer(entityplayer);
+         this.players.remove(entityplayer);
++        this.uuidMap.remove(entityplayer.getUniqueID());
++        this.playerMap.remove(entityplayer.getName());
+         this.playersByName.remove(entityplayer.getName()); // Spigot
+         UUID uuid = entityplayer.getUniqueID();
+-        EntityPlayer entityplayer1 = (EntityPlayer) this.j.get(uuid);
++        EntityPlayer entityplayer1 = this.uuidMap.get(uuid);
+ 
+         if (entityplayer1 == entityplayer) {
+-            this.j.remove(uuid);
++            this.playerMap.remove(entityplayer.getName());
+             this.o.remove(uuid);
+         }
+ 
+@@ -629,7 +714,8 @@ public abstract class PlayerList {
+             worldserver.addEntity(entityplayer1);
+             this.players.add(entityplayer1);
+             this.playersByName.put(entityplayer1.getName(), entityplayer1); // Spigot
+-            this.j.put(entityplayer1.getUniqueID(), entityplayer1);
++            this.playerMap.put(entityplayer1.getName(), entityplayer1);
++            this.uuidMap.put(entityplayer1.getUniqueID(), entityplayer1);
+         }
+         // Added from changeDimension
+         updateClient(entityplayer); // Update health, etc...
+@@ -1269,7 +1355,7 @@ public abstract class PlayerList {
+     }
+ 
+     public EntityPlayer a(UUID uuid) {
+-        return (EntityPlayer) this.j.get(uuid);
++        return this.uuidMap.get(uuid);
+     }
+ 
+     public boolean f(GameProfile gameprofile) {
