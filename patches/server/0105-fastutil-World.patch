@@ -1,0 +1,21 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 7 Oct 2023 20:52:52 +0200
+Subject: [PATCH] fastutil - World
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..5736c939c850e9c4dea9c4070079ed1fd4db9809 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -66,8 +66,8 @@ public abstract class World implements IBlockAccess {
+     public final List<TileEntity> tileEntityList = Lists.newArrayList();
+     private final List<TileEntity> b = Lists.newArrayList();
+     private final Set<TileEntity> c = Sets.newHashSet(); // Paper
+-    public final List<EntityHuman> players = Lists.newArrayList();
+-    public final List<Entity> k = Lists.newArrayList();
++    public final List<EntityHuman> players = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - fastutil - ObjectArrayList
++    public final List<Entity> k = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - fastutil - ObjectArrayList
+     protected final IntHashMap<Entity> entitiesById = new IntHashMap();
+     private long d = 16777215L;
+     private int I;

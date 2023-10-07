@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 7 Oct 2023 17:27:39 +0200
+Subject: [PATCH] add fastutil
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 32e86e461d803da6493ac42c173317c2c67ca18b..12283bd6386dc459aebb28484cb1221fabb3db88 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -20,6 +20,7 @@ dependencies {
+ 
+     // Minecraft libraries:
+     implementation("io.netty:netty-all:4.1.91.Final") // PandaSpigot - Update Netty to 4.1.x
++    implementation("it.unimi.dsi:fastutil:8.5.12") // PandaSpigot - add fastutil
+     implementation("com.mojang:authlib:1.5.21")
+     // PandaSpigot start - Update log4j
+     implementation("org.apache.logging.log4j:log4j-api:2.17.1")

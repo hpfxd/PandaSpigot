@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 7 Oct 2023 17:34:37 +0200
+Subject: [PATCH] fastutil - use ObjectMapList in Chunk EntitySlices
+
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index 3cb8d99311e2fa9a4a1173f6ef9e8dee957b20fa..25669f6ebd1075573385c77d7644910cb00ad970 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -146,7 +146,7 @@ public class Chunk {
+         this.heightMap = new int[256];
+ 
+         for (int k = 0; k < this.entitySlices.length; ++k) {
+-            this.entitySlices[k] = new org.bukkit.craftbukkit.util.UnsafeList(); // Spigot
++            this.entitySlices[k] = new io.papermc.paper.util.maplist.ObjectMapList<>(); // PandaSpigot - Fastutil ObjectMapList
+         }
+ 
+         Arrays.fill(this.f, -999);

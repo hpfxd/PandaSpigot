@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 7 Oct 2023 20:54:14 +0200
+Subject: [PATCH] fastutil - NBTTagCompound
+
+
+diff --git a/src/main/java/net/minecraft/server/NBTTagCompound.java b/src/main/java/net/minecraft/server/NBTTagCompound.java
+index 22d7c2ab36f11f93c0b9d08b786c784562ef7077..89c9298fde1711a1a5923b81715f45f1341fa693 100644
+--- a/src/main/java/net/minecraft/server/NBTTagCompound.java
++++ b/src/main/java/net/minecraft/server/NBTTagCompound.java
+@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
+ 
+ public class NBTTagCompound extends NBTBase {
+ 
+-    private Map<String, NBTBase> map = Maps.newHashMap();
++    private Map<String, NBTBase> map = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(8, 0.8f); // PandaSpigot - reduce memory footprint of NBTTagCompound
+ 
+     public NBTTagCompound() {}
+ 
