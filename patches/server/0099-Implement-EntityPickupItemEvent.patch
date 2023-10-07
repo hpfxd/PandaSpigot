@@ -46,10 +46,16 @@ index c1f100c3bd68329b77f9a899cc7353374064daf6..0b6427cc5d0bbb81217f3da261c2e0f4
                      this.a(itemstack1, 0.0F);
                  }
 diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
-index 1f8b1c726ef7343ee7feb1e4ea4c1ef8cc453723..a1ac66251044a5691baa6d2c44abaec847e224df 100644
+index 1f8b1c726ef7343ee7feb1e4ea4c1ef8cc453723..47272471c8477cb34720b116c212cd3f61f4735f 100644
 --- a/src/main/java/net/minecraft/server/EntityItem.java
 +++ b/src/main/java/net/minecraft/server/EntityItem.java
-@@ -317,6 +317,16 @@ public class EntityItem extends Entity {
+@@ -312,11 +312,21 @@ public class EntityItem extends Entity {
+                 PlayerPickupItemEvent event = new PlayerPickupItemEvent((org.bukkit.entity.Player) entityhuman.getBukkitEntity(), (org.bukkit.entity.Item) this.getBukkitEntity(), remaining);
+                 // event.setCancelled(!entityhuman.canPickUpLoot); TODO
+                 this.world.getServer().getPluginManager().callEvent(event);
+-                itemstack.count = canHold + remaining;
++                //itemstack.count = canHold + remaining; // PandaSpigot - move down after new event
+ 
                  if (event.isCancelled()) {
                      return;
                  }
