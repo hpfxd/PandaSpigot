@@ -5,15 +5,50 @@ Subject: [PATCH] fastutil - NBTTagCompound
 
 
 diff --git a/src/main/java/net/minecraft/server/NBTTagCompound.java b/src/main/java/net/minecraft/server/NBTTagCompound.java
-index 22d7c2ab36f11f93c0b9d08b786c784562ef7077..89c9298fde1711a1a5923b81715f45f1341fa693 100644
+index 22d7c2ab36f11f93c0b9d08b786c784562ef7077..01cc42ebc8429ac0fb66366542781739fbe77ee7 100644
 --- a/src/main/java/net/minecraft/server/NBTTagCompound.java
 +++ b/src/main/java/net/minecraft/server/NBTTagCompound.java
-@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
+@@ -12,10 +12,14 @@ import java.util.concurrent.Callable;
  
  public class NBTTagCompound extends NBTBase {
  
 -    private Map<String, NBTBase> map = Maps.newHashMap();
-+    private Map<String, NBTBase> map = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(8, 0.8f); // PandaSpigot - reduce memory footprint of NBTTagCompound
+-
+-    public NBTTagCompound() {}
++    private Map<String, NBTBase> map;
  
-     public NBTTagCompound() {}
++    public NBTTagCompound() {
++        map = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(8, 0.8f); // PandaSpigot - reduce memory footprint of NBTTagCompound
++    }
++    public NBTTagCompound(it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<String, NBTBase> map) {
++        this.map = map;
++    }
+     void write(DataOutput dataoutput) throws IOException {
+         Iterator iterator = this.map.keySet().iterator();
  
+@@ -282,16 +286,17 @@ public class NBTTagCompound extends NBTBase {
+     }
+ 
+     public NBTBase clone() {
+-        NBTTagCompound nbttagcompound = new NBTTagCompound();
+-        Iterator iterator = this.map.keySet().iterator();
+-
++        it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<String, NBTBase> ret = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(
++            this.map.size(), 0.8f);
++        Iterator<Map.Entry<String, NBTBase>> iterator = (this.map instanceof it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap)
++            ? ((it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap) this.map).object2ObjectEntrySet()
++            .fastIterator()
++            : this.map.entrySet().iterator();
+         while (iterator.hasNext()) {
+-            String s = (String) iterator.next();
+-
+-            nbttagcompound.set(s, ((NBTBase) this.map.get(s)).clone());
++            Map.Entry<String, NBTBase> entry = iterator.next();
++            ret.put(entry.getKey(), entry.getValue().clone());
+         }
+-
+-        return nbttagcompound;
++        return new NBTTagCompound(ret);
+     }
+ 
+     public boolean equals(Object object) {

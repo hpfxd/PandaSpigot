@@ -5,9 +5,18 @@ Subject: [PATCH] fastutil - World
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..5736c939c850e9c4dea9c4070079ed1fd4db9809 100644
+index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..560b15ee0d932f30161915be21425c97d4ba656d 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
+@@ -36,7 +36,7 @@ public abstract class World implements IBlockAccess {
+     private int a = 63;
+     protected boolean e;
+     // Spigot start - guard entity list from removals
+-    public final List<Entity> entityList = new java.util.ArrayList<Entity>()
++    public final List<Entity> entityList = new it.unimi.dsi.fastutil.objects.ObjectArrayList<Entity>()
+     {
+         @Override
+         public Entity remove(int index)
 @@ -66,8 +66,8 @@ public abstract class World implements IBlockAccess {
      public final List<TileEntity> tileEntityList = Lists.newArrayList();
      private final List<TileEntity> b = Lists.newArrayList();
