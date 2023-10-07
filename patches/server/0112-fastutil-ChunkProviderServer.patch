@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 7 Oct 2023 21:32:40 +0200
+Subject: [PATCH] fastutil - ChunkProviderServer
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index 7085cb503db3e1e585417ce4300c6be075c7d2fe..079e8e29cc34e41eb932d6d90f8b775164a45251 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -34,7 +34,7 @@ public class ChunkProviderServer implements IChunkProvider {
+     public IChunkProvider chunkProvider;
+     private IChunkLoader chunkLoader;
+     public boolean forceChunkLoad = false; // CraftBukkit - true -> false
+-    public LongObjectHashMap<Chunk> chunks = new LongObjectHashMap<Chunk>();
++    public it.unimi.dsi.fastutil.longs.Long2ObjectMap<Chunk> chunks = new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<>(4096, 0.5f);
+     public WorldServer world;
+ 
+     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, IChunkProvider ichunkprovider) {
