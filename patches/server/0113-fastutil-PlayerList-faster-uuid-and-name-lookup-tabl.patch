@@ -5,14 +5,14 @@ Subject: [PATCH] fastutil - PlayerList faster uuid and name lookup tables
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 905a141d1bc731875fd739dc7ce0171db4cf9779..3c677b8bde482400e6cdb3818ce0a9cd036aece8 100644
+index ada9cf25b091c2df24301bb5e82d1f76fbd929e5..3c677b8bde482400e6cdb3818ce0a9cd036aece8 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -49,7 +49,89 @@ public abstract class PlayerList {
      private static final SimpleDateFormat g = new SimpleDateFormat("yyyy-MM-dd \'at\' HH:mm:ss z");
      private final MinecraftServer server;
      public final List<EntityPlayer> players = new java.util.concurrent.CopyOnWriteArrayList(); // CraftBukkit - ArrayList -> CopyOnWriteArrayList: Iterator safety
--    private final Map<UUID, EntityPlayer> j = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>();
+-    private final Map<UUID, EntityPlayer> j = Maps.newHashMap();
 +    public final Map<String, EntityPlayer> playerMap = new it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap<String, EntityPlayer>() {
 +
 +        private final java.util.concurrent.locks.ReentrantReadWriteLock lock = new java.util.concurrent.locks.ReentrantReadWriteLock();
