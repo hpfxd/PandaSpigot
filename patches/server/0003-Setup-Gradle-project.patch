@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..8fa745439919255e4b6598b1f9a162c8e18e5f87
+index 0000000000000000000000000000000000000000..7a4dbe3923dc2a001f57e35fe6a6e94083769c65
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,115 @@
+@@ -0,0 +1,116 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -112,16 +112,17 @@ index 0000000000000000000000000000000000000000..8fa745439919255e4b6598b1f9a162c8
 +            )
 +        }
 +    }
-+
++    var jvmargs = listOf("-Xms1G", "-Xmx1G", "-XX:+UseG1GC", "-XX:+ParallelRefProcEnabled", "-XX:MaxGCPauseMillis=200", "-XX:+UnlockExperimentalVMOptions", "-XX:+DisableExplicitGC", "-XX:+AlwaysPreTouch", "-XX:G1NewSizePercent=30", "-XX:G1MaxNewSizePercent=40", "-XX:G1HeapRegionSize=8M", "-XX:G1ReservePercent=20", "-XX:G1HeapWastePercent=5", "-XX:G1MixedGCCountTarget=4", "-XX:InitiatingHeapOccupancyPercent=15", "-XX:G1MixedGCLiveThresholdPercent=90", "-XX:G1RSetUpdatingPauseTimePercent=5", "-XX:SurvivorRatio=32", "-XX:+PerfDisableSharedMem", "-XX:MaxTenuringThreshold=1", "-Dusing.aikars.flags=https://mcflags.emc.gs", "-Daikars.new.flags=true")
 +    registerRunTask("runShadow") {
 +        description = "Spin up a test server from the shadowJar archiveFile"
++        jvmArgs = jvmargs
 +        classpath(shadowJar.flatMap { it.archiveFile })
 +    }
 +
 +    registerRunTask("runDev") {
 +        description = "Spin up a non-shaded non-relocated test server"
 +        classpath = java.sourceSets.main.get().runtimeClasspath
-+        jvmArgs = listOf("-Xms1G", "-Xmx1G", "-XX:+UseG1GC", "-XX:+ParallelRefProcEnabled", "-XX:MaxGCPauseMillis=200", "-XX:+UnlockExperimentalVMOptions", "-XX:+DisableExplicitGC", "-XX:+AlwaysPreTouch", "-XX:G1NewSizePercent=30", "-XX:G1MaxNewSizePercent=40", "-XX:G1HeapRegionSize=8M", "-XX:G1ReservePercent=20", "-XX:G1HeapWastePercent=5", "-XX:G1MixedGCCountTarget=4", "-XX:InitiatingHeapOccupancyPercent=15", "-XX:G1MixedGCLiveThresholdPercent=90", "-XX:G1RSetUpdatingPauseTimePercent=5", "-XX:SurvivorRatio=32", "-XX:+PerfDisableSharedMem", "-XX:MaxTenuringThreshold=1", "-Dusing.aikars.flags=https://mcflags.emc.gs", "-Daikars.new.flags=true")
++        jvmArgs = jvmargs
 +        mainClass.set("org.bukkit.craftbukkit.Main")
 +    }
 +}

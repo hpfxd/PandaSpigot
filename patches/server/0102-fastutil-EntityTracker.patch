@@ -18,7 +18,7 @@ index cb72b36725927272fddfdad929b268a7b06140ac..d3afb43259dc34a63c561266efbf7e50
      private int e;
  
 diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-index 0b90b6f30ea09fb117281d5ddd2fc752d2c139b5..91e72f4fe98a4d83c5f886e86c945c602eb1454a 100644
+index 0b90b6f30ea09fb117281d5ddd2fc752d2c139b5..108043d6460374d64a6c1fcfb9e1aab5a4024733 100644
 --- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 +++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 @@ -42,7 +42,7 @@ public class EntityTrackerEntry {
@@ -26,7 +26,7 @@ index 0b90b6f30ea09fb117281d5ddd2fc752d2c139b5..91e72f4fe98a4d83c5f886e86c945c60
      // Replace trackedPlayers Set with a Map. The value is true until the player receives
      // their first update (which is forced to have absolute coordinates), false afterward.
 -    public java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = new java.util.HashMap<EntityPlayer, Boolean>();
-+    public java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = new it.unimi.dsi.fastutil.objects.Reference2BooleanOpenHashMap<>();
++    public java.util.Map<EntityPlayer, Boolean> trackedPlayerMap = new it.unimi.dsi.fastutil.objects.Reference2BooleanOpenHashMap<>(); // PandaSpigot - HashMap -> Reference2BooleanOpenHashMap
      public Set<EntityPlayer> trackedPlayers = trackedPlayerMap.keySet();
      // PaperSpigot end
  

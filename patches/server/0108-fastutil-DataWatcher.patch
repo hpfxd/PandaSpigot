@@ -5,7 +5,7 @@ Subject: [PATCH] fastutil - DataWatcher
 
 
 diff --git a/src/main/java/net/minecraft/server/DataWatcher.java b/src/main/java/net/minecraft/server/DataWatcher.java
-index 518e8f379d690b1f1b4d2374c875dd3dae22360e..42909eddbb1984966d910cab2c3e3889472f4749 100644
+index 518e8f379d690b1f1b4d2374c875dd3dae22360e..ca88b6ab6d3fac8ae30659555559d12fdee272b9 100644
 --- a/src/main/java/net/minecraft/server/DataWatcher.java
 +++ b/src/main/java/net/minecraft/server/DataWatcher.java
 @@ -16,11 +16,11 @@ public class DataWatcher {
@@ -14,13 +14,13 @@ index 518e8f379d690b1f1b4d2374c875dd3dae22360e..42909eddbb1984966d910cab2c3e3889
      // Spigot Start
 -    private static final gnu.trove.map.TObjectIntMap classToId = new gnu.trove.map.hash.TObjectIntHashMap( 10, 0.5f, -1 );
 -    private final gnu.trove.map.TIntObjectMap dataValues = new gnu.trove.map.hash.TIntObjectHashMap( 10, 0.5f, -1 );
-+    private static final it.unimi.dsi.fastutil.objects.Object2IntMap<Class<?>> classToId = new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>(10, 0.5f);
-+    private final it.unimi.dsi.fastutil.ints.Int2ObjectMap dataValues = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>( 10, 0.5f);
++    private static final it.unimi.dsi.fastutil.objects.Object2IntMap<Class<?>> classToId = new it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap<>(10, 0.5f); // Pandaspigot TObjectIntHashMap -> Object2IntOpenHashMap
++    private final it.unimi.dsi.fastutil.ints.Int2ObjectMap dataValues = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>( 10, 0.5f);// Pandaspigot TIntObjectHashMap -> Int2ObjectOpenHashMap
      // These exist as an attempt at backwards compatability for (broken) NMS plugins
 -    private static final Map<Class<?>, Integer> c = gnu.trove.TDecorators.wrap( classToId );
 -    private final Map<Integer, DataWatcher.WatchableObject> d = gnu.trove.TDecorators.wrap( dataValues );
-+    private static final Map<Class<?>, Integer> c = classToId;
-+    private final Map<Integer, DataWatcher.WatchableObject> d = dataValues;
++    private static final Map<Class<?>, Integer> c = classToId; // Pandaspigot
++    private final Map<Integer, DataWatcher.WatchableObject> d = dataValues; // Pandaspigot
      // Spigot End
      private boolean e;
      // private ReadWriteLock f = new ReentrantReadWriteLock(); // PandaSpigot - Remove DataWatcher Locking
@@ -29,7 +29,7 @@ index 518e8f379d690b1f1b4d2374c875dd3dae22360e..42909eddbb1984966d910cab2c3e3889
          if (this.e) {
              // this.f.readLock().lock(); // PandaSpigot
 -            Iterator iterator = this.dataValues.valueCollection().iterator(); // Spigot
-+            Iterator iterator = this.dataValues.values().iterator(); // Spigot
++            Iterator iterator = this.dataValues.values().iterator(); // Spigot // Pandaspigot
  
              while (iterator.hasNext()) {
                  DataWatcher.WatchableObject datawatcher_watchableobject = (DataWatcher.WatchableObject) iterator.next();
@@ -38,7 +38,7 @@ index 518e8f379d690b1f1b4d2374c875dd3dae22360e..42909eddbb1984966d910cab2c3e3889
      public void a(PacketDataSerializer packetdataserializer) throws IOException {
          // this.f.readLock().lock(); // PandaSpigot
 -        Iterator iterator = this.dataValues.valueCollection().iterator(); // Spigot
-+        Iterator iterator = this.dataValues.values().iterator(); // Spigot
++        Iterator iterator = this.dataValues.values().iterator(); // Spigot // Pandaspigot
  
          while (iterator.hasNext()) {
              DataWatcher.WatchableObject datawatcher_watchableobject = (DataWatcher.WatchableObject) iterator.next();
@@ -47,7 +47,7 @@ index 518e8f379d690b1f1b4d2374c875dd3dae22360e..42909eddbb1984966d910cab2c3e3889
          // this.f.readLock().lock(); // PandaSpigot
  
 -        arraylist.addAll(this.dataValues.valueCollection()); // Spigot
-+        arraylist.addAll(this.dataValues.values()); // Spigot
++        arraylist.addAll(this.dataValues.values()); // Spigot // Pandaspigot
          // Spigot start - copy ItemStacks to prevent ConcurrentModificationExceptions
          for ( int i = 0; i < arraylist.size(); i++ )
          {

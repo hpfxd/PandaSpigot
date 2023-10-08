@@ -5,7 +5,7 @@ Subject: [PATCH] fastutil - World
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..560b15ee0d932f30161915be21425c97d4ba656d 100644
+index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..599b496acfd7ba727a4948ff18ada7614bb74e08 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -36,7 +36,7 @@ public abstract class World implements IBlockAccess {
@@ -13,7 +13,7 @@ index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..560b15ee0d932f30161915be21425c97
      protected boolean e;
      // Spigot start - guard entity list from removals
 -    public final List<Entity> entityList = new java.util.ArrayList<Entity>()
-+    public final List<Entity> entityList = new it.unimi.dsi.fastutil.objects.ObjectArrayList<Entity>()
++    public final List<Entity> entityList = new it.unimi.dsi.fastutil.objects.ObjectArrayList<Entity>() // PandaSpigot ArrayList -> ObjectArrayList
      {
          @Override
          public Entity remove(int index)
@@ -23,8 +23,8 @@ index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..560b15ee0d932f30161915be21425c97
      private final Set<TileEntity> c = Sets.newHashSet(); // Paper
 -    public final List<EntityHuman> players = Lists.newArrayList();
 -    public final List<Entity> k = Lists.newArrayList();
-+    public final List<EntityHuman> players = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - fastutil - ObjectArrayList
-+    public final List<Entity> k = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - fastutil - ObjectArrayList
++    public final List<EntityHuman> players = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - ArrayList -> ObjectArrayList
++    public final List<Entity> k = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - ArrayList -> ObjectArrayList
      protected final IntHashMap<Entity> entitiesById = new IntHashMap();
      private long d = 16777215L;
      private int I;

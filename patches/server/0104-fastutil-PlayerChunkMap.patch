@@ -5,7 +5,7 @@ Subject: [PATCH] fastutil - PlayerChunkMap
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 696edfe83aa6c75deaaa59cc10818dbf261cc5a9..22d0c03b3e9ff37d182f0a7194c946d03abc4b91 100644
+index 696edfe83aa6c75deaaa59cc10818dbf261cc5a9..600c75e86db444b1f31e245a729d22365d5b222b 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -19,7 +19,7 @@ public class PlayerChunkMap {
@@ -13,7 +13,7 @@ index 696edfe83aa6c75deaaa59cc10818dbf261cc5a9..22d0c03b3e9ff37d182f0a7194c946d0
      private static final Logger a = LogManager.getLogger();
      private final WorldServer world;
 -    private final List<EntityPlayer> managedPlayers = Lists.newArrayList();
-+    private final List<EntityPlayer> managedPlayers = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - fastutil - ObjectArrayList
++    private final List<EntityPlayer> managedPlayers = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - ArrayList -> ObjectArrayList
      private final LongHashMap<PlayerChunkMap.PlayerChunk> d = new LongHashMap();
      private final Queue<PlayerChunkMap.PlayerChunk> e = new java.util.concurrent.ConcurrentLinkedQueue<PlayerChunkMap.PlayerChunk>(); // CraftBukkit ArrayList -> ConcurrentLinkedQueue
      private final Queue<PlayerChunkMap.PlayerChunk> f = new java.util.concurrent.ConcurrentLinkedQueue<PlayerChunkMap.PlayerChunk>(); // CraftBukkit ArrayList -> ConcurrentLinkedQueue
@@ -22,7 +22,7 @@ index 696edfe83aa6c75deaaa59cc10818dbf261cc5a9..22d0c03b3e9ff37d182f0a7194c946d0
      class PlayerChunk {
  
 -        private final List<EntityPlayer> b = Lists.newArrayList();
-+        private final List<EntityPlayer> b = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - fastutil - ObjectArrayList
++        private final List<EntityPlayer> b = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - ArrayList -> ObjectArrayList
          private final ChunkCoordIntPair location;
          private short[] dirtyBlocks = new short[64];
          private int dirtyCount;
@@ -31,7 +31,7 @@ index 696edfe83aa6c75deaaa59cc10818dbf261cc5a9..22d0c03b3e9ff37d182f0a7194c946d0
  
          // CraftBukkit start - add fields
 -        private final HashMap<EntityPlayer, Runnable> players = new HashMap<EntityPlayer, Runnable>();
-+        private final java.util.Map<EntityPlayer, Runnable> players = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(); // Pandaspigot - fastutil - Object2ObjectOpenHashMAp
++        private final java.util.Map<EntityPlayer, Runnable> players = new it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap<>(); // Pandaspigot - HashMap -> Object2ObjectOpenHashMAp
          private boolean loaded = false;
          private Runnable loadedRunnable = new Runnable() {
              public void run() {

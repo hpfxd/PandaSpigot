@@ -5,7 +5,7 @@ Subject: [PATCH] fastutil - CraftingManager
 
 
 diff --git a/src/main/java/net/minecraft/server/CraftingManager.java b/src/main/java/net/minecraft/server/CraftingManager.java
-index 544ff0a6c2ec62911c97fb02aec24d0215188dc3..2d099863b1d77cf5e1dbc6c37a48f517685d1925 100644
+index 544ff0a6c2ec62911c97fb02aec24d0215188dc3..f0ef79d01ab2019686b9fb56f6672ebab7c6b56e 100644
 --- a/src/main/java/net/minecraft/server/CraftingManager.java
 +++ b/src/main/java/net/minecraft/server/CraftingManager.java
 @@ -14,7 +14,7 @@ import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
@@ -13,7 +13,7 @@ index 544ff0a6c2ec62911c97fb02aec24d0215188dc3..2d099863b1d77cf5e1dbc6c37a48f517
  
      private static final CraftingManager a = new CraftingManager();
 -    public List<IRecipe> recipes = Lists.newArrayList();
-+    public List<IRecipe> recipes = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>();
++    public List<IRecipe> recipes = new it.unimi.dsi.fastutil.objects.ObjectArrayList<>(); // PandaSpigot - ArrayList -> ObjectArrayList
      // CraftBukkit start
      public IRecipe lastRecipe;
      public org.bukkit.inventory.InventoryView lastCraftView;

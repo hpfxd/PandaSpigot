@@ -5,7 +5,7 @@ Subject: [PATCH] fastutil - HandshakeListener
 
 
 diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
-index 10a8c440f08535d90d8d1204a23c859ba296aa39..ef1a07a6d9667f7fd94f0f6596c4963ad5f0dd54 100644
+index 10a8c440f08535d90d8d1204a23c859ba296aa39..9fedebc490273994352f9f024d1e789a06215a78 100644
 --- a/src/main/java/net/minecraft/server/HandshakeListener.java
 +++ b/src/main/java/net/minecraft/server/HandshakeListener.java
 @@ -9,7 +9,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
@@ -13,7 +13,7 @@ index 10a8c440f08535d90d8d1204a23c859ba296aa39..ef1a07a6d9667f7fd94f0f6596c4963a
      private static final com.google.gson.Gson gson = new com.google.gson.Gson(); // Spigot
      // CraftBukkit start - add fields
 -    private static final HashMap<InetAddress, Long> throttleTracker = new HashMap<InetAddress, Long>();
-+    private static final java.util.Map<InetAddress, Long> throttleTracker = new it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<>();
++    private static final java.util.Map<InetAddress, Long> throttleTracker = new it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap<>(); // PandaSpigot HashMap -> Object2LongOpenHashMap
      private static int throttleCounter = 0;
      // CraftBukkit end
  

@@ -63,7 +63,7 @@ index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..54ead77dbf1ef17121a2068947e5b101
          try {
              super.t_();
 diff --git a/src/main/java/net/minecraft/server/EntityTracker.java b/src/main/java/net/minecraft/server/EntityTracker.java
-index d3afb43259dc34a63c561266efbf7e5050d9d213..7a6bd624cfe4a1e58155e0498f6d6c6387465db1 100644
+index d3afb43259dc34a63c561266efbf7e5050d9d213..e34f7e4cba2d9e4213e44da99dfdebd907dc8ffb 100644
 --- a/src/main/java/net/minecraft/server/EntityTracker.java
 +++ b/src/main/java/net/minecraft/server/EntityTracker.java
 @@ -13,7 +13,7 @@ public class EntityTracker {
@@ -71,7 +71,7 @@ index d3afb43259dc34a63c561266efbf7e5050d9d213..7a6bd624cfe4a1e58155e0498f6d6c63
      private static final Logger a = LogManager.getLogger();
      private final WorldServer world;
 -    private Set<EntityTrackerEntry> c = new io.papermc.paper.util.maplist.ObjectMapList<>(); // PandaSpigot - FastUtil - ObjectMapList
-+    public Set<EntityTrackerEntry> c = new io.papermc.paper.util.maplist.ObjectMapList<>(); // PandaSpigot - FastUtil - ObjectMapList
++    public Set<EntityTrackerEntry> c = new io.papermc.paper.util.maplist.ObjectMapList<>(); // PandaSpigot - private -> public
      public IntHashMap<EntityTrackerEntry> trackedEntities = new IntHashMap();
      private int e;
  

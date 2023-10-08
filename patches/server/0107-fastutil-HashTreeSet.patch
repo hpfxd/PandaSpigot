@@ -5,7 +5,7 @@ Subject: [PATCH] fastutil - HashTreeSet
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/HashTreeSet.java b/src/main/java/org/bukkit/craftbukkit/util/HashTreeSet.java
-index 80a5c29f3b9f0e6ccb2acb01a6be3726d6b368b3..70430f5dd8139384eaec1246af159f6d254c7de3 100644
+index 80a5c29f3b9f0e6ccb2acb01a6be3726d6b368b3..2a1ab9d3a3675acaaacb6c257cbe0beed415efce 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/HashTreeSet.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/HashTreeSet.java
 @@ -8,7 +8,7 @@ import java.util.TreeSet;
@@ -13,7 +13,7 @@ index 80a5c29f3b9f0e6ccb2acb01a6be3726d6b368b3..70430f5dd8139384eaec1246af159f6d
  public class HashTreeSet<V> implements Set<V> {
  
 -    private HashSet<V> hash = new HashSet<V>();
-+    private Set<V> hash = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>(); // PandaSpigot - Replace java.util.HashSet with ObjectOpenHashSet
++    private Set<V> hash = new it.unimi.dsi.fastutil.objects.ObjectOpenHashSet<>(); // PandaSpigot - HashSet -> ObjectOpenHashSet
      private TreeSet<V> tree = new TreeSet<V>();
  
      public HashTreeSet() {
