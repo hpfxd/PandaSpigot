@@ -5,36 +5,15 @@ Subject: [PATCH] PandaSpigot version checking
 
 
 diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..b732f26cbe156ff1347241c62842053522f7526e 100644
+index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..a07f91424a563eebf268b361634947a8da2c1e26 100644
 --- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
 +++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-@@ -1,10 +1,8 @@
- package org.bukkit.command.defaults;
- 
- import com.google.common.base.Charsets;
--import java.util.ArrayList;
--import java.util.Arrays;
--import java.util.List;
--
-+import com.google.common.collect.ImmutableList;
-+import com.google.common.io.Resources;
- import org.apache.commons.lang.Validate;
- import org.bukkit.Bukkit;
- import org.bukkit.ChatColor;
-@@ -13,20 +11,24 @@ import org.bukkit.plugin.Plugin;
- import org.bukkit.plugin.PluginDescriptionFile;
- import org.bukkit.util.StringUtil;
- 
--import com.google.common.collect.ImmutableList;
--import com.google.common.io.Resources;
+@@ -18,15 +18,18 @@ import com.google.common.io.Resources;
  import java.io.BufferedReader;
  import java.io.IOException;
  import java.net.URL;
 -import java.net.URLEncoder;
-+import java.util.ArrayList;
-+import java.util.Arrays;
  import java.util.HashSet;
-+import java.util.List;
  import java.util.Set;
  import java.util.concurrent.locks.ReentrantLock;
 -import java.util.logging.Level;
@@ -54,7 +33,7 @@ index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..b732f26cbe156ff1347241c628420535
  
  public class VersionCommand extends BukkitCommand {
      public VersionCommand(String name) {
-@@ -185,8 +187,33 @@ public class VersionCommand extends BukkitCommand {
+@@ -185,8 +188,33 @@ public class VersionCommand extends BukkitCommand {
      private void obtainVersion() {
          String version = Bukkit.getVersion();
          if (version == null) version = "Custom";
@@ -89,7 +68,7 @@ index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..b732f26cbe156ff1347241c628420535
              String[] parts = version.substring("git-PaperSpigot-".length()).split("[-\\s]");
              int paperSpigotVersions = getDistance("paperspigot", parts[0]);
              if (paperSpigotVersions == -1) {
-@@ -246,6 +273,60 @@ public class VersionCommand extends BukkitCommand {
+@@ -246,6 +274,60 @@ public class VersionCommand extends BukkitCommand {
          }
      }
  
