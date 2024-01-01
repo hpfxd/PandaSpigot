@@ -5,21 +5,6 @@ Subject: [PATCH] Add packet limiter config
 
 Packet limiter implementation taken from Spottedleaf's patch in Paper.
 
-diff --git a/src/main/java/com/destroystokyo/paper/PaperConfig.java b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-new file mode 100644
-index 0000000000000000000000000000000000000000..4f48e331c6cfa3ed456aa772dfee787581b46c56
---- /dev/null
-+++ b/src/main/java/com/destroystokyo/paper/PaperConfig.java
-@@ -0,0 +1,9 @@
-+package com.destroystokyo.paper;
-+
-+public class PaperConfig {
-+    // Dummy PacketLimit class as ViaVersion checks for the existence of this class
-+    // in order to know whether the server has a built-in packet limiter.
-+    // See: https://github.com/ViaVersion/ViaVersion/blob/823eb1f3927ae01b3d4ba05c8a83ce34eaf87daf/bukkit/src/main/java/com/viaversion/viaversion/bukkit/platform/PaperViaInjector.java#L71-L73
-+    public static final class PacketLimit {
-+    }
-+}
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PacketLimiterConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PacketLimiterConfig.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..24d213655f038129e25bd75ce876ba68ed43105c
