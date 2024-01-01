@@ -33,7 +33,7 @@ index 21c48d2b072ab4440d20a65d3294553657ff34c6..4ae094a9d190e23efcebd866a8ecb11e
      {
          return server.spigot();
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index c2b87d9c10252fe2d720b85d7521041db8488409..e0ab52762a9477fe5f3c01930ca411f924845450 100644
+index 2662f9c005ac1c7712f55e9cb264f4f07e80aea9..1ad82f5eddb477d2d9a753c1d2540ccff3d4f392 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -977,6 +977,19 @@ public interface Server extends PluginMessageRecipient {
