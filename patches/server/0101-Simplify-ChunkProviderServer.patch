@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Sun, 4 Feb 2024 19:46:41 -0300
+Subject: [PATCH] Simplify ChunkProviderServer
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index 7085cb503db3e1e585417ce4300c6be075c7d2fe..3334105d1ca54a75bb2d5e4e2cfe9a63fb210e79 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -120,7 +120,7 @@ public class ChunkProviderServer implements IChunkProvider {
+ 
+     public Chunk getChunkAt(int i, int j, Runnable runnable) {
+         unloadQueue.remove(i, j);
+-        Chunk chunk = chunks.get(LongHash.toLong(i, j));
++        Chunk chunk = getChunkIfLoaded(i, j); // PandaSpigot - Use getChunkIfLoaded
+         ChunkRegionLoader loader = null;
+ 
+         if (this.chunkLoader instanceof ChunkRegionLoader) {
