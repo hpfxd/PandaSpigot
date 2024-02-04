@@ -6,7 +6,7 @@ Subject: [PATCH] Fix custom inventories
 TODO: Finish the setupHorse() method and test it
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..3a123b4f8ecd74f0577574fe2cea649dbd21cf56 100644
+index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..ad98a8f599f616d2c8a203fff1fb6c811c33cddf 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 @@ -110,6 +110,12 @@ public class CraftContainer extends Container {
@@ -28,7 +28,7 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..3a123b4f8ecd74f0577574fe2cea649d
              break;
 +        // PandaSpigot start - Fix custom inventories
 +        case BEACON:
-+            setupBeacon(top, bottom;)
++            setupBeacon(top, bottom);
 +            break;
 +        case ANVIL:
 +            setupAnvil(top, bottom);
