@@ -27,7 +27,7 @@ index 73e73f457ceb3c6a7011b7392b05f820d66420e9..3971e7dfdb9b05f44c8e0735d88e95da
          if (entity instanceof EntityItem) {
              itemCounts[i]--;
 diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 5dfc94b0d6dd44f2fa283a0c601f448be88a1aa4..e1634e6f6361240170f8293bbf49d87fa73dd921 100644
+index 5dfc94b0d6dd44f2fa283a0c601f448be88a1aa4..3dff97435d4eda5592f4a3b991c6d2efb56ebef2 100644
 --- a/src/main/java/net/minecraft/server/SpawnerCreature.java
 +++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
 @@ -23,6 +23,15 @@ public final class SpawnerCreature {
@@ -65,7 +65,7 @@ index 5dfc94b0d6dd44f2fa283a0c601f448be88a1aa4..e1634e6f6361240170f8293bbf49d87f
                                                              if (entityinsentient.canSpawn()) {
 -                                                                ++l2;
 -                                                                worldserver.addEntity(entityinsentient, SpawnReason.NATURAL); // CraftBukkit - Added a reason for spawning this creature
-+                                                                // PandaSpigot - Only increment spawncount when mob spawn succeeds
++                                                                // PandaSpigot start - Only increment spawncount when mob spawn succeeds
 +                                                                if (worldserver.addEntity(entityinsentient, SpawnReason.NATURAL)) { // CraftBukkit - Added a reason for spawning this creature
 +                                                                    ++l2;
 +                                                                };
