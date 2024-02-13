@@ -27,7 +27,7 @@ index 73e73f457ceb3c6a7011b7392b05f820d66420e9..3971e7dfdb9b05f44c8e0735d88e95da
          if (entity instanceof EntityItem) {
              itemCounts[i]--;
 diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 5dfc94b0d6dd44f2fa283a0c601f448be88a1aa4..8498217ae48009d3c91ed7ffbb8fdbe19c2ade34 100644
+index 5dfc94b0d6dd44f2fa283a0c601f448be88a1aa4..c42af8a8e3b5113f9b984e004f852fd2151ed42a 100644
 --- a/src/main/java/net/minecraft/server/SpawnerCreature.java
 +++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
 @@ -23,6 +23,13 @@ public final class SpawnerCreature {
@@ -53,7 +53,7 @@ index 5dfc94b0d6dd44f2fa283a0c601f448be88a1aa4..8498217ae48009d3c91ed7ffbb8fdbe1
      }
      // Spigot end
  
-@@ -116,10 +125,14 @@ public final class SpawnerCreature {
+@@ -116,13 +125,17 @@ public final class SpawnerCreature {
                  // CraftBukkit end
  
                  if ((!enumcreaturetype.d() || flag1) && (enumcreaturetype.d() || flag) && (!enumcreaturetype.e() || flag2)) {
@@ -68,4 +68,22 @@ index 5dfc94b0d6dd44f2fa283a0c601f448be88a1aa4..8498217ae48009d3c91ed7ffbb8fdbe1
 +                    if ((mobcnt = getEntityCount(worldserver, enumcreaturetype.a())) <= limit * i / 289) { // PandaSpigot - use 17x17 like vanilla (a at top of file)
                          Iterator iterator1 = this.b.iterator();
  
-                         int moblimit = (limit * i / 256) - mobcnt + 1; // Spigot - up to 1 more than limit
+-                        int moblimit = (limit * i / 256) - mobcnt + 1; // Spigot - up to 1 more than limit
++                        int moblimit = (limit * i / 289) - mobcnt + 1; // Spigot - up to 1 more than limit // PandaSpigot - use 17x17 like vanilla (a at top of file)
+                         label115:
+                         while (iterator1.hasNext() && (moblimit > 0)) { // Spigot - while more allowed
+                             // CraftBukkit start = use LongHash and LongObjectHashMap
+@@ -180,8 +193,11 @@ public final class SpawnerCreature {
+                                                         if (entityinsentient.bR() && entityinsentient.canSpawn()) {
+                                                             groupdataentity = entityinsentient.prepare(worldserver.E(new BlockPosition(entityinsentient)), groupdataentity);
+                                                             if (entityinsentient.canSpawn()) {
+-                                                                ++l2;
+-                                                                worldserver.addEntity(entityinsentient, SpawnReason.NATURAL); // CraftBukkit - Added a reason for spawning this creature
++                                                                // PandaSpigot start - Only increment spawncount when mob spawn succeeds
++                                                                if (worldserver.addEntity(entityinsentient, SpawnReason.NATURAL)) { // CraftBukkit - Added a reason for spawning this creature
++                                                                    ++l2;
++                                                                };
++                                                                // PandaSpigot end
+                                                             }
+ 
+                                                             // Spigot start
