@@ -27,7 +27,7 @@ index 73e73f457ceb3c6a7011b7392b05f820d66420e9..3971e7dfdb9b05f44c8e0735d88e95da
          if (entity instanceof EntityItem) {
              itemCounts[i]--;
 diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
-index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..fda810c10630ef0b2770e7843a9677635664f7be 100644
+index 5dfc94b0d6dd44f2fa283a0c601f448be88a1aa4..3f1f606aa2b0aff755c7657d46eef08eb64781c7 100644
 --- a/src/main/java/net/minecraft/server/SpawnerCreature.java
 +++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
 @@ -23,6 +23,15 @@ public final class SpawnerCreature {
@@ -46,7 +46,7 @@ index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..fda810c10630ef0b2770e7843a967763
          int i = 0;
          Iterator<Long> it = this.b.iterator();
          while ( it.hasNext() )
-@@ -119,7 +128,7 @@ public final class SpawnerCreature {
+@@ -119,10 +128,10 @@ public final class SpawnerCreature {
                      k = worldserver.a(enumcreaturetype.a());
                      int l1 = limit * i / a; // CraftBukkit - use per-world limits
  
@@ -54,4 +54,8 @@ index 284f4bf2f6b7790a85d22fa1d4e5fa37f1f4aca2..fda810c10630ef0b2770e7843a967763
 +                    if ((mobcnt = getEntityCount(worldserver, enumcreaturetype.a())) <= limit * i / 289) { // PandaSpigot - use 17x17 like vanilla (a at top of file)
                          Iterator iterator1 = this.b.iterator();
  
-                         int moblimit = (limit * i / 256) - mobcnt + 1; // Spigot - up to 1 more than limit
+-                        int moblimit = (limit * i / 256) - mobcnt + 1; // Spigot - up to 1 more than limit
++                        int moblimit = (limit * i / 289) - mobcnt + 1; // Spigot - up to 1 more than limit // PandaSpigot - use 17x17 like vanilla (a at top of file)
+                         label115:
+                         while (iterator1.hasNext() && (moblimit > 0)) { // Spigot - while more allowed
+                             // CraftBukkit start = use LongHash and LongObjectHashMap
