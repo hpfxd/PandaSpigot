@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 7 Oct 2023 21:43:55 +0200
+Subject: [PATCH] fastutil - SpawnerCreature
+
+
+diff --git a/src/main/java/net/minecraft/server/SpawnerCreature.java b/src/main/java/net/minecraft/server/SpawnerCreature.java
+index 550bd42b656ce2e7a0d1542215845d2bf7c475d7..4c497835c9f3be3410d53a53beb289fcb36ca2d9 100644
+--- a/src/main/java/net/minecraft/server/SpawnerCreature.java
++++ b/src/main/java/net/minecraft/server/SpawnerCreature.java
+@@ -23,28 +23,13 @@ public final class SpawnerCreature {
+     // Spigot start - get entity count only from chunks being processed in b
+     private int getEntityCount(WorldServer server, Class oClass)
+     {
+-        // PandaSpigot start - use entire world, not just active chunks. Spigot broke vanilla expectations.
+-        if (true) {
+-            int sum = 0;
+-            for (Chunk c : server.chunkProviderServer.chunks.values()) {
+-                sum += c.entityCount.get(oClass);
+-            }
+-            return sum;
+-        }
+-        // PandaSpigot end
+-        int i = 0;
+-        Iterator<Long> it = this.b.iterator();
+-        while ( it.hasNext() )
+-        {
+-            Long coord = it.next();
+-            int x = LongHash.msw( coord );
+-            int z = LongHash.lsw( coord );
+-            if ( !server.chunkProviderServer.unloadQueue.contains( coord ) && server.isChunkLoaded( x, z, true ) )
+-            {
+-                i += server.getChunkAt( x, z ).entityCount.get( oClass );
+-            }
++        int sum = 0;
++        for (it.unimi.dsi.fastutil.objects.ObjectIterator<Chunk> objectIterator = (server.chunkProviderServer).chunks.values()
++            .iterator(); objectIterator.hasNext();) {
++            Chunk c = objectIterator.next();
++            sum += c.entityCount.get(oClass);
+         }
+-        return i;
++        return sum;
+     }
+     // Spigot end
+ 
