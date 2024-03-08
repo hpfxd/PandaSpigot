@@ -22,7 +22,7 @@ This patch contains heavy inspiration from:
 https://github.com/PaperMC/Paper/blob/master/patches/server/0137-Use-TerminalConsoleAppender-for-console-improvements.patch
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index cf11ec3fd93471bfcf90c067ac6c5e99ec443965..59a51ba28c0ce8bb86ed9fd8896ea051f01c7771 100644
+index 7c0bac5144853c7258bb65ddf6a0654ca5697269..22b69df26679d07893224314d16483aa83b42004 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -21,8 +21,10 @@ dependencies {
@@ -55,14 +55,14 @@ index cf11ec3fd93471bfcf90c067ac6c5e99ec443965..59a51ba28c0ce8bb86ed9fd8896ea051
      testImplementation("junit:junit:4.11")
      testImplementation("org.hamcrest:hamcrest-library:1.3")
  }
-@@ -61,6 +67,7 @@ tasks {
-     shadowJar {
+@@ -62,6 +68,7 @@ tasks {
          mergeServiceFiles()
+         archiveClassifier.set("unmapped")
          append("META-INF/io.netty.versions.properties")
 +        transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer()) // PandaSpigot - Use TerminalConsoleAppender
-         archiveClassifier.set("") // without "-all"
          // PandaSpigot start - Configuration
          arrayOf(
+             "com.amihaiemil.eoyaml",
 diff --git a/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..25a515b681bbbb70946f2ec73647a6f184f81b3c
