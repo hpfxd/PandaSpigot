@@ -5,7 +5,7 @@ Subject: [PATCH] Update to Netty 4.1.x
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 3938905ca58c3d1cd1db4fa9632637b7a43ff8c5..d4896940f221e95a581d067e08d17bddfd4452bf 100644
+index c751b21fcf9b6b30b6546179ca11c9f6319f3370..3e97931d3695e9b4e6aca80842832c65ad44bd06 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -13,7 +13,7 @@ dependencies {
@@ -25,14 +25,14 @@ index 3938905ca58c3d1cd1db4fa9632637b7a43ff8c5..d4896940f221e95a581d067e08d17bdd
      implementation("net.sf.jopt-simple:jopt-simple:3.2")
      implementation("jline:jline:2.12.1")
  
-@@ -55,6 +54,7 @@ fun TaskContainer.registerRunTask(
- tasks {
+@@ -56,6 +55,7 @@ tasks {
      shadowJar {
          mergeServiceFiles()
+         archiveClassifier.set("unmapped")
 +        append("META-INF/io.netty.versions.properties")
-         archiveClassifier.set("") // without "-all"
  
          val cbLibsPkg = "org.bukkit.craftbukkit.libs"
+ 
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
 index e2eb305468ff76026dc9b24d59394cfc94501273..b48eeb63ad61b18a630f2feb4fd6203e5e3e6c80 100644
 --- a/src/main/java/net/minecraft/server/PacketDataSerializer.java

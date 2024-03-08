@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..3938905ca58c3d1cd1db4fa9632637b7a43ff8c5
+index 0000000000000000000000000000000000000000..c751b21fcf9b6b30b6546179ca11c9f6319f3370
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,114 @@
+@@ -0,0 +1,132 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -67,7 +67,7 @@ index 0000000000000000000000000000000000000000..3938905ca58c3d1cd1db4fa9632637b7
 +tasks {
 +    shadowJar {
 +        mergeServiceFiles()
-+        archiveClassifier.set("") // without "-all"
++        archiveClassifier.set("unmapped")
 +
 +        val cbLibsPkg = "org.bukkit.craftbukkit.libs"
 +
@@ -123,108 +123,25 @@ index 0000000000000000000000000000000000000000..3938905ca58c3d1cd1db4fa9632637b7
 +        classpath = java.sourceSets.main.get().runtimeClasspath
 +        mainClass.set("org.bukkit.craftbukkit.Main")
 +    }
++
++    register<RemapTask>("remap") {
++        description = "Remap the output JAR file using the deprecation mappings"
++
++        val inTask = shadowJar.get()
++        inJarFile.set(inTask.archiveFile)
++        outJarFile.set(inTask.destinationDirectory.map { dir ->
++            val archiveName = ArchiveName.archiveNameFromTask(inTask).copy(classifier = "")
++            dir.file(archiveName.toFileName())
++        })
++
++        mappingFile.set(project.layout.projectDirectory.file("deprecation-mappings.csrg"))
++        accessTransformerFile.set(project.layout.projectDirectory.file("deprecation-mappings.at"))
++    }
++
++    assemble {
++        dependsOn(named("remap"))
++    }
 +}
-diff --git a/deprecation-mappings.at b/deprecation-mappings.at
-deleted file mode 100644
-index 5858b488706682919648deb1aaf32c13d26b95af..0000000000000000000000000000000000000000
---- a/deprecation-mappings.at
-+++ /dev/null
-@@ -1,62 +0,0 @@
--public+synthetic org/bukkit/Bukkit/getOnlinePlayers()[Lorg/bukkit/entity/Player;
--public+synthetic org/bukkit/Server/getOnlinePlayers()[Lorg/bukkit/entity/Player;
--
--public+synthetic org/bukkit/entity/Damageable/damage(I)V
--public+synthetic org/bukkit/entity/Damageable/damage(ILorg/bukkit/entity/Entity;)V
--public+synthetic org/bukkit/entity/Damageable/getHealth()I
--public+synthetic org/bukkit/entity/Damageable/getMaxHealth()I
--public+synthetic org/bukkit/entity/Damageable/setHealth(I)V
--public+synthetic org/bukkit/entity/Damageable/setMaxHealth(I)V
--
--public+synthetic org/bukkit/entity/LivingEntity/getLastDamage()I
--public+synthetic org/bukkit/entity/LivingEntity/setLastDamage(I)V
--
--public+synthetic org/bukkit/entity/Minecart/getDamage()I
--public+synthetic org/bukkit/entity/Minecart/setDamage(I)V
--
--public+synthetic org/bukkit/entity/Projectile/getShooter()Lorg/bukkit/entity/LivingEntity;
--public+synthetic org/bukkit/entity/Projectile/setShooter(Lorg/bukkit/entity/LivingEntity;)V
--
--public+synthetic org/bukkit/event/entity/EntityDamageEvent/getDamage()I
--public+synthetic org/bukkit/event/entity/EntityDamageEvent/setDamage(I)V
--
--public+synthetic org/bukkit/event/entity/EntityRegainHealthEvent/getAmount()I
--public+synthetic org/bukkit/event/entity/EntityRegainHealthEvent/setAmount(I)V
--
--public+synthetic org/bukkit/event/vehicle/VehicleDamageEvent/getDamage()I
--public+synthetic org/bukkit/event/vehicle/VehicleDamageEvent/setDamage(I)V
--
--# CraftBukkit
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/CraftServer/getOnlinePlayers()[Lorg/bukkit/entity/Player;
--
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftArrow/getShooter()Lorg/bukkit/entity/LivingEntity;
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftArrow/setShooter(Lorg/bukkit/entity/LivingEntity;)V
--
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/damage(I)V
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/damage(ILorg/bukkit/entity/Entity;)V
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/getHealth()I
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/getMaxHealth()I
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/setHealth(I)V
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftEnderDragonPart/setMaxHealth(I)V
--
--
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftFireball/getShooter()Lorg/bukkit/entity/LivingEntity;
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftFireball/setShooter(Lorg/bukkit/entity/LivingEntity;)V
--
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftFish/getShooter()Lorg/bukkit/entity/LivingEntity;
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftFish/setShooter(Lorg/bukkit/entity/LivingEntity;)V
--
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/damage(I)V
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/damage(ILorg/bukkit/entity/Entity;)V
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/getHealth()I
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/getMaxHealth()I
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/setHealth(I)V
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/setMaxHealth(I)V
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/getLastDamage()I
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftLivingEntity/setLastDamage(I)V
--
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftMinecart/getDamage()I
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftMinecart/setDamage(I)V
--
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftProjectile/getShooter()Lorg/bukkit/entity/LivingEntity;
--public+synthetic org/bukkit/craftbukkit/v1_8_R3/entity/CraftProjectile/setShooter(Lorg/bukkit/entity/LivingEntity;)V
-diff --git a/deprecation-mappings.csrg b/deprecation-mappings.csrg
-deleted file mode 100644
-index 48bc504954dfc5763cae9069aa8cc8f70453e5b0..0000000000000000000000000000000000000000
---- a/deprecation-mappings.csrg
-+++ /dev/null
-@@ -1,27 +0,0 @@
--org/bukkit/Bukkit _INVALID_getOnlinePlayers ()[Lorg/bukkit/entity/Player; getOnlinePlayers
--org/bukkit/Server _INVALID_getOnlinePlayers ()[Lorg/bukkit/entity/Player; getOnlinePlayers
--
--org/bukkit/entity/Damageable _INVALID_damage (I)V damage
--org/bukkit/entity/Damageable _INVALID_damage (ILorg/bukkit/entity/Entity;)V damage
--org/bukkit/entity/Damageable _INVALID_getHealth ()I getHealth
--org/bukkit/entity/Damageable _INVALID_getMaxHealth ()I getMaxHealth
--org/bukkit/entity/Damageable _INVALID_setHealth (I)V setHealth
--org/bukkit/entity/Damageable _INVALID_setMaxHealth (I)V setMaxHealth
--
--org/bukkit/entity/LivingEntity _INVALID_getLastDamage ()I getLastDamage
--org/bukkit/entity/LivingEntity _INVALID_setLastDamage (I)V setLastDamage
--
--org/bukkit/entity/Minecart _INVALID_getDamage ()I getDamage
--org/bukkit/entity/Minecart _INVALID_setDamage (I)V setDamage
--
--org/bukkit/entity/Projectile _INVALID_getShooter ()Lorg/bukkit/entity/LivingEntity; getShooter
--org/bukkit/entity/Projectile _INVALID_setShooter (Lorg/bukkit/entity/LivingEntity;)V setShooter
--
--org/bukkit/event/entity/EntityDamageEvent _INVALID_getDamage ()I getDamage
--org/bukkit/event/entity/EntityDamageEvent _INVALID_setDamage (I)V setDamage
--
--org/bukkit/event/entity/EntityRegainHealthEvent _INVALID_getAmount ()I getAmount
--org/bukkit/event/entity/EntityRegainHealthEvent _INVALID_setAmount (I)V setAmount
--
--org/bukkit/event/vehicle/VehicleDamageEvent _INVALID_getDamage ()I getDamage
--org/bukkit/event/vehicle/VehicleDamageEvent _INVALID_setDamage (I)V setDamage
 diff --git a/pom.xml b/pom.xml
 deleted file mode 100644
 index 644305e68a20f43286c917b15e04a43f05dce254..0000000000000000000000000000000000000000
