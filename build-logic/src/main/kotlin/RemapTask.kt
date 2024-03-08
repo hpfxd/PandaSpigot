@@ -3,6 +3,7 @@ import net.md_5.specialsource.Jar
 import net.md_5.specialsource.JarMapping
 import net.md_5.specialsource.JarRemapper
 import net.md_5.specialsource.RemapperProcessor
+import net.md_5.specialsource.provider.JarProvider
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
@@ -92,6 +93,7 @@ abstract class RemapTask : DefaultTask() {
 
         val jarMap = JarRemapper(null, mapping, accessMapper)
         Jar.init(inJarFile.asFile.get()).use { jar ->
+            mapping.setFallbackInheritanceProvider(JarProvider(jar))
             jarMap.remapJar(jar, outJarFile.get().asFile)
         }
     }
