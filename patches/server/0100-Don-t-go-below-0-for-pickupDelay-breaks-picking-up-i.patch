@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Wed, 19 Apr 2023 21:30:30 +0200
+Subject: [PATCH] Don't go below 0 for pickupDelay, breaks picking up items by
+ Aikar
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
+index 1f8b1c726ef7343ee7feb1e4ea4c1ef8cc453723..6440d5efc6c1e6181b8c518160cf580c94931a12 100644
+--- a/src/main/java/net/minecraft/server/EntityItem.java
++++ b/src/main/java/net/minecraft/server/EntityItem.java
+@@ -62,6 +62,7 @@ public class EntityItem extends Entity {
+             // CraftBukkit start - Use wall time for pickup and despawn timers
+             int elapsedTicks = MinecraftServer.currentTick - this.lastTick;
+             if (this.pickupDelay != 32767) this.pickupDelay -= elapsedTicks;
++            this.pickupDelay = Math.max(0, this.pickupDelay); // PandaSpigot - don't go below 0
+             if (this.age != -32768) this.age += elapsedTicks;
+             this.lastTick = MinecraftServer.currentTick;
+             // CraftBukkit end
+@@ -127,6 +128,7 @@ public class EntityItem extends Entity {
+         // CraftBukkit start - Use wall time for pickup and despawn timers
+         int elapsedTicks = MinecraftServer.currentTick - this.lastTick;
+         if (this.pickupDelay != 32767) this.pickupDelay -= elapsedTicks;
++        this.pickupDelay = Math.max(0, this.pickupDelay); // PandaSpigot - don't go below 0
+         if (this.age != -32768) this.age += elapsedTicks;
+         this.lastTick = MinecraftServer.currentTick;
+         // CraftBukkit end

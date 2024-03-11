@@ -1,0 +1,397 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Sun, 23 Apr 2023 12:54:53 +0200
+Subject: [PATCH] Use ASM for event executors.
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 22a5fe9c59d1b2a8283e1ebb503c77b2be892fb5..7bc6a7c5daf7f63aca77935a8634b2d2f64bd5e6 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -9,6 +9,8 @@ java {
+ }
+ 
+ dependencies {
++    implementation("org.ow2.asm:asm:9.5") // PandaSpigot
++    implementation("org.ow2.asm:asm-commons:9.5") // PandaSpigot
+     api("commons-lang:commons-lang:2.6")
+     api("org.avaje:ebean:2.8.1")
+     api("com.googlecode.json-simple:json-simple:1.1.1")
+diff --git a/src/main/java/com/destroystokyo/paper/event/executor/ASMEventExecutorGenerator.java b/src/main/java/com/destroystokyo/paper/event/executor/ASMEventExecutorGenerator.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..72f3da6ecc3af06a93ebb1021f33dfdcc828ee0f
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/event/executor/ASMEventExecutorGenerator.java
+@@ -0,0 +1,42 @@
++package com.destroystokyo.paper.event.executor;
++import java.lang.reflect.Method;
++import java.util.concurrent.atomic.AtomicInteger;
++
++import org.bukkit.plugin.EventExecutor;
++import org.objectweb.asm.ClassWriter;
++import org.objectweb.asm.Type;
++import org.objectweb.asm.commons.GeneratorAdapter;
++
++import static org.objectweb.asm.Opcodes.*;
++public class ASMEventExecutorGenerator {
++    public static byte[] generateEventExecutor(Method m, String name) {
++        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
++        writer.visit(V1_8, ACC_PUBLIC, name.replace('.', '/'), null, Type.getInternalName(Object.class), new String[] {Type.getInternalName(EventExecutor.class)});
++        // Generate constructor
++        GeneratorAdapter methodGenerator = new GeneratorAdapter(writer.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null), ACC_PUBLIC, "<init>", "()V");
++        methodGenerator.loadThis();
++        methodGenerator.visitMethodInsn(INVOKESPECIAL, Type.getInternalName(Object.class), "<init>", "()V", false); // Invoke the super class (Object) constructor
++        methodGenerator.returnValue();
++        methodGenerator.endMethod();
++        // Generate the execute method
++        methodGenerator = new GeneratorAdapter(writer.visitMethod(ACC_PUBLIC, "execute", "(Lorg/bukkit/event/Listener;Lorg/bukkit/event/Event;)V", null, null), ACC_PUBLIC, "execute", "(Lorg/bukkit/event/Listener;Lorg/bukkit/event/Listener;)V");;
++        methodGenerator.loadArg(0);
++        methodGenerator.checkCast(Type.getType(m.getDeclaringClass()));
++        methodGenerator.loadArg(1);
++        methodGenerator.checkCast(Type.getType(m.getParameterTypes()[0]));
++        methodGenerator.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(m.getDeclaringClass()), m.getName(), Type.getMethodDescriptor(m), m.getDeclaringClass().isInterface());
++        if (m.getReturnType() != void.class) {
++            methodGenerator.pop();
++        }
++        methodGenerator.returnValue();
++        methodGenerator.endMethod();
++        writer.visitEnd();
++        return writer.toByteArray();
++    }
++
++    public static AtomicInteger NEXT_ID = new AtomicInteger(1);
++    public static String generateName() {
++        int id = NEXT_ID.getAndIncrement();
++        return "com.destroystokyo.paper.event.executor.asm.generated.GeneratedEventExecutor" + id;
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/event/executor/MethodHandleEventExecutor.java b/src/main/java/com/destroystokyo/paper/event/executor/MethodHandleEventExecutor.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c11a7685cc9e0fc04ffa00827b536d93859ebb10
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/event/executor/MethodHandleEventExecutor.java
+@@ -0,0 +1,40 @@
++package com.destroystokyo.paper.event.executor;
++
++import org.bukkit.event.Event;
++import org.bukkit.event.EventException;
++import org.bukkit.event.Listener;
++import org.bukkit.plugin.EventExecutor;
++
++import java.lang.invoke.MethodHandle;
++import java.lang.invoke.MethodHandles;
++import java.lang.reflect.Method;
++
++public class MethodHandleEventExecutor implements EventExecutor {
++    private final Class<? extends Event> eventClass;
++    private final MethodHandle handle;
++
++    public MethodHandleEventExecutor(Class<? extends Event> eventClass, MethodHandle handle) {
++        this.eventClass = eventClass;
++        this.handle = handle;
++    }
++
++    public MethodHandleEventExecutor(Class<? extends Event> eventClass, Method m) {
++        this.eventClass = eventClass;
++        try {
++            m.setAccessible(true);
++            this.handle = MethodHandles.lookup().unreflect(m);
++        } catch (IllegalAccessException e) {
++            throw new AssertionError("Unable to set accessible", e);
++        }
++    }
++
++    @Override
++    public void execute(Listener listener, Event event) throws EventException {
++        if (!eventClass.isInstance(event)) return;
++        try {
++            handle.invoke(listener, event);
++        } catch (Throwable t) {
++            throw new EventException(t);
++        }
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/event/executor/StaticMethodHandleEventExecutor.java b/src/main/java/com/destroystokyo/paper/event/executor/StaticMethodHandleEventExecutor.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..f75820330e9c7b29ddae56e0fc35c9be21c133c0
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/event/executor/StaticMethodHandleEventExecutor.java
+@@ -0,0 +1,38 @@
++package com.destroystokyo.paper.event.executor;
++
++import com.google.common.base.Preconditions;
++import org.bukkit.event.Event;
++import org.bukkit.event.EventException;
++import org.bukkit.event.Listener;
++import org.bukkit.plugin.EventExecutor;
++
++import java.lang.invoke.MethodHandle;
++import java.lang.invoke.MethodHandles;
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++
++public class StaticMethodHandleEventExecutor implements EventExecutor {
++    private final Class<? extends Event> eventClass;
++    private final MethodHandle handle;
++
++    public StaticMethodHandleEventExecutor(Class<? extends Event> eventClass, Method m) {
++        Preconditions.checkArgument(Modifier.isStatic(m.getModifiers()), "Not a static method: %s", m);
++        this.eventClass = eventClass;
++        try {
++            m.setAccessible(true);
++            this.handle = MethodHandles.lookup().unreflect(m);
++        } catch (IllegalAccessException e) {
++            throw new AssertionError("Unable to set accessible", e);
++        }
++    }
++
++    @Override
++    public void execute(Listener listener, Event event) throws EventException {
++        if (!eventClass.isInstance(event)) return;
++        try {
++            handle.invoke(event);
++        } catch (Throwable t) {
++            throw new EventException(t);
++        }
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/event/executor/asm/ASMEventExecutorGenerator.java b/src/main/java/com/destroystokyo/paper/event/executor/asm/ASMEventExecutorGenerator.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b8e92337df834eadd057a5fc40fcbe47f602ae9
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/event/executor/asm/ASMEventExecutorGenerator.java
+@@ -0,0 +1,47 @@
++package com.destroystokyo.paper.event.executor.asm;
++
++import org.bukkit.plugin.EventExecutor;
++import org.objectweb.asm.ClassWriter;
++import org.objectweb.asm.Type;
++import org.objectweb.asm.commons.GeneratorAdapter;
++
++import java.lang.reflect.Method;
++import java.util.concurrent.atomic.AtomicInteger;
++
++import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
++import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
++import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
++import static org.objectweb.asm.Opcodes.V1_8;
++
++public class ASMEventExecutorGenerator {
++    public static byte[] generateEventExecutor(Method m, String name) {
++        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
++        writer.visit(V1_8, ACC_PUBLIC, name.replace('.', '/'), null, Type.getInternalName(Object.class), new String[] {Type.getInternalName(EventExecutor.class)});
++        // Generate constructor
++        GeneratorAdapter methodGenerator = new GeneratorAdapter(writer.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null), ACC_PUBLIC, "<init>", "()V");
++        methodGenerator.loadThis();
++        methodGenerator.visitMethodInsn(INVOKESPECIAL, Type.getInternalName(Object.class), "<init>", "()V", false); // Invoke the super class (Object) constructor
++        methodGenerator.returnValue();
++        methodGenerator.endMethod();
++        // Generate the execute method
++        methodGenerator = new GeneratorAdapter(writer.visitMethod(ACC_PUBLIC, "execute", "(Lorg/bukkit/event/Listener;Lorg/bukkit/event/Event;)V", null, null), ACC_PUBLIC, "execute", "(Lorg/bukkit/event/Listener;Lorg/bukkit/event/Listener;)V");;
++        methodGenerator.loadArg(0);
++        methodGenerator.checkCast(Type.getType(m.getDeclaringClass()));
++        methodGenerator.loadArg(1);
++        methodGenerator.checkCast(Type.getType(m.getParameterTypes()[0]));
++        methodGenerator.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(m.getDeclaringClass()), m.getName(), Type.getMethodDescriptor(m), m.getDeclaringClass().isInterface());
++        if (m.getReturnType() != void.class) {
++            methodGenerator.pop();
++        }
++        methodGenerator.returnValue();
++        methodGenerator.endMethod();
++        writer.visitEnd();
++        return writer.toByteArray();
++    }
++
++    public static AtomicInteger NEXT_ID = new AtomicInteger(1);
++    public static String generateName() {
++        int id = NEXT_ID.getAndIncrement();
++        return "com.destroystokyo.paper.event.executor.asm.generated.GeneratedEventExecutor" + id;
++    }
++}
+diff --git a/src/main/java/com/destroystokyo/paper/event/executor/asm/ClassDefiner.java b/src/main/java/com/destroystokyo/paper/event/executor/asm/ClassDefiner.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..cc0f17f30c7809a13968a10c7252f78b5e079dcb
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/event/executor/asm/ClassDefiner.java
+@@ -0,0 +1,30 @@
++package com.destroystokyo.paper.event.executor.asm;
++
++public interface ClassDefiner {
++
++    /**
++     * Returns if the defined classes can bypass access checks
++     *
++     * @return if classes bypass access checks
++     */
++    default boolean isBypassAccessChecks() {
++        return false;
++    }
++
++    /**
++     * Define a class
++     *
++     * @param parentLoader the parent classloader
++     * @param name         the name of the class
++     * @param data         the class data to load
++     * @return the defined class
++     * @throws ClassFormatError     if the class data is invalid
++     * @throws NullPointerException if any of the arguments are null
++     */
++    Class<?> defineClass(ClassLoader parentLoader, String name, byte[] data);
++
++    static ClassDefiner getInstance() {
++        return SafeClassDefiner.INSTANCE;
++    }
++
++}
+diff --git a/src/main/java/com/destroystokyo/paper/event/executor/asm/SafeClassDefiner.java b/src/main/java/com/destroystokyo/paper/event/executor/asm/SafeClassDefiner.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..4520acbfb5aaa58baa0001e1cef096ec9412b1c3
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/event/executor/asm/SafeClassDefiner.java
+@@ -0,0 +1,60 @@
++package com.destroystokyo.paper.event.executor.asm;
++
++import com.google.common.base.Preconditions;
++
++import java.util.concurrent.ConcurrentHashMap;
++import java.util.concurrent.ConcurrentMap;
++
++public class SafeClassDefiner implements ClassDefiner {
++    static final SafeClassDefiner INSTANCE = new SafeClassDefiner();
++
++    private SafeClassDefiner() {}
++
++    private final ConcurrentMap<ClassLoader, GeneratedClassLoader> loaders = new ConcurrentHashMap<>();
++
++    @Override
++    public Class<?> defineClass(ClassLoader parentLoader, String name, byte[] data) {
++        GeneratedClassLoader loader = loaders.computeIfAbsent(parentLoader, GeneratedClassLoader::new);
++        synchronized (loader.getClassLoadingLock(name)) {
++            Preconditions.checkState(!loader.hasClass(name), "%s already defined", name);
++            Class<?> c = loader.define(name, data);
++            assert c.getName().equals(name);
++            return c;
++        }
++    }
++
++    private static class GeneratedClassLoader extends ClassLoader {
++        static {
++            ClassLoader.registerAsParallelCapable();
++        }
++
++        protected GeneratedClassLoader(ClassLoader parent) {
++            super(parent);
++        }
++
++        private Class<?> define(String name, byte[] data) {
++            synchronized (getClassLoadingLock(name)) {
++                assert !hasClass(name);
++                Class<?> c = defineClass(name, data, 0, data.length);
++                resolveClass(c);
++                return c;
++            }
++        }
++
++        @Override
++        public Object getClassLoadingLock(String name) {
++            return super.getClassLoadingLock(name);
++        }
++
++        public boolean hasClass(String name) {
++            synchronized (getClassLoadingLock(name)) {
++                try {
++                    Class.forName(name);
++                    return true;
++                } catch (ClassNotFoundException e) {
++                    return false;
++                }
++            }
++        }
++    }
++}
+diff --git a/src/main/java/org/bukkit/plugin/EventExecutor.java b/src/main/java/org/bukkit/plugin/EventExecutor.java
+index 3b2c99ea7b30c8c4c03ffaca91c83d2e63338396..62be2db44f11ad03b58071e8b88c2105607f184b 100644
+--- a/src/main/java/org/bukkit/plugin/EventExecutor.java
++++ b/src/main/java/org/bukkit/plugin/EventExecutor.java
+@@ -4,9 +4,54 @@ import org.bukkit.event.Event;
+ import org.bukkit.event.EventException;
+ import org.bukkit.event.Listener;
+ 
++// PandaSpigot start
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++import com.destroystokyo.paper.event.executor.MethodHandleEventExecutor;
++import com.destroystokyo.paper.event.executor.StaticMethodHandleEventExecutor;
++import com.destroystokyo.paper.event.executor.asm.ASMEventExecutorGenerator;
++import com.destroystokyo.paper.event.executor.asm.ClassDefiner;
++import com.google.common.base.Preconditions;
++// PandaSpigot end
++
+ /**
+  * Interface which defines the class for event call backs to plugins
+  */
+ public interface EventExecutor {
+     public void execute(Listener listener, Event event) throws EventException;
++
++    // PandaSpigot start
++    public static EventExecutor create(Method m, Class<? extends Event> eventClass) {
++        Preconditions.checkNotNull(m, "Null method");
++        Preconditions.checkArgument(m.getParameterCount() != 0, "Incorrect number of arguments %s", m.getParameterCount());
++        Preconditions.checkArgument(m.getParameterTypes()[0] == eventClass, "First parameter %s doesn't match event class %s", m.getParameterTypes()[0], eventClass);
++        ClassDefiner definer = ClassDefiner.getInstance();
++        if (Modifier.isStatic(m.getModifiers())) {
++            return new StaticMethodHandleEventExecutor(eventClass, m);
++        } if (definer.isBypassAccessChecks() || Modifier.isPublic(m.getDeclaringClass().getModifiers()) && Modifier.isPublic(m.getModifiers())) {
++            String name = ASMEventExecutorGenerator.generateName();
++            byte[] classData = ASMEventExecutorGenerator.generateEventExecutor(m, name);
++            Class<? extends EventExecutor> c = definer.defineClass(m.getDeclaringClass().getClassLoader(), name, classData).asSubclass(EventExecutor.class);
++            try {
++                EventExecutor asmExecutor = c.newInstance();
++                // Define a wrapper to conform to bukkit stupidity (passing in events that don't match and wrapper exception)
++                return new EventExecutor() {
++                    @Override
++                    public void execute(Listener listener, Event event) throws EventException {
++                        if (!eventClass.isInstance(event)) return;
++                        try {
++                            asmExecutor.execute(listener, event);
++                        } catch (Exception e) {
++                            throw new EventException(e);
++                        }
++                    }
++                };
++            } catch (InstantiationException | IllegalAccessException e) {
++                throw new AssertionError("Unable to initialize generated event executor", e);
++            }
++        } else {
++            return new MethodHandleEventExecutor(eventClass, m);
++        }
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
+index bc6b9d12fe2e008fbac6c7fcc30495e5ff3591c9..c09a6fe397885813f13e96fbaa91b2e68236bc60 100644
+--- a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
++++ b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
+@@ -291,20 +291,7 @@ public final class JavaPluginLoader implements PluginLoader {
+                 }
+             }
+ 
+-            EventExecutor executor = new co.aikar.timings.TimedEventExecutor(new EventExecutor() { // Spigot
+-                public void execute(Listener listener, Event event) throws EventException {
+-                    try {
+-                        if (!eventClass.isAssignableFrom(event.getClass())) {
+-                            return;
+-                        }
+-                        method.invoke(listener, event);
+-                    } catch (InvocationTargetException ex) {
+-                        throw new EventException(ex.getCause());
+-                    } catch (Throwable t) {
+-                        throw new EventException(t);
+-                    }
+-                }
+-            }, plugin, method, eventClass); // Spigot
++            EventExecutor executor = new co.aikar.timings.TimedEventExecutor(EventExecutor.create(method, eventClass), plugin, method, eventClass); // Spigot // PandaSpigot - Use factory method `EventExecutor.create()`
+             if (false) { // Spigot - RL handles useTimings check now
+                 eventSet.add(new TimedRegisteredListener(listener, executor, eh.priority(), plugin, eh.ignoreCancelled()));
+             } else {

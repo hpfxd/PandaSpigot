@@ -20,10 +20,10 @@ index 3971e7dfdb9b05f44c8e0735d88e95da72be9f22..9c22cf970288d24a431df836409fc802
  
              this.q = true;
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index ddbc724da605b26652371f2c51ab2609a7c7ef1e..9b939a9e9f0c1d15588c1ebce8ba6e67be212d25 100644
+index b25ae7b232ad4120d84595d4d1cbf881071abe4c..27eca8851a504a22a99618a23e8817c7b4fac081 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -527,8 +527,11 @@ public abstract class World implements IBlockAccess {
+@@ -600,8 +600,11 @@ public abstract class World implements IBlockAccess {
          }
  
          if (!this.worldProvider.o()) {
@@ -37,7 +37,7 @@ index ddbc724da605b26652371f2c51ab2609a7c7ef1e..9b939a9e9f0c1d15588c1ebce8ba6e67
              }
          }
  
-@@ -2680,9 +2683,15 @@ public abstract class World implements IBlockAccess {
+@@ -2756,9 +2759,15 @@ public abstract class World implements IBlockAccess {
       * PaperSpigot - Asynchronous lighting updates
       */
      public boolean updateLight(final EnumSkyBlock enumskyblock, final BlockPosition position) {

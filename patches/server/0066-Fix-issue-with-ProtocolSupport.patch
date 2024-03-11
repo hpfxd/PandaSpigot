@@ -13,23 +13,44 @@ The arrays in encryption packets are limited to 256 bytes.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java b/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c45655f5232934db455aaa5d2d3ff721a5733051
+index 0000000000000000000000000000000000000000..1a36e0c9869ff4d196ab2910cf281146bef5985a
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/CompatHacks.java
-@@ -0,0 +1,11 @@
+@@ -0,0 +1,32 @@
 +package com.hpfxd.pandaspigot;
 +
 +import org.bukkit.Bukkit;
 +
 +public class CompatHacks {
-+    private CompatHacks() {}
-+    public static boolean hasProtocolSupport() {
-+        return Bukkit.getPluginManager().isPluginEnabled("ProtocolSupport");
++
++    private static CompatHacks instance;
++    private boolean isChecked = false, isLoaded = false;
++
++    public CompatHacks() {
++        instance = this;
 +    }
++
++    public boolean hasProtocolSupport() {
++        return isChecked ? isLoaded : processCheck();
++    }
++
++
++    private boolean processCheck() {
++        if (!isChecked) {
++            isChecked = true;
++            isLoaded = Bukkit.getPluginManager().isPluginEnabled("ProtocolSupport");
++        }
++        return isLoaded;
++    }
++
++    public static CompatHacks getInstance() {
++        return instance == null ? new CompatHacks() : instance;
++    }
++
 +}
 +
 diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
-index 6c46349fb24856bb2b0f94d84536f64d96daeece..ad33280bb8baab581a4ac17b5fe78022134c676b 100644
+index 6c46349fb24856bb2b0f94d84536f64d96daeece..2f1b500d4dd797475363cfc1e15b37aa4120d032 100644
 --- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
 +++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
 @@ -31,7 +31,21 @@ public class PacketDataSerializer extends ByteBuf {
@@ -49,7 +70,7 @@ index 6c46349fb24856bb2b0f94d84536f64d96daeece..ad33280bb8baab581a4ac17b5fe78022
 +         * it's still much better than the old system of having no limit,
 +         * which would leave the server vulnerable to packets up to 2 GIGABYTES in size.
 +         */
-+        this.allowLargePackets = com.hpfxd.pandaspigot.CompatHacks.hasProtocolSupport();
++        this.allowLargePackets = com.hpfxd.pandaspigot.CompatHacks.getInstance().hasProtocolSupport();
 +    // PandaSpigot end
          this.a = bytebuf;
      }
