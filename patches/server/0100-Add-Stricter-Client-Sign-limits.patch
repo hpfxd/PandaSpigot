@@ -1,0 +1,55 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Wed, 27 Feb 2019 22:18:40 -0500
+Subject: [PATCH] Add Stricter Client Sign limits
+
+modified clients can send abnormally large data from the client
+to the server and it would get stored on the sign as sent.
+
+the client can barely render around 16 characters as-is, but formatting
+codes can get it to be more than 16 actual length.
+
+Set a limit of 80 which should give an average of 16 characters 2
+sets of legacy formatting codes which should be plenty for all uses.
+
+This does not strip any existing data from the NBT as plugins
+may use this for storing data out of the rendered area.
+
+it only impacts data sent to and from client to extend mojangs limit.
+
+Set -DPanda.maxSignLength=XX to change limit or -1 to disable
+
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index f5ef763b8783a6a275b5d4311d368bed25e3b878..e21ce6f8434a7eba8d1137f46e35493b4863736d 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -1922,7 +1922,16 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+             String[] lines = new String[4];
+ 
+             for (int i = 0; i < aichatbasecomponent.length; ++i) {
+-                lines[i] = EnumChatFormat.a(aichatbasecomponent[i].c());
++                // PandaSpigot start - cap line length - modified clients can send longer data than normal
++                String line = aichatbasecomponent[i].c();
++                if (line.length() > TileEntitySign.MAX_SIGN_LINE_LENGTH && TileEntitySign.MAX_SIGN_LINE_LENGTH > 0) {
++                    int offset = line.codePoints().limit(TileEntitySign.MAX_SIGN_LINE_LENGTH).map(Character::charCount).sum();
++                    if (line.length() > offset) {
++                        line = line.substring(0, offset);
++                    }
++                }
++                lines[i] = EnumChatFormat.a(line);
++                // PandaSpigot end
+             }
+             SignChangeEvent event = new SignChangeEvent((org.bukkit.craftbukkit.block.CraftBlock) player.getWorld().getBlockAt(x, y, z), this.server.getPlayer(this.player), lines);
+             this.server.getPluginManager().callEvent(event);
+diff --git a/src/main/java/net/minecraft/server/TileEntitySign.java b/src/main/java/net/minecraft/server/TileEntitySign.java
+index e927fd237d4ac6a0752045d65f27ee947b7b0636..21423e552570adeb9601b760c9b7b107670e30b8 100644
+--- a/src/main/java/net/minecraft/server/TileEntitySign.java
++++ b/src/main/java/net/minecraft/server/TileEntitySign.java
+@@ -9,6 +9,7 @@ public class TileEntitySign extends TileEntity {
+     public boolean isEditable = true;
+     private EntityHuman h;
+     private final CommandObjectiveExecutor i = new CommandObjectiveExecutor();
++    public static final int MAX_SIGN_LINE_LENGTH = Integer.getInteger("Panda.maxSignLength", 80); // PandaSpigot
+ 
+     public TileEntitySign() {}
+ 
