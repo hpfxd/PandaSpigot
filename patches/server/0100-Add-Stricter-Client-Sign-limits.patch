@@ -17,7 +17,7 @@ may use this for storing data out of the rendered area.
 
 it only impacts data sent to and from client to extend mojangs limit.
 
-Set -DPaper.maxSignLength=XX to change limit or -1 to disable
+Set -DPanda.maxSignLength=XX to change limit or -1 to disable
 
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
 index f5ef763b8783a6a275b5d4311d368bed25e3b878..e21ce6f8434a7eba8d1137f46e35493b4863736d 100644
@@ -42,14 +42,14 @@ index f5ef763b8783a6a275b5d4311d368bed25e3b878..e21ce6f8434a7eba8d1137f46e35493b
              SignChangeEvent event = new SignChangeEvent((org.bukkit.craftbukkit.block.CraftBlock) player.getWorld().getBlockAt(x, y, z), this.server.getPlayer(this.player), lines);
              this.server.getPluginManager().callEvent(event);
 diff --git a/src/main/java/net/minecraft/server/TileEntitySign.java b/src/main/java/net/minecraft/server/TileEntitySign.java
-index e927fd237d4ac6a0752045d65f27ee947b7b0636..2e378df1cc1049bdeabb005cab45312b72846e28 100644
+index e927fd237d4ac6a0752045d65f27ee947b7b0636..21423e552570adeb9601b760c9b7b107670e30b8 100644
 --- a/src/main/java/net/minecraft/server/TileEntitySign.java
 +++ b/src/main/java/net/minecraft/server/TileEntitySign.java
 @@ -9,6 +9,7 @@ public class TileEntitySign extends TileEntity {
      public boolean isEditable = true;
      private EntityHuman h;
      private final CommandObjectiveExecutor i = new CommandObjectiveExecutor();
-+    public static final int MAX_SIGN_LINE_LENGTH = Integer.getInteger("Paper.maxSignLength", 80); // PandaSpigot
++    public static final int MAX_SIGN_LINE_LENGTH = Integer.getInteger("Panda.maxSignLength", 80); // PandaSpigot
  
      public TileEntitySign() {}
  
