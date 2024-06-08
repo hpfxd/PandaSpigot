@@ -6,13 +6,13 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..d150820056e4b3ce6dc6585eca94565bd601524f
+index 0000000000000000000000000000000000000000..18ce1bb0f70b80f2ef3b6c48c84b275064ce464a
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,132 @@
 +plugins {
 +    id("pandaspigot.conventions")
-+    id("com.github.johnrengelman.shadow") version "7.1.2"
++    id("com.github.johnrengelman.shadow") version "7.1.2" // TODO: 8.0.0 add support gradle 8.0, however, paperclip broken with newer versions
 +}
 +
 +val minecraftVersion = "1_8_R3"
