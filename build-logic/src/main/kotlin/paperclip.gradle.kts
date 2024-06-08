@@ -51,7 +51,7 @@ tasks {
             properties.setProperty("originalHash", vanillaHash.toHex())
             properties.setProperty("patchedHash", patchedHash.toHex())
             properties.setProperty("patch", "pandaspigot.patch")
-            properties.setProperty("sourceUrl", "https://launcher.mojang.com/v1/objects/${vanillaSha1.toHex().toLowerCase()}/server.jar")
+            properties.setProperty("sourceUrl", "https://launcher.mojang.com/v1/objects/${vanillaSha1.toHex().lowercase()}/server.jar")
             properties.setProperty("version", "1.8.8")
 
             logger.info("Writing properties file")
