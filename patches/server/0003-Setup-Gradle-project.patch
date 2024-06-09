@@ -6,13 +6,13 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..18ce1bb0f70b80f2ef3b6c48c84b275064ce464a
+index 0000000000000000000000000000000000000000..f86f1a51613f104fa69200100785d8abec3744d4
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,132 @@
 +plugins {
 +    id("pandaspigot.conventions")
-+    id("com.github.johnrengelman.shadow") version "7.1.2" // TODO: 8.0.0 add support gradle 8.0, however, paperclip broken with newer versions
++    id("com.github.johnrengelman.shadow") version "7.1.2"
 +}
 +
 +val minecraftVersion = "1_8_R3"
@@ -52,8 +52,8 @@ index 0000000000000000000000000000000000000000..18ce1bb0f70b80f2ef3b6c48c84b2750
 +    group = "pandaspigot"
 +    standardInput = System.`in`
 +    workingDir = rootProject.layout.projectDirectory.dir(
-+        providers.gradleProperty("runWorkDir").getOrElse("run")
-+    ).asFile
++        providers.gradleProperty("runWorkDir").orElse("run")
++    ).get().asFile
 +
 +    if (project.hasProperty("disableWatchdog")) {
 +        systemProperty("disable.watchdog", true)
