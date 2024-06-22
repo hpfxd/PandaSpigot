@@ -5,7 +5,7 @@ Subject: [PATCH] Optimise removeQueue
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 77068cd022e677fbf284df3d8aff95325089ce4f..0a4acf1e7b78eaeeca2606dbc46cdc5d703b8fad 100644
+index f147724e99c3ca8bd72bfaf3da6c92aefb5cd4de..22eda596ea5b06f3346814e9d8cecb15f828f58d 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -34,7 +34,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
