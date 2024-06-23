@@ -5,13 +5,13 @@ Subject: [PATCH] Add config option for logging player ip addresses
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
-index 8d071fdd1ae8aaa97003f0b56d7e206e6dd4b44f..ae3cdaca275b1a50c5c37c3dd0021c4bd579d373 100644
+index fcf7738c75f21ad23693d903b476c65b4a207a84..1d8e4d1050ebafef8784920481621965fd5c212f 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
-@@ -121,4 +121,8 @@ public class PandaSpigotConfig {
+@@ -119,4 +119,8 @@ public class PandaSpigotConfig {
+         "https://docs.papermc.io/paper/reference/paper-global-configuration#packet-limiter\n" +
+         "(note that \"max-packet-rate\" is renamed to \"maxPacketRate\")")
      public PacketLimiterConfig packetLimiter = PacketLimiterConfig.createDefault();
- 
-     public boolean resolveSelectorsInBooks = true;
 +
 +    @Comment("Whether player IP addresses should be logged by the server. This does not impact\n" +
 +        "the ability of plugins to log the IP addresses of players.")
