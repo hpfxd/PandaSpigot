@@ -1,11 +1,9 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: uRyanxD <familiarodrigues123ro@gmail.com>
 Date: Sat, 22 Jun 2024 15:56:45 -0300
-Subject: [PATCH] Fix and optimize portal searches
+Subject: [PATCH] Improve portal search logic
 
 Co-authored-by: Poweruser <poweruser.rs@hotmail.com>
-
-We now define the 'search Radius' variable directly, and the search for portals now respects the Paper configuration, we also search for portals in the proximity before searching in a larger radius
 
 diff --git a/src/main/java/net/minecraft/server/PortalTravelAgent.java b/src/main/java/net/minecraft/server/PortalTravelAgent.java
 index 72f3735b196cbd7d420c6338eb7aba01b40c7804..fa0ad789e58255d3faa01deb5bc15d517790e69a 100644
