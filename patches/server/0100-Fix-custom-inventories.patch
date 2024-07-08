@@ -5,10 +5,21 @@ Subject: [PATCH] Fix custom inventories
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..dd434c8744f3f405f83e89fbcce8ef5e3fe7b0a2 100644
+index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..bf8106c54daaea12d101602c3dc45df53a986535 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-@@ -124,6 +124,7 @@ public class CraftContainer extends Container {
+@@ -100,6 +100,10 @@ public class CraftContainer extends Container {
+             return "minecraft:furnace";
+         case DISPENSER:
+             return "minecraft:dispenser";
++        // PandaSpigot start
++        case DROPPER:
++            return "minecraft:dropper";
++        // PandaSpigot end
+         case ENCHANTING:
+             return "minecraft:enchanting_table";
+         case BREWING:
+@@ -124,6 +128,7 @@ public class CraftContainer extends Container {
              setupChest(top, bottom);
              break;
          case DISPENSER:
@@ -16,7 +27,7 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..dd434c8744f3f405f83e89fbcce8ef5e
              setupDispenser(top, bottom);
              break;
          case FURNACE:
-@@ -139,6 +140,14 @@ public class CraftContainer extends Container {
+@@ -139,6 +144,14 @@ public class CraftContainer extends Container {
          case BREWING:
              setupBrewing(top, bottom);
              break;
@@ -31,7 +42,7 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..dd434c8744f3f405f83e89fbcce8ef5e
          case HOPPER:
              setupHopper(top, bottom);
              break;
-@@ -240,7 +249,10 @@ public class CraftContainer extends Container {
+@@ -240,7 +253,10 @@ public class CraftContainer extends Container {
  
      private void setupEnchanting(IInventory top, IInventory bottom) {
          // This code copied from ContainerEnchantTable
@@ -43,7 +54,7 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..dd434c8744f3f405f83e89fbcce8ef5e
  
          int row;
  
-@@ -277,6 +289,47 @@ public class CraftContainer extends Container {
+@@ -277,6 +293,47 @@ public class CraftContainer extends Container {
          // End copy from ContainerBrewingStand
      }
  
