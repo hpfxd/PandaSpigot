@@ -5,7 +5,7 @@ Subject: [PATCH] Fix custom inventories
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..63ff7cddd7fbf67a8cbd8b1bed5dc2be97b1a82a 100644
+index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..4639fb2ea4e87998cc9efc4fb17260c04891db66 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 @@ -139,6 +139,14 @@ public class CraftContainer extends Container {
@@ -23,7 +23,19 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..63ff7cddd7fbf67a8cbd8b1bed5dc2be
          case HOPPER:
              setupHopper(top, bottom);
              break;
-@@ -277,6 +285,47 @@ public class CraftContainer extends Container {
+@@ -240,7 +248,10 @@ public class CraftContainer extends Container {
+ 
+     private void setupEnchanting(IInventory top, IInventory bottom) {
+         // This code copied from ContainerEnchantTable
+-        this.a((new Slot(top, 0, 25, 47)));
++        // PandaSpigot - Fix enchantable table custom inventory
++        this.a(new Slot(top, 0, 15, 47));
++        this.a(new Slot(top, 1, 35, 47));
++        // PandaSpigot end
+ 
+         int row;
+ 
+@@ -277,6 +288,47 @@ public class CraftContainer extends Container {
          // End copy from ContainerBrewingStand
      }
  
