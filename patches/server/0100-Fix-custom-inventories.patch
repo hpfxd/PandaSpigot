@@ -5,7 +5,7 @@ Subject: [PATCH] Fix custom inventories
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..bf8106c54daaea12d101602c3dc45df53a986535 100644
+index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..71d7067109b23089990c2777e0497f8113be5ce4 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 @@ -100,6 +100,10 @@ public class CraftContainer extends Container {
@@ -19,7 +19,19 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..bf8106c54daaea12d101602c3dc45df5
          case ENCHANTING:
              return "minecraft:enchanting_table";
          case BREWING:
-@@ -124,6 +128,7 @@ public class CraftContainer extends Container {
+@@ -110,6 +114,11 @@ public class CraftContainer extends Container {
+             return "minecraft:anvil";
+         case HOPPER:
+             return "minecraft:hopper";
++        // PandaSpigot start
++        case CREATIVE:
++        case CRAFTING:
++            throw new IllegalArgumentException("Can't open a " + type + " inventory!");
++        // PandaSpigot end
+         default:
+             return "minecraft:chest";
+         }
+@@ -124,6 +133,7 @@ public class CraftContainer extends Container {
              setupChest(top, bottom);
              break;
          case DISPENSER:
@@ -27,7 +39,7 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..bf8106c54daaea12d101602c3dc45df5
              setupDispenser(top, bottom);
              break;
          case FURNACE:
-@@ -139,6 +144,14 @@ public class CraftContainer extends Container {
+@@ -139,6 +149,14 @@ public class CraftContainer extends Container {
          case BREWING:
              setupBrewing(top, bottom);
              break;
@@ -42,7 +54,7 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..bf8106c54daaea12d101602c3dc45df5
          case HOPPER:
              setupHopper(top, bottom);
              break;
-@@ -240,7 +253,10 @@ public class CraftContainer extends Container {
+@@ -240,7 +258,10 @@ public class CraftContainer extends Container {
  
      private void setupEnchanting(IInventory top, IInventory bottom) {
          // This code copied from ContainerEnchantTable
@@ -54,7 +66,7 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..bf8106c54daaea12d101602c3dc45df5
  
          int row;
  
-@@ -277,6 +293,47 @@ public class CraftContainer extends Container {
+@@ -277,6 +298,47 @@ public class CraftContainer extends Container {
          // End copy from ContainerBrewingStand
      }
  
