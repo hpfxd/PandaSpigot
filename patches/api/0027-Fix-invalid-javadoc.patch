@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: md_5 <git@md-5.net>
+Date: Thu, 11 Jul 2024 17:32:43 -0300
+Subject: [PATCH] Fix invalid javadoc
+
+Upstream commit: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/commits/87e2f4705fe9fcffd9ea810978ac7ec531f0fab9
+
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 01063d39fcc5d0d925810fd4a245d777ef6702d7..ec6187582a696f5705390eac92a04a36511c3a6c 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -1285,7 +1285,7 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+         }
+ 
+         /**
+-         * Gets all players hidden with {@link hidePlayer(org.bukkit.entity.Player)}.
++         * Gets all players hidden with {@link #hidePlayer(org.bukkit.entity.Player)}.
+          *
+          * @return a Set with all hidden players
+          */
