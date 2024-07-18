@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Wed, 27 Oct 2021 06:29:44 -0400
-Subject: [PATCH] Update to Netty 4.1.x
+Subject: [PATCH] Update to Netty 4.2.x
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index c751b21fcf9b6b30b6546179ca11c9f6319f3370..3e97931d3695e9b4e6aca80842832c65ad44bd06 100644
+index c751b21fcf9b6b30b6546179ca11c9f6319f3370..a9b2fe09ddc8ceef644f72d2c4868bc6b7df1e34 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -13,7 +13,7 @@ dependencies {
@@ -13,7 +13,7 @@ index c751b21fcf9b6b30b6546179ca11c9f6319f3370..3e97931d3695e9b4e6aca80842832c65
  
      // Minecraft libraries:
 -    implementation("com.mojang:netty:1.7.7")
-+    implementation("io.netty:netty-all:4.1.91.Final") // PandaSpigot - Update Netty to 4.1.x
++    implementation("io.netty:netty-all:4.2.0.Alpha2") // PandaSpigot - Update Netty to 4.2.x
      implementation("com.mojang:authlib:1.5.21")
      implementation("org.apache.logging.log4j:log4j-api:2.17.0")
      implementation("org.apache.logging.log4j:log4j-core:2.17.0")

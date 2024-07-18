@@ -5,7 +5,7 @@ Subject: [PATCH] PandaSpigot Configuration
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 3e97931d3695e9b4e6aca80842832c65ad44bd06..7c0bac5144853c7258bb65ddf6a0654ca5697269 100644
+index a9b2fe09ddc8ceef644f72d2c4868bc6b7df1e34..8c47d829b64c0362284eb8e2a791f6e986a5050c 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -12,6 +12,12 @@ repositories {
@@ -19,7 +19,7 @@ index 3e97931d3695e9b4e6aca80842832c65ad44bd06..7c0bac5144853c7258bb65ddf6a0654c
 +    // PandaSpigot end
 +
      // Minecraft libraries:
-     implementation("io.netty:netty-all:4.1.91.Final") // PandaSpigot - Update Netty to 4.1.x
+     implementation("io.netty:netty-all:4.2.0.Alpha2") // PandaSpigot - Update Netty to 4.2.x
      implementation("com.mojang:authlib:1.5.21")
 @@ -56,6 +62,13 @@ tasks {
          mergeServiceFiles()
