@@ -8,7 +8,7 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 23e41a4eb4def6e29c16aef12481eee6b90e1539..19eebeae07105c10adc3c1df8c1ea119350be766 100644
+index 0d883b69367d1fe674a4cccc226d1d08d7e05c36..46a76611bde6897d5b09b25bc7ca88e7deff7421 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -80,6 +80,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -52,7 +52,7 @@ index 23e41a4eb4def6e29c16aef12481eee6b90e1539..19eebeae07105c10adc3c1df8c1ea119
      }
 @@ -223,6 +255,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
-     private void dispatchPacket(Packet<?> packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) { this.a(packet, agenericfuturelistener); } // PandaSpigot - OBFHELPER
+     private void dispatchPacket(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) { this.a(packet, agenericfuturelistener); } // PandaSpigot - OBFHELPER
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
 +        // PandaSpigot start - add flush parameter
 +        this.writePacket(packet, agenericfuturelistener, Boolean.TRUE);
