@@ -8,7 +8,7 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 0d883b69367d1fe674a4cccc226d1d08d7e05c36..46a76611bde6897d5b09b25bc7ca88e7deff7421 100644
+index d4bf50c990f3af95225aba2e05269ab9dd2d96ff..e84611e59c7e365e312b51d888dafc75f4aacbbc 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -80,6 +80,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -57,7 +57,7 @@ index 0d883b69367d1fe674a4cccc226d1d08d7e05c36..46a76611bde6897d5b09b25bc7ca88e7
 +        // PandaSpigot start - add flush parameter
 +        this.writePacket(packet, agenericfuturelistener, Boolean.TRUE);
 +    }
-+    private void writePacket(Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener, Boolean flushConditional) {
++    private void writePacket(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener, Boolean flushConditional) {
 +        this.packetWrites.getAndIncrement(); // must be before using canFlush
 +        boolean effectiveFlush = flushConditional == null ? this.canFlush : flushConditional;
 +        final boolean flush = effectiveFlush || packet instanceof PacketPlayOutKeepAlive || packet instanceof PacketPlayOutKickDisconnect; // no delay for certain packets
