@@ -26,7 +26,7 @@ Also avoids spamming closed channel exception by rechecking closed state in disp
 and then catch exceptions and close if they fire.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..d4bf50c990f3af95225aba2e05269ab9dd2d96ff 100644
+index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..067793583980d102f8310f6197a52d2f126d15d4 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -110,14 +110,13 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..d4bf50c990f3af95225aba2e05269ab9
      }
 +    // PandaSpigot end
  
--    public void a(Packet packet, GenericFutureListener<? extends Future<? super Void>> genericfuturelistener, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
++    public void handle(Packet packet) {
++        this.a(packet, null, (GenericFutureListener<? extends Future<? super Void>>) null); // PandaSpigot
++    }
+     public void a(Packet packet, GenericFutureListener<? extends Future<? super Void>> genericfuturelistener, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
 -        if (this.g()) {
 -            this.m();
 -            this.a(packet, (GenericFutureListener[]) ArrayUtils.add(agenericfuturelistener, 0, genericfuturelistener));
-+    public void handle(Packet<?> packet) {
-+        this.a(packet, null, (GenericFutureListener<? extends Future<? super Void>>) null); // PandaSpigot
-+    }
-+    public void a(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> genericfuturelistener, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
 +        // PandaSpigot start - handle oversized packets better
 +        GenericFutureListener<? extends Future<? super Void>>[] listeners = null;
 +        if (genericfuturelistener != null || agenericfuturelistener != null) { // cannot call ArrayUtils.add with both null arguments
