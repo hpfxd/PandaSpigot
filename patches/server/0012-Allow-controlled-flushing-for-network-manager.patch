@@ -8,10 +8,10 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 067793583980d102f8310f6197a52d2f126d15d4..da76acafb5ffaea16f6a4dc28122c82f41bed318 100644
+index 968d9074fde756ba04aa832c06ad68d2ba8d256d..f067e2b80f328b13712d6a64db2aec4afa6c8970 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -80,6 +80,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -81,6 +81,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      public EnumProtocol protocol;
      // PandaSpigot end
  
@@ -50,7 +50,7 @@ index 067793583980d102f8310f6197a52d2f126d15d4..da76acafb5ffaea16f6a4dc28122c82f
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
      }
-@@ -223,6 +255,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -224,6 +256,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
      private void dispatchPacket(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) { this.a(packet, agenericfuturelistener); } // PandaSpigot - OBFHELPER
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
@@ -65,7 +65,7 @@ index 067793583980d102f8310f6197a52d2f126d15d4..da76acafb5ffaea16f6a4dc28122c82f
          final EnumProtocol enumprotocol = EnumProtocol.a(packet);
          final EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
  
-@@ -244,7 +284,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -245,7 +285,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              }
              try {
              // PandaSpigot end
@@ -74,7 +74,7 @@ index 067793583980d102f8310f6197a52d2f126d15d4..da76acafb5ffaea16f6a4dc28122c82f
  
              if (agenericfuturelistener != null) {
                  channelfuture.addListeners(agenericfuturelistener);
-@@ -277,7 +317,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -278,7 +318,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                  }
                  try {
                  // PandaSpigot end
@@ -83,7 +83,7 @@ index 067793583980d102f8310f6197a52d2f126d15d4..da76acafb5ffaea16f6a4dc28122c82f
  
                      if (agenericfuturelistener != null) {
                          channelfuture.addListeners(agenericfuturelistener);
-@@ -320,22 +360,34 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -321,22 +361,34 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      }
      private boolean processQueue() {
          if (this.i.isEmpty()) return true;
