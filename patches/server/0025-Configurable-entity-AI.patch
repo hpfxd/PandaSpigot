@@ -5,7 +5,7 @@ Subject: [PATCH] Configurable entity AI
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 75f46d3db814ae48e8a1a12884aacb8bf5afe017..1d35967a27245ab12ea76db9218662eb6a4b8306 100644
+index fb9db2dafcf180dbb25c768936cb59a58a7a3584..04f04ce721aa06fba935618176c77587e305a5b0 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -31,6 +31,11 @@ public class PandaSpigotWorldConfig {

@@ -5,7 +5,7 @@ Subject: [PATCH] Configurable time update frequency.
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 0e781b78cb37bd85f9f753bd351d7c724a561bd7..023820936a0684c97fefb115e7ab10d35413ce6f 100644
+index 3dd3d0702c17541083d0d365ca46e93602105bce..b5f16e8cab9e43ad7597b2ea5bc921399b37872b 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -6,6 +6,13 @@ import org.spongepowered.configurate.objectmapping.meta.Comment;
@@ -23,7 +23,7 @@ index 0e781b78cb37bd85f9f753bd351d7c724a561bd7..023820936a0684c97fefb115e7ab10d3
      public KnockbackConfig knockback;
      
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index f5bd918aad71d8f1c24c39bb786ef91eed7372b2..9e3bb94f11263c4614f18c282ae236d03599619a 100644
+index 8f394d5fe6f0f0640a942f15ae69582bfd70b4c8..b7decb879f530345b82722aeb1294864feecd2c2 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -906,7 +906,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
