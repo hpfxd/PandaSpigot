@@ -8,7 +8,7 @@ will send a relative teleport packet indicating that the player's
 rotation should stay the same as it currently is on the client.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 023820936a0684c97fefb115e7ab10d35413ce6f..29c74482046bdba073c68c3baeea010f1e134b51 100644
+index b5f16e8cab9e43ad7597b2ea5bc921399b37872b..bde014f003bccca916dbc74fc27436bf4b193fdf 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -13,6 +13,15 @@ public class PandaSpigotWorldConfig {
