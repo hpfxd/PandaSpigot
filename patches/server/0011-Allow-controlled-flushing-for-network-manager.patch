@@ -8,7 +8,7 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index d4bf50c990f3af95225aba2e05269ab9dd2d96ff..e84611e59c7e365e312b51d888dafc75f4aacbbc 100644
+index 067793583980d102f8310f6197a52d2f126d15d4..da76acafb5ffaea16f6a4dc28122c82f41bed318 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -80,6 +80,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {

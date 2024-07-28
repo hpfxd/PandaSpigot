@@ -317,7 +317,7 @@ index c51a1f7d1a57acde1e5c7378fe35c30547107052..3f9cdbff6746ed0776b32d9649e5689f
      }
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index dfe92f3cb3a5b02ee2480beb7e49f0c02acfa47f..0bcf1d732e2263471f741a3c634a020c758845d4 100644
+index e390ceef529d98c10bc467ed5517e1ab17b336e0..d36914ec45056328308bb77878a006df4b5e59bd 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -115,7 +115,14 @@ public class ServerConnection {
@@ -334,5 +334,5 @@ index dfe92f3cb3a5b02ee2480beb7e49f0c02acfa47f..0bcf1d732e2263471f741a3c634a020c
 +                        .addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
 +                    // PandaSpigot end
                      NetworkManager networkmanager = new NetworkManager(EnumProtocolDirection.SERVERBOUND);
-     
-                     // PandaSpigot start - prevent blocking on adding a new network manager while the server is ticking
+ 
+                     // PandaSpigot start
