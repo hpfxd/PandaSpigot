@@ -32,7 +32,7 @@ fi
 echo "Applying CraftBukkit patches to NMS..."
 cd "$workdir/Paper/CraftBukkit"
 $gitcmd checkout -B patched HEAD >/dev/null 2>&1
-rm -rf "src/main/java/net"
+rm -rf "$cb"
 # create baseline NMS import so we can see diff of what CB changed
 while IFS= read -r -d '' file
 do
