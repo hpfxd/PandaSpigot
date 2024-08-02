@@ -71,12 +71,12 @@ if [ ! -d "$classdir" ]; then
 fi
 
 # if we see the old net folder, copy it to spigot to avoid redecompiling
-if [ -d "$decompiledir/net" ]; then
-    cp -r "$decompiledir/net" "$spigotdecompiledir/"
+if [ -d "$decompiledir/net/minecraft/server" ]; then
+    cp -r "$decompiledir/net/minecraft/server" "$spigotdecompiledir/"
 fi
 
-if [ ! -d "$spigotdecompiledir/net" ]; then
-    echo "Decompiling classes (stage 2)..."
+if [ ! -d "$spigotdecompiledir/net/minecraft/server" ]; then
+    echo "Decompiling classes..."
     cd "$basedir"
     set +e
     java -jar "$workdir/Paper/BuildData/bin/fernflower.jar" -dgs=1 -hdc=0 -rbr=0 -asc=1 -udv=0 "$classdir" "$spigotdecompiledir"
