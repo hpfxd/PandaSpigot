@@ -6,7 +6,7 @@ Subject: [PATCH] Remove unused code from Spigot tick limiters
 Paper removed this feature from Spigot, but forgot to remove some parts of the code/config
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..8c1cae4e9d801ebcf5dcee9b28209ff825545b7b 100644
+index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..1a1b1e0cb30f294c3485da0f18ac71993b5779cc 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -135,8 +135,12 @@ public abstract class World implements IBlockAccess {
@@ -51,7 +51,7 @@ index 38ebe35f6fa434103b52e86262c7f4cc32d486e3..8c1cae4e9d801ebcf5dcee9b28209ff8
 -        int tilesThisCycle = 0;
 -        for (tileTickPosition = 0; tileTickPosition < tileEntityList.size(); tileTickPosition++) { // PaperSpigot - Disable tick limiters
 +        // int tilesThisCycle = 0; // PandaSpigot - Remove unused code
-+        for (tileTickPosition = 0; tileTickPosition < tileEntityList.size(); tileTickPosition++) { // PaperSpigot - Disable tick limiters // PandaSpigot - TODO: This is really necessary, I think we can go back to vanilla handling
++        for (tileTickPosition = 0; tileTickPosition < tileEntityList.size(); tileTickPosition++) { // PaperSpigot - Disable tick limiters // PandaSpigot - TODO: This is really necessary? I think we can go back to vanilla handling
              tileTickPosition = (tileTickPosition < tileEntityList.size()) ? tileTickPosition : 0;
              TileEntity tileentity = (TileEntity) this.tileEntityList.get(tileTickPosition);
              // Spigot start
