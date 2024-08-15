@@ -290,7 +290,7 @@ index 0000000000000000000000000000000000000000..d61d44e8e1126ed3bea6e633cc0bdebb
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index df8ff41f691626de37f706df187269bee032358f..5c631068db79615bf51ed357bc9bda2b0ebb0c3b 100644
+index 5b518497b85129745040f1cf8164fb50a80991d8..d88e21d5db5c086b03c3e5c8275e69224316296d 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -113,6 +113,22 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -310,7 +310,7 @@ index df8ff41f691626de37f706df187269bee032358f..5c631068db79615bf51ed357bc9bda2b
 +            this.close(reason[0]);
 +            this.k();
 +            this.stopReadingPackets = true;
-+        }, null);
++        }, (GenericFutureListener<? extends Future<? super Void>>) null);
 +    }
 +    // PandaSpigot end - packet limiter
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
