@@ -20,24 +20,10 @@ index 3971e7dfdb9b05f44c8e0735d88e95da72be9f22..9c22cf970288d24a431df836409fc802
  
              this.q = true;
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index ddbc724da605b26652371f2c51ab2609a7c7ef1e..9b939a9e9f0c1d15588c1ebce8ba6e67be212d25 100644
+index ddbc724da605b26652371f2c51ab2609a7c7ef1e..fcdc06150fec7bd5dc907b5337085be1360373eb 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -527,8 +527,11 @@ public abstract class World implements IBlockAccess {
-         }
- 
-         if (!this.worldProvider.o()) {
--            for (i1 = k; i1 <= l; ++i1) {
--                this.updateLight(EnumSkyBlock.SKY, new BlockPosition(i, i1, j)); // PaperSpigot - Asynchronous lighting updates
-+            // PandaSpigot start - Optimize Light Recalculations
-+            Chunk chunk = this.getChunkIfLoaded(i >> 4, j >> 4);
-+            for (i1 = k; chunk != null && i1 <= l; ++i1) {
-+                this.updateBrightness(EnumSkyBlock.SKY, new BlockPosition(i, i1, j), chunk); // PaperSpigot - Asynchronous lighting updates
-+            // PandaSpigot end
-             }
-         }
- 
-@@ -2680,9 +2683,15 @@ public abstract class World implements IBlockAccess {
+@@ -2680,9 +2680,15 @@ public abstract class World implements IBlockAccess {
       * PaperSpigot - Asynchronous lighting updates
       */
      public boolean updateLight(final EnumSkyBlock enumskyblock, final BlockPosition position) {
