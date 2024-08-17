@@ -8,7 +8,7 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 968d9074fde756ba04aa832c06ad68d2ba8d256d..f067e2b80f328b13712d6a64db2aec4afa6c8970 100644
+index c5d4b55450eab00ff8a7c3d269d6547c3b9b3946..d28db401156be4758533ab2008930e925261af11 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -81,6 +81,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -50,6 +50,15 @@ index 968d9074fde756ba04aa832c06ad68d2ba8d256d..f067e2b80f328b13712d6a64db2aec4a
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
      }
+@@ -198,7 +230,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+             MinecraftServer.getServer().isMainThread() && packet.isReady() && this.i.isEmpty() &&
+                         (packet.getExtraPackets() == null || packet.getExtraPackets().isEmpty())
+         ))) {
+-            this.dispatchPacket(packet, listeners);
++            this.writePacket(packet, listeners, null); // PandaSpigot
+             return;
+         }
+         // write the packets to the queue, then flush - antixray hooks there already
 @@ -224,6 +256,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
      private void dispatchPacket(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) { this.a(packet, agenericfuturelistener); } // PandaSpigot - OBFHELPER
