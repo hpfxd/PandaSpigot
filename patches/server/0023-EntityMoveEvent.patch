@@ -5,7 +5,7 @@ Subject: [PATCH] EntityMoveEvent
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..e8a20bc5b66b4777c1d5de1f0a036db85407766b 100644
+index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..1353a791235ae3b820072fa80ef60c3c6723e75d 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
 +++ b/src/main/java/net/minecraft/server/EntityLiving.java
 @@ -1665,6 +1665,21 @@ public abstract class EntityLiving extends Entity {
@@ -16,7 +16,7 @@ index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..e8a20bc5b66b4777c1d5de1f0a036db8
 +        if (((WorldServer) this.world).hasEntityMoveEvent && !(this instanceof EntityPlayer)) {
 +            if (this.lastX != this.locX || this.lastY != this.locY || this.lastZ != this.locZ || this.lastYaw != this.yaw || this.lastPitch != this.pitch) {
 +                org.bukkit.Location from = new org.bukkit.Location(this.world.getWorld(), this.lastX, this.lastY, this.lastZ, this.lastYaw, this.lastPitch);
-+                org.bukkit.Location to = new org.bukkit.Location (this.world.getWorld(), this.locX, this.locY, this.locZ, this.yaw, this.pitch);
++                org.bukkit.Location to = new org.bukkit.Location(this.world.getWorld(), this.locX, this.locY, this.locZ, this.yaw, this.pitch);
 +                io.papermc.paper.event.entity.EntityMoveEvent event = new io.papermc.paper.event.entity.EntityMoveEvent((LivingEntity) this.getBukkitEntity(), from, to.clone());
 +                if (!event.callEvent()) {
 +                    // if cancelled, set back to previous position
