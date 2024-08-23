@@ -8,7 +8,7 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index c5d4b55450eab00ff8a7c3d269d6547c3b9b3946..d28db401156be4758533ab2008930e925261af11 100644
+index 7d5a3c4b6d9958efde5f918963631603efd33877..b455a3159cd79704ba8da66ca540a4ea48719f05 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -81,6 +81,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -121,9 +121,9 @@ index c5d4b55450eab00ff8a7c3d269d6547c3b9b3946..d28db401156be4758533ab2008930e92
                  return false;
              } else {
                  iterator.remove();
--                this.dispatchPacket(packet, queued.getGenericFutureListeners());
+-                this.dispatchPacket(packet, queued.getGenericFutureListener());
 +                // PandaSpigot start - make only one flush call per sendPacketQueue() call
-+                this.writePacket(packet, queued.getGenericFutureListeners(), (!iterator.hasNext() && (needsFlush || this.canFlush)) ? Boolean.TRUE : Boolean.FALSE);
++                this.writePacket(packet, queued.getGenericFutureListener(), (!iterator.hasNext() && (needsFlush || this.canFlush)) ? Boolean.TRUE : Boolean.FALSE);
 +                hasWrotePacket = true;
 +                // PandaSpigot end
              }

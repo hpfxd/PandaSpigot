@@ -21,7 +21,7 @@ index 05c9ebb76a3cb19e887bea1311ac36035334b9a1..1e0393f667029809ac3476069cebe1ef
 +    public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
  }
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index 854cf888d64e50bfd85420bb5dcc93860a64f132..c4be7d4e156d8d685ffb2b9fc5f0045ee471ef96 100644
+index 854cf888d64e50bfd85420bb5dcc93860a64f132..b0aee5e189d70e2f68c3c95a6406467981c25e2b 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -529,7 +529,16 @@ public abstract class Entity implements ICommandListener {
@@ -31,10 +31,10 @@ index 854cf888d64e50bfd85420bb5dcc93860a64f132..c4be7d4e156d8d685ffb2b9fc5f0045e
 -            List list = this.world.getCubes(this, this.getBoundingBox().a(d0, d1, d2));
 +            // PandaSpigot start - do axis by axis scan if the entity is travelling a large area
 +            AxisAlignedBB totalArea = this.getBoundingBox().a(d0, d1, d2);
-+            double xLenght = totalArea.d - totalArea.a;
-+            double yLenght = totalArea.e - totalArea.b;
-+            double zLenght = totalArea.f - totalArea.c;
-+            boolean axisScan = this.world.pandaSpigotConfig.optimizeTntMovement && xLenght * yLenght * zLenght > 10;
++            double xLength = totalArea.d - totalArea.a;
++            double yLength = totalArea.e - totalArea.b;
++            double zLength = totalArea.f - totalArea.c;
++            boolean axisScan = this.world.pandaSpigotConfig.optimizeTntMovement && xLength * yLength * zLength > 10;
 +
 +            List list = this.world.getCubes(this, axisScan ? this.getBoundingBox().a(0, d1, 0) : totalArea);
 +            // PandaSpigot end
