@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..c751b21fcf9b6b30b6546179ca11c9f6319f3370
+index 0000000000000000000000000000000000000000..a3683ff6a707c5966896a363afc39a0aa7c64390
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,129 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    id("com.github.johnrengelman.shadow") version "7.1.2"
@@ -55,9 +55,6 @@ index 0000000000000000000000000000000000000000..c751b21fcf9b6b30b6546179ca11c9f6
 +        providers.gradleProperty("runWorkDir").forUseAtConfigurationTime().orElse("run")
 +    ).get().asFile
 +
-+    if (project.hasProperty("disableWatchdog")) {
-+        systemProperty("disable.watchdog", true)
-+    }
 +    doFirst {
 +        workingDir.mkdirs()
 +    }

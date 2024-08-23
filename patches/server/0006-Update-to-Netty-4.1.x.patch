@@ -5,7 +5,7 @@ Subject: [PATCH] Update to Netty 4.1.x
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index c751b21fcf9b6b30b6546179ca11c9f6319f3370..3e97931d3695e9b4e6aca80842832c65ad44bd06 100644
+index a3683ff6a707c5966896a363afc39a0aa7c64390..242341aea3f7515693240a643ca1f39846208a9d 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -13,7 +13,7 @@ dependencies {
@@ -25,7 +25,7 @@ index c751b21fcf9b6b30b6546179ca11c9f6319f3370..3e97931d3695e9b4e6aca80842832c65
      implementation("net.sf.jopt-simple:jopt-simple:3.2")
      implementation("jline:jline:2.12.1")
  
-@@ -56,6 +55,7 @@ tasks {
+@@ -53,6 +52,7 @@ tasks {
      shadowJar {
          mergeServiceFiles()
          archiveClassifier.set("unmapped")
