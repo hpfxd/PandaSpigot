@@ -5,7 +5,7 @@ Subject: [PATCH] Sound events
 
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 73de7d6d4dc619416363a7d8557b71b850313cfb..f2442d75a73c6b6e6ae286f36b11992d11604637 100644
+index 73de7d6d4dc619416363a7d8557b71b850313cfb..42c077870727d1eb40bc9bf5e0a3ca580131331d 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -944,20 +944,54 @@ public abstract class World implements IBlockAccess {
@@ -14,9 +14,9 @@ index 73de7d6d4dc619416363a7d8557b71b850313cfb..f2442d75a73c6b6e6ae286f36b11992d
      public void makeSound(Entity entity, String s, float f, float f1) {
 +        // PandaSpigot start - EntitySoundEvent
 +        com.hpfxd.pandaspigot.event.sound.EntitySoundEvent event = new com.hpfxd.pandaspigot.event.sound.EntitySoundEvent(
-+                entity.bukkitEntity, s, f, f1);
++                entity.getBukkitEntity(), s, f, f1);
 +        if (!event.callEvent()) return;
-+    
++
 +        org.bukkit.Location loc = event.getLocation();
 +        s = event.getSound();
 +        f = event.getVolume();
@@ -32,9 +32,9 @@ index 73de7d6d4dc619416363a7d8557b71b850313cfb..f2442d75a73c6b6e6ae286f36b11992d
      public void a(EntityHuman entityhuman, String s, float f, float f1) {
 +        // PandaSpigot start - PlayerSoundEvent
 +        com.hpfxd.pandaspigot.event.sound.PlayerSoundEvent event = new com.hpfxd.pandaspigot.event.sound.PlayerSoundEvent(
-+                (org.bukkit.entity.Player) entityhuman.bukkitEntity, s, f, f1);
++                (org.bukkit.entity.Player) entityhuman.getBukkitEntity(), s, f, f1);
 +        if (!event.callEvent()) return;
-+        
++
 +        org.bukkit.Location loc = event.getLocation();
 +        s = event.getSound();
 +        f = event.getVolume();
@@ -52,12 +52,12 @@ index 73de7d6d4dc619416363a7d8557b71b850313cfb..f2442d75a73c6b6e6ae286f36b11992d
 +        com.hpfxd.pandaspigot.event.sound.SoundEvent event = new com.hpfxd.pandaspigot.event.sound.SoundEvent(
 +                new org.bukkit.Location(this.world, d0, d1, d2), s, f, f1);
 +        if (!event.callEvent()) return;
-+        
++
 +        org.bukkit.Location loc = event.getLocation();
 +        d0 = loc.getX();
 +        d1 = loc.getY();
 +        d2 = loc.getZ();
-+        
++
 +        s = event.getSound();
 +        f = event.getVolume();
 +        f1 = event.getPitch();
