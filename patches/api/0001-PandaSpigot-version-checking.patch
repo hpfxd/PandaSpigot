@@ -5,10 +5,10 @@ Subject: [PATCH] PandaSpigot version checking
 
 
 diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..a07f91424a563eebf268b361634947a8da2c1e26 100644
+index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..62f36e8f9d033c82318141e4edc0636cfc58613a 100644
 --- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
 +++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-@@ -18,15 +18,18 @@ import com.google.common.io.Resources;
+@@ -18,15 +18,20 @@ import com.google.common.io.Resources;
  import java.io.BufferedReader;
  import java.io.IOException;
  import java.net.URL;
@@ -29,11 +29,13 @@ index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..a07f91424a563eebf268b361634947a8
 +import com.google.gson.JsonSyntaxException;
 +import java.io.InputStreamReader;
 +import java.net.HttpURLConnection;
++import java.util.stream.StreamSupport;
++import com.google.gson.JsonElement;
 +// PandaSpigot end
  
  public class VersionCommand extends BukkitCommand {
      public VersionCommand(String name) {
-@@ -185,8 +188,33 @@ public class VersionCommand extends BukkitCommand {
+@@ -185,8 +190,33 @@ public class VersionCommand extends BukkitCommand {
      private void obtainVersion() {
          String version = Bukkit.getVersion();
          if (version == null) version = "Custom";
@@ -42,7 +44,7 @@ index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..a07f91424a563eebf268b361634947a8
 +            String[] parts = version.substring("git-PandaSpigot-".length()).split("[-\\s]");
 +            int distance;
 +            try {
-+                distance = fetchActionsDistance("hpfxd/PandaSpigot", "build.yml", Integer.parseInt(parts[0]));
++                distance = fetchDownloadApiDistance(Integer.parseInt(parts[0]));
 +            } catch (NumberFormatException e) {
 +                distance = fetchGitDistance("hpfxd/PandaSpigot", "master", parts[0]);
 +            }
@@ -68,25 +70,30 @@ index e91e1d8c1215d19a78611d3c8302ed9634bfbda5..a07f91424a563eebf268b361634947a8
              String[] parts = version.substring("git-PaperSpigot-".length()).split("[-\\s]");
              int paperSpigotVersions = getDistance("paperspigot", parts[0]);
              if (paperSpigotVersions == -1) {
-@@ -246,6 +274,60 @@ public class VersionCommand extends BukkitCommand {
+@@ -246,6 +276,65 @@ public class VersionCommand extends BukkitCommand {
          }
      }
  
 +    // PandaSpigot start
-+    private static int fetchActionsDistance(String repo, String workflowId, int runNumber) {
++    private static int fetchDownloadApiDistance(int runNumber) {
 +        try {
-+            HttpURLConnection connection = (HttpURLConnection) new URL("https://api.github.com/repos/" + repo + "/actions/workflows/" + workflowId + "/runs").openConnection();
-+            connection.setRequestProperty("Accept", "application/vnd.github.v3+json");
++            HttpURLConnection connection = (HttpURLConnection) new URL("https://downloads.hpfxd.com/v2/projects/pandaspigot/versions/1.8.8").openConnection();
++            connection.setRequestProperty("Accept", "application/json");
 +            connection.setRequestProperty("User-Agent", "PandaSpigot/" + Bukkit.getVersion());
 +            connection.connect();
 +            if (connection.getResponseCode() == HttpURLConnection.HTTP_NOT_FOUND) return -2;
 +            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), Charsets.UTF_8))) {
 +                JsonObject obj = new Gson().fromJson(reader, JsonObject.class);
-+                JsonArray arr = obj.getAsJsonArray("workflow_runs");
-+                if (arr.size() == 0) return -1;
-+                JsonObject firstElement = arr.iterator().next().getAsJsonObject();
-+                int latestRunNumber = firstElement.get("run_number").getAsInt();
-+                return latestRunNumber - runNumber;
++                JsonArray arr = obj.getAsJsonArray("builds");
++                int latest = StreamSupport.stream(arr.spliterator(), false)
++                    .mapToInt(JsonElement::getAsInt)
++                    .max()
++                    .orElse(-1);
++                if (latest < 0) {
++                    return -1;
++                } else {
++                    return latest - runNumber;
++                }
 +            } catch (JsonSyntaxException | NumberFormatException e) {
 +                e.printStackTrace();
 +                return -1;
