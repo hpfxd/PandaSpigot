@@ -75,10 +75,10 @@ index c5a51d00b6d690213716b9bab71b4cfa8bf8af09..21c48d2b072ab4440d20a65d32945536
      /**
       * Gets the name of this server implementation.
 diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-index a07f91424a563eebf268b361634947a8da2c1e26..02298cd4ddfdae7cbfe8eb78afc7be6e4627a9cd 100644
+index 62f36e8f9d033c82318141e4edc0636cfc58613a..04195613b2c230aa5e28fb2fabc2b3f2b32ec169 100644
 --- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
 +++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
-@@ -46,7 +46,7 @@ public class VersionCommand extends BukkitCommand {
+@@ -48,7 +48,7 @@ public class VersionCommand extends BukkitCommand {
          if (!testPermission(sender)) return true;
  
          if (args.length == 0) {
