@@ -5,7 +5,7 @@ Subject: [PATCH] Avoid Looking up same chunk twice in EAR
 
 
 diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
-index d3767d2a8963e72253fd05b4d177acd7415158bb..a82eab21e38bbd24760bd072ecd154a025883b79 100644
+index d3767d2a8963e72253fd05b4d177acd7415158bb..90b7238567952a7ee365f9c1fef3d9a5e10e7a80 100644
 --- a/src/main/java/org/spigotmc/ActivationRange.java
 +++ b/src/main/java/org/spigotmc/ActivationRange.java
 @@ -128,9 +128,12 @@ public class ActivationRange
@@ -18,7 +18,7 @@ index d3767d2a8963e72253fd05b4d177acd7415158bb..a82eab21e38bbd24760bd072ecd154a0
 +                    if ( chunk != null )
                      {
 -                        activateChunkEntities( world.getChunkAt( i1, j1 ) );
-+                        activateChunkEntities( chunk  );
++                        activateChunkEntities( chunk );
 +                    // PandaSpigot end
                      }
                  }

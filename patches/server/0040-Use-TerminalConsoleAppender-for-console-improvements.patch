@@ -22,7 +22,7 @@ This patch contains heavy inspiration from:
 https://github.com/PaperMC/Paper/blob/master/patches/server/0137-Use-TerminalConsoleAppender-for-console-improvements.patch
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index d130985a63c1074de418ce40a7035811a19e3115..4a1bd0cf33d98c8cd3e09c8ba92af080b2bd0324 100644
+index d130985a63c1074de418ce40a7035811a19e3115..f66de2ff7d7d73a69d9d780a9fddfd9d300b79c2 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -21,8 +21,10 @@ dependencies {
@@ -63,6 +63,14 @@ index d130985a63c1074de418ce40a7035811a19e3115..4a1bd0cf33d98c8cd3e09c8ba92af080
          // PandaSpigot start - Configuration
          arrayOf(
              "com.amihaiemil.eoyaml",
+@@ -70,7 +77,6 @@ tasks {
+         val cbLibsPkg = "org.bukkit.craftbukkit.libs"
+ 
+         relocate("joptsimple", "$cbLibsPkg.joptsimple")
+-        relocate("jline", "$cbLibsPkg.jline")
+         relocate("org.ibex", "$cbLibsPkg.org.ibex")
+         relocate("org.gjt", "$cbLibsPkg.org.gjt")
+ 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..25a515b681bbbb70946f2ec73647a6f184f81b3c
