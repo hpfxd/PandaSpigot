@@ -1,11 +1,12 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: uRyanxD <familiarodrigues123ro@gmail.com>
 Date: Sun, 7 Jul 2024 20:19:50 -0300
-Subject: [PATCH] Fix custom inventories
+Subject: [PATCH] Fix Bukkit Custom Inventories
 
+TODO: Check if enderchest is implemented correctly
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..9b571092da316861127810f471557cea2d6b153e 100644
+index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..7fc4791cc7eb040fcb520262d38fccc39bd81a56 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 @@ -100,6 +100,10 @@ public class CraftContainer extends Container {
@@ -49,7 +50,7 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..9b571092da316861127810f471557cea
 -        this.a((new Slot(top, 0, 25, 47)));
 +        // PandaSpigot start - Fix enchant table custom inventory
 +        this.a((new Slot(top, 0, 15, 47)));
-+        this.a((new Slot(top, 1, 35, 47))); // TODO: 1 or 0?
++        this.a((new Slot(top, 1, 35, 47)));
 +        // PandaSpigot end
  
          int row;
