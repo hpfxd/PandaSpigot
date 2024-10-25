@@ -242,7 +242,7 @@ index 09085582a95fc4c61034db70dd543c5e7da8ede7..cd22366c7b066494192e0602da174701
          System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
          System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 75716099df3c3afc9e5857258ed6d1b271c4b957..baeb16f594eb4cedb05e6336a950cf23942153a2 100644
+index 75716099df3c3afc9e5857258ed6d1b271c4b957..aee5ab9daf53a082513ebc14d670395959c6de7e 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;
@@ -293,7 +293,7 @@ index 75716099df3c3afc9e5857258ed6d1b271c4b957..baeb16f594eb4cedb05e6336a950cf23
  
      public void sendMessage(IChatBaseComponent ichatbasecomponent) {
 -        MinecraftServer.LOGGER.info(ichatbasecomponent.c());
-+        MinecraftServer.LOGGER.info(org.bukkit.craftbukkit.util.CraftChatMessage.fromComponent(ichatbasecomponent, net.minecraft.server.EnumChatFormat.WHITE)); // PandaSpigot - Log messages with color
++        MinecraftServer.LOGGER.info(org.bukkit.craftbukkit.util.CraftChatMessage.fromComponent(ichatbasecomponent, net.minecraft.server.EnumChatFormat.RESET)); // PandaSpigot - Log messages with color
      }
  
      public boolean a(int i, String s) {
