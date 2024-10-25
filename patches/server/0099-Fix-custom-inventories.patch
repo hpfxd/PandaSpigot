@@ -5,14 +5,33 @@ Subject: [PATCH] Fix custom inventories
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..3e4215b6005c51a838b461523598e4be0486c765 100644
+index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..9b571092da316861127810f471557cea2d6b153e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-@@ -139,6 +139,14 @@ public class CraftContainer extends Container {
+@@ -100,6 +100,10 @@ public class CraftContainer extends Container {
+             return "minecraft:furnace";
+         case DISPENSER:
+             return "minecraft:dispenser";
++        // PandaSpigot start - Fix custom dropper inventory
++        case DROPPER:
++            return "minecraft:dropper";
++        // PandaSpigot end
+         case ENCHANTING:
+             return "minecraft:enchanting_table";
+         case BREWING:
+@@ -124,6 +128,7 @@ public class CraftContainer extends Container {
+             setupChest(top, bottom);
+             break;
+         case DISPENSER:
++        case DROPPER: // PandaSpigot - Fix custom dropper inventory
+             setupDispenser(top, bottom);
+             break;
+         case FURNACE:
+@@ -139,6 +144,14 @@ public class CraftContainer extends Container {
          case BREWING:
              setupBrewing(top, bottom);
              break;
-+        // PandaSpigot start
++        // PandaSpigot start - Fix custom beacon and anvil inventories
 +        case BEACON:
 +            setupBeacon(top, bottom);
 +            break;
@@ -23,23 +42,23 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..3e4215b6005c51a838b461523598e4be
          case HOPPER:
              setupHopper(top, bottom);
              break;
-@@ -240,7 +248,10 @@ public class CraftContainer extends Container {
+@@ -240,7 +253,10 @@ public class CraftContainer extends Container {
  
      private void setupEnchanting(IInventory top, IInventory bottom) {
          // This code copied from ContainerEnchantTable
 -        this.a((new Slot(top, 0, 25, 47)));
-+        // PandaSpigot start - Fix enchanttable custom inventory
++        // PandaSpigot start - Fix enchant table custom inventory
 +        this.a((new Slot(top, 0, 15, 47)));
-+        this.a((new Slot(top, 1, 35, 47))); // 1 or 0?
++        this.a((new Slot(top, 1, 35, 47))); // TODO: 1 or 0?
 +        // PandaSpigot end
  
          int row;
  
-@@ -277,6 +288,44 @@ public class CraftContainer extends Container {
+@@ -277,6 +293,44 @@ public class CraftContainer extends Container {
          // End copy from ContainerBrewingStand
      }
  
-+    // PandaSpigot start
++    // PandaSpigot start - Fix custom beacon and anvil inventories
 +    // This code copied from ContainerBeacon
 +    private void setupBeacon(IInventory top, IInventory bottom) {
 +        this.a(new Slot(top, 0, 136, 110));
