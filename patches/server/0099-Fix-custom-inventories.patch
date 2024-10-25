@@ -1,18 +1,21 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: uRyanxD <familiarodrigues123ro@gmail.com>
 Date: Sun, 7 Jul 2024 20:19:50 -0300
-Subject: [PATCH] Fix custom anvil inventory
+Subject: [PATCH] Fix custom inventories
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..97e76be8aafbd68e8d1f055289851bf3828d60b4 100644
+index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..82136cdb89e04e1ffeb613677734e5ce0b9e7a5c 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftContainer.java
-@@ -139,6 +139,11 @@ public class CraftContainer extends Container {
+@@ -139,6 +139,14 @@ public class CraftContainer extends Container {
          case BREWING:
              setupBrewing(top, bottom);
              break;
 +        // PandaSpigot start
++        case BEACON:
++            setupBeacon(top, bottom);
++            break;
 +        case ANVIL:
 +            setupAnvil(top, bottom);
 +            break;
@@ -20,11 +23,29 @@ index 1dbc588e72111afebbcfc3b1d714b7f24d6d42fe..97e76be8aafbd68e8d1f055289851bf3
          case HOPPER:
              setupHopper(top, bottom);
              break;
-@@ -277,6 +282,26 @@ public class CraftContainer extends Container {
+@@ -277,6 +285,44 @@ public class CraftContainer extends Container {
          // End copy from ContainerBrewingStand
      }
  
-+    // PandaSpigot start - This code copied from ContainerAnvil
++    // PandaSpigot start
++    // This code copied from ContainerBeacon
++    private void setupBeacon(IInventory top, IInventory bottom) {
++        this.a(new Slot(top, 0, 136, 110));
++
++        int i;
++
++        for (i = 0; i < 3; ++i) {
++            for (int j = 0; j < 9; ++j) {
++                this.a(new Slot(bottom, j + i * 9 + 9, 36 + j * 18, 137 + i * 18));
++            }
++        }
++
++        for (i = 0; i < 9; ++i) {
++            this.a(new Slot(bottom, i, 36 + i * 18, 195));
++        }
++    }
++
++    // This code copied from ContainerAnvil
 +    private void setupAnvil(IInventory top, IInventory bottom) {
 +        this.a(new Slot(top, 0, 27, 47));
 +        this.a(new Slot(top, 1, 76, 47));
