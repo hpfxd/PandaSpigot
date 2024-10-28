@@ -231,7 +231,7 @@ index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..6434b8613971a228fb0074390d8223bf
          Thread thread = new Thread("Server Infinisleeper") {
              {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..67f74c2def3517939142ac07f31ec94621d8edc0 100644
+index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..f411b611fc8b35fc60882d0123f01de49380b4b0 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -48,7 +48,7 @@ import org.bukkit.craftbukkit.Main;
@@ -298,12 +298,10 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..67f74c2def3517939142ac07f31ec946
      }
  
      public abstract PropertyManager getPropertyManager();
-@@ -557,12 +585,15 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
-         }
+@@ -558,11 +586,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      }
      // PaperSpigot End
-- 
-+
+  
 +    // PandaSpigot start - Modern tick loop
      public void run() {
          try {
@@ -341,10 +339,6 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..67f74c2def3517939142ac07f31ec946
 -                            wait -= catchupTime;
 -                            catchupTime -= catchupTime;
 -                        }
--                    }
--                    if (wait > 0) {
--                        Thread.sleep(wait / 1000000);
--                        wait = TICK_TIME - (curTime - lastTick);
 +                    // PandaSpigot start - Modern tick loop
 +                    long i = ((curTime = System.nanoTime()) / (1000L * 1000L)) - ab;
 +                    if (i > 5000L && this.ab - this.lastOverloadWarning >= 30000L && ticks > 500) {
@@ -354,21 +348,23 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..67f74c2def3517939142ac07f31ec946
 +                        this.ab += j * 50L;
 +                        this.lastOverloadWarning = this.ab;
                      }
+-                    if (wait > 0) {
+-                        Thread.sleep(wait / 1000000);
+-                        wait = TICK_TIME - (curTime - lastTick);
+-                    }
 -
 -                    catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
 -
                      if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 )
                      {
                          final long diff = curTime - tickSection;
-@@ -612,9 +633,17 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
-                         // PaperSpigot end
+@@ -613,8 +634,16 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                      }
                      lastTick = curTime;
--
+ 
 -                    this.A();
 -                    this.Q = true;
 +                    this.ab += 50L;
-+
 +                    this.methodProfiler.a("tick");
 +                    this.A(this::haveTime);
 +                    this.methodProfiler.c("nextTickWait");
