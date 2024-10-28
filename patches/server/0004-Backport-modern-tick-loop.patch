@@ -495,7 +495,7 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..f411b611fc8b35fc60882d0123f01de4
  
      public int getIdleTimeout() {
 diff --git a/src/main/java/net/minecraft/server/SystemUtils.java b/src/main/java/net/minecraft/server/SystemUtils.java
-index e65ffc1566784f8a35a4a620514375b9077ce247..6f328c24a2f00ad07163cd7964be111b526414df 100644
+index e65ffc1566784f8a35a4a620514375b9077ce247..0c23e540a300590f967a681a3a8cf65bfc4f1377 100644
 --- a/src/main/java/net/minecraft/server/SystemUtils.java
 +++ b/src/main/java/net/minecraft/server/SystemUtils.java
 @@ -6,6 +6,16 @@ import org.apache.logging.log4j.Logger;
@@ -508,7 +508,7 @@ index e65ffc1566784f8a35a4a620514375b9077ce247..6f328c24a2f00ad07163cd7964be111b
 +    }
 +
 +    public static long getMonotonicNanos() {
-+        return System.nanoTime(); // Paper
++        return System.nanoTime();
 +    }
 +    // PandaSpigot end
 +
