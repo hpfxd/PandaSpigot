@@ -45,7 +45,7 @@ index 0000000000000000000000000000000000000000..c8540d16defdc633113b504616794f44
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b784f8174b94c6fab41ed3262009383a2ffba3cc..26f1e07cefd54afe3df1b8ce8e4d58b26619c8d3 100644
+index e6466f470adddbaf438b98c559a27d5d13bccacd..6392695bf426536709967f744d511ed9de823a96 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -100,7 +100,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
@@ -55,5 +55,5 @@ index b784f8174b94c6fab41ed3262009383a2ffba3cc..26f1e07cefd54afe3df1b8ce8e4d58b2
 -    protected final Queue<FutureTask<?>> j = new java.util.concurrent.ConcurrentLinkedQueue<FutureTask<?>>(); // Spigot, PAIL: Rename
 +    protected final Queue<FutureTask<?>> j = new com.destroystokyo.paper.utils.CachedSizeConcurrentLinkedQueue<>(); // Spigot, PAIL: Rename // PandaSpigot - Make size() constant-time
      private Thread serverThread;
-     private long ab = az();
+     private long ab; // PandaSpigot - The az() initializer is redundant
  
