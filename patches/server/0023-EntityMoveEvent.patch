@@ -31,10 +31,10 @@ index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..1353a791235ae3b820072fa80ef60c3c
  
      protected void doTick() {}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b7decb879f530345b82722aeb1294864feecd2c2..66d4c410c2bcc345bf09e07a63de7534064524d2 100644
+index eafa8ca822b79c8f31e43b484ce27b500a979bf5..5a0cf1ba4d7f7fbc9b62a60201682244e5dd56ff 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -926,6 +926,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
+@@ -919,6 +919,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
  
              // if (i == 0 || this.getAllowNether()) {
                  WorldServer worldserver = this.worlds.get(i);
