@@ -231,7 +231,7 @@ index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..6434b8613971a228fb0074390d8223bf
          Thread thread = new Thread("Server Infinisleeper") {
              {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..15202423fba6a0661222a00be2c0aa1b5d64e906 100644
+index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..67f74c2def3517939142ac07f31ec94621d8edc0 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -48,7 +48,7 @@ import org.bukkit.craftbukkit.Main;
@@ -248,7 +248,7 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..15202423fba6a0661222a00be2c0aa1b
      protected final Queue<FutureTask<?>> j = new java.util.concurrent.ConcurrentLinkedQueue<FutureTask<?>>(); // Spigot, PAIL: Rename
      private Thread serverThread;
 -    private long ab = az();
-+    private long ab; // PandaSpigot - Initializer az() is redundant
++    private long ab; // PandaSpigot - The az() initializer is redundant
  
      // CraftBukkit start
      public List<WorldServer> worlds = new ArrayList<WorldServer>();
