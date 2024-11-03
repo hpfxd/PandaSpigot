@@ -19,10 +19,10 @@ index c1110242136e8fd98661886920b765bb5367c37d..81fc97dc295677f5c2914e8c9b97a3f4
              org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
              BlockPhysicsEvent event = new BlockPhysicsEvent(block, block.getTypeId());
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 56c94d2453cd1ba6d2a531e52776ef5c0ce8bfb4..0afe4f68649e3c7cd48eb56f27f5f05eeee52cd1 100644
+index 357ca76074e467cda0a7eb9672b9bce336ddbf7f..6d04a223a3f415bcffd65b58ca0d95811e14e3b2 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -924,6 +924,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
+@@ -919,6 +919,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
              // if (i == 0 || this.getAllowNether()) {
                  WorldServer worldserver = this.worlds.get(i);
                  worldserver.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // PandaSpigot
