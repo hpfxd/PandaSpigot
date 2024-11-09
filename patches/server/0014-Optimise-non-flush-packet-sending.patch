@@ -20,7 +20,7 @@ up on this optimisation before he came along.
 Locally this patch drops the entity tracker tick by a full 1.5x.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index b455a3159cd79704ba8da66ca540a4ea48719f05..a098713c078d917572f76b7beed38dc9e6f59e97 100644
+index b455a3159cd79704ba8da66ca540a4ea48719f05..06e57ed7e48e14f07da4f9264c6ddc7017821578 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -305,8 +305,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -61,7 +61,7 @@ index b455a3159cd79704ba8da66ca540a4ea48719f05..a098713c078d917572f76b7beed38dc9
 +                    }
 +                    try {
 +                        // PandaSpigot end
-+                        ChannelFuture channelfuture = (flush) ? NetworkManager.this.channel.writeAndFlush(packet) : NetworkManager.this.channel.write(packet);
++                        ChannelFuture channelfuture = (flush) ? NetworkManager.this.channel.writeAndFlush(packet) : NetworkManager.this.channel.write(packet); // PandaSpigot - add flush parameter
 +
 +                        if (agenericfuturelistener != null) {
 +                            channelfuture.addListeners(agenericfuturelistener);
