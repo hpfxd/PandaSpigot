@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: mechoriet <kevinworm92@gmail.com>
-Date: Mon, 24 Oct 2022 00:04:41 +0200
-Subject: [PATCH] Optimize light level comparisons
+Date: Mon, 11 Nov 2024 19:10:53 -0300
+Subject: [PATCH] Optimized Light Level Comparisons
 
 
 diff --git a/src/main/java/net/minecraft/server/BlockCrops.java b/src/main/java/net/minecraft/server/BlockCrops.java
@@ -18,7 +18,7 @@ index b91b2200d56d9f0b4a50293fbc497a7aca7b9cec..f9429059302cfeba9d7ea6c1cb7f0dbe
  
              if (i < 7) {
 diff --git a/src/main/java/net/minecraft/server/BlockGrass.java b/src/main/java/net/minecraft/server/BlockGrass.java
-index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..f38d0bf6a2b85ea0757319acb07fe32088481cd6 100644
+index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..fdef82427d2721ac068f7d24025438c70f6e237c 100644
 --- a/src/main/java/net/minecraft/server/BlockGrass.java
 +++ b/src/main/java/net/minecraft/server/BlockGrass.java
 @@ -29,7 +29,8 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
@@ -53,7 +53,7 @@ index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..f38d0bf6a2b85ea0757319acb07fe320
 +                        }
  
 -                        if (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.DIRT && world.getLightLevel(blockposition1.up()) >= 4 && block.p() <= 2) {
-+                        if (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.DIRT && block.p() <= 2 && world.isLightLevel(blockposition1.up(), 4)) {
++                        if (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.DIRT && block.p() <= 2 && world.isLightLevel(blockposition1.up(), 4)) { // Move last check before isLightLevel to avoid unneeded light checks
 +                        // PandaSpigot end
                              // CraftBukkit start
                              // world.setTypeUpdate(blockposition1, Blocks.GRASS.getBlockData());
@@ -85,7 +85,7 @@ index 2618c40f25ccf51d50e83aaa1109b493bf13c2fb..24daf93ef18f46e307cf35e627f900a5
  
              if (random.nextInt((int) (world.growthOdds / (this == Blocks.PUMPKIN_STEM? world.spigotConfig.pumpkinModifier : world.spigotConfig.melonModifier) * (25.0F / f)) + 1) == 0) { // Spigot
 diff --git a/src/main/java/net/minecraft/server/EntityMonster.java b/src/main/java/net/minecraft/server/EntityMonster.java
-index 9fefb867bca8685b7c571dda0d05091c05d335d6..4bf4de3ddb13718a854b4e9c6eeb2483ae5f448d 100644
+index 9fefb867bca8685b7c571dda0d05091c05d335d6..05e4dbc1d130c497e2455d9eb1b339d10cd1527b 100644
 --- a/src/main/java/net/minecraft/server/EntityMonster.java
 +++ b/src/main/java/net/minecraft/server/EntityMonster.java
 @@ -107,17 +107,20 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
@@ -94,7 +94,7 @@ index 9fefb867bca8685b7c571dda0d05091c05d335d6..4bf4de3ddb13718a854b4e9c6eeb2483
          } else {
 -            int i = this.world.getLightLevel(blockposition);
 +            // PandaSpigot start
-+            //int i = this.world.getLightLevel(blockposition);
++            // int i = this.world.getLightLevel(blockposition);
 +            boolean passes;
 +            // PandaSpigot end
  
@@ -103,10 +103,10 @@ index 9fefb867bca8685b7c571dda0d05091c05d335d6..4bf4de3ddb13718a854b4e9c6eeb2483
  
                  this.world.c(10);
 -                i = this.world.getLightLevel(blockposition);
-+                passes = !world.isLightLevel(blockposition, this.random.nextInt(9)); // PandaSpigot
++                passes = !this.world.isLightLevel(blockposition, this.random.nextInt(8)); // PandaSpigot
                  this.world.c(j);
 -            }
-+            } else { passes = !world.isLightLevel(blockposition, this.random.nextInt(9)); } // PandaSpigot
++            } else { passes = !this.world.isLightLevel(blockposition, this.random.nextInt(8)); } // PandaSpigot
  
 -            return i <= this.random.nextInt(8);
 +            return passes; // PandaSpigot

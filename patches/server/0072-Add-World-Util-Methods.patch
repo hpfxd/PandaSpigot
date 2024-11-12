@@ -20,18 +20,18 @@ index 03fe76355813497a5db33ad185db0e4b40c6f85a..df28cca6175ff3ddf4992c44a0760ef1
          int j = blockposition.getX() & 15;
          int k = blockposition.getY();
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index 084f107bf019b0f2e00d17a470632780db490abc..a429dc5e950a31557d444d0a50ed71d13f13d555 100644
+index 589bf95c13e9c78c792498a7b73fd0480f4a503d..36524e82242dbe948b8a0dba1d538e48b5653a9b 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -93,7 +93,7 @@ public abstract class World implements IBlockAccess {
-     public final boolean isClientSide;
-     // CraftBukkit - longhashset
-     // protected LongHashSet chunkTickList = new LongHashSet(); // Spigot
--    private int L;
-+    private int L; private int getSkylightSubtracted() { return this.L; } // PandaSpigot - OBFHELPER
-     public boolean allowMonsters; // CraftBukkit - public
-     public boolean allowAnimals; // CraftBukkit - public
-     private boolean M;
+@@ -70,7 +70,7 @@ public abstract class World implements IBlockAccess {
+     public final List<Entity> k = Lists.newArrayList();
+     protected final IntHashMap<Entity> entitiesById = new IntHashMap();
+     private long d = 16777215L;
+-    private int I;
++    private int I; private int getSkylightSubtracted() { return this.I; } // PandaSpigot - OBFHELPER
+     protected int m = (new Random()).nextInt();
+     protected final int n = 1013904223;
+     protected float o;
 @@ -175,6 +175,12 @@ public abstract class World implements IBlockAccess {
          return (CraftServer) Bukkit.getServer();
      }
