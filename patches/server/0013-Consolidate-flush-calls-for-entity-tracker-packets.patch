@@ -6,10 +6,10 @@ Subject: [PATCH] Consolidate flush calls for entity tracker packets
 Most server packets seem to be sent from here, so try to avoid expensive flush calls from them.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 26c016db54cce56ff4a75eb9aa4f5f2d25d68e02..90b7631f3afcbead65b14c1f1147ebf91759acb2 100644
+index 2d3e52542cfec01ad7c3ca246ed087ef56bbcb35..568c8a28cdb44b2b0a1fb64596b96fbfe87e14cd 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -951,7 +951,26 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
+@@ -944,7 +944,26 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
                  this.methodProfiler.b();
                  this.methodProfiler.a("tracker");
                  worldserver.timings.tracker.startTiming(); // Spigot
