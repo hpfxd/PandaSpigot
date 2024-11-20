@@ -53,7 +53,7 @@ index 4a3b170542d6266cb5868a925c6d3d081fc9598f..99367c42858cf97190a3b090f258b18e
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
-index 40291094e8aeff2a12b7b4ae721ef3e928a3b0b1..1f368aa9343b03610d8b2a9996743f779f0281ff 100644
+index 40291094e8aeff2a12b7b4ae721ef3e928a3b0b1..7479552cfde04fc0d1857a535206458444a1ab76 100644
 --- a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
 +++ b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
 @@ -66,7 +66,7 @@ public class NameReferencingFileConverter {
@@ -61,7 +61,7 @@ index 40291094e8aeff2a12b7b4ae721ef3e928a3b0b1..1f368aa9343b03610d8b2a9996743f77
          }), String.class);
  
 -        if (minecraftserver.getOnlineMode() || org.spigotmc.SpigotConfig.bungee) { // Spigot: bungee = online mode, for now.
-+        if (minecraftserver.getOnlineMode() || com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().isProxyOnlineMode()) { // Spigot: bungee = online mode, for now. // PandaSpigot - Handle via setting
++        if (com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().isProxyOnlineMode()) { // Spigot: bungee = online mode, for now. // PandaSpigot - Handle via setting
              minecraftserver.getGameProfileRepository().findProfilesByNames(astring, Agent.MINECRAFT, profilelookupcallback);
          } else {
              String[] astring1 = astring;
@@ -84,7 +84,7 @@ index 474f43eab7ceb63ab04e2ebbcdd9f73d7cb2f27d..d7dee8b3920b1803f751f3fa206fe035
              GameProfile gameprofile = new GameProfile(uuid, s);
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 0f0d088a69e019a64f7ed2a8998c76da2232ef97..15727da153524a13d5b507c11aef69d7571f6e70 100644
+index e355f31d852fa15ff2c6bba55931f38be9e81d91..8937cd1e727bd90302a66743ea78d905ad4e56d9 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1342,7 +1342,7 @@ public final class CraftServer implements Server {
@@ -92,7 +92,7 @@ index 0f0d088a69e019a64f7ed2a8998c76da2232ef97..15727da153524a13d5b507c11aef69d7
              GameProfile profile = null;
              // Only fetch an online UUID in online mode
 -            if ( MinecraftServer.getServer().getOnlineMode() || org.spigotmc.SpigotConfig.bungee )
-+            if ( MinecraftServer.getServer().getOnlineMode() || com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().isProxyOnlineMode() ) // PandaSpigot - Handle via setting
++            if ( com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().isProxyOnlineMode() ) // PandaSpigot - Handle via setting
              {
                  profile = MinecraftServer.getServer().getUserCache().getProfile( name );
              }
