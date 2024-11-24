@@ -12,7 +12,7 @@ thread.
 Disable flushing by passing -Dpaper.explicit-flush=false
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..9ece4582635db8d9547302421b44f67e262fd0f7 100644
+index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..9b8415a334d7e8527ec39d32e7ab1b81be876b54 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -74,6 +74,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -28,7 +28,7 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..9ece4582635db8d9547302421b44f67e
          }
  
 -        this.channel.flush();
-+        if (enableExplicitFlush) this.channel.eventLoop().execute(() -> this.channel.flush()); // PandaSpigot - we don't need to explicit flush here, but allow opt-in in case issues are found to a better version
++        if (enableExplicitFlush) this.channel.eventLoop().execute(() -> this.channel.flush()); // PandaSpigot - Allow Disabling Explicit Network Manager Flushing
      }
  
      public SocketAddress getSocketAddress() {
