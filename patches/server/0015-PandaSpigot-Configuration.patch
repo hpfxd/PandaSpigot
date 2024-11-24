@@ -206,10 +206,10 @@ index ad8c5da90fc64825185aedcfdf89a6ff013a7a81..1caffab6e75abf6010e8f1f2d2a29a2a
  
          pluginManager.clearPlugins();
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 5c980fe2907d2ff01be793ab0654ab198f46e519..fc6061a800b6e8a61eda70aadc6abb3627805916 100644
+index c3768c33f240799deb5f92b5141c962e41b11827..7ec64221dca7da2d0d52628a59e303eeb44b2621 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
-@@ -130,6 +130,14 @@ public class Main {
+@@ -131,6 +131,14 @@ public class Main {
                          .defaultsTo(new File("paper.yml"))
                          .describedAs("Yml file");
                  // PaperSpigot End

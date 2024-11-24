@@ -337,7 +337,7 @@ index e218b127c6dcdce2c4f8154684f58d4295c6c247..e355f31d852fa15ff2c6bba55931f38b
      @Override
      public PluginCommand getPluginCommand(String name) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 715fb447a1428953d7e1425cb12a5e8dcff574e8..697f5a9f0a398d561d771bca7fe2b637a7725b56 100644
+index abf3a9f32e55a893b6f451c1e89de38c17ca90b3..39296a28458bb52b317187b96eec6a2b98230d97 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -10,7 +10,7 @@ import java.util.logging.Logger;
@@ -349,7 +349,7 @@ index 715fb447a1428953d7e1425cb12a5e8dcff574e8..697f5a9f0a398d561d771bca7fe2b637
  
  public class Main {
      public static boolean useJline = true;
-@@ -167,6 +167,7 @@ public class Main {
+@@ -168,6 +168,7 @@ public class Main {
              }
  
              try {
@@ -357,7 +357,7 @@ index 715fb447a1428953d7e1425cb12a5e8dcff574e8..697f5a9f0a398d561d771bca7fe2b637
                  // This trick bypasses Maven Shade's clever rewriting of our getProperty call when using String literals
                  String jline_UnsupportedTerminal = new String(new char[] {'j','l','i','n','e','.','U','n','s','u','p','p','o','r','t','e','d','T','e','r','m','i','n','a','l'});
                  String jline_terminal = new String(new char[] {'j','l','i','n','e','.','t','e','r','m','i','n','a','l'});
-@@ -184,10 +185,21 @@ public class Main {
+@@ -185,10 +186,21 @@ public class Main {
                      // This ensures the terminal literal will always match the jline implementation
                      System.setProperty(jline.TerminalFactory.JLINE_TERMINAL, jline.UnsupportedTerminal.class.getName());
                  }
@@ -379,7 +379,7 @@ index 715fb447a1428953d7e1425cb12a5e8dcff574e8..697f5a9f0a398d561d771bca7fe2b637
                  }
  
                  // Spigot Start
-@@ -206,6 +218,7 @@ public class Main {
+@@ -207,6 +219,7 @@ public class Main {
                      System.out.println( "Please see http://www.spigotmc.org/wiki/changing-permgen-size/ for more details and more in-depth instructions." );
                  }
                  // Spigot End

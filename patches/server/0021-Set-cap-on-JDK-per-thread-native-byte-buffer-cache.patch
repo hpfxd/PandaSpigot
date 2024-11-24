@@ -17,12 +17,12 @@ keeping long lived large direct buffers in cache.
 Set system properly at server startup if not set already to help protect from this.
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index fc6061a800b6e8a61eda70aadc6abb3627805916..715fb447a1428953d7e1425cb12a5e8dcff574e8 100644
+index 7ec64221dca7da2d0d52628a59e303eeb44b2621..abf3a9f32e55a893b6f451c1e89de38c17ca90b3 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
-@@ -18,6 +18,7 @@ public class Main {
- 
+@@ -19,6 +19,7 @@ public class Main {
      public static void main(String[] args) {
+         if (System.getProperty("paper.explicit-flush") == null) System.setProperty("paper.explicit-flush", "true"); // PandaSpigot
          // Todo: Installation script
 +        if (System.getProperty("jdk.nio.maxCachedBufferSize") == null) System.setProperty("jdk.nio.maxCachedBufferSize", "262144"); // PandaSpigot - cap per-thread NIO cache size
          OptionParser parser = new OptionParser() {
