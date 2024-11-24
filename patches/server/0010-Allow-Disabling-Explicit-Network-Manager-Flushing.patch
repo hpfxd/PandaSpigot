@@ -9,17 +9,17 @@ The logic has been improved to do the
 flushing in the netty event loop, so it doesn't flush on the main
 thread.
 
-Disable flushing by passing -Dpanda.disable-explicit-flush=true
+Disable flushing by passing -Dpaper.explicit-flush=false
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..cb46e738f2c4a49aca5d5d57e5a4e24756312f26 100644
+index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..9ece4582635db8d9547302421b44f67e262fd0f7 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -74,6 +74,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      private IChatBaseComponent n;
      private boolean o;
      private boolean p;
-+    private static boolean disableExplicitFlush = Boolean.getBoolean("panda.disable-explicit-flush"); // PandaSpigot
++    private static boolean enableExplicitFlush = Boolean.getBoolean("paper.explicit-flush"); // PandaSpigot
  
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
@@ -28,7 +28,19 @@ index fcf54e3a138f8408d7b85f087be03ca8cedb45f9..cb46e738f2c4a49aca5d5d57e5a4e247
          }
  
 -        this.channel.flush();
-+        if (!disableExplicitFlush) this.channel.eventLoop().execute(() -> this.channel.flush()); // PandaSpigot - Allow Disabling Explicit Network Manager Flushing
++        if (enableExplicitFlush) this.channel.eventLoop().execute(() -> this.channel.flush()); // PandaSpigot - we don't need to explicit flush here, but allow opt-in in case issues are found to a better version
      }
  
      public SocketAddress getSocketAddress() {
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index 5c980fe2907d2ff01be793ab0654ab198f46e519..c3768c33f240799deb5f92b5141c962e41b11827 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -17,6 +17,7 @@ public class Main {
+     public static boolean useConsole = true;
+ 
+     public static void main(String[] args) {
++        if (System.getProperty("paper.explicit-flush") == null) System.setProperty("paper.explicit-flush", "true"); // PandaSpigot
+         // Todo: Installation script
+         OptionParser parser = new OptionParser() {
+             {

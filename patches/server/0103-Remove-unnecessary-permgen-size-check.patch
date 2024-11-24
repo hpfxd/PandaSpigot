@@ -5,10 +5,10 @@ Subject: [PATCH] Remove unnecessary permgen size check
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 3fdc95dc79531f909728af4e543a3f9b621f5159..e8e264ec639594aa282648e9797e1bb4dae1cfd9 100644
+index 598e9d06e5491eb79cc5f253ca9e1de7c025eec6..1d64ed78786912749156a0a853b9e9787a4fec3a 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
-@@ -207,6 +207,8 @@ public class Main {
+@@ -208,6 +208,8 @@ public class Main {
                      // PandaSpigot end
                  }
  
@@ -17,7 +17,7 @@ index 3fdc95dc79531f909728af4e543a3f9b621f5159..e8e264ec639594aa282648e9797e1bb4
                  // Spigot Start
                  int maxPermGen = 0; // In kb
                  for ( String s : java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments() )
-@@ -223,6 +225,8 @@ public class Main {
+@@ -224,6 +226,8 @@ public class Main {
                      System.out.println( "Please see http://www.spigotmc.org/wiki/changing-permgen-size/ for more details and more in-depth instructions." );
                  }
                  // Spigot End
