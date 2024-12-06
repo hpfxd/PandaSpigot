@@ -183,7 +183,7 @@ index 0000000000000000000000000000000000000000..c0040dd80559d30f963eb952f6ef3372
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/PacketPrepender.java b/src/main/java/net/minecraft/server/PacketPrepender.java
-index 29d28a45224afbf7f5641a98fee1ae7a416ed6e1..0c0babf7a0c306e1156b8177fc00334999b5adc2 100644
+index 70cb2632a7de8023facb56e218384cee9a15e889..db51c60501d3a498f60147a1c4638903235cfa65 100644
 --- a/src/main/java/net/minecraft/server/PacketPrepender.java
 +++ b/src/main/java/net/minecraft/server/PacketPrepender.java
 @@ -4,26 +4,29 @@ import io.netty.buffer.ByteBuf;
@@ -217,7 +217,7 @@ index 29d28a45224afbf7f5641a98fee1ae7a416ed6e1..0c0babf7a0c306e1156b8177fc003349
      }
  
      protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
-         this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
+         this.a(channelhandlercontext, object, bytebuf);
      }
 +    // PandaSpigot start
 +    @Override
