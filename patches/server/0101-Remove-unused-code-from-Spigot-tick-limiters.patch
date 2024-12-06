@@ -6,7 +6,7 @@ Subject: [PATCH] Remove unused code from Spigot tick limiters
 Paper removed this feature from Spigot, but forgot to remove some parts of the code/config
 
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index ea2bc1111714eefaf6352b74f82f5e86e1350f28..6a563d3017b0455dfe27f84e30fd4c23bfc5c333 100644
+index 326c881f76b6ba6414563ccb5bcfda7c06e1f798..fe9b4ea7584587c4a4d198e01fc21838ec59f471 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -135,8 +135,12 @@ public abstract class World implements IBlockAccess {
@@ -35,7 +35,7 @@ index ea2bc1111714eefaf6352b74f82f5e86e1350f28..6a563d3017b0455dfe27f84e30fd4c23
      }
  
      public World b() {
-@@ -1549,7 +1557,7 @@ public abstract class World implements IBlockAccess {
+@@ -1549,12 +1557,12 @@ public abstract class World implements IBlockAccess {
          guardEntityList = true; // Spigot
          // CraftBukkit start - Use field for loop variable
          co.aikar.timings.TimingHistory.entityTicks += this.entityList.size(); // Spigot
@@ -44,15 +44,21 @@ index ea2bc1111714eefaf6352b74f82f5e86e1350f28..6a563d3017b0455dfe27f84e30fd4c23
          // PaperSpigot start - Disable tick limiters
          //if (tickPosition < 0) tickPosition = 0;
          for (tickPosition = 0; tickPosition < entityList.size(); tickPosition++) {
+             // PaperSpigot end
+-            tickPosition = (tickPosition < entityList.size()) ? tickPosition : 0;
++            // tickPosition = (tickPosition < entityList.size()) ? tickPosition : 0; // PandaSpigot - Remove redundant code
+             entity = (Entity) this.entityList.get(this.tickPosition);
+             // CraftBukkit end
+             if (entity.vehicle != null) {
 @@ -1621,14 +1629,14 @@ public abstract class World implements IBlockAccess {
          // CraftBukkit end
  
          // Spigot start
 -        int tilesThisCycle = 0;
--        for (tileTickPosition = 0; tileTickPosition < tileEntityList.size(); tileTickPosition++) { // PaperSpigot - Disable tick limiters
 +        // int tilesThisCycle = 0; // PandaSpigot - Remove unused code
-+        for (tileTickPosition = 0; tileTickPosition < tileEntityList.size(); tileTickPosition++) { // PaperSpigot - Disable tick limiters // PandaSpigot - TODO: This is really necessary? I think we can go back to vanilla handling
-             tileTickPosition = (tileTickPosition < tileEntityList.size()) ? tileTickPosition : 0;
+         for (tileTickPosition = 0; tileTickPosition < tileEntityList.size(); tileTickPosition++) { // PaperSpigot - Disable tick limiters
+-            tileTickPosition = (tileTickPosition < tileEntityList.size()) ? tileTickPosition : 0;
++            // tileTickPosition = (tileTickPosition < tileEntityList.size()) ? tileTickPosition : 0; // PandaSpigot - Remove redundant code
              TileEntity tileentity = (TileEntity) this.tileEntityList.get(tileTickPosition);
              // Spigot start
              if (tileentity == null) {
