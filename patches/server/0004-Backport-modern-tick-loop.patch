@@ -231,7 +231,7 @@ index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..6434b8613971a228fb0074390d8223bf
          Thread thread = new Thread("Server Infinisleeper") {
              {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..2d3e52542cfec01ad7c3ca246ed087ef56bbcb35 100644
+index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..d7b7b123380791d218b5c6bb113ccaadc0e6ffc5 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -48,7 +48,7 @@ import org.bukkit.craftbukkit.Main;
@@ -436,7 +436,7 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..2d3e52542cfec01ad7c3ca246ed087ef
 +        isOversleep = true;
 +        this.controlTerminate(() -> !this.canOversleep());
 +        isOversleep = false;
-+        this.server.getPluginManager().callEvent(new com.destroystokyo.paper.event.server.ServerTickStartEvent(this.ticks+1));
++        new com.destroystokyo.paper.event.server.ServerTickStartEvent(this.ticks+1).callEvent();
 +    // PandaSpigot end
  
          ++this.ticks;
@@ -448,7 +448,7 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..2d3e52542cfec01ad7c3ca246ed087ef
 +        // PandaSpigot start - Modern tick loop
 +        long endTime = System.nanoTime();
 +        long remaining = (TICK_TIME - (endTime - lastTick)) - catchupTime;
-+        this.server.getPluginManager().callEvent(new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.ticks, ((double)(endTime - lastTick) / 1000000D), remaining));
++        new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.ticks, ((double)(endTime - lastTick) / 1000000D), remaining).callEvent();
 +        // PandaSpigot end
          this.methodProfiler.a("tallying");
          this.h[this.ticks % 100] = System.nanoTime() - i;
