@@ -238,10 +238,10 @@ index 8de31ea2569a2cb68b5a5a2b4d61fbb7007a824d..11218808402b3d88c99b4b44f654907c
  
      public static class CommandNumber {
 diff --git a/src/main/java/net/minecraft/server/CustomWorldSettingsFinal.java b/src/main/java/net/minecraft/server/CustomWorldSettingsFinal.java
-index 4948ad3499b2eef73cbb46a56ae55095a6bf39a7..0b5785673c53a888e13e1e07f63f32277df70783 100644
+index 4948ad3499b2eef73cbb46a56ae55095a6bf39a7..25282602ea0a80ca7bf6761cb89b5bbef0e7add2 100644
 --- a/src/main/java/net/minecraft/server/CustomWorldSettingsFinal.java
 +++ b/src/main/java/net/minecraft/server/CustomWorldSettingsFinal.java
-@@ -284,92 +284,92 @@ public class CustomWorldSettingsFinal {
+@@ -284,93 +284,93 @@ public class CustomWorldSettingsFinal {
          public JsonElement a(CustomWorldSettingsFinal.CustomWorldSettings customworldsettingsfinal_customworldsettings, Type type, JsonSerializationContext jsonserializationcontext) {
              JsonObject jsonobject = new JsonObject();
  
@@ -410,10 +410,12 @@ index 4948ad3499b2eef73cbb46a56ae55095a6bf39a7..0b5785673c53a888e13e1e07f63f3227
          }
  
 -        public JsonElement serialize(Object object, Type type, JsonSerializationContext jsonserializationcontext) {
+-            return this.a((CustomWorldSettingsFinal.CustomWorldSettings) object, type, jsonserializationcontext);
 +        public JsonElement serialize(CustomWorldSettingsFinal.CustomWorldSettings object, Type type, JsonSerializationContext jsonserializationcontext) {
-             return this.a((CustomWorldSettingsFinal.CustomWorldSettings) object, type, jsonserializationcontext);
++            return this.a(object, type, jsonserializationcontext);
          }
      }
+ 
 diff --git a/src/main/java/net/minecraft/server/DedicatedPlayerList.java b/src/main/java/net/minecraft/server/DedicatedPlayerList.java
 index c5de460c64e42cf53d2510caa7245e1a08ec07b8..75dc45f2e5fe59333b0e11d50209b1d1cb4ce947 100644
 --- a/src/main/java/net/minecraft/server/DedicatedPlayerList.java
@@ -896,7 +898,7 @@ index 5c91610430ef2bde06c07daa7b752a3b92c5d3ca..58214e1449e964a009d3fc18983f4d02
      }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketEncrypter.java b/src/main/java/net/minecraft/server/PacketEncrypter.java
-index bd972ebebe43e82b0eae56882ad21fc4feae84b1..b32a7e67666d372cc9f080b60897f28fb59736fd 100644
+index bd972ebebe43e82b0eae56882ad21fc4feae84b1..e8ef4725c4d21c49fcc0219578391e15d0164a67 100644
 --- a/src/main/java/net/minecraft/server/PacketEncrypter.java
 +++ b/src/main/java/net/minecraft/server/PacketEncrypter.java
 @@ -17,7 +17,7 @@ public class PacketEncrypter extends MessageToByteEncoder<ByteBuf> {
@@ -904,8 +906,9 @@ index bd972ebebe43e82b0eae56882ad21fc4feae84b1..b32a7e67666d372cc9f080b60897f28f
      }
  
 -    protected void encode(ChannelHandlerContext channelhandlercontext, Object object, ByteBuf bytebuf) throws Exception {
+-        this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
 +    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
-         this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
++        this.a(channelhandlercontext, object, bytebuf);
      }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketLoginInStart.java b/src/main/java/net/minecraft/server/PacketLoginInStart.java
@@ -2143,7 +2146,7 @@ index db8af7daaef07fdb34705ef274178150861f60ea..74571c542a269b3d6d3cdf5cb2b85707
 -    }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketPrepender.java b/src/main/java/net/minecraft/server/PacketPrepender.java
-index e09ede5bfff8c71b82fdcbeb50e84ec7d617f3f1..29d28a45224afbf7f5641a98fee1ae7a416ed6e1 100644
+index e09ede5bfff8c71b82fdcbeb50e84ec7d617f3f1..70cb2632a7de8023facb56e218384cee9a15e889 100644
 --- a/src/main/java/net/minecraft/server/PacketPrepender.java
 +++ b/src/main/java/net/minecraft/server/PacketPrepender.java
 @@ -23,7 +23,7 @@ public class PacketPrepender extends MessageToByteEncoder<ByteBuf> {
@@ -2151,8 +2154,9 @@ index e09ede5bfff8c71b82fdcbeb50e84ec7d617f3f1..29d28a45224afbf7f5641a98fee1ae7a
      }
  
 -    protected void encode(ChannelHandlerContext channelhandlercontext, Object object, ByteBuf bytebuf) throws Exception {
+-        this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
 +    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
-         this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
++        this.a(channelhandlercontext, object, bytebuf);
      }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketStatusInPing.java b/src/main/java/net/minecraft/server/PacketStatusInPing.java
