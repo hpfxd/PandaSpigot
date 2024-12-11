@@ -7,10 +7,10 @@ Cleanups a bytebuffer which was allocated during the encoding of the
 favicon to be sent to the client.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 5048ee0fd59b15a49ebd221fbbab44a4dea9a9d3..f141208ad11a5594aa1b7aee5b09ad0cb9e9dd9d 100644
+index 9b3028ddc71ea072a53d44d49fc66865fdcd4d36..ff1cd9953300e3306c42b0875ab003d014e7ba44 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -744,6 +744,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
+@@ -746,6 +746,7 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
  
          if (file.isFile()) {
              ByteBuf bytebuf = Unpooled.buffer();
@@ -18,7 +18,7 @@ index 5048ee0fd59b15a49ebd221fbbab44a4dea9a9d3..f141208ad11a5594aa1b7aee5b09ad0c
  
              try {
                  BufferedImage bufferedimage = ImageIO.read(file);
-@@ -751,13 +752,14 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
+@@ -753,13 +754,14 @@ public abstract class MinecraftServer extends com.hpfxd.pandaspigot.tickloop.Ree
                  Validate.validState(bufferedimage.getWidth() == 64, "Must be 64 pixels wide", new Object[0]);
                  Validate.validState(bufferedimage.getHeight() == 64, "Must be 64 pixels high", new Object[0]);
                  ImageIO.write(bufferedimage, "PNG", new ByteBufOutputStream(bytebuf));
