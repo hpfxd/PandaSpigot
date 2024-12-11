@@ -231,7 +231,7 @@ index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..6434b8613971a228fb0074390d8223bf
          Thread thread = new Thread("Server Infinisleeper") {
              {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..0ad70c9ef1d5ab91a56852f171934a41e0c0a11d 100644
+index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..7631ed0c338e5634bbe7ffa3f8e409e5dd5820eb 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -48,7 +48,7 @@ import org.bukkit.craftbukkit.Main;
@@ -478,15 +478,23 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..0ad70c9ef1d5ab91a56852f171934a41
      }
  
      public int getIdleTimeout() {
+@@ -1589,6 +1677,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+         return this.ab;
+     }
+ 
++    @Override // PandaSpigot - Modern tick loop
+     public Thread aM() {
+         return this.serverThread;
+     }
 diff --git a/src/main/java/net/minecraft/server/SystemUtils.java b/src/main/java/net/minecraft/server/SystemUtils.java
-index e65ffc1566784f8a35a4a620514375b9077ce247..0c23e540a300590f967a681a3a8cf65bfc4f1377 100644
+index e65ffc1566784f8a35a4a620514375b9077ce247..f25a8c7e4e11dd9fb257b09f762585c998f8204d 100644
 --- a/src/main/java/net/minecraft/server/SystemUtils.java
 +++ b/src/main/java/net/minecraft/server/SystemUtils.java
 @@ -6,6 +6,16 @@ import org.apache.logging.log4j.Logger;
  
  public class SystemUtils {
  
-+    // PandaSpigot start - Modern Tick Loop
++    // PandaSpigot start - Modern tick Loop
 +    public static long getMonotonicMillis() {
 +        return getMonotonicNanos() / 1000000L;
 +    }
