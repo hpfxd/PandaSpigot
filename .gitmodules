@@ -1,4 +1,4 @@
 [submodule "Paper"]
 	path = base/Paper
-	url = https://github.com/PaperMC/Paper.git
+	url = https://github.com/PaperMC/Paper-archive.git
 	branch = ver/1.8.8
