@@ -12,7 +12,7 @@ workdir="$basedir/base"
 minecraftversion=$(cat "$workdir/Paper/BuildData/info.json"  | grep minecraftVersion | cut -d '"' -f 4)
 decompiledir="$workdir/mc-dev/spigot"
 
-find "$decompiledir/$nms" -name '*.java' -type f -exec cp -nt "$workdir/Paper/PaperSpigot-Server/src/main/java/$nms" {} +
+find "$decompiledir/$nms" -name '*.java' -type f -exec cp -nt "$workdir/Paper/PaperSpigot-Server/src/main/java/$nms" {} + || true
 cp -rt "$workdir/Paper/PaperSpigot-Server/src/main/resources" "$decompiledir/assets" "$decompiledir/yggdrasil_session_pubkey.der"
 
 (
