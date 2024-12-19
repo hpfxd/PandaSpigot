@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Thu, 11 Jul 2024 17:05:06 -0300
+Subject: [PATCH] Add some missing growth rates
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockCocoa.java b/src/main/java/net/minecraft/server/BlockCocoa.java
+index 8eb1bebaec2d35b8bfa57be5ef19936ad5770a1f..918f5f601a255887f8f3bd1c87c47997011a3bde 100644
+--- a/src/main/java/net/minecraft/server/BlockCocoa.java
++++ b/src/main/java/net/minecraft/server/BlockCocoa.java
+@@ -17,7 +17,7 @@ public class BlockCocoa extends BlockDirectional implements IBlockFragilePlantEl
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
+         if (!this.e(world, blockposition, iblockdata)) {
+             this.f(world, blockposition, iblockdata);
+-        } else if (world.random.nextInt(5) == 0) {
++        } else if (world.random.nextInt(Math.max(1, (int) world.growthOdds / world.spigotConfig.cocoaModifier * 5)) == 0) { // PandaSpigot
+             int i = ((Integer) iblockdata.get(BlockCocoa.AGE)).intValue();
+ 
+             if (i < 2) {
+diff --git a/src/main/java/net/minecraft/server/BlockVine.java b/src/main/java/net/minecraft/server/BlockVine.java
+index 25d19c4c2b110d94d952f33a9a6e8e5f7f2cc1cf..d22f88f03b06752a5bafefc9ea905c2a509bdaba 100644
+--- a/src/main/java/net/minecraft/server/BlockVine.java
++++ b/src/main/java/net/minecraft/server/BlockVine.java
+@@ -165,7 +165,7 @@ public class BlockVine extends Block {
+ 
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
+         if (!world.isClientSide) {
+-            if (world.random.nextInt(4) == 0) {
++            if (world.random.nextInt(Math.max(1, (int) world.growthOdds / world.spigotConfig.vineModifier * 4)) == 0) { // PandaSpigot
+                 byte b0 = 4;
+                 int i = 5;
+                 boolean flag = false;
+diff --git a/src/main/java/org/spigotmc/SpigotWorldConfig.java b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+index 8e86212aa5deae00c55cacc7207525df67a1868e..384c3eac6b67fdb42c12156570b36ed2fe93f260 100644
+--- a/src/main/java/org/spigotmc/SpigotWorldConfig.java
++++ b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+@@ -90,6 +90,10 @@ public class SpigotWorldConfig
+     public int saplingModifier;
+     public int wheatModifier;
+     public int wartModifier;
++    // PandaSpigot start
++    public int vineModifier;
++    public int cocoaModifier;
++    // PandaSpigot end
+     private int getAndValidateGrowth(String crop)
+     {
+         int modifier = getInt( "growth." + crop.toLowerCase() + "-modifier", 100 );
+@@ -112,6 +116,10 @@ public class SpigotWorldConfig
+         saplingModifier = getAndValidateGrowth( "Sapling" );
+         wheatModifier = getAndValidateGrowth( "Wheat" );
+         wartModifier = getAndValidateGrowth( "NetherWart" );
++        // PandaSpigot start
++        vineModifier = getAndValidateGrowth( "Vine" );
++        cocoaModifier = getAndValidateGrowth( "Cocoa" );
++        // PandaSpigot end
+     }
+ 
+     public double itemMerge;
