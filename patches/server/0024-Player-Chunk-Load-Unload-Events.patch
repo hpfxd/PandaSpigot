@@ -17,14 +17,17 @@ index 0c49a256cc481af1ceb7a873b03763e1d942a362..23524af2dd05a6f14ff3bddbf524c5d4
                      }
                  } else {
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..696edfe83aa6c75deaaa59cc10818dbf261cc5a9 100644
+index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..1ac28773d513e65e11b3af97cf3a5405b016ee6b 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-@@ -428,6 +428,7 @@ public class PlayerChunkMap {
+@@ -428,6 +428,10 @@ public class PlayerChunkMap {
                  this.players.remove(entityplayer); // CraftBukkit
                  this.b.remove(entityplayer);
                  entityplayer.chunkCoordIntPairQueue.remove(this.location);
-+                new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(chunk.bukkitChunk, entityplayer.getBukkitEntity()).callEvent(); // PandaSpigot
++                org.bukkit.Chunk bukkitChunk = chunk.bukkitChunk;
++                if (bukkitChunk != null) { // TODO: Why can it be null? Investigate when I have time
++                    new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(bukkitChunk, entityplayer.getBukkitEntity()).callEvent(); // PandaSpigot
++                }
                  if (this.b.isEmpty()) {
                      long i = (long) this.location.x + 2147483647L | (long) this.location.z + 2147483647L << 32;
  
