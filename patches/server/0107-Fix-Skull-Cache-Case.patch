@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Fri, 3 Jan 2025 14:54:55 -0300
+Subject: [PATCH] Fix Skull Cache Case
+
+
+diff --git a/src/main/java/net/minecraft/server/TileEntitySkull.java b/src/main/java/net/minecraft/server/TileEntitySkull.java
+index 58014c5f142abf72fcf6a7164872bbe7d7bb9d18..3d964fd3c3a488418bc8162bf2bcda38cddeefa8 100644
+--- a/src/main/java/net/minecraft/server/TileEntitySkull.java
++++ b/src/main/java/net/minecraft/server/TileEntitySkull.java
+@@ -162,7 +162,7 @@ public class TileEntitySkull extends TileEntity {
+             } else if (MinecraftServer.getServer() == null) {
+                 callback.apply(gameprofile);
+             } else {
+-                GameProfile profile = skinCache.getIfPresent(gameprofile.getName());
++                GameProfile profile = skinCache.getIfPresent(gameprofile.getName().toLowerCase()); // PandaSpigot - Fix Skull Cache Case
+                 if (profile != null && Iterables.getFirst(profile.getProperties().get("textures"), (Object) null) != null) {
+                     callback.apply(profile);
+                 } else {
