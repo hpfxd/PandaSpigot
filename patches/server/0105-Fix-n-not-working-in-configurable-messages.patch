@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Thu, 2 Jan 2025 20:48:39 -0300
+Subject: [PATCH] Fix \n not working in configurable messages
+
+
+diff --git a/src/main/java/org/spigotmc/SpigotConfig.java b/src/main/java/org/spigotmc/SpigotConfig.java
+index dfd1de256e15c800658e1ce8c76a587eeb310e9c..6eff16dac50cbf2c64464d40820b039dee0f8c71 100644
+--- a/src/main/java/org/spigotmc/SpigotConfig.java
++++ b/src/main/java/org/spigotmc/SpigotConfig.java
+@@ -197,7 +197,7 @@ public class SpigotConfig
+     public static String outdatedServerMessage = "Outdated server! I\'m still on {0}";
+     private static String transform(String s)
+     {
+-        return ChatColor.translateAlternateColorCodes( '&', s ).replaceAll( "\\n", "\n" );
++        return ChatColor.translateAlternateColorCodes( '&', s ).replaceAll( "\\\\n", "\n" ); // PandaSpigot - Fix \n not working in configurable messages
+     }
+     private static void messages()
+     {
