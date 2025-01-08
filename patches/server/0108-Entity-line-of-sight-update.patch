@@ -3,6 +3,8 @@ From: Michael <wawoni@teleg.eu>
 Date: Wed, 9 Jan 2025 12:34:56 +0500
 Subject: [PATCH] Update line of sight method to use Vec3D.a().
 
+Original code from https://github.com/sathonay/nPaper
+
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
 index abcdef1234567890abcdef1234567890abcdef12..fedcba0987654321fedcba9876543210fedcba98 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
