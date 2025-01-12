@@ -1,0 +1,141 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Rejomy <iyaargg@gmail.com>
+Date: Sun, 12 Jan 2025 13:18:30 +0500
+Subject: [PATCH] Fix item damage visual bug when event was cancelled.
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+index f09af811db3e918e319e709991bd66d5981bd9bc..a1ad0f06e2651df07c07d5eca3f6eb2e5d9e46d5 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+@@ -100,6 +100,9 @@ public class PandaSpigotConfig {
+ 
+     @Comment("Minimum allowed y height before we will send void damage.")
+     public double minYHeight = -64.0D;
++
++    @Comment("Fix item damage visual bug if break or damage event was cancelled.")
++    public boolean fixItemDamageVisualBug = true;
+     
+     //------------------------------------------------------------------------
+     @Comment("On servers with plugins that constantly churn through scoreboards, there is a risk of\n" +
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index fef6c757309078171e1f4ae1e09e567c464a1742..d9f4e35bbeda265bdf6b0f7bacb5b8d21fe0670c 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -2,6 +2,7 @@ package net.minecraft.server;
+ 
+ import com.google.common.base.Charsets;
+ import com.google.common.collect.Lists;
++import com.hpfxd.pandaspigot.config.PandaSpigotConfig;
+ import com.mojang.authlib.GameProfile;
+ import java.util.Collection;
+ import java.util.Iterator;
+@@ -929,7 +930,7 @@ public abstract class EntityHuman extends EntityLiving {
+         );
+         if (playerAttackEntityEvent.callEvent() && willAttack) { // Logic moved to willAttack local variable.
+             {
+-        // PandaSpigot end
++                // PandaSpigot end
+                 float f = (float) this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).getValue();
+                 byte b0 = 0;
+                 float f1 = 0.0F;
+@@ -979,9 +980,9 @@ public abstract class EntityHuman extends EntityLiving {
+                             // PandaSpigot start - Configurable knockback
+                             com.hpfxd.pandaspigot.config.PandaSpigotWorldConfig.KnockbackConfig knockbackConfig = entity.world.pandaSpigotConfig.knockback;
+                             entity.g(
+-                                    -MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * knockbackConfig.extraHorizontal,
+-                                    knockbackConfig.extraVertical,
+-                                    MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * knockbackConfig.extraHorizontal);
++                                -MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * knockbackConfig.extraHorizontal,
++                                knockbackConfig.extraVertical,
++                                MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * knockbackConfig.extraHorizontal);
+                             // PandaSpigot end
+                             this.motX *= 0.6D;
+                             this.motZ *= 0.6D;
+@@ -1000,7 +1001,7 @@ public abstract class EntityHuman extends EntityLiving {
+ 
+                             EntityPlayer attackedPlayer = (EntityPlayer) entity;
+                             PlayerVelocityEvent event = new PlayerVelocityEvent(attackedPlayer.getBukkitEntity(),
+-                                    attackedPlayer.getBukkitEntity().getVelocity());
++                                attackedPlayer.getBukkitEntity().getVelocity());
+ 
+                             this.world.getServer().getPluginManager().callEvent(event);
+                             if (!event.isCancelled()) {
+@@ -1074,6 +1075,16 @@ public abstract class EntityHuman extends EntityLiving {
+ 
+             }
+         }
++        // PandaSpigot Rejomy patch start
++        else if (PandaSpigotConfig.get().fixItemDamageVisualBug) {
++            ItemStack itemInHand = inventory.getItemInHand();
++            boolean isBreakable = itemInHand != null && (itemInHand.getItem() instanceof ItemTool ||
++                itemInHand.getItem() instanceof ItemSword);
++            if (isBreakable) {
++                ((EntityPlayer) this).updateInventory(defaultContainer);
++            }
++        }
++        // PandaSpigot Rejomy patch end
+     }
+ 
+     public void b(Entity entity) {}
+diff --git a/src/main/java/net/minecraft/server/PlayerInteractManager.java b/src/main/java/net/minecraft/server/PlayerInteractManager.java
+index f4f32194bc07b74bb7bc9b678868ada74c385b61..73951ca1548649736a081c55098cb0a3cffedfe1 100644
+--- a/src/main/java/net/minecraft/server/PlayerInteractManager.java
++++ b/src/main/java/net/minecraft/server/PlayerInteractManager.java
+@@ -1,6 +1,7 @@
+ package net.minecraft.server;
+ 
+ // CraftBukkit start
++import com.hpfxd.pandaspigot.config.PandaSpigotConfig;
+ import org.bukkit.event.block.*;
+ import org.bukkit.craftbukkit.event.CraftEventFactory;
+ import org.bukkit.event.Event;
+@@ -289,6 +290,18 @@ public class PlayerInteractManager {
+                 }
+                 // Let the client know the block still exists
+                 this.player.playerConnection.sendPacket(new PacketPlayOutBlockChange(this.world, blockposition));
++
++                // PandaSpigot Rejomy patch start
++                if (PandaSpigotConfig.get().fixItemDamageVisualBug) {
++                    ItemStack itemInHand = player.inventory.getItemInHand();
++                    boolean isBreakable = itemInHand != null && (itemInHand.getItem() instanceof ItemTool ||
++                        itemInHand.getItem() instanceof ItemSword);
++                    if (isBreakable) {
++                        player.updateInventory(player.defaultContainer);
++                    }
++                }
++                // PandaSpigot Rejomy patch end
++
+                 // Update any tile entity data for this block
+                 TileEntity tileentity = this.world.getTileEntity(blockposition);
+                 if (tileentity != null) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 82ad58bc282f523548d3318c4e52fc1e3cbf7bcc..8c8388671e40999a12f3897b7f443a1956e2d00f 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -9,6 +9,7 @@ import java.util.Map;
+ import com.google.common.base.Function;
+ import com.google.common.base.Functions;
+ 
++import com.hpfxd.pandaspigot.config.PandaSpigotConfig;
+ import net.minecraft.server.*;
+ 
+ import org.bukkit.Bukkit;
+@@ -559,6 +560,17 @@ public class CraftEventFactory {
+         if (!event.isCancelled()) {
+             event.getEntity().setLastDamageCause(event);
+         }
++        // PandaSpigot Rejomy patch start
++        else if (PandaSpigotConfig.get().fixItemDamageVisualBug && damager instanceof EntityPlayer) {
++            EntityPlayer attacker = (EntityPlayer) damager;
++            ItemStack itemInHand = attacker.inventory.getItemInHand();
++            boolean isBreakable = itemInHand != null && (itemInHand.getItem() instanceof ItemTool ||
++                itemInHand.getItem() instanceof ItemSword);
++            if (isBreakable) {
++                ((EntityPlayer) damager).updateInventory(((EntityPlayer) damager).defaultContainer);
++            }
++        }
++        // PandaSpigot Rejomy patch end
+ 
+         return event;
+     }
