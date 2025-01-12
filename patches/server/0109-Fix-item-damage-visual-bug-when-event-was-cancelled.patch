@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: Rejomy <iyaargg@gmail.com>
+From: Rejomy <wawoni@teleg.eu>
 Date: Sun, 12 Jan 2025 13:18:30 +0500
 Subject: [PATCH] Fix item damage visual bug when event was cancelled.
 
