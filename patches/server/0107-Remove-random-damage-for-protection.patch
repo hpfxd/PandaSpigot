@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Kirill <wawoni@teleg.eu>
+Date: Fri, 3 Jan 2025 21:55:01 +0500
+Subject: [PATCH] Remove random damage for protection.
+
+
+diff --git a/src/main/java/net/minecraft/server/EnchantmentManager.java b/src/main/java/net/minecraft/server/EnchantmentManager.java
+index 98656815ff5b4a176e145162d0077c30cb1ea1a6..09c69dd4f984201a7bf1168623e8574918e41d36 100644
+--- a/src/main/java/net/minecraft/server/EnchantmentManager.java
++++ b/src/main/java/net/minecraft/server/EnchantmentManager.java
+@@ -148,7 +148,7 @@ public class EnchantmentManager {
+             EnchantmentManager.b.a = 0;
+         }
+ 
+-        return (EnchantmentManager.b.a + 1 >> 1) + EnchantmentManager.a.nextInt((EnchantmentManager.b.a >> 1) + 1);
++        return (EnchantmentManager.b.a + 1 >> 1);
+     }
+ 
+     public static float a(ItemStack itemstack, EnumMonsterType enummonstertype) {
