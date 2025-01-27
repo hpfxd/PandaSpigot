@@ -1,0 +1,162 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: SachaWildCode <sacha.loumachi@gmail.com>
+Date: Mon, 27 Jan 2025 18:40:28 +0100
+Subject: [PATCH] BackPort-Player-ArmorChange-Event
+
+
+diff --git a/src/main/java/org/spigotmc/event/player/PlayerArmorChangeEvent.java b/src/main/java/org/spigotmc/event/player/PlayerArmorChangeEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..03aca6547cc772f62b16a344194b9321c5e29aba
+--- /dev/null
++++ b/src/main/java/org/spigotmc/event/player/PlayerArmorChangeEvent.java
+@@ -0,0 +1,149 @@
++package org.spigotmc.event.player;
++
++import static org.bukkit.Material.CHAINMAIL_BOOTS;
++import static org.bukkit.Material.CHAINMAIL_CHESTPLATE;
++import static org.bukkit.Material.CHAINMAIL_HELMET;
++import static org.bukkit.Material.CHAINMAIL_LEGGINGS;
++import static org.bukkit.Material.DIAMOND_BOOTS;
++import static org.bukkit.Material.DIAMOND_CHESTPLATE;
++import static org.bukkit.Material.DIAMOND_HELMET;
++import static org.bukkit.Material.DIAMOND_LEGGINGS;
++import static org.bukkit.Material.GOLD_BOOTS;
++import static org.bukkit.Material.GOLD_CHESTPLATE;
++import static org.bukkit.Material.GOLD_HELMET;
++import static org.bukkit.Material.GOLD_LEGGINGS;
++import static org.bukkit.Material.IRON_BOOTS;
++import static org.bukkit.Material.IRON_CHESTPLATE;
++import static org.bukkit.Material.IRON_HELMET;
++import static org.bukkit.Material.IRON_LEGGINGS;
++import static org.bukkit.Material.LEATHER_BOOTS;
++import static org.bukkit.Material.LEATHER_CHESTPLATE;
++import static org.bukkit.Material.LEATHER_HELMET;
++import static org.bukkit.Material.LEATHER_LEGGINGS;
++
++import java.util.Arrays;
++import java.util.Collections;
++import java.util.HashSet;
++import java.util.Set;
++
++import org.bukkit.Material;
++import org.bukkit.entity.Player;
++import org.bukkit.event.HandlerList;
++import org.bukkit.event.player.PlayerEvent;
++import org.bukkit.inventory.ItemStack;
++
++import com.avaje.ebean.validation.NotNull;
++
++/**
++ * Called when the player themselves change their armor items
++ * <p>
++ * Not currently called for environmental factors though it <strong>MAY BE IN
++ * THE FUTURE</strong>
++ */
++public class PlayerArmorChangeEvent extends PlayerEvent {
++    private static final HandlerList HANDLERS = new HandlerList();
++
++    @NotNull
++    private final SlotType slotType;
++    private final ItemStack oldItem;
++    private final ItemStack newItem;
++
++    public PlayerArmorChangeEvent(Player player, SlotType slotType, ItemStack oldItem, ItemStack newItem) {
++        super(player);
++        this.slotType = slotType;
++        this.oldItem = oldItem;
++        this.newItem = newItem;
++    }
++
++    @NotNull
++    public SlotType getSlotType() {
++        return this.slotType;
++    }
++
++    public ItemStack getOldItem() {
++        return this.oldItem;
++    }
++
++    public ItemStack getNewItem() {
++        return this.newItem;
++    }
++
++    @NotNull
++    @Override
++    public HandlerList getHandlers() {
++        return HANDLERS;
++    }
++
++    @NotNull
++    public static HandlerList getHandlerList() {
++        return HANDLERS;
++    }
++
++    public enum SlotType {
++        HEAD(
++                LEATHER_HELMET,
++                CHAINMAIL_HELMET,
++                IRON_HELMET,
++                DIAMOND_HELMET,
++                GOLD_HELMET),
++        CHEST(
++                LEATHER_CHESTPLATE,
++                CHAINMAIL_CHESTPLATE,
++                IRON_CHESTPLATE,
++                DIAMOND_CHESTPLATE,
++                GOLD_CHESTPLATE),
++        LEGS(
++                LEATHER_LEGGINGS,
++                CHAINMAIL_LEGGINGS,
++                IRON_LEGGINGS,
++                DIAMOND_LEGGINGS,
++                GOLD_LEGGINGS),
++        FEET(
++                LEATHER_BOOTS,
++                CHAINMAIL_BOOTS,
++                IRON_BOOTS,
++                DIAMOND_BOOTS,
++                GOLD_BOOTS);
++
++        private final Set<Material> types;
++
++        SlotType(Material... types) {
++            this.types = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(types)));
++        }
++
++        /**
++         * Gets an immutable set of all allowed material types for this slot
++         *
++         * @return immutable set of material types
++         */
++        @NotNull
++        public Set<Material> getTypes() {
++            return types;
++        }
++
++        /**
++         * Gets the type of slot via the specified material
++         *
++         * @param material material to get slot by
++         * @return slot type the material will go in, or null if it won't
++         */
++        public static SlotType getByMaterial(Material material) {
++            for (SlotType slotType : values()) {
++                if (slotType.getTypes().contains(material)) {
++                    return slotType;
++                }
++            }
++            return null;
++        }
++
++        /**
++         * Gets whether or not this material can be equipped to a slot
++         *
++         * @param material material to check
++         * @return whether or not this material can be equipped
++         */
++        public static boolean isEquipable(Material material) {
++            return getByMaterial(material) != null;
++        }
++    }
++}
+\ No newline at end of file
