@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Sun, 9 Feb 2025 15:00:11 -0300
+Subject: [PATCH] Fix SPIGOT-3348: Skin Cache Bug
+
+Upstream commit: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/commits/635ffca0102da5681fe2871c6978e9de5118b14d
+
+diff --git a/src/main/java/net/minecraft/server/TileEntitySkull.java b/src/main/java/net/minecraft/server/TileEntitySkull.java
+index 58014c5f142abf72fcf6a7164872bbe7d7bb9d18..2c94ffa6c72d2851513c527fb14f058f24f1e35f 100644
+--- a/src/main/java/net/minecraft/server/TileEntitySkull.java
++++ b/src/main/java/net/minecraft/server/TileEntitySkull.java
+@@ -162,7 +162,7 @@ public class TileEntitySkull extends TileEntity {
+             } else if (MinecraftServer.getServer() == null) {
+                 callback.apply(gameprofile);
+             } else {
+-                GameProfile profile = skinCache.getIfPresent(gameprofile.getName());
++                GameProfile profile = skinCache.getIfPresent(gameprofile.getName().toLowerCase()); // PandaSpigot - Fix SPIGOT-3348: Skin Cache Bug
+                 if (profile != null && Iterables.getFirst(profile.getProperties().get("textures"), (Object) null) != null) {
+                     callback.apply(profile);
+                 } else {
