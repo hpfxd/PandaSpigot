@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: ptbnate <nasxeaty@gmail.com>
-Date: Tue, 4 Feb 2025 14:24:54 +0500
+Date: Sun, 9 Feb 2025 19:28:02 +0500
 Subject: [PATCH] Fix entities going out of sight
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 32752dfad24bc7883b1ab52e29834f1aa6fa60c6..8dc930dc17aa235e0147b2a5a3043b049d3e404b 100644
+index 32752dfad24bc7883b1ab52e29834f1aa6fa60c6..6d7cd4c0c937e7ac9820107b658cbf48f0fa6eaa 100644
 --- a/src/main/java/net/minecraft/server/EntityLiving.java
 +++ b/src/main/java/net/minecraft/server/EntityLiving.java
 @@ -1798,7 +1798,34 @@ public abstract class EntityLiving extends Entity {
@@ -37,7 +37,7 @@ index 32752dfad24bc7883b1ab52e29834f1aa6fa60c6..8dc930dc17aa235e0147b2a5a3043b04
 +        } else {
 +            return this.world.rayTrace(
 +                    vec,
-+                    new Vec3D(entity.locX, entity.locY + (double) this.getHeadHeight(), entity.locZ)
++                    new Vec3D(entity.locX, entity.locY + (double) entity.getHeadHeight(), entity.locZ)
 +            ) == null;
 +        }
 +        // PandaSpigot end
