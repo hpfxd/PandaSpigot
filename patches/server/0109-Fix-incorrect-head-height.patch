@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ptbnate <nasxeaty@gmail.com>
+Date: Sun, 9 Feb 2025 19:26:22 +0500
+Subject: [PATCH] Fix incorrect head height
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index 8dc930dc17aa235e0147b2a5a3043b049d3e404b..6d7cd4c0c937e7ac9820107b658cbf48f0fa6eaa 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -1822,7 +1822,7 @@ public abstract class EntityLiving extends Entity {
+         } else {
+             return this.world.rayTrace(
+                     vec,
+-                    new Vec3D(entity.locX, entity.locY + (double) this.getHeadHeight(), entity.locZ)
++                    new Vec3D(entity.locX, entity.locY + (double) entity.getHeadHeight(), entity.locZ)
+             ) == null;
+         }
+         // PandaSpigot end
