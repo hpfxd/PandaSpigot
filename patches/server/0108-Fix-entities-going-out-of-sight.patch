@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ptbnate <nasxeaty@gmail.com>
+Date: Tue, 4 Feb 2025 14:24:54 +0500
+Subject: [PATCH] Fix entities going out of sight
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index 32752dfad24bc7883b1ab52e29834f1aa6fa60c6..8dc930dc17aa235e0147b2a5a3043b049d3e404b 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -1798,7 +1798,34 @@ public abstract class EntityLiving extends Entity {
+     }
+ 
+     public boolean hasLineOfSight(Entity entity) {
+-        return this.world.rayTrace(new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ), new Vec3D(entity.locX, entity.locY + (double) entity.getHeadHeight(), entity.locZ)) == null;
++        // PandaSpigot start - Fix issue with entities going out of sight
++        Vec3D vec = new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
++
++        if (entity instanceof EntityPlayer) {
++            // Head height is 1,5725
++            // Split it into three to get a more accurate line of sight -> 0.52416667
++
++            double parts = entity.getHeadHeight() / 3;
++
++            Vec3D vec3 = new Vec3D(entity.locX, entity.locY, entity.locZ);
++
++            return this.world.rayTrace(
++                    vec,
++                    vec3.add(0.0D, (parts * 3), 0.0D)
++            ) == null || this.world.rayTrace(
++                    vec,
++                    vec3.add(0.0D, (parts * 2), 0.0D)
++            ) == null || this.world.rayTrace(
++                    vec,
++                    vec3.add(0.0D, (parts * 1), 0.0D)
++            ) == null;
++        } else {
++            return this.world.rayTrace(
++                    vec,
++                    new Vec3D(entity.locX, entity.locY + (double) this.getHeadHeight(), entity.locZ)
++            ) == null;
++        }
++        // PandaSpigot end
+     }
+ 
+     public Vec3D ap() {
