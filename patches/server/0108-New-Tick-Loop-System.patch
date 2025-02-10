@@ -5,22 +5,21 @@ Subject: [PATCH] New Tick Loop System
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b83d774412562540808440eec845da2593383d91..7578eedf460e220d1c4ef9c4743323f16dd20d5a 100644
+index b83d774412562540808440eec845da2593383d91..3a9fd8da8887b04f99fbf5113a8ae44affd6f258 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -512,6 +512,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -512,6 +512,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      }
  
      // PaperSpigot start - Further improve tick loop
 +    // PandaSpigot start - New Tick Loop System
-+    // Extracted from the run() method, it will be used in the future to add ServerTickEvents
 +    private long lastTick = 0;
 +    private long catchupTime = 0;
 +    // PandaSpigot end
      private static final int TPS = 20;
      private static final long SEC_IN_NANO = 1000000000;
      private static final long TICK_TIME = SEC_IN_NANO / TPS;
-@@ -525,39 +530,47 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -525,39 +529,47 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      public static class RollingAverage {
          private final int size;
          private long time;
@@ -77,21 +76,21 @@ index b83d774412562540808440eec845da2593383d91..7578eedf460e220d1c4ef9c4743323f1
      // PaperSpigot End
   
      public void run() {
-@@ -573,8 +586,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -573,8 +585,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                  // Spigot start
                  // PaperSpigot start - Further improve tick loop
                  Arrays.fill( recentTps, 20 );
 -                //long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
 -                long start = System.nanoTime(), lastTick = start - TICK_TIME, catchupTime = 0, curTime, wait, tickSection = start;
 +                // PandaSpigot start - New Tick Loop System
-+                // lastTick and catchupTime extracted out of this method, will be used in the future to add ServerTickEvents
++                // lastTick and catchupTime were removed from this method, moved up to be used by events
 +                long start = System.nanoTime(), curTime, wait, tickSection = start;
 +                lastTick = start - TICK_TIME;
 +                // PandaSpigot
                  // PaperSpigot end
                  while (this.isRunning) {
                      curTime = System.nanoTime();
-@@ -602,7 +618,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -602,7 +617,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                      if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 )
                      {
                          final long diff = curTime - tickSection;
@@ -100,3 +99,23 @@ index b83d774412562540808440eec845da2593383d91..7578eedf460e220d1c4ef9c4743323f1
                          tps1.add(currentTps, diff);
                          tps5.add(currentTps, diff);
                          tps15.add(currentTps, diff);
+@@ -705,6 +720,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     protected void A() throws ExceptionWorldConflict { // CraftBukkit - added throws
+         co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Spigot
+         long i = System.nanoTime();
++        new com.destroystokyo.paper.event.server.ServerTickStartEvent(this.ticks + 1).callEvent(); // PandaSpigot - Add ServerTickStartEvent
+ 
+         ++this.ticks;
+         if (this.T) {
+@@ -763,6 +779,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+         this.methodProfiler.b();
+         this.methodProfiler.b();
+         org.spigotmc.WatchdogThread.tick(); // Spigot
++        // PandaSpigot start - Add ServerTickEndEvent
++        long endTime = System.nanoTime();
++        long remaining = (TICK_TIME - (endTime - lastTick)) - catchupTime;
++        new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.ticks, ((double)(endTime - lastTick) / 1000000D), remaining).callEvent();
++        // PandaSpigot end
+         co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Spigot
+     }
+ 
