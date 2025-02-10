@@ -380,23 +380,11 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..7631ed0c338e5634bbe7ffa3f8e409e5
 +        isOversleep = true;
 +        this.controlTerminate(() -> !this.canOversleep());
 +        isOversleep = false;
-+        new com.destroystokyo.paper.event.server.ServerTickStartEvent(this.ticks+1).callEvent();
+
 +    // PandaSpigot end
  
          ++this.ticks;
          if (this.T) {
-@@ -744,6 +825,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
-             SpigotTimings.worldSaveTimer.stopTiming(); // Spigot
-         }
- 
-+        // PandaSpigot start - Modern tick loop
-+        long endTime = System.nanoTime();
-+        long remaining = (TICK_TIME - (endTime - lastTick)) - catchupTime;
-+        new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.ticks, ((double)(endTime - lastTick) / 1000000D), remaining).callEvent();
-+        // PandaSpigot end
-         this.methodProfiler.a("tallying");
-         this.h[this.ticks % 100] = System.nanoTime() - i;
-         this.methodProfiler.b();
 @@ -1483,7 +1571,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      }
  
