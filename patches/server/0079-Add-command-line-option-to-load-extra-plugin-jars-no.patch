@@ -1,0 +1,92 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jason Penilla <11360596+jpenilla@users.noreply.github.com>
+Date: Tue, 18 May 2021 14:39:44 -0700
+Subject: [PATCH] Add command line option to load extra plugin jars not in the
+ plugins folder
+
+ex: java -jar paperclip.jar nogui -add-plugin=/path/to/plugin.jar -add-plugin=/path/to/another/plugin_jar.jar
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 949100d67ab3cc6e06e82a0eb64d9e5cbb4acb34..0c6cdfed088a26380e6fe7052e747efeedda7b1e 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -136,7 +136,7 @@ public final class CraftServer implements Server {
+     private final SimpleCommandMap commandMap = new SimpleCommandMap(this);
+     private final SimpleHelpMap helpMap = new SimpleHelpMap(this);
+     private final StandardMessenger messenger = new StandardMessenger();
+-    private final PluginManager pluginManager = new SimplePluginManager(this, commandMap);
++    private final SimplePluginManager pluginManager = new SimplePluginManager(this, commandMap); // PandaSpigot
+     protected final MinecraftServer console;
+     protected final DedicatedPlayerList playerList;
+     private final Map<String, World> worlds = new LinkedHashMap<String, World>();
+@@ -287,10 +287,15 @@ public final class CraftServer implements Server {
+     public void loadPlugins() {
+         pluginManager.registerInterface(JavaPluginLoader.class);
+ 
+-        File pluginFolder = (File) console.options.valueOf("plugins");
++        // PandaSpigot start - extra jars
++        File pluginFolder = this.getPluginsFolder();
+ 
+-        if (pluginFolder.exists()) {
+-            Plugin[] plugins = pluginManager.loadPlugins(pluginFolder);
++        if (true || pluginFolder.exists()) {
++            if (!pluginFolder.exists()) {
++                pluginFolder.mkdirs();
++            }
++            Plugin[] plugins = this.pluginManager.loadPlugins(pluginFolder, this.extraPluginJars());
++        // PandaSpigot end
+             for (Plugin plugin : plugins) {
+                 try {
+                     String message = String.format("Loading %s", plugin.getDescription().getFullName());
+@@ -305,6 +310,35 @@ public final class CraftServer implements Server {
+         }
+     }
+ 
++    // PandaSpigot start
++    @Override
++    public File getPluginsFolder() {
++        return (File) this.console.options.valueOf("plugins");
++    }
++
++    private List<File> extraPluginJars() {
++        @SuppressWarnings("unchecked")
++        final List<File> jars = (List<File>) this.console.options.valuesOf("add-plugin");
++        final List<File> list = new ArrayList<>();
++        for (final File file : jars) {
++            if (!file.exists()) {
++                net.minecraft.server.MinecraftServer.LOGGER.warn("File '{}' specified through 'add-plugin' argument does not exist, cannot load a plugin from it!", file.getAbsolutePath());
++                continue;
++            }
++            if (!file.isFile()) {
++                net.minecraft.server.MinecraftServer.LOGGER.warn("File '{}' specified through 'add-plugin' argument is not a file, cannot load a plugin from it!", file.getAbsolutePath());
++                continue;
++            }
++            if (!file.getName().endsWith(".jar")) {
++                net.minecraft.server.MinecraftServer.LOGGER.warn("File '{}' specified through 'add-plugin' argument is not a jar file, cannot load a plugin from it!", file.getAbsolutePath());
++                continue;
++            }
++            list.add(file);
++        }
++        return list;
++    }
++    // PandaSpigot end
++
+     public void enablePlugins(PluginLoadOrder type) {
+         if (type == PluginLoadOrder.STARTUP) {
+             helpMap.clear();
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index ae10c0f07cfeb0a09dc221fb4c747dc772a81dda..51fa4bf3223c5a60a52a7287313a5819e7cc24b4 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -139,6 +139,11 @@ public class Main {
+                         .ofType(File.class)
+                         .defaultsTo(new File("pandaspigot.yml"))
+                         .describedAs("Yml file");
++
++                acceptsAll(asList("add-plugin", "add-extra-plugin-jar"), "Specify paths to extra plugin jars to be loaded in addition to those in the plugins folder. This argument can be specified multiple times, once for each extra plugin jar path.")
++                    .withRequiredArg()
++                    .ofType(File.class)
++                    .describedAs("Jar file");
+                 // PandaSpigot end
+             }
+         };

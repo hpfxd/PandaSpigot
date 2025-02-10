@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Fri, 29 Oct 2021 08:08:48 -0400
+Subject: [PATCH] Consolidate flush calls for entity tracker packets
+
+Most server packets seem to be sent from here, so try to avoid expensive flush calls from them.
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..610775bfd092b988f907013f35bfc5b2adeb738a 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -860,7 +860,26 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                 this.methodProfiler.b();
+                 this.methodProfiler.a("tracker");
+                 worldserver.timings.tracker.startTiming(); // Spigot
++                // PandaSpigot start - controlled flush for entity tracker packets
++                List<NetworkManager> disabledFlushes = new ArrayList<>(worldserver.players.size());
++                for (EntityHuman player : worldserver.players) {
++                    if (!(player instanceof EntityPlayer)) continue; // skip non-player entities
++                    PlayerConnection connection = ((EntityPlayer) player).playerConnection;
++                    if (connection != null) {
++                        connection.networkManager.disableAutomaticFlush();
++                        disabledFlushes.add(connection.networkManager);
++                    }
++                }
++                try {
++                // PandaSpigot end
+                 worldserver.getTracker().updatePlayers();
++                // PandaSpigot start - controlled flush for entity tracker packets
++                } finally {
++                    for (NetworkManager networkManager : disabledFlushes) {
++                        networkManager.enableAutomaticFlush();
++                    }
++                }
++                // PandaSpigot end
+                 worldserver.timings.tracker.stopTiming(); // Spigot
+                 this.methodProfiler.b();
+                 this.methodProfiler.b();

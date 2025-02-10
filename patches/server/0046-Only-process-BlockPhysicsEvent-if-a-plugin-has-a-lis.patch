@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Mon, 28 Mar 2016 19:55:45 -0400
+Subject: [PATCH] Only process BlockPhysicsEvent if a plugin has a listener
+
+Saves on some object allocation and processing when no plugin listens to this
+
+diff --git a/src/main/java/net/minecraft/server/BlockPlant.java b/src/main/java/net/minecraft/server/BlockPlant.java
+index c1110242136e8fd98661886920b765bb5367c37d..81fc97dc295677f5c2914e8c9b97a3f42fa05fdf 100644
+--- a/src/main/java/net/minecraft/server/BlockPlant.java
++++ b/src/main/java/net/minecraft/server/BlockPlant.java
+@@ -43,7 +43,7 @@ public class BlockPlant extends Block {
+     }
+ 
+     protected void e(World world, BlockPosition blockposition, IBlockData iblockdata) {
+-        if (!this.f(world, blockposition, iblockdata)) {
++        if (!this.f(world, blockposition, iblockdata) && ((WorldServer) world).hasPhysicsEvent) { // PandaSpigot - hasPhysicsEvent
+             // CraftBukkit Start
+             org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
+             BlockPhysicsEvent event = new BlockPhysicsEvent(block, block.getTypeId());
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index a2003e1b73afe420aa181d4cfa4aa7c2020d80ef..cf2d21c7b05ae2c36d5871cd528e3e51ce513755 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -828,6 +828,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+             // if (i == 0 || this.getAllowNether()) {
+                 WorldServer worldserver = this.worlds.get(i);
+                 worldserver.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // PandaSpigot
++                worldserver.hasPhysicsEvent = org.bukkit.event.block.BlockPhysicsEvent.getHandlerList().getRegisteredListeners().length > 0; // PandaSpigot
+ 
+                 this.methodProfiler.a(worldserver.getWorldData().getName());
+                 /* Drop global time updates
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 42c077870727d1eb40bc9bf5e0a3ca580131331d..589bf95c13e9c78c792498a7b73fd0480f4a503d 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -574,7 +574,7 @@ public abstract class World implements IBlockAccess {
+             try {
+                 // CraftBukkit start
+                 CraftWorld world = ((WorldServer) this).getWorld();
+-                if (world != null) {
++                if (world != null && ((WorldServer) this).hasPhysicsEvent) { // PandaSpigot - hasPhysicsEvent
+                     BlockPhysicsEvent event = new BlockPhysicsEvent(world.getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ()), CraftMagicNumbers.getId(block));
+                     this.getServer().getPluginManager().callEvent(event);
+ 
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 9bf5b0a7d4b7eac5496768b3ce8dad22b02b332c..0700b5aec26a6a4ba4db4d3c66b8b15c295c5a03 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -50,6 +50,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+     private static final List<StructurePieceTreasure> U = Lists.newArrayList(new StructurePieceTreasure[] { new StructurePieceTreasure(Items.STICK, 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.PLANKS), 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG), 0, 1, 3, 10), new StructurePieceTreasure(Items.STONE_AXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOODEN_AXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.STONE_PICKAXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOODEN_PICKAXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.APPLE, 0, 2, 3, 5), new StructurePieceTreasure(Items.BREAD, 0, 2, 3, 3), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG2), 0, 1, 3, 10)});
+     private List<NextTickListEntry> V = Lists.newArrayList();
+     public boolean hasEntityMoveEvent = false; // PandaSpigot
++    public boolean hasPhysicsEvent = true; // PandaSpigot
+ 
+     // CraftBukkit start
+     public final int dimension;

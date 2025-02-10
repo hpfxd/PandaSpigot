@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: vemacs <d@nkmem.es>
+Date: Thu, 4 Nov 2021 09:44:02 -0400
+Subject: [PATCH] Optimize Network Queue
+
+Makes the synchronous job queue's size() method constant-time by
+utilizing a custom ConcurrentLinkedQueue implementation that
+caches the queue's size.
+
+diff --git a/src/main/java/com/destroystokyo/paper/utils/CachedSizeConcurrentLinkedQueue.java b/src/main/java/com/destroystokyo/paper/utils/CachedSizeConcurrentLinkedQueue.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c8540d16defdc633113b504616794f440ac1c160
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/utils/CachedSizeConcurrentLinkedQueue.java
+@@ -0,0 +1,31 @@
++package com.destroystokyo.paper.utils;
++
++import java.util.concurrent.ConcurrentLinkedQueue;
++import java.util.concurrent.atomic.LongAdder;
++
++public class CachedSizeConcurrentLinkedQueue<E> extends ConcurrentLinkedQueue<E> {
++    private final LongAdder cachedSize = new LongAdder();
++    
++    @Override
++    public boolean add(E e) {
++        boolean result = super.add(e);
++        if (result) {
++            cachedSize.increment();
++        }
++        return result;
++    }
++    
++    @Override
++    public E poll() {
++        E result = super.poll();
++        if (result != null) {
++            cachedSize.decrement();
++        }
++        return result;
++    }
++    
++    @Override
++    public int size() {
++        return cachedSize.intValue();
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index bed9076fc52dc7a4f2ee3fe28c2a3f72fb6b0293..9d2b4037119030eea027b7d79ab4f36f28af71ae 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -100,7 +100,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     private long X = 0L;
+     private final GameProfileRepository Y;
+     private final UserCache Z;
+-    protected final Queue<FutureTask<?>> j = new java.util.concurrent.ConcurrentLinkedQueue<FutureTask<?>>(); // Spigot, PAIL: Rename
++    protected final Queue<FutureTask<?>> j = new com.destroystokyo.paper.utils.CachedSizeConcurrentLinkedQueue<>(); // Spigot, PAIL: Rename // PandaSpigot - Make size() constant-time
+     private Thread serverThread;
+     private long ab = az();
+ 

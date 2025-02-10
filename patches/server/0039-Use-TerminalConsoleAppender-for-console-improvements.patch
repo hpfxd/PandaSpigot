@@ -1,0 +1,505 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sun, 7 Nov 2021 20:45:47 -0500
+Subject: [PATCH] Use TerminalConsoleAppender for console improvements
+
+Rewrite console improvements (console colors, tab completion,
+persistent input line, ...) using JLine 3.x and TerminalConsoleAppender.
+
+New features:
+  - Support console colors for Vanilla commands
+  - Add console colors for warnings and errors
+  - Server can now be turned off safely using CTRL + C. JLine catches
+    the signal and the implementation shuts down the server cleanly.
+  - Support console colors and persistent input line when running in
+    IntelliJ IDEA
+
+Other changes:
+  - Server starts 1-2 seconds faster thanks to optimizations in Log4j
+    configuration
+
+This patch contains heavy inspiration from:
+https://github.com/PaperMC/Paper/blob/master/patches/server/0137-Use-TerminalConsoleAppender-for-console-improvements.patch
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index d130985a63c1074de418ce40a7035811a19e3115..f66de2ff7d7d73a69d9d780a9fddfd9d300b79c2 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -21,8 +21,10 @@ dependencies {
+     // Minecraft libraries:
+     implementation("io.netty:netty-all:4.1.91.Final") // PandaSpigot - Update Netty to 4.1.x
+     implementation("com.mojang:authlib:1.5.21")
+-    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
+-    implementation("org.apache.logging.log4j:log4j-core:2.17.0")
++    // PandaSpigot start - Update log4j
++    implementation("org.apache.logging.log4j:log4j-api:2.17.1")
++    implementation("org.apache.logging.log4j:log4j-core:2.17.1")
++    // PandaSpigot end
+     implementation("org.apache.commons:commons-lang3:3.3.2")
+     implementation("commons-io:commons-io:2.4")
+     implementation("commons-codec:commons-codec:1.9")
+@@ -30,11 +32,15 @@ dependencies {
+     implementation("com.google.code.gson:gson:2.2.4")
+     implementation("net.sf.trove4j:trove4j:3.0.3")
+     implementation("net.sf.jopt-simple:jopt-simple:3.2")
+-    implementation("jline:jline:2.12.1")
+ 
+     implementation("org.xerial:sqlite-jdbc:3.7.2")
+     implementation("mysql:mysql-connector-java:5.1.14")
+ 
++    // PandaSpigot start - Use TerminalConsoleAppender
++    implementation("net.minecrell:terminalconsoleappender:1.3.0")
++    implementation("org.jline:jline-terminal-jansi:3.20.0")
++    // PandaSpigot end
++
+     testImplementation("junit:junit:4.11")
+     testImplementation("org.hamcrest:hamcrest-library:1.3")
+ }
+@@ -59,6 +65,7 @@ tasks {
+         mergeServiceFiles()
+         archiveClassifier.set("unmapped")
+         append("META-INF/io.netty.versions.properties")
++        transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer()) // PandaSpigot - Use TerminalConsoleAppender
+         // PandaSpigot start - Configuration
+         arrayOf(
+             "com.amihaiemil.eoyaml",
+@@ -70,7 +77,6 @@ tasks {
+         val cbLibsPkg = "org.bukkit.craftbukkit.libs"
+ 
+         relocate("joptsimple", "$cbLibsPkg.joptsimple")
+-        relocate("jline", "$cbLibsPkg.jline")
+         relocate("org.ibex", "$cbLibsPkg.org.ibex")
+         relocate("org.gjt", "$cbLibsPkg.org.gjt")
+ 
+diff --git a/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..25a515b681bbbb70946f2ec73647a6f184f81b3c
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java
+@@ -0,0 +1,39 @@
++package com.hpfxd.pandaspigot.console;
++
++import net.minecraft.server.DedicatedServer;
++import net.minecrell.terminalconsole.SimpleTerminalConsole;
++import org.jline.reader.LineReader;
++import org.jline.reader.LineReaderBuilder;
++
++import java.nio.file.Paths;
++
++public class PandaConsole extends SimpleTerminalConsole {
++    private final DedicatedServer server;
++    
++    public PandaConsole(DedicatedServer server) {
++        this.server = server;
++    }
++    
++    @Override
++    protected boolean isRunning() {
++        return !this.server.isStopped() && this.server.isRunning();
++    }
++    
++    @Override
++    protected void runCommand(String command) {
++        this.server.issueCommand(command, this.server);
++    }
++    
++    @Override
++    protected void shutdown() {
++        this.server.safeShutdown();
++    }
++    
++    @Override
++    protected LineReader buildReader(LineReaderBuilder builder) {
++        return super.buildReader(builder
++            .appName("PandaSpigot")
++            .variable(LineReader.HISTORY_FILE, Paths.get(".console_history"))
++            .completer(new PandaConsoleCompleter(this.server)));
++    }
++}
+diff --git a/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCommandSender.java b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCommandSender.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..88a52389fef0d36925085296faccebfd851706b2
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCommandSender.java
+@@ -0,0 +1,15 @@
++package com.hpfxd.pandaspigot.console;
++
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
++import org.bukkit.craftbukkit.command.CraftConsoleCommandSender;
++
++public class PandaConsoleCommandSender extends CraftConsoleCommandSender {
++    private static final Logger LOGGER = LogManager.getRootLogger();
++    
++    @Override
++    public void sendRawMessage(String message) {
++        // TerminalConsoleAppender supports color codes directly in log messages
++        LOGGER.info(message);
++    }
++}
+diff --git a/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCompleter.java b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCompleter.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..1aa335eca007be52e9813ce933d271eac9b1fdce
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCompleter.java
+@@ -0,0 +1,56 @@
++package com.hpfxd.pandaspigot.console;
++
++import net.minecraft.server.DedicatedServer;
++import org.bukkit.craftbukkit.CraftServer;
++import org.bukkit.craftbukkit.util.Waitable;
++import org.jline.reader.Candidate;
++import org.jline.reader.Completer;
++import org.jline.reader.LineReader;
++import org.jline.reader.ParsedLine;
++
++import java.util.List;
++import java.util.concurrent.ExecutionException;
++import java.util.logging.Level;
++
++public class PandaConsoleCompleter implements Completer {
++    private final DedicatedServer server;
++    
++    public PandaConsoleCompleter(DedicatedServer server) {
++        this.server = server;
++    }
++    
++    @Override
++    public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
++        CompletionWaiter waiter = new CompletionWaiter(line.line());
++        this.server.processQueue.add(waiter);
++        
++        try {
++            List<String> offers = waiter.get(); // wait until completions get processed on main thread
++            
++            for (String offer : offers) {
++                if (offer.isEmpty()) continue;
++                
++                candidates.add(new Candidate(offer));
++            }
++        } catch (ExecutionException e) {
++            this.server.server.getLogger().log(Level.WARNING, "Unhandled exception when tab completing", e);
++        } catch (InterruptedException e) {
++            Thread.currentThread().interrupt();
++        }
++    }
++    
++    private class CompletionWaiter extends Waitable<List<String>> {
++        private final String buffer;
++    
++        private CompletionWaiter(String buffer) {
++            this.buffer = buffer;
++        }
++    
++        @Override
++        protected List<String> evaluate() {
++            final CraftServer server = PandaConsoleCompleter.this.server.server;
++            
++            return server.getCommandMap().tabComplete(server.getConsoleSender(), this.buffer);
++        }
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 97699e7f86cef3ab8c4560066f0ef93c18a8f5ad..afdab7c1366b115a21ae3d934058671f66f7deff 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -69,6 +69,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+                 }
+                 // CraftBukkit end
+ 
++                // PandaSpigot start - Use TerminalConsoleAppender
++                new com.hpfxd.pandaspigot.console.PandaConsole(DedicatedServer.this).start();
++                /*
++                // PandaSpigot end
+                 jline.console.ConsoleReader bufferedreader = reader; // CraftBukkit
+                 String s;
+ 
+@@ -88,6 +92,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+                 } catch (IOException ioexception) {
+                     DedicatedServer.LOGGER.error("Exception handling console input", ioexception);
+                 }
++                */ // PandaSpigot
+ 
+             }
+         };
+@@ -100,6 +105,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+         }
+         global.addHandler(new org.bukkit.craftbukkit.util.ForwardLogHandler());
+ 
++        // PandaSpigot start - Not needed with TerminalConsoleAppender
++        final org.apache.logging.log4j.Logger logger = LogManager.getRootLogger();
++        /*
++        // PandaSpigot end
+         final org.apache.logging.log4j.core.Logger logger = ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger());
+         for (org.apache.logging.log4j.core.Appender appender : logger.getAppenders().values()) {
+             if (appender instanceof org.apache.logging.log4j.core.appender.ConsoleAppender) {
+@@ -108,6 +117,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+         }
+ 
+         new Thread(new org.bukkit.craftbukkit.util.TerminalConsoleWriterThread(System.out, this.reader)).start();
++        */
+ 
+         System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
+         System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index e613c8afd3b02b91f224dcdeab28277227fa2a84..a2003e1b73afe420aa181d4cfa4aa7c2020d80ef 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;
+ // CraftBukkit start
+ import java.io.IOException;
+ 
+-import jline.console.ConsoleReader;
++//import jline.console.ConsoleReader; // PandaSpigot - comment out
+ import joptsimple.OptionSet;
+ 
+ import org.bukkit.craftbukkit.Main;
+@@ -110,7 +110,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     public OptionSet options;
+     public org.bukkit.command.ConsoleCommandSender console;
+     public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
+-    public ConsoleReader reader;
++    //public ConsoleReader reader; // PandaSpigot - comment out
+     public static int currentTick = 0; // PaperSpigot - Further improve tick loop
+     public final Thread primaryThread;
+     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
+@@ -131,6 +131,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+         this.Y = this.V.createProfileRepository();
+         // CraftBukkit start
+         this.options = options;
++        /* // PandaSpigot - Handled by TerminalConsoleAppender
+         // Try to see if we're actually running in a terminal, disable jline if not
+         if (System.console() == null && System.getProperty("jline.terminal") == null) {
+             System.setProperty("jline.terminal", "jline.UnsupportedTerminal");
+@@ -152,6 +153,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                 LOGGER.warn((String) null, ex);
+             }
+         }
++        */ // PandaSpigot
+         Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
+ 
+         this.serverThread = primaryThread = new Thread(this, "Server thread"); // Moved from main
+@@ -655,7 +657,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+             } finally {
+                 // CraftBukkit start - Restore terminal to original settings
+                 try {
+-                    reader.getTerminal().restore();
++                    net.minecrell.terminalconsole.TerminalConsoleAppender.close(); // PandaSpigot - Use TerminalConsoleAppender
+                 } catch (Exception ignored) {
+                 }
+                 // CraftBukkit end
+@@ -1204,7 +1206,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     }
+ 
+     public void sendMessage(IChatBaseComponent ichatbasecomponent) {
+-        MinecraftServer.LOGGER.info(ichatbasecomponent.c());
++        MinecraftServer.LOGGER.info(org.bukkit.craftbukkit.util.CraftChatMessage.fromComponent(ichatbasecomponent, net.minecraft.server.EnumChatFormat.RESET)); // PandaSpigot - Log messages with color
+     }
+ 
+     public boolean a(int i, String s) {
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 3c2d3197faa7e5212f7c6f9970e56426ae02ade7..55e6a1755b7db3411865f1d0ad3b4c38cb66d0a8 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -69,8 +69,7 @@ public abstract class PlayerList {
+ 
+     public PlayerList(MinecraftServer minecraftserver) {
+         this.cserver = minecraftserver.server = new CraftServer(minecraftserver, this);
+-        minecraftserver.console = org.bukkit.craftbukkit.command.ColouredConsoleSender.getInstance();
+-        minecraftserver.reader.addCompleter(new org.bukkit.craftbukkit.command.ConsoleCommandCompleter(minecraftserver.server));
++        minecraftserver.console = new com.hpfxd.pandaspigot.console.PandaConsoleCommandSender();
+         // CraftBukkit end
+         
+         this.k = new GameProfileBanList(PlayerList.a);
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index e218b127c6dcdce2c4f8154684f58d4295c6c247..e355f31d852fa15ff2c6bba55931f38be9e81d91 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -122,7 +122,7 @@ import io.netty.buffer.ByteBuf;
+ import io.netty.buffer.ByteBufOutputStream;
+ import io.netty.buffer.Unpooled;
+ import io.netty.handler.codec.base64.Base64;
+-import jline.console.ConsoleReader;
++//import jline.console.ConsoleReader; // PandaSpigot - comment out
+ import net.md_5.bungee.api.chat.BaseComponent;
+ 
+ public final class CraftServer implements Server {
+@@ -1070,9 +1070,11 @@ public final class CraftServer implements Server {
+         return logger;
+     }
+ 
++    /* // PandaSpigot - jline update
+     public ConsoleReader getReader() {
+         return console.reader;
+     }
++    */ // PandaSpigot
+ 
+     @Override
+     public PluginCommand getPluginCommand(String name) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index b2a99effdf3ee503f94c39239f01e462c810e4c0..ae10c0f07cfeb0a09dc221fb4c747dc772a81dda 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -10,7 +10,7 @@ import java.util.logging.Logger;
+ import joptsimple.OptionParser;
+ import joptsimple.OptionSet;
+ import net.minecraft.server.MinecraftServer;
+-import org.fusesource.jansi.AnsiConsole;
++import net.minecrell.terminalconsole.TerminalConsoleAppender; // PandaSpigot
+ 
+ public class Main {
+     public static boolean useJline = true;
+@@ -168,6 +168,7 @@ public class Main {
+             }
+ 
+             try {
++                /* // PandaSpigot - Handled by TerminalConsoleAppender
+                 // This trick bypasses Maven Shade's clever rewriting of our getProperty call when using String literals
+                 String jline_UnsupportedTerminal = new String(new char[] {'j','l','i','n','e','.','U','n','s','u','p','p','o','r','t','e','d','T','e','r','m','i','n','a','l'});
+                 String jline_terminal = new String(new char[] {'j','l','i','n','e','.','t','e','r','m','i','n','a','l'});
+@@ -185,10 +186,21 @@ public class Main {
+                     // This ensures the terminal literal will always match the jline implementation
+                     System.setProperty(jline.TerminalFactory.JLINE_TERMINAL, jline.UnsupportedTerminal.class.getName());
+                 }
++                */
+ 
++                // PandaSpigot start
++                if (options.has("nojline")) {
++                    System.setProperty(TerminalConsoleAppender.JLINE_OVERRIDE_PROPERTY, "false");
++                    useJline = false;
++                }
++                // PandaSpigot end
+ 
+                 if (options.has("noconsole")) {
+                     useConsole = false;
++                    // PandaSpigot start
++                    useJline = false;
++                    System.setProperty(TerminalConsoleAppender.JLINE_OVERRIDE_PROPERTY, "false");
++                    // PandaSpigot end
+                 }
+ 
+                 // Spigot Start
+@@ -207,6 +219,7 @@ public class Main {
+                     System.out.println( "Please see http://www.spigotmc.org/wiki/changing-permgen-size/ for more details and more in-depth instructions." );
+                 }
+                 // Spigot End
++                System.setProperty("library.jansi.version", "PandaSpigot"); // PandaSpigot - set meaningless jansi version to prevent git builds from crashing on Windows
+                 System.out.println("Loading libraries, please wait...");
+                 MinecraftServer.main(options);
+             } catch (Throwable t) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/ColouredConsoleSender.java b/src/main/java/org/bukkit/craftbukkit/command/ColouredConsoleSender.java
+index 26a2fb89425677d94a1d8a375337b70a00e4c5eb..db136710d92633f7348bbcaf63bf7109e3e7664b 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/ColouredConsoleSender.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/ColouredConsoleSender.java
+@@ -5,14 +5,14 @@ import java.util.Map;
+ 
+ import org.fusesource.jansi.Ansi;
+ import org.fusesource.jansi.Ansi.Attribute;
+-import jline.Terminal;
++//import jline.Terminal; // PandaSpigot - comment out
+ 
+ import org.bukkit.Bukkit;
+ import org.bukkit.ChatColor;
+ import org.bukkit.command.ConsoleCommandSender;
+ import org.bukkit.craftbukkit.CraftServer;
+ 
+-public class ColouredConsoleSender extends CraftConsoleCommandSender {
++public class ColouredConsoleSender /*extends CraftConsoleCommandSender */{/* // PandaSpigot - disable
+     private final Terminal terminal;
+     private final Map<ChatColor, String> replacements = new EnumMap<ChatColor, String>(ChatColor.class);
+     private final ChatColor[] colors = ChatColor.values();
+@@ -71,4 +71,4 @@ public class ColouredConsoleSender extends CraftConsoleCommandSender {
+             return new ColouredConsoleSender();
+         }
+     }
+-}
++*/} // PandaSpigot
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
+index 7ef577271902f858f5b59953049511a481dde8b8..e99eab8aa6bb070df0973e0c0ba107b3655b3770 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/ConsoleCommandCompleter.java
+@@ -7,9 +7,9 @@ import java.util.logging.Level;
+ import org.bukkit.craftbukkit.CraftServer;
+ import org.bukkit.craftbukkit.util.Waitable;
+ 
+-import jline.console.completer.Completer;
++//import jline.console.completer.Completer; // PandaSpigot - Remove jline2 import
+ 
+-public class ConsoleCommandCompleter implements Completer {
++public class ConsoleCommandCompleter /*implements Completer*/ { // PandaSpigot - This class is no longer used
+     private final CraftServer server;
+ 
+     public ConsoleCommandCompleter(CraftServer server) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/ServerShutdownThread.java b/src/main/java/org/bukkit/craftbukkit/util/ServerShutdownThread.java
+index ae3481ba88253081851d465900e5b98e7874eabc..0f8e49997ae6a65a26150414385beed0c70070a5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/ServerShutdownThread.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/ServerShutdownThread.java
+@@ -18,7 +18,7 @@ public class ServerShutdownThread extends Thread {
+             ex.printStackTrace();
+         } finally {
+             try {
+-                server.reader.getTerminal().restore();
++                net.minecrell.terminalconsole.TerminalConsoleAppender.close(); // PandaSpigot - Use TerminalConsoleAppender
+             } catch (Exception e) {
+             }
+         }
+diff --git a/src/main/java/org/bukkit/craftbukkit/util/TerminalConsoleWriterThread.java b/src/main/java/org/bukkit/craftbukkit/util/TerminalConsoleWriterThread.java
+index 772f730ffb32643d5bd5708e972bd026e5699833..efb35c7594f37c2aa811ea1c76a3af6a6d7757b1 100644
+--- a/src/main/java/org/bukkit/craftbukkit/util/TerminalConsoleWriterThread.java
++++ b/src/main/java/org/bukkit/craftbukkit/util/TerminalConsoleWriterThread.java
+@@ -4,11 +4,11 @@ import java.io.IOException;
+ import java.io.OutputStream;
+ import java.util.logging.Level;
+ import java.util.logging.Logger;
+-import jline.console.ConsoleReader;
++//import jline.console.ConsoleReader; // PandaSpigot - comment out
+ import com.mojang.util.QueueLogAppender;
+ import org.bukkit.craftbukkit.Main;
+ 
+-public class TerminalConsoleWriterThread implements Runnable {
++public class TerminalConsoleWriterThread /*implements Runnable */{/* // PandaSpigot - disable
+     final private ConsoleReader reader;
+     final private OutputStream output;
+ 
+@@ -49,4 +49,4 @@ public class TerminalConsoleWriterThread implements Runnable {
+             }
+         }
+     }
+-}
++*/} // PandaSpigot
+diff --git a/src/main/resources/log4j2.component.properties b/src/main/resources/log4j2.component.properties
+new file mode 100644
+index 0000000000000000000000000000000000000000..0694b21465fb9e4164e71862ff24b62241b191f2
+--- /dev/null
++++ b/src/main/resources/log4j2.component.properties
+@@ -0,0 +1 @@
++log4j.skipJansi=true
+diff --git a/src/main/resources/log4j2.xml b/src/main/resources/log4j2.xml
+index 63cb069fe9162397eb3ece9f5b7d583f1307f3da..9af4553cb02303ef3450e5c61ab26dafca64bbda 100644
+--- a/src/main/resources/log4j2.xml
++++ b/src/main/resources/log4j2.xml
+@@ -1,12 +1,11 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <Configuration status="WARN" packages="com.mojang.util">
+     <Appenders>
+-        <Console name="WINDOWS_COMPAT" target="SYSTEM_OUT"></Console>
+-        <Queue name="TerminalConsole">
+-            <PatternLayout pattern="[%d{HH:mm:ss} %level]: %msg%n" /> <!-- Paper - update log4j -->
+-        </Queue>
++        <TerminalConsole name="TerminalConsole">
++            <PatternLayout pattern="%highlightError{[%d{HH:mm:ss} %level]: %minecraftFormatting{%msg{nolookups}}%n%xEx}" />
++        </TerminalConsole>
+         <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
+-            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg%n" /> <!-- Paper - update log4j -->
++            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %minecraftFormatting{%msg{nolookups}}{strip}%n" />
+             <Policies>
+                 <TimeBasedTriggeringPolicy />
+                 <OnStartupTriggeringPolicy />
+@@ -18,7 +17,6 @@
+             <filters>
+                 <MarkerFilter marker="NETWORK_PACKETS" onMatch="DENY" onMismatch="NEUTRAL" />
+             </filters>
+-            <AppenderRef ref="WINDOWS_COMPAT" level="info"/>
+             <AppenderRef ref="File"/>
+             <AppenderRef ref="TerminalConsole" level="info"/>
+         </Root>

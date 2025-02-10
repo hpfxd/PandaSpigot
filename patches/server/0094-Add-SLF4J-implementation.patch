@@ -1,0 +1,18 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: cheaterSK <28397119+cheaterSK@users.noreply.github.com>
+Date: Sat, 20 May 2023 12:10:53 -0300
+Subject: [PATCH] Add SLF4J implementation
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index e3ff10603e6945ba25a73947a3451563602df9a5..c52b43cde3338206e3e76542386fd4f8d0417d1c 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -24,6 +24,7 @@ dependencies {
+     // PandaSpigot start - Update log4j
+     implementation("org.apache.logging.log4j:log4j-api:2.17.1")
+     implementation("org.apache.logging.log4j:log4j-core:2.17.1")
++    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1") // PandaSpigot - Add SLF4J logger
+     // PandaSpigot end
+     implementation("org.apache.commons:commons-lang3:3.3.2")
+     implementation("commons-io:commons-io:2.4")
