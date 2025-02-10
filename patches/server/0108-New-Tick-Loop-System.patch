@@ -5,7 +5,7 @@ Subject: [PATCH] New Tick Loop System
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b83d774412562540808440eec845da2593383d91..785fed64890cb91ea30ec758a163e1192e7580d7 100644
+index b83d774412562540808440eec845da2593383d91..6c63abe3286c358c1c197ffd63fdb91a972e6910 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -20,7 +20,64 @@ index b83d774412562540808440eec845da2593383d91..785fed64890cb91ea30ec758a163e119
      private static final int TPS = 20;
      private static final long SEC_IN_NANO = 1000000000;
      private static final long TICK_TIME = SEC_IN_NANO / TPS;
-@@ -573,8 +578,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -525,39 +530,47 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     public static class RollingAverage {
+         private final int size;
+         private long time;
+-        private double total;
++        private java.math.BigDecimal total; // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+         private int index = 0;
+-        private final double[] samples;
++        private final java.math.BigDecimal[] samples; // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+         private final long[] times;
+ 
+         RollingAverage(int size) {
+             this.size = size;
+             this.time = size * SEC_IN_NANO;
+-            this.total = TPS * SEC_IN_NANO * size;
+-            this.samples = new double[size];
++            // PandaSpigot start - Use BigDecimal to improve accuracy of TPS results
++            this.total = dec(TPS).multiply(dec(SEC_IN_NANO)).multiply(dec(size));
++            this.samples = new java.math.BigDecimal[size];
++            // PandaSpigot end
+             this.times = new long[size];
+             for (int i = 0; i < size; i++) {
+-                this.samples[i] = TPS;
++                this.samples[i] = dec(TPS); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+                 this.times[i] = SEC_IN_NANO;
+             }
+         }
+ 
+-        public void add(double x, long t) {
++        // PandaSpigot start - Use BigDecimal to improve accuracy of TPS results
++        private static java.math.BigDecimal dec(long t) {
++            return new java.math.BigDecimal(t);
++        }
++        public void add(java.math.BigDecimal x, long t) {
++        // PandaSpigot end
+             time -= times[index];
+-            total -= samples[index] * times[index];
++            total = total.subtract(samples[index].multiply(dec(times[index]))); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+             samples[index] = x;
+             times[index] = t;
+             time += t;
+-            total += x * t;
++            total = total.add(x.multiply(dec(t))); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+             if (++index == size) {
+                 index = 0;
+             }
+         }
+ 
+         public double getAverage() {
+-            return total / time;
++            return total.divide(dec(time),30, java.math.RoundingMode.HALF_UP).doubleValue(); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+         }
+     }
++    private static final java.math.BigDecimal TPS_BASE = new java.math.BigDecimal("1E9").multiply(new java.math.BigDecimal(SAMPLE_INTERVAL)); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+     // PaperSpigot End
+  
+     public void run() {
+@@ -573,8 +586,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                  // Spigot start
                  // PaperSpigot start - Further improve tick loop
                  Arrays.fill( recentTps, 20 );
@@ -34,3 +91,12 @@ index b83d774412562540808440eec845da2593383d91..785fed64890cb91ea30ec758a163e119
                  // PaperSpigot end
                  while (this.isRunning) {
                      curTime = System.nanoTime();
+@@ -602,7 +618,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                     if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 )
+                     {
+                         final long diff = curTime - tickSection;
+-                        double currentTps = 1E9 / diff * SAMPLE_INTERVAL;
++                        java.math.BigDecimal currentTps = TPS_BASE.divide(new java.math.BigDecimal(diff),30, java.math.RoundingMode.HALF_UP); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+                         tps1.add(currentTps, diff);
+                         tps5.add(currentTps, diff);
+                         tps15.add(currentTps, diff);
