@@ -5,7 +5,7 @@ Subject: [PATCH] New Tick Loop System
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b83d774412562540808440eec845da2593383d91..6c63abe3286c358c1c197ffd63fdb91a972e6910 100644
+index b83d774412562540808440eec845da2593383d91..7578eedf460e220d1c4ef9c4743323f16dd20d5a 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -70,7 +70,7 @@ index b83d774412562540808440eec845da2593383d91..6c63abe3286c358c1c197ffd63fdb91a
  
          public double getAverage() {
 -            return total / time;
-+            return total.divide(dec(time),30, java.math.RoundingMode.HALF_UP).doubleValue(); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
++            return total.divide(dec(time), 30, java.math.RoundingMode.HALF_UP).doubleValue(); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
          }
      }
 +    private static final java.math.BigDecimal TPS_BASE = new java.math.BigDecimal("1E9").multiply(new java.math.BigDecimal(SAMPLE_INTERVAL)); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
@@ -96,7 +96,7 @@ index b83d774412562540808440eec845da2593383d91..6c63abe3286c358c1c197ffd63fdb91a
                      {
                          final long diff = curTime - tickSection;
 -                        double currentTps = 1E9 / diff * SAMPLE_INTERVAL;
-+                        java.math.BigDecimal currentTps = TPS_BASE.divide(new java.math.BigDecimal(diff),30, java.math.RoundingMode.HALF_UP); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
++                        java.math.BigDecimal currentTps = TPS_BASE.divide(new java.math.BigDecimal(diff), 30, java.math.RoundingMode.HALF_UP); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
                          tps1.add(currentTps, diff);
                          tps5.add(currentTps, diff);
                          tps15.add(currentTps, diff);
