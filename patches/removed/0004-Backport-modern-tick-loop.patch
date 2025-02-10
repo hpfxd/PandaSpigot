@@ -230,7 +230,6 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..7631ed0c338e5634bbe7ffa3f8e409e5
      public int autosavePeriod;
      // CraftBukkit end
  
--    public MinecraftServer(OptionSet options, Proxy proxy, File file1) {
 +    // PandaSpigot start - Modern tick loop
 +    private long delayedTasksMaxNextTickTime;
 +    private boolean mayHaveDelayedTasks;
