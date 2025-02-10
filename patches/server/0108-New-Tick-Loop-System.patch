@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Mon, 10 Feb 2025 14:55:55 -0300
+Subject: [PATCH] New Tick Loop System
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index b83d774412562540808440eec845da2593383d91..785fed64890cb91ea30ec758a163e1192e7580d7 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -512,6 +512,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     }
+ 
+     // PaperSpigot start - Further improve tick loop
++    // PandaSpigot start - New Tick Loop System
++    // Extracted from the run() method, it will be used in the future to add ServerTickEvents
++    private long lastTick = 0;
++    private long catchupTime = 0;
++    // PandaSpigot end
+     private static final int TPS = 20;
+     private static final long SEC_IN_NANO = 1000000000;
+     private static final long TICK_TIME = SEC_IN_NANO / TPS;
+@@ -573,8 +578,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                 // Spigot start
+                 // PaperSpigot start - Further improve tick loop
+                 Arrays.fill( recentTps, 20 );
+-                //long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
+-                long start = System.nanoTime(), lastTick = start - TICK_TIME, catchupTime = 0, curTime, wait, tickSection = start;
++                // PandaSpigot start - New Tick Loop System
++                // lastTick and catchupTime extracted out of this method, will be used in the future to add ServerTickEvents
++                long start = System.nanoTime(), curTime, wait, tickSection = start;
++                lastTick = start - TICK_TIME;
++                // PandaSpigot
+                 // PaperSpigot end
+                 while (this.isRunning) {
+                     curTime = System.nanoTime();
