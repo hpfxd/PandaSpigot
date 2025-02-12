@@ -299,7 +299,7 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..7631ed0c338e5634bbe7ffa3f8e409e5
 -                    this.A();
 +                    this.ab += 50L;
 +                    this.methodProfiler.a("tick");
-+                    this.A(this::haveTime);
++                    this.A();
 +                    this.methodProfiler.c("nextTickWait");
 +                    this.mayHaveDelayedTasks = true;
 +                    this.delayedTasksMaxNextTickTime = Math.max(az() + 50L, this.ab);
@@ -372,9 +372,7 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..7631ed0c338e5634bbe7ffa3f8e409e5
  
      protected void z() {}
  
--    protected void A() throws ExceptionWorldConflict { // CraftBukkit - added throws
-+    // PandaSpigot start - Modern tick loop
-+    protected void A(java.util.function.BooleanSupplier shouldKeepTicking) throws ExceptionWorldConflict { // CraftBukkit - added throws
+    protected void A() throws ExceptionWorldConflict { // CraftBukkit - added throws
          co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Spigot
          long i = System.nanoTime();
 +        isOversleep = true;
