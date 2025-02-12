@@ -5,7 +5,7 @@ Subject: [PATCH] New Tick Loop System
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b83d774412562540808440eec845da2593383d91..60ec59d82b14ba919b422e7dbd7e0a68660af806 100644
+index b83d774412562540808440eec845da2593383d91..a7e114fd6ccfc7b92d78c81fb8903e8a374f4b14 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -104,7 +104,7 @@ index b83d774412562540808440eec845da2593383d91..60ec59d82b14ba919b422e7dbd7e0a68
                  // PaperSpigot end
                  while (this.isRunning) {
 +                    // PandaSpigot start - New Tick Loop System
-+                    long i = (curTime = az()) - this.ab;
++                    long i = (curTime = az()) - this.ab; // Spigot
 +                    if (i > 5000L && this.ab - this.R >= 30000L) { // CraftBukkit
 +                        long j = i / 50L;
 +                        if (server.getWarnOnOverload()) { // CraftBukkit
