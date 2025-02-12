@@ -4,27 +4,11 @@ Date: Tue, 11 Feb 2025 10:41:32 +0500
 Subject: [PATCH] Fix entities going out of sight
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 32752dfad24bc7883b1ab52e29834f1aa6fa60c6..38f52e1652d269fb35877f700e7d26422ec69dd0 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -1798,7 +1798,10 @@ public abstract class EntityLiving extends Entity {
-     }
- 
-     public boolean hasLineOfSight(Entity entity) {
--        return this.world.rayTrace(new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ), new Vec3D(entity.locX, entity.locY + (double) entity.getHeadHeight(), entity.locZ)) == null;
-+        // PandaSpigot start
-+        final Vec3D vec = new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
-+        return this.world.rayTrace(vec, new Vec3D(entity.locX, entity.locY + (double) entity.getHeadHeight(), entity.locZ)) == null;
-+        // PandaSpigot end
-     }
- 
-     public Vec3D ap() {
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..bcad57da69089f07e161df85ebe6b590c869a03c 100644
+index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..215e51d18c345b5d215968c18eeb93cb6913cb34 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -296,6 +296,22 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -296,6 +296,21 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
      }
  
@@ -32,10 +16,9 @@ index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..bcad57da69089f07e161df85ebe6b590
 +    @Override
 +    public boolean hasLineOfSight(Entity entity) {
 +        final Vec3D vec = new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
-+        final double entityHeadHeight = entity.getHeadHeight();
-+
++        
 +        for (int i = 1; i < 3; i++) {
-+            double targetY = entity.locY + (entityHeadHeight / 3) * i;
++            double targetY = entity.locY + (entity.getHeadHeight() / 3) * i;
 +            if (this.world.rayTrace(vec, new Vec3D(entity.locX, targetY, entity.locZ)) == null) {
 +                return true;
 +            }
