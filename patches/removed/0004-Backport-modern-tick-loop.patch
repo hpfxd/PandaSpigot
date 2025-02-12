@@ -239,15 +239,6 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..7631ed0c338e5634bbe7ffa3f8e409e5
          io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
          this.e = proxy;
          MinecraftServer.l = this;
-@@ -562,7 +587,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
-         try {
-             if (this.init()) {
-                 this.ab = az();
--                long i = 0L;
-+                //long i = 0L; // PandaSpigot - comment out; not used
- 
-                 this.r.setMOTD(new ChatComponentText(this.motd));
-                 this.r.setServerInfo(new ServerPing.ServerData("1.8.8", 47));
 @@ -572,31 +597,21 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                  // PaperSpigot start - Further improve tick loop
                  Arrays.fill( recentTps, 20 );

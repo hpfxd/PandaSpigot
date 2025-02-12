@@ -5,7 +5,7 @@ Subject: [PATCH] New Tick Loop System
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b83d774412562540808440eec845da2593383d91..3a9fd8da8887b04f99fbf5113a8ae44affd6f258 100644
+index b83d774412562540808440eec845da2593383d91..7b78ca0ee0d5a43a1574008b65a2b85251289ac6 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -19,7 +19,7 @@ index b83d774412562540808440eec845da2593383d91..3a9fd8da8887b04f99fbf5113a8ae44a
      private static final int TPS = 20;
      private static final long SEC_IN_NANO = 1000000000;
      private static final long TICK_TIME = SEC_IN_NANO / TPS;
-@@ -525,39 +529,47 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -525,46 +529,60 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      public static class RollingAverage {
          private final int size;
          private long time;
@@ -74,9 +74,23 @@ index b83d774412562540808440eec845da2593383d91..3a9fd8da8887b04f99fbf5113a8ae44a
      }
 +    private static final java.math.BigDecimal TPS_BASE = new java.math.BigDecimal("1E9").multiply(new java.math.BigDecimal(SAMPLE_INTERVAL)); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
      // PaperSpigot End
++
++    // PandaSpigot start - New Tick Loop System
++    private boolean canSleepForTick() {
++        return az() < this.ab;
++    }
++    // PandaSpigot end
   
      public void run() {
-@@ -573,8 +585,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+         try {
+             if (this.init()) {
+                 this.ab = az();
+-                long i = 0L;
++                // long i = 0L; // PandaSpigot - No longer used, inherited from Minecraft 1.8 - 1.12 vanilla tick loop
+ 
+                 this.r.setMOTD(new ChatComponentText(this.motd));
+                 this.r.setServerInfo(new ServerPing.ServerData("1.8.8", 47));
+@@ -573,10 +591,24 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                  // Spigot start
                  // PaperSpigot start - Further improve tick loop
                  Arrays.fill( recentTps, 20 );
@@ -84,13 +98,32 @@ index b83d774412562540808440eec845da2593383d91..3a9fd8da8887b04f99fbf5113a8ae44a
 -                long start = System.nanoTime(), lastTick = start - TICK_TIME, catchupTime = 0, curTime, wait, tickSection = start;
 +                // PandaSpigot start - New Tick Loop System
 +                // lastTick and catchupTime were removed from this method, moved up to be used by events
-+                long start = System.nanoTime(), curTime, wait, tickSection = start;
++                long start = System.nanoTime(), curTime, tickSection = start;
 +                lastTick = start - TICK_TIME;
 +                // PandaSpigot
                  // PaperSpigot end
                  while (this.isRunning) {
++                    // PandaSpigot start - New Tick Loop System
++                    long i = (curTime = az()) - this.ab;
++                    if (i > 2000L && this.ab - this.R >= 15000L) {
++                        long j = i / 50L;
++                        if (server.getWarnOnOverload()) {
++                            LOGGER.info("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", i, j);
++                        }
++                        this.ab += j * 50L;
++                        this.R = this.ab;
++                    }
++                    /*
                      curTime = System.nanoTime();
-@@ -602,7 +617,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                     // PaperSpigot start - Further improve tick loop
+                     wait = TICK_TIME - (curTime - lastTick);
+@@ -598,11 +630,13 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                     }
+ 
+                     catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
++                    */
++                    // PandaSpigot end
+ 
                      if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 )
                      {
                          final long diff = curTime - tickSection;
@@ -99,7 +132,22 @@ index b83d774412562540808440eec845da2593383d91..3a9fd8da8887b04f99fbf5113a8ae44a
                          tps1.add(currentTps, diff);
                          tps5.add(currentTps, diff);
                          tps15.add(currentTps, diff);
-@@ -705,6 +720,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -616,6 +650,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                     lastTick = curTime;
+ 
+                     this.A();
++                    // PandaSpigot start - New Tick Loop System
++                    this.ab += 50L;
++
++                    while(this.canSleepForTick()) {
++                        Thread.sleep(1L);
++                    }
++                    // PandaSpigot end
++
+                     this.Q = true;
+                 }
+                 // Spigot end
+@@ -705,6 +747,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      protected void A() throws ExceptionWorldConflict { // CraftBukkit - added throws
          co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Spigot
          long i = System.nanoTime();
@@ -107,7 +155,7 @@ index b83d774412562540808440eec845da2593383d91..3a9fd8da8887b04f99fbf5113a8ae44a
  
          ++this.ticks;
          if (this.T) {
-@@ -763,6 +779,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -763,6 +806,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
          this.methodProfiler.b();
          this.methodProfiler.b();
          org.spigotmc.WatchdogThread.tick(); // Spigot
