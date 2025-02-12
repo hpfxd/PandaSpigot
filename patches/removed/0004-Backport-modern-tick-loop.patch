@@ -383,15 +383,6 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..7631ed0c338e5634bbe7ffa3f8e409e5
  
          ++this.ticks;
          if (this.T) {
-@@ -1483,7 +1571,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
-     }
- 
-     public static long az() {
--        return System.currentTimeMillis();
-+        return SystemUtils.getMonotonicMillis(); // PandaSpigot - Modern tick loop
-     }
- 
-     public int getIdleTimeout() {
 @@ -1589,6 +1677,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
          return this.ab;
      }
@@ -400,24 +391,3 @@ index 7d19ec833d61c2f75b5eb75d7eb291c7366a1a9a..7631ed0c338e5634bbe7ffa3f8e409e5
      public Thread aM() {
          return this.serverThread;
      }
-diff --git a/src/main/java/net/minecraft/server/SystemUtils.java b/src/main/java/net/minecraft/server/SystemUtils.java
-index e65ffc1566784f8a35a4a620514375b9077ce247..f25a8c7e4e11dd9fb257b09f762585c998f8204d 100644
---- a/src/main/java/net/minecraft/server/SystemUtils.java
-+++ b/src/main/java/net/minecraft/server/SystemUtils.java
-@@ -6,6 +6,16 @@ import org.apache.logging.log4j.Logger;
- 
- public class SystemUtils {
- 
-+    // PandaSpigot start - Modern tick Loop
-+    public static long getMonotonicMillis() {
-+        return getMonotonicNanos() / 1000000L;
-+    }
-+
-+    public static long getMonotonicNanos() {
-+        return System.nanoTime();
-+    }
-+    // PandaSpigot end
-+
-     public static <V> V a(FutureTask<V> futuretask, Logger logger) {
-         try {
-             futuretask.run();
