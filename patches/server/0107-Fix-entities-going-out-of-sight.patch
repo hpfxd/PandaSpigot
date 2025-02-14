@@ -1,46 +1,32 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: ptbnate <nasxeaty@gmail.com>
-Date: Tue, 4 Feb 2025 14:24:54 +0500
+Date: Tue, 11 Feb 2025 10:41:32 +0500
 Subject: [PATCH] Fix entities going out of sight
 
 
-diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
-index 32752dfad24bc7883b1ab52e29834f1aa6fa60c6..8dc930dc17aa235e0147b2a5a3043b049d3e404b 100644
---- a/src/main/java/net/minecraft/server/EntityLiving.java
-+++ b/src/main/java/net/minecraft/server/EntityLiving.java
-@@ -1798,7 +1798,34 @@ public abstract class EntityLiving extends Entity {
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..a4364ccb14038d40450abc7d17ed102424445b9d 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -296,6 +296,21 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+ 
      }
  
-     public boolean hasLineOfSight(Entity entity) {
--        return this.world.rayTrace(new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ), new Vec3D(entity.locX, entity.locY + (double) entity.getHeadHeight(), entity.locZ)) == null;
-+        // PandaSpigot start - Fix issue with entities going out of sight
-+        Vec3D vec = new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
++    // PandaSpigot start - Fix players going out of sight
++    @Override
++    public boolean hasLineOfSight(Entity entity) {
++        final Vec3D vec = new Vec3D(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
 +
-+        if (entity instanceof EntityPlayer) {
-+            // Head height is 1,5725
-+            // Split it into three to get a more accurate line of sight -> 0.52416667
-+
-+            double parts = entity.getHeadHeight() / 3;
-+
-+            Vec3D vec3 = new Vec3D(entity.locX, entity.locY, entity.locZ);
-+
-+            return this.world.rayTrace(
-+                    vec,
-+                    vec3.add(0.0D, (parts * 3), 0.0D)
-+            ) == null || this.world.rayTrace(
-+                    vec,
-+                    vec3.add(0.0D, (parts * 2), 0.0D)
-+            ) == null || this.world.rayTrace(
-+                    vec,
-+                    vec3.add(0.0D, (parts * 1), 0.0D)
-+            ) == null;
-+        } else {
-+            return this.world.rayTrace(
-+                    vec,
-+                    new Vec3D(entity.locX, entity.locY + (double) this.getHeadHeight(), entity.locZ)
-+            ) == null;
++        for (int i = 1; i < 3; i++) {
++            double targetY = entity.locY + (entity.getHeadHeight() / 3) * i;
++            if (this.world.rayTrace(vec, new Vec3D(entity.locX, targetY, entity.locZ)) == null) {
++                return true;
++            }
 +        }
-+        // PandaSpigot end
-     }
- 
-     public Vec3D ap() {
++        return false;
++    }
++    // PandaSpigot end
++
+     public void l() {
+         try {
+             super.t_();
