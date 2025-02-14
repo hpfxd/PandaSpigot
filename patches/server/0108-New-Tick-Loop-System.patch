@@ -5,7 +5,7 @@ Subject: [PATCH] New Tick Loop System
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b83d774412562540808440eec845da2593383d91..312d1e6ecfa14532187a82212f889f7f8cf7f7fb 100644
+index b83d774412562540808440eec845da2593383d91..a664de391ce52ba5b2fe0879f70e330374ac41a3 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -140,7 +140,7 @@ index b83d774412562540808440eec845da2593383d91..312d1e6ecfa14532187a82212f889f7f
 +                    this.ab += 50L;
 +
 +                    while(this.canSleepForTick()) {
-+                        Thread.sleep(1L);
++                        java.util.concurrent.locks.LockSupport.parkNanos(1000000);
 +                    }
 +                    // PandaSpigot end
 +
