@@ -1,0 +1,168 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Mon, 10 Feb 2025 14:55:55 -0300
+Subject: [PATCH] Better Tick Loop System
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index b83d774412562540808440eec845da2593383d91..c1b664bec8a984a95e0ac3d98c33be413755509e 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -512,6 +512,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     }
+ 
+     // PaperSpigot start - Further improve tick loop
++    // PandaSpigot start - New Tick Loop System
++    private long lastTick = 0;
++    private long catchupTime = 0;
++    // PandaSpigot end
+     private static final int TPS = 20;
+     private static final long SEC_IN_NANO = 1000000000;
+     private static final long TICK_TIME = SEC_IN_NANO / TPS;
+@@ -525,46 +529,60 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     public static class RollingAverage {
+         private final int size;
+         private long time;
+-        private double total;
++        private java.math.BigDecimal total; // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+         private int index = 0;
+-        private final double[] samples;
++        private final java.math.BigDecimal[] samples; // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+         private final long[] times;
+ 
+         RollingAverage(int size) {
+             this.size = size;
+             this.time = size * SEC_IN_NANO;
+-            this.total = TPS * SEC_IN_NANO * size;
+-            this.samples = new double[size];
++            // PandaSpigot start - Use BigDecimal to improve accuracy of TPS results
++            this.total = dec(TPS).multiply(dec(SEC_IN_NANO)).multiply(dec(size));
++            this.samples = new java.math.BigDecimal[size];
++            // PandaSpigot end
+             this.times = new long[size];
+             for (int i = 0; i < size; i++) {
+-                this.samples[i] = TPS;
++                this.samples[i] = dec(TPS); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+                 this.times[i] = SEC_IN_NANO;
+             }
+         }
+ 
+-        public void add(double x, long t) {
++        // PandaSpigot start - Use BigDecimal to improve accuracy of TPS results
++        private static java.math.BigDecimal dec(long t) {
++            return new java.math.BigDecimal(t);
++        }
++        public void add(java.math.BigDecimal x, long t) {
++        // PandaSpigot end
+             time -= times[index];
+-            total -= samples[index] * times[index];
++            total = total.subtract(samples[index].multiply(dec(times[index]))); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+             samples[index] = x;
+             times[index] = t;
+             time += t;
+-            total += x * t;
++            total = total.add(x.multiply(dec(t))); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+             if (++index == size) {
+                 index = 0;
+             }
+         }
+ 
+         public double getAverage() {
+-            return total / time;
++            return total.divide(dec(time), 30, java.math.RoundingMode.HALF_UP).doubleValue(); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+         }
+     }
++    private static final java.math.BigDecimal TPS_BASE = new java.math.BigDecimal("1E9").multiply(new java.math.BigDecimal(SAMPLE_INTERVAL)); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+     // PaperSpigot End
++
++    // PandaSpigot start - New Tick Loop System
++    private boolean canSleepForTick() {
++        return az() < this.ab;
++    }
++    // PandaSpigot end
+  
+     public void run() {
+         try {
+             if (this.init()) {
+                 this.ab = az();
+-                long i = 0L;
++                // long i = 0L; // PandaSpigot - No longer used
+ 
+                 this.r.setMOTD(new ChatComponentText(this.motd));
+                 this.r.setServerInfo(new ServerPing.ServerData("1.8.8", 47));
+@@ -573,10 +591,23 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                 // Spigot start
+                 // PaperSpigot start - Further improve tick loop
+                 Arrays.fill( recentTps, 20 );
+-                //long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
+-                long start = System.nanoTime(), lastTick = start - TICK_TIME, catchupTime = 0, curTime, wait, tickSection = start;
++                // PandaSpigot start - New Tick Loop System
++                long start = System.nanoTime(), curTime, tickSection = start;
++                lastTick = start - TICK_TIME;
++                // PandaSpigot
+                 // PaperSpigot end
+                 while (this.isRunning) {
++                    // PandaSpigot start - New Tick Loop System
++                    long i = ((curTime = System.nanoTime()) / (1000L * 1000L)) - this.ab; // Spigot // Paper
++                    if (i > 5000L && this.ab - this.R >= 30000L) { // CraftBukkit
++                        long j = i / 50L;
++                        if (server.getWarnOnOverload()) { // CraftBukkit
++                            LOGGER.info("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", i, j);
++                        }
++                        this.ab += j * 50L;
++                        this.R = this.ab;
++                    }
++                    /*
+                     curTime = System.nanoTime();
+                     // PaperSpigot start - Further improve tick loop
+                     wait = TICK_TIME - (curTime - lastTick);
+@@ -598,11 +629,13 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                     }
+ 
+                     catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
++                    */
++                    // PandaSpigot end
+ 
+                     if ( ++MinecraftServer.currentTick % SAMPLE_INTERVAL == 0 )
+                     {
+                         final long diff = curTime - tickSection;
+-                        double currentTps = 1E9 / diff * SAMPLE_INTERVAL;
++                        java.math.BigDecimal currentTps = TPS_BASE.divide(new java.math.BigDecimal(diff), 30, java.math.RoundingMode.HALF_UP); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
+                         tps1.add(currentTps, diff);
+                         tps5.add(currentTps, diff);
+                         tps15.add(currentTps, diff);
+@@ -616,6 +649,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                     lastTick = curTime;
+ 
+                     this.A();
++                    // PandaSpigot start - New Tick Loop System
++                    this.ab += 50L;
++
++                    while(this.canSleepForTick()) {
++                        java.util.concurrent.locks.LockSupport.parkNanos(1_000_000);
++                    }
++                    // PandaSpigot end
++
+                     this.Q = true;
+                 }
+                 // Spigot end
+@@ -705,6 +746,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     protected void A() throws ExceptionWorldConflict { // CraftBukkit - added throws
+         co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Spigot
+         long i = System.nanoTime();
++        new com.destroystokyo.paper.event.server.ServerTickStartEvent(this.ticks + 1).callEvent(); // PandaSpigot - Add ServerTickStartEvent
+ 
+         ++this.ticks;
+         if (this.T) {
+@@ -763,6 +805,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+         this.methodProfiler.b();
+         this.methodProfiler.b();
+         org.spigotmc.WatchdogThread.tick(); // Spigot
++        // PandaSpigot start - Add ServerTickEndEvent
++        long endTime = System.nanoTime();
++        long remaining = (TICK_TIME - (endTime - lastTick)) - catchupTime;
++        new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.ticks, ((double)(endTime - lastTick) / 1000000D), remaining).callEvent();
++        // PandaSpigot end
+         co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Spigot
+     }
+ 
