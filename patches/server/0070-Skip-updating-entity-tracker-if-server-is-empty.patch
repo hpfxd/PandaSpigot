@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Fri, 18 Nov 2022 02:06:42 +0100
+Subject: [PATCH] Skip updating entity tracker if server is empty
+
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index cf2d21c7b05ae2c36d5871cd528e3e51ce513755..b83d774412562540808440eec845da2593383d91 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -890,7 +890,9 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                 }
+                 try {
+                 // PandaSpigot end
++                if (this.getPlayerList().getPlayerCount() > 0) { // PandaSpigot - Skip updating entity tracker if zero players online
+                 worldserver.getTracker().updatePlayers();
++                } // PandaSpigot
+                 // PandaSpigot start - controlled flush for entity tracker packets
+                 } finally {
+                     for (NetworkManager networkManager : disabledFlushes) {

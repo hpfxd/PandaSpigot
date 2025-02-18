@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sat, 15 Apr 2023 11:30:31 -0300
+Subject: [PATCH] Optimize Light Recalculations
+
+Optimizes to not repeatedly look up the same chunk for
+light lookups.
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index 3971e7dfdb9b05f44c8e0735d88e95da72be9f22..9c22cf970288d24a431df836409fc8026dee2384 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -334,7 +334,7 @@ public class Chunk {
+     private void a(int i, int j, int k, int l) {
+         if (l > k && this.world.areChunksLoaded(new BlockPosition(i, 0, j), 16)) {
+             for (int i1 = k; i1 < l; ++i1) {
+-                this.world.updateLight(EnumSkyBlock.SKY, new BlockPosition(i, i1, j)); // PaperSpigot - Asynchronous lighting updates
++                this.world.updateBrightness(EnumSkyBlock.SKY, new BlockPosition(i, i1, j), this); // PaperSpigot - Asynchronous lighting updates // PandaSpigot - Optimize Light Recalculations
+             }
+ 
+             this.q = true;
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 6e954b00408425c1628a0d3c21e11ef3a7b01459..bb0aedd1d640532691118101e4ddc344e5504739 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -2680,9 +2680,15 @@ public abstract class World implements IBlockAccess {
+      * PaperSpigot - Asynchronous lighting updates
+      */
+     public boolean updateLight(final EnumSkyBlock enumskyblock, final BlockPosition position) {
++        // PandaSpigot start - Optimize Light Recalculations
++        Chunk chunk = this.getChunkIfLoaded(position.getX() >> 4, position.getZ() >> 4);
++        return updateBrightness(enumskyblock, position, chunk);
++    }
++    public boolean updateBrightness(EnumSkyBlock enumskyblock, BlockPosition position, Chunk chunk) {
++        // PandaSpigot end
+         int x = position.getX();
+         int z = position.getZ();
+-        final Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4);
++        // final Chunk chunk = this.getChunkIfLoaded(x >> 4, z >> 4); // PandaSpigot - Moved up
+         if (chunk == null || !chunk.areNeighborsLoaded(1)) {
+             return false;
+         }

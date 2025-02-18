@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Mon, 1 Nov 2021 11:46:53 -0400
+Subject: [PATCH] EntityMoveEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..1353a791235ae3b820072fa80ef60c3c6723e75d 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -1665,6 +1665,21 @@ public abstract class EntityLiving extends Entity {
+         }
+ 
+         this.world.methodProfiler.b();
++        // PandaSpigot start - EntityMoveEvent
++        if (((WorldServer) this.world).hasEntityMoveEvent && !(this instanceof EntityPlayer)) {
++            if (this.lastX != this.locX || this.lastY != this.locY || this.lastZ != this.locZ || this.lastYaw != this.yaw || this.lastPitch != this.pitch) {
++                org.bukkit.Location from = new org.bukkit.Location(this.world.getWorld(), this.lastX, this.lastY, this.lastZ, this.lastYaw, this.lastPitch);
++                org.bukkit.Location to = new org.bukkit.Location(this.world.getWorld(), this.locX, this.locY, this.locZ, this.yaw, this.pitch);
++                io.papermc.paper.event.entity.EntityMoveEvent event = new io.papermc.paper.event.entity.EntityMoveEvent((LivingEntity) this.getBukkitEntity(), from, to.clone());
++                if (!event.callEvent()) {
++                    // if cancelled, set back to previous position
++                    this.setLocation(from.getX(), from.getY(), from.getZ(), from.getYaw(), from.getPitch());
++                } else if (!to.equals(event.getTo())) {
++                    this.setLocation(event.getTo().getX(), event.getTo().getY(), event.getTo().getZ(), event.getTo().getYaw(), event.getTo().getPitch());
++                }
++            }
++        }
++        // PandaSpigot end
+     }
+ 
+     protected void doTick() {}
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 918863f601bb2199f5b46ca85f54152c138bbe7e..00429aa61ca5dbfc8ebc29557d20b5b40e4ea6b3 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -823,6 +823,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+ 
+             // if (i == 0 || this.getAllowNether()) {
+                 WorldServer worldserver = this.worlds.get(i);
++                worldserver.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // PandaSpigot
+ 
+                 this.methodProfiler.a(worldserver.getWorldData().getName());
+                 /* Drop global time updates
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index f54a279407ad09fabcac038b11e8d668e68c35f6..9bf5b0a7d4b7eac5496768b3ce8dad22b02b332c 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -49,6 +49,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+     private int T;
+     private static final List<StructurePieceTreasure> U = Lists.newArrayList(new StructurePieceTreasure[] { new StructurePieceTreasure(Items.STICK, 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.PLANKS), 0, 1, 3, 10), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG), 0, 1, 3, 10), new StructurePieceTreasure(Items.STONE_AXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOODEN_AXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.STONE_PICKAXE, 0, 1, 1, 3), new StructurePieceTreasure(Items.WOODEN_PICKAXE, 0, 1, 1, 5), new StructurePieceTreasure(Items.APPLE, 0, 2, 3, 5), new StructurePieceTreasure(Items.BREAD, 0, 2, 3, 3), new StructurePieceTreasure(Item.getItemOf(Blocks.LOG2), 0, 1, 3, 10)});
+     private List<NextTickListEntry> V = Lists.newArrayList();
++    public boolean hasEntityMoveEvent = false; // PandaSpigot
+ 
+     // CraftBukkit start
+     public final int dimension;

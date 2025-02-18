@@ -1,0 +1,537 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Thu, 4 Nov 2021 13:10:10 -0400
+Subject: [PATCH] Backport PlayerProfile API
+
+Tested using a plugin built against 1.16.5 Paper API.
+
+diff --git a/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c48b1cca7ac3b61e1a81b02cdb1a5c8206de377f
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/profile/CraftPlayerProfile.java
+@@ -0,0 +1,295 @@
++package com.destroystokyo.paper.profile;
++
++import com.google.common.base.Charsets;
++import com.mojang.authlib.GameProfile;
++import com.mojang.authlib.properties.Property;
++import com.mojang.authlib.properties.PropertyMap;
++import net.minecraft.server.MinecraftServer;
++import net.minecraft.server.UserCache;
++import org.apache.commons.lang3.Validate;
++import org.bukkit.craftbukkit.entity.CraftPlayer;
++import org.spigotmc.SpigotConfig;
++
++import javax.annotation.Nonnull;
++import javax.annotation.Nullable;
++import java.util.AbstractSet;
++import java.util.Collection;
++import java.util.Iterator;
++import java.util.Objects;
++import java.util.Set;
++import java.util.UUID;
++
++public class CraftPlayerProfile implements PlayerProfile {
++    private GameProfile profile;
++    private final PropertySet properties = new PropertySet();
++    
++    public CraftPlayerProfile(CraftPlayer player) {
++        this.profile = player.getHandle().getProfile();
++    }
++    
++    public CraftPlayerProfile(UUID id, String name) {
++        this.profile = new GameProfile(id, name);
++    }
++    
++    public CraftPlayerProfile(GameProfile profile) {
++        Validate.notNull(profile, "GameProfile cannot be null!");
++        this.profile = profile;
++    }
++    
++    @Override
++    public boolean hasProperty(String property) {
++        return profile.getProperties().containsKey(property);
++    }
++    
++    @Override
++    public void setProperty(ProfileProperty property) {
++        String name = property.getName();
++        PropertyMap properties = profile.getProperties();
++        properties.removeAll(name);
++        properties.put(name, new Property(name, property.getValue(), property.getSignature()));
++    }
++    
++    public GameProfile getGameProfile() {
++        return profile;
++    }
++    
++    @Nullable
++    @Override
++    public UUID getId() {
++        return profile.getId();
++    }
++    
++    @Override
++    public UUID setId(@Nullable UUID uuid) {
++        GameProfile prev = this.profile;
++        this.profile = new GameProfile(uuid, prev.getName());
++        copyProfileProperties(prev, this.profile);
++        return prev.getId();
++    }
++    
++    @Nullable
++    @Override
++    public String getName() {
++        return profile.getName();
++    }
++    
++    @Override
++    public String setName(@Nullable String name) {
++        GameProfile prev = this.profile;
++        this.profile = new GameProfile(prev.getId(), name);
++        copyProfileProperties(prev, this.profile);
++        return prev.getName();
++    }
++    
++    @Nonnull
++    @Override
++    public Set<ProfileProperty> getProperties() {
++        return properties;
++    }
++    
++    @Override
++    public void setProperties(Collection<ProfileProperty> properties) {
++        properties.forEach(this::setProperty);
++    }
++    
++    @Override
++    public void clearProperties() {
++        profile.getProperties().clear();
++    }
++    
++    @Override
++    public boolean removeProperty(String property) {
++        return !profile.getProperties().removeAll(property).isEmpty();
++    }
++    
++    @Override
++    public boolean equals(Object o) {
++        if (this == o) return true;
++        if (o == null || getClass() != o.getClass()) return false;
++        CraftPlayerProfile that = (CraftPlayerProfile) o;
++        return Objects.equals(profile, that.profile);
++    }
++    
++    @Override
++    public int hashCode() {
++        return profile.hashCode();
++    }
++    
++    @Override
++    public String toString() {
++        return profile.toString();
++    }
++    
++    @Override
++    public CraftPlayerProfile clone() {
++        CraftPlayerProfile clone = new CraftPlayerProfile(this.getId(), this.getName());
++        clone.setProperties(getProperties());
++        return clone;
++    }
++    
++    @Override
++    public boolean isComplete() {
++        return profile.isComplete();
++    }
++    
++    @Override
++    public boolean completeFromCache() {
++        MinecraftServer server = MinecraftServer.getServer();
++        return completeFromCache(false, server.getOnlineMode() || SpigotConfig.bungee);
++    }
++    
++    public boolean completeFromCache(boolean onlineMode) {
++        return completeFromCache(false, onlineMode);
++    }
++    
++    public boolean completeFromCache(boolean lookupUUID, boolean onlineMode) {
++        MinecraftServer server = MinecraftServer.getServer();
++        String name = profile.getName();
++        UserCache userCache = server.getUserCache();
++        if (profile.getId() == null) {
++            final GameProfile profile;
++            if (onlineMode) {
++                profile = lookupUUID ? userCache.getProfile(name) : userCache.getProfileIfCached(name);
++            } else {
++                // Make an OfflinePlayer using an offline mode UUID since the name has no profile
++                profile = new GameProfile(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes(Charsets.UTF_8)), name);
++            }
++            if (profile != null) {
++                // if old has it, assume its newer, so overwrite, else use cached if it was set and ours wasn't
++                copyProfileProperties(this.profile, profile);
++                this.profile = profile;
++            }
++        }
++        
++        if ((profile.getName() == null || !hasTextures()) && profile.getId() != null) {
++            GameProfile profile = userCache.getProfile(this.profile.getId());
++            if (profile != null) {
++                // if old has it, assume its newer, so overwrite, else use cached if it was set and ours wasn't
++                copyProfileProperties(this.profile, profile);
++                this.profile = profile;
++            }
++        }
++        return this.profile.isComplete();
++    }
++    
++    public boolean complete(boolean textures) {
++        MinecraftServer server = MinecraftServer.getServer();
++        return complete(textures, server.getOnlineMode() || SpigotConfig.bungee);
++    }
++    
++    public boolean complete(boolean textures, boolean onlineMode) {
++        MinecraftServer server = MinecraftServer.getServer();
++        
++        boolean isCompleteFromCache = this.completeFromCache(true, onlineMode);
++        if (onlineMode && (!isCompleteFromCache || textures && !hasTextures())) {
++            GameProfile result = server.getMinecraftSessionService().fillProfileProperties(profile, true);
++            if (result != null) {
++                copyProfileProperties(result, this.profile, true);
++            }
++            if (this.profile.isComplete()) {
++                server.getUserCache().saveProfile(this.profile);
++            }
++        }
++        return profile.isComplete() && (!onlineMode || !textures || hasTextures());
++    }
++    
++    private static void copyProfileProperties(GameProfile source, GameProfile target) {
++        copyProfileProperties(source, target, false);
++    }
++    
++    private static void copyProfileProperties(GameProfile source, GameProfile target, boolean clearTarget) {
++        PropertyMap sourceProperties = source.getProperties();
++        PropertyMap targetProperties = target.getProperties();
++        if (clearTarget) targetProperties.clear();
++        if (sourceProperties.isEmpty()) {
++            return;
++        }
++        
++        for (Property property : sourceProperties.values()) {
++            targetProperties.removeAll(property.getName());
++            targetProperties.put(property.getName(), property);
++        }
++    }
++    
++    private static ProfileProperty toBukkit(Property property) {
++        return new ProfileProperty(property.getName(), property.getValue(), property.getSignature());
++    }
++    
++    public static PlayerProfile asBukkitCopy(GameProfile gameProfile) {
++        CraftPlayerProfile profile = new CraftPlayerProfile(gameProfile.getId(), gameProfile.getName());
++        copyProfileProperties(gameProfile, profile.profile);
++        return profile;
++    }
++    
++    public static PlayerProfile asBukkitMirror(GameProfile profile) {
++        return new CraftPlayerProfile(profile);
++    }
++    
++    public static Property asAuthlib(ProfileProperty property) {
++        return new Property(property.getName(), property.getValue(), property.getSignature());
++    }
++    
++    public static GameProfile asAuthlibCopy(PlayerProfile profile) {
++        CraftPlayerProfile craft = ((CraftPlayerProfile) profile);
++        return asAuthlib(craft.clone());
++    }
++    
++    public static GameProfile asAuthlib(PlayerProfile profile) {
++        CraftPlayerProfile craft = ((CraftPlayerProfile) profile);
++        return craft.getGameProfile();
++    }
++    
++    private class PropertySet extends AbstractSet<ProfileProperty> {
++        
++        @Override
++        public Iterator<ProfileProperty> iterator() {
++            return new ProfilePropertyIterator(profile.getProperties().values().iterator());
++        }
++        
++        @Override
++        public int size() {
++            return profile.getProperties().size();
++        }
++        
++        @Override
++        public boolean add(ProfileProperty property) {
++            setProperty(property);
++            return true;
++        }
++        
++        @Override
++        public boolean addAll(Collection<? extends ProfileProperty> c) {
++            //noinspection unchecked
++            setProperties((Collection<ProfileProperty>) c);
++            return true;
++        }
++        
++        @Override
++        public boolean contains(Object o) {
++            return o instanceof ProfileProperty && profile.getProperties().containsKey(((ProfileProperty) o).getName());
++        }
++        
++        private class ProfilePropertyIterator implements Iterator<ProfileProperty> {
++            private final Iterator<Property> iterator;
++            
++            ProfilePropertyIterator(Iterator<Property> iterator) {
++                this.iterator = iterator;
++            }
++            
++            @Override
++            public boolean hasNext() {
++                return iterator.hasNext();
++            }
++            
++            @Override
++            public ProfileProperty next() {
++                return toBukkit(iterator.next());
++            }
++            
++            @Override
++            public void remove() {
++                iterator.remove();
++            }
++        }
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index 9034e1ad7a013c7288e68322a65798e40d8b851d..86ab9994079c6e18e3aed885db4171d0d87b4c1a 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -57,7 +57,7 @@ public abstract class EntityHuman extends EntityLiving {
+     protected float bE = 0.1F;
+     protected float bF = 0.02F;
+     private int i;
+-    private final GameProfile bH;
++    private GameProfile bH; public final void setProfile(final GameProfile profile) { this.bH = profile; } // PandaSpigot - OBFHELPER
+     private boolean bI = false;
+     public EntityFishingHook hookedFish;
+     public boolean affectsSpawning = true; // PaperSpigot
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 9d2b4037119030eea027b7d79ab4f36f28af71ae..e613c8afd3b02b91f224dcdeab28277227fa2a84 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -1536,6 +1536,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+         return true;
+     }
+ 
++    public MinecraftSessionService getMinecraftSessionService() { return this.aD(); } // PandaSpigot - OBFHELPER
+     public MinecraftSessionService aD() {
+         return this.W;
+     }
+diff --git a/src/main/java/net/minecraft/server/UserCache.java b/src/main/java/net/minecraft/server/UserCache.java
+index 0f82e06cba1c245846b665ee00ab9a6e388884d3..474f43eab7ceb63ab04e2ebbcdd9f73d7cb2f27d 100644
+--- a/src/main/java/net/minecraft/server/UserCache.java
++++ b/src/main/java/net/minecraft/server/UserCache.java
+@@ -93,6 +93,7 @@ public class UserCache {
+         return agameprofile[0];
+     }
+ 
++    public void saveProfile(GameProfile gameprofile) { this.a(gameprofile); } // PandaSpigot - OBFHELPER
+     public void a(GameProfile gameprofile) {
+         this.a(gameprofile, (Date) null);
+     }
+@@ -152,6 +153,12 @@ public class UserCache {
+         if( !org.spigotmc.SpigotConfig.saveUserCacheOnStopOnly ) this.c(); // Spigot - skip saving if disabled
+         return usercache_usercacheentry == null ? null : usercache_usercacheentry.a();
+     }
++    // PandaSpigot start
++    public GameProfile getProfileIfCached(String name) {
++        UserCache.UserCacheEntry entry = this.c.get(name.toLowerCase(Locale.ROOT));
++        return entry == null ? null : entry.b;
++    }
++    // PandaSpigot end
+ 
+     public String[] a() {
+         ArrayList arraylist = Lists.newArrayList(this.c.keySet());
+@@ -159,6 +166,7 @@ public class UserCache {
+         return (String[]) arraylist.toArray(new String[arraylist.size()]);
+     }
+ 
++    public GameProfile getProfile(UUID uuid) { return this.a(uuid); } // PandaSpigot - OBFHELPER
+     public GameProfile a(UUID uuid) {
+         UserCache.UserCacheEntry usercache_usercacheentry = (UserCache.UserCacheEntry) this.d.get(uuid);
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 1caffab6e75abf6010e8f1f2d2a29a2a22692fb7..e218b127c6dcdce2c4f8154684f58d4295c6c247 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -1769,6 +1769,27 @@ public final class CraftServer implements Server {
+         return CraftMagicNumbers.INSTANCE;
+     }
+ 
++    // PandaSpigot start - PlayerProfile API
++    @Override
++    public com.destroystokyo.paper.profile.PlayerProfile createProfile(UUID uuid) {
++        return createProfile(uuid, null);
++    }
++    
++    @Override
++    public com.destroystokyo.paper.profile.PlayerProfile createProfile(String name) {
++        return createProfile(null, name);
++    }
++    
++    @Override
++    public com.destroystokyo.paper.profile.PlayerProfile createProfile(UUID uuid, String name) {
++        Player player = uuid != null ? Bukkit.getPlayer(uuid) : (name != null ? Bukkit.getPlayerExact(name) : null);
++        if (player != null) {
++            return new com.destroystokyo.paper.profile.CraftPlayerProfile((CraftPlayer)player);
++        }
++        return new com.destroystokyo.paper.profile.CraftPlayerProfile(uuid, name);
++    }
++    // PandaSpigot end
++
+     private final Spigot spigot = new Spigot()
+     {
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftSkull.java b/src/main/java/org/bukkit/craftbukkit/block/CraftSkull.java
+index 77f5dcc67f716a517c0dec6c5308469a91bbbe23..04ca21949a7d63b4265de2321303a1c267d9bdaf 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftSkull.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftSkull.java
+@@ -172,6 +172,18 @@ public class CraftSkull extends CraftBlockState implements Skull {
+         return true;
+     }
+ 
++    // PandaSpigot start - PlayerProfile API
++    @Override
++    public com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile() {
++        return com.destroystokyo.paper.profile.CraftPlayerProfile.asBukkitCopy(this.profile);
++    }
++    
++    @Override
++    public void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile) {
++        this.profile = com.destroystokyo.paper.profile.CraftPlayerProfile.asAuthlibCopy(profile);
++    }
++    // PandaSpigot end
++
+     public BlockFace getRotation() {
+     	return getBlockFace(rotation);
+     }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 801e19baa711b517eb437a173ea1edcc38b2e7e8..c588468c0af427efa3133e97de071544459a068a 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -973,9 +973,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         if (hiddenPlayers.contains(player.getUniqueId())) return;
+         hiddenPlayers.add(player.getUniqueId());
+ 
++        // PandaSpigot start
++        EntityPlayer other = ((CraftPlayer) player).getHandle();
++        this.unregisterPlayer(other);
++    }
++    private void unregisterPlayer(EntityPlayer other) {
+         //remove this player from the hidden player's EntityTrackerEntry
+         EntityTracker tracker = ((WorldServer) entity.world).tracker;
+-        EntityPlayer other = ((CraftPlayer) player).getHandle();
++        // PandaSpigot end
+         EntityTrackerEntry entry = (EntityTrackerEntry) tracker.trackedEntities.get(other.getId());
+         if (entry != null) {
+             entry.clear(getHandle());
+@@ -993,8 +998,13 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         if (!hiddenPlayers.contains(player.getUniqueId())) return;
+         hiddenPlayers.remove(player.getUniqueId());
+ 
+-        EntityTracker tracker = ((WorldServer) entity.world).tracker;
++        // PandaSpigot start
+         EntityPlayer other = ((CraftPlayer) player).getHandle();
++        this.registerPlayer(other);
++    }
++    private void registerPlayer(EntityPlayer other) {
++        EntityTracker tracker = ((WorldServer) entity.world).tracker;
++        // PandaSpigot end
+ 
+         getHandle().playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, other));
+ 
+@@ -1003,6 +1013,58 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+             entry.updatePlayer(getHandle());
+         }
+     }
++    // PandaSpigot start
++    private void reregisterPlayer(EntityPlayer player) {
++        if (!hiddenPlayers.contains(player.getUniqueID())) {
++            unregisterPlayer(player);
++            registerPlayer(player);
++        }
++    }
++
++    public void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile) {
++        EntityPlayer self = getHandle();
++        self.setProfile(com.destroystokyo.paper.profile.CraftPlayerProfile.asAuthlibCopy(profile));
++        List<EntityPlayer> players = server.getServer().getPlayerList().players;
++        for (EntityPlayer player : players) {
++            player.getBukkitEntity().reregisterPlayer(self);
++        }
++        refreshPlayer();
++    }
++
++    public com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile() {
++        return new com.destroystokyo.paper.profile.CraftPlayerProfile(this).clone();
++    }
++    
++    private void refreshPlayer() {
++        EntityPlayer handle = getHandle();
++        
++        Location loc = getLocation();
++        
++        PlayerConnection connection = handle.playerConnection;
++        reregisterPlayer(handle);
++        
++        // Respawn the player then update their position and selected slot
++        WorldServer worldserver = (WorldServer) handle.getWorld();
++        connection.sendPacket(new net.minecraft.server.PacketPlayOutRespawn(worldserver.dimension,
++                worldserver.getDifficulty(),
++                worldserver.worldData.getType(),
++                handle.playerInteractManager.getGameMode()));
++        handle.updateAbilities();
++        connection.sendPacket(new net.minecraft.server.PacketPlayOutPosition(loc.getX(), loc.getY(), loc.getZ(), loc.getYaw(), loc.getPitch(), new HashSet<>()));
++        net.minecraft.server.MinecraftServer.getServer().getPlayerList().updateClient(handle);
++
++        // Resend their XP and effects because the respawn packet resets it
++        connection.sendPacket(new net.minecraft.server.PacketPlayOutExperience(handle.exp, handle.expTotal, handle.expLevel));
++        for (MobEffect mobEffect : handle.getEffects()) {
++            connection.sendPacket(new net.minecraft.server.PacketPlayOutEntityEffect(handle.getId(), mobEffect));
++        }
++        
++        if (this.isOp()) {
++            this.setOp(false);
++            this.setOp(true);
++        }
++    }
++    // PandaSpigot end
+ 
+     public void removeDisconnectingPlayer(Player player) {
+         hiddenPlayers.remove(player.getUniqueId());
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
+index 55bbad76b6ae5dab6f356cfb756e6b434422a241..de6e00fda449da5cd45d4e49dba636be998416b0 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaSkull.java
+@@ -145,6 +145,17 @@ class CraftMetaSkull extends CraftMetaItem implements SkullMeta {
+ 
+         return true;
+     }
++    // PandaSpigot start - PlayerProfile API
++    @Override
++    public com.destroystokyo.paper.profile.PlayerProfile getPlayerProfile() {
++        return this.profile != null ? com.destroystokyo.paper.profile.CraftPlayerProfile.asBukkitCopy(this.profile) : null;
++    }
++    
++    @Override
++    public void setPlayerProfile(com.destroystokyo.paper.profile.PlayerProfile profile) {
++        this.profile = com.destroystokyo.paper.profile.CraftPlayerProfile.asAuthlibCopy(profile);
++    }
++    // PandaSpigot end
+ 
+     @Override
+     int applyHash() {

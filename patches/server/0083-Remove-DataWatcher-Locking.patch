@@ -1,0 +1,144 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Spottedleaf <Spottedleaf@users.noreply.github.com>
+Date: Sat, 18 Feb 2023 11:59:04 -0300
+Subject: [PATCH] Remove DataWatcher Locking
+
+The lock in DataWatcher is used to prevent concurrent modifications,
+however any modifications to this map only occur on initialization of
+an Entity in its constructor.
+
+Every other access is through a readlock, which allows the threads to
+pass if there is no thread holding the writelock.
+
+Since the writelock is only obtained in the constructor of the Entity,
+the further readlocks are actually useless.
+
+diff --git a/src/main/java/net/minecraft/server/DataWatcher.java b/src/main/java/net/minecraft/server/DataWatcher.java
+index dec091e7311056650dd03a980b2c4aa8299fac4b..518e8f379d690b1f1b4d2374c875dd3dae22360e 100644
+--- a/src/main/java/net/minecraft/server/DataWatcher.java
++++ b/src/main/java/net/minecraft/server/DataWatcher.java
+@@ -23,13 +23,15 @@ public class DataWatcher {
+     private final Map<Integer, DataWatcher.WatchableObject> d = gnu.trove.TDecorators.wrap( dataValues );
+     // Spigot End
+     private boolean e;
+-    private ReadWriteLock f = new ReentrantReadWriteLock();
++    // private ReadWriteLock f = new ReentrantReadWriteLock(); // PandaSpigot - Remove DataWatcher Locking
+ 
+     public DataWatcher(Entity entity) {
+         this.a = entity;
+     }
+ 
++    boolean registrationLocked; // PandaSpigot
+     public <T> void a(int i, T t0) {
++        if (registrationLocked) throw new IllegalStateException("Registering datawatcher object after entity initialization"); // PandaSpigot
+         int integer = classToId.get(t0.getClass()); // Spigot
+ 
+         if (integer == -1) { // Spigot
+@@ -41,9 +43,9 @@ public class DataWatcher {
+         } else {
+             DataWatcher.WatchableObject datawatcher_watchableobject = new DataWatcher.WatchableObject(integer, i, t0); // Spigot
+ 
+-            this.f.writeLock().lock();
++            // this.f.writeLock().lock(); // PandaSpigot
+             this.dataValues.put(i, datawatcher_watchableobject); // Spigot
+-            this.f.writeLock().unlock();
++            // this.f.writeLock().unlock(); // PandaSpigot
+             this.b = false;
+         }
+     }
+@@ -51,9 +53,9 @@ public class DataWatcher {
+     public void add(int i, int j) {
+         DataWatcher.WatchableObject datawatcher_watchableobject = new DataWatcher.WatchableObject(j, i, (Object) null);
+ 
+-        this.f.writeLock().lock();
++        // this.f.writeLock().lock(); // PandaSpigot
+         this.dataValues.put(i, datawatcher_watchableobject); // Spigot
+-        this.f.writeLock().unlock();
++        // this.f.writeLock().unlock(); // PandaSpigot
+         this.b = false;
+     }
+ 
+@@ -82,6 +84,8 @@ public class DataWatcher {
+     }
+ 
+     private DataWatcher.WatchableObject j(int i) {
++        // PandaSpigot start - Remove DataWatcher Locking
++        /*
+         this.f.readLock().lock();
+ 
+         DataWatcher.WatchableObject datawatcher_watchableobject;
+@@ -98,6 +102,9 @@ public class DataWatcher {
+ 
+         this.f.readLock().unlock();
+         return datawatcher_watchableobject;
++        */
++        return (WatchableObject) this.dataValues.get(i);
++        // PandaSpigot end
+     }
+ 
+     public Vector3f h(int i) {
+@@ -143,7 +150,7 @@ public class DataWatcher {
+         ArrayList arraylist = null;
+ 
+         if (this.e) {
+-            this.f.readLock().lock();
++            // this.f.readLock().lock(); // PandaSpigot
+             Iterator iterator = this.dataValues.valueCollection().iterator(); // Spigot
+ 
+             while (iterator.hasNext()) {
+@@ -170,7 +177,7 @@ public class DataWatcher {
+                 }
+             }
+ 
+-            this.f.readLock().unlock();
++            // this.f.readLock().unlock(); // PandaSpigot
+         }
+ 
+         this.e = false;
+@@ -178,7 +185,7 @@ public class DataWatcher {
+     }
+ 
+     public void a(PacketDataSerializer packetdataserializer) throws IOException {
+-        this.f.readLock().lock();
++        // this.f.readLock().lock(); // PandaSpigot
+         Iterator iterator = this.dataValues.valueCollection().iterator(); // Spigot
+ 
+         while (iterator.hasNext()) {
+@@ -187,14 +194,14 @@ public class DataWatcher {
+             a(packetdataserializer, datawatcher_watchableobject);
+         }
+ 
+-        this.f.readLock().unlock();
++        // this.f.readLock().unlock(); // PandaSpigot
+         packetdataserializer.writeByte(127);
+     }
+ 
+     public List<DataWatcher.WatchableObject> c() {
+         ArrayList arraylist = Lists.newArrayList(); // Spigot
+ 
+-        this.f.readLock().lock();
++        // this.f.readLock().lock(); // PandaSpigot
+ 
+         arraylist.addAll(this.dataValues.valueCollection()); // Spigot
+         // Spigot start - copy ItemStacks to prevent ConcurrentModificationExceptions
+@@ -213,7 +220,7 @@ public class DataWatcher {
+         }
+         // Spigot end
+ 
+-        this.f.readLock().unlock();
++        // this.f.readLock().unlock(); // PandaSpigot
+         return arraylist;
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index b0aee5e189d70e2f68c3c95a6406467981c25e2b..b8f4a69a1cac37722077f0510c72b087255c892c 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -197,6 +197,7 @@ public abstract class Entity implements ICommandListener {
+         this.datawatcher.a(2, "");
+         this.datawatcher.a(4, Byte.valueOf((byte) 0));
+         this.h();
++        this.datawatcher.registrationLocked = true; // PandaSpigot
+     }
+ 
+     protected abstract void h();

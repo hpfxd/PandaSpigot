@@ -1,0 +1,160 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Tue, 8 Nov 2022 16:51:21 -0500
+Subject: [PATCH] Backport TabCompleteEvent and AsyncTabCompleteEvent
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCompleter.java b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCompleter.java
+index 1aa335eca007be52e9813ce933d271eac9b1fdce..9212f9798707a50860daaff1d3520d52549c2f7a 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCompleter.java
++++ b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsoleCompleter.java
+@@ -3,11 +3,13 @@ package com.hpfxd.pandaspigot.console;
+ import net.minecraft.server.DedicatedServer;
+ import org.bukkit.craftbukkit.CraftServer;
+ import org.bukkit.craftbukkit.util.Waitable;
++import org.bukkit.event.server.TabCompleteEvent;
+ import org.jline.reader.Candidate;
+ import org.jline.reader.Completer;
+ import org.jline.reader.LineReader;
+ import org.jline.reader.ParsedLine;
+ 
++import java.util.Collections;
+ import java.util.List;
+ import java.util.concurrent.ExecutionException;
+ import java.util.logging.Level;
+@@ -21,6 +23,38 @@ public class PandaConsoleCompleter implements Completer {
+     
+     @Override
+     public void complete(LineReader reader, ParsedLine line, List<Candidate> candidates) {
++        // Async Tab Completion
++        com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event;
++        java.util.List<String> completions = new java.util.ArrayList<>();
++        event = new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(server.server.getConsoleSender(), completions, line.line(), true, null);
++        event.callEvent();
++        completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.getCompletions();
++
++        if (event.isCancelled() || event.isHandled()) {
++            // Still fire sync event with the provided completions, if someone is listening
++            if (!event.isCancelled() && TabCompleteEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                List<String> finalCompletions = completions;
++                Waitable<List<String>> syncCompletions = new Waitable<List<String>>() {
++                    @Override
++                    protected List<String> evaluate() {
++                        org.bukkit.event.server.TabCompleteEvent syncEvent = new org.bukkit.event.server.TabCompleteEvent(server.server.getConsoleSender(), line.line(), finalCompletions);
++                        return syncEvent.callEvent() ? syncEvent.getCompletions() : com.google.common.collect.ImmutableList.of();
++                    }
++                };
++                server.processQueue.add(syncCompletions);
++                try {
++                    completions = syncCompletions.get();
++                } catch (InterruptedException | ExecutionException e1) {
++                    e1.printStackTrace();
++                }
++            }
++
++            if (!completions.isEmpty()) {
++                candidates.addAll(completions.stream().map(Candidate::new).collect(java.util.stream.Collectors.toList()));
++            }
++            return;
++        }
++
+         CompletionWaiter waiter = new CompletionWaiter(line.line());
+         this.server.processQueue.add(waiter);
+         
+@@ -49,8 +83,12 @@ public class PandaConsoleCompleter implements Completer {
+         @Override
+         protected List<String> evaluate() {
+             final CraftServer server = PandaConsoleCompleter.this.server.server;
+-            
+-            return server.getCommandMap().tabComplete(server.getConsoleSender(), this.buffer);
++            final List<String> offers = server.getCommandMap().tabComplete(server.getConsoleSender(), buffer);
++
++            TabCompleteEvent tabEvent = new TabCompleteEvent(server.getConsoleSender(), buffer, offers == null ? Collections.emptyList() : offers);
++            server.getPluginManager().callEvent(tabEvent);
++
++            return tabEvent.isCancelled() ? Collections.emptyList() : tabEvent.getCompletions();
+         }
+     }
+ }
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index e2499f5f9c4b289e41c0f8fb922ed085047c7099..977675f6155a1ccb1d9cdfdcb48a9f922805df9a 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -1967,23 +1967,43 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+     }
+ 
+     public void a(PacketPlayInTabComplete packetplayintabcomplete) {
+-        PlayerConnectionUtils.ensureMainThread(packetplayintabcomplete, this, this.player.u());
++        // PandaSpigot start - Async Tab Completion
+         // CraftBukkit start
+         if (chatSpamField.addAndGet(this, 10) > 500 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
+-            this.disconnect("disconnect.spam");
++            minecraftServer.postToMainThread(() -> this.disconnect("disconnect.spam"));
+             return;
+         }
+         // CraftBukkit end
+-        ArrayList arraylist = Lists.newArrayList();
+-        Iterator iterator = this.minecraftServer.tabCompleteCommand(this.player, packetplayintabcomplete.a(), packetplayintabcomplete.b()).iterator();
+-
+-        while (iterator.hasNext()) {
+-            String s = (String) iterator.next();
++        com.destroystokyo.paper.event.server.AsyncTabCompleteEvent event;
++        java.util.List<String> completions = new ArrayList<>();
++        BlockPosition blockpos = packetplayintabcomplete.b();
++        String buffer = packetplayintabcomplete.a();
++        boolean isCommand = buffer.startsWith("/");
++        event = new com.destroystokyo.paper.event.server.AsyncTabCompleteEvent(this.getPlayer(), completions,
++            buffer, isCommand, blockpos != null ? new Location(player.world.getWorld(), blockpos.getX(), blockpos.getY(), blockpos.getZ()) : null);
++        event.callEvent();
++        completions = event.isCancelled() ? com.google.common.collect.ImmutableList.of() : event.getCompletions();
++        if (!event.isHandled()) {
++            // If the event isn't handled, we can assume that we have no completions, and so we'll ask the server
++
++            Waitable<java.util.List<String>> syncCompletions = new Waitable<java.util.List<String>>() {
++                @Override
++                protected java.util.List<String> evaluate() {
++                    return minecraftServer.tabCompleteCommand(player, buffer, blockpos);
++                }
++            };
++            server.getServer().processQueue.add(syncCompletions);
++            try {
++                completions = syncCompletions.get();
++            } catch (InterruptedException | ExecutionException e1) {
++                e1.printStackTrace();
++            }
+ 
+-            arraylist.add(s);
++            this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete(completions.toArray(new String[0])));
++        } else if (!event.isCancelled()) {
++            this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete(completions.toArray(new String[0])));
+         }
+-
+-        this.player.playerConnection.sendPacket(new PacketPlayOutTabComplete((String[]) arraylist.toArray(new String[arraylist.size()])));
++        // PandaSpigot end
+     }
+ 
+     public void a(PacketPlayInSettings packetplayinsettings) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 8937cd1e727bd90302a66743ea78d905ad4e56d9..949100d67ab3cc6e06e82a0eb64d9e5cbb4acb34 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -1632,11 +1632,17 @@ public final class CraftServer implements Server {
+         }
+ 
+         Player player = ((EntityPlayer) sender).getBukkitEntity();
++        // PandaSpigot start - TabCompleteEvent
++        List<String> offers;
+         if (message.startsWith("/")) {
+-            return tabCompleteCommand(player, message, blockPosition);
++            offers = tabCompleteCommand(player, message, blockPosition);
+         } else {
+-            return tabCompleteChat(player, message);
++            offers = tabCompleteChat(player, message);
+         }
++        org.bukkit.event.server.TabCompleteEvent tabEvent = new org.bukkit.event.server.TabCompleteEvent(player, message, offers, message.startsWith("/"), blockPosition != null ? new Location(player.getWorld(), blockPosition.getX(), blockPosition.getY(), blockPosition.getZ()) : null);
++        getPluginManager().callEvent(tabEvent);
++        return tabEvent.isCancelled() ? Collections.emptyList() : tabEvent.getCompletions();
++        // PandaSpigot end
+     }
+     // PaperSpigot end
+ 

@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sat, 30 Oct 2021 14:42:18 -0400
+Subject: [PATCH] Configurable time update frequency.
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 3dd3d0702c17541083d0d365ca46e93602105bce..b5f16e8cab9e43ad7597b2ea5bc921399b37872b 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -6,6 +6,13 @@ import org.spongepowered.configurate.objectmapping.meta.Comment;
+ @ConfigSerializable
+ @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
+ public class PandaSpigotWorldConfig {
++    @Comment("How many ticks in between sending time updates to players?\n" +
++            "\n" +
++            "The vanilla option is 20 (every second), but PandaSpigot sets the default\n" +
++            "to 100 (every 5 seconds). You would probably be fine setting this even\n" +
++            "higher, unless you're constantly changing the time, or the server is lagging.")
++    public int timeUpdateFrequency = 100;
++    
+     @Comment("These options control velocity players receive when damaged.")
+     public KnockbackConfig knockback;
+     
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 735f8d4d08d9adf4daf31cb68045dda1d0229b94..918863f601bb2199f5b46ca85f54152c138bbe7e 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -803,7 +803,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+             long worldTime = world.getTime();
+             final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
+             for (EntityHuman entityhuman : world.players) {
+-                if (!(entityhuman instanceof EntityPlayer) || (this.ticks + entityhuman.getId()) % 20 != 0) {
++                if (!(entityhuman instanceof EntityPlayer) || (this.ticks + entityhuman.getId()) % world.pandaSpigotConfig.timeUpdateFrequency != 0) {
+                     continue;
+                 }
+                 EntityPlayer entityplayer = (EntityPlayer) entityhuman;

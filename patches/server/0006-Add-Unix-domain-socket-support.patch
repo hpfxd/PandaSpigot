@@ -1,0 +1,167 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 27 Oct 2021 07:36:59 -0400
+Subject: [PATCH] Add Unix domain socket support
+
+Unix domain sockets feature lower latency and higher throughput, since all of the TCP and IP machinery in the kernel can be skipped. This is especially useful for a proxy connecting to a local server.
+
+This feature can be enabled by setting the "server-ip" field in server.properties to "unix:<path>", for instance "unix:/var/run/minecraft.sock"
+
+Currently, this feature is only supported on Linux environments with Epoll available.
+
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 088beb22b53ddf77dc182dd5ac39e1086d5279aa..8e57df176bcb04b7309a476a5472a41e5e46f8ae 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -163,6 +163,28 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+ 
+             this.r = WorldSettings.a(i);
+             DedicatedServer.LOGGER.info("Default game type: " + this.r);
++            
++            // PandaSpigot start - Unix domain socket support
++            // PandaSpigot - Move SpigotConfig to load earlier, so that we can check IP forwarding status here.
++            // Spigot start
++            this.a((PlayerList) (new DedicatedPlayerList(this)));
++            org.spigotmc.SpigotConfig.init((File) options.valueOf("spigot-settings"));
++            org.spigotmc.SpigotConfig.registerCommands();
++            // Spigot end
++            java.net.SocketAddress bindAddress;
++            if (this.getServerIp().startsWith("unix:")) {
++                if (!io.netty.channel.epoll.Epoll.isAvailable()) {
++                    DedicatedServer.LOGGER.fatal("**** INVALID CONFIGURATION!");
++                    DedicatedServer.LOGGER.fatal("You are trying to use a Unix domain socket but you're not on a supported OS.");
++                    return false;
++                } else if (!org.spigotmc.SpigotConfig.bungee) {
++                    DedicatedServer.LOGGER.fatal("**** INVALID CONFIGURATION!");
++                    DedicatedServer.LOGGER.fatal("Unix domain sockets require IPs to be forwarded from a proxy.");
++                    return false;
++                }
++                bindAddress = new io.netty.channel.unix.DomainSocketAddress(this.getServerIp().substring("unix:".length()));
++            } else {
++            // PandaSpigot end
+             InetAddress inetaddress = null;
+ 
+             if (this.getServerIp().length() > 0) {
+@@ -172,11 +194,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+             if (this.R() < 0) {
+                 this.setPort(this.propertyManager.getInt("server-port", 25565));
+             }
+-            // Spigot start
+-            this.a((PlayerList) (new DedicatedPlayerList(this)));
+-            org.spigotmc.SpigotConfig.init((File) options.valueOf("spigot-settings"));
+-            org.spigotmc.SpigotConfig.registerCommands();
+-            // Spigot end
++            bindAddress = new java.net.InetSocketAddress(inetaddress, this.R());
++            }
++            // PandaSpigot end
+             // PaperSpigot start
+             org.github.paperspigot.PaperSpigotConfig.init((File) options.valueOf("paper-settings"));
+             org.github.paperspigot.PaperSpigotConfig.registerCommands();
+@@ -188,7 +208,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+ 
+         if (!org.spigotmc.SpigotConfig.lateBind) {
+             try {
+-                this.aq().a(inetaddress, this.R());
++                this.aq().bind(bindAddress); // PandaSpigot - Unix domain socket support
+             } catch (IOException ioexception) {
+                 DedicatedServer.LOGGER.warn("**** FAILED TO BIND TO PORT!");
+                 DedicatedServer.LOGGER.warn("The exception was: {}", new Object[] { ioexception.toString()});
+@@ -294,7 +314,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+ 
+         if (org.spigotmc.SpigotConfig.lateBind) {
+             try {
+-                this.aq().a(inetaddress, this.R());
++                this.aq().bind(bindAddress); // PandaSpigot - Unix domain socket support
+             } catch (IOException ioexception) {
+                 DedicatedServer.LOGGER.warn("**** FAILED TO BIND TO PORT!");
+                 DedicatedServer.LOGGER.warn("The exception was: {}", new Object[] { ioexception.toString()});
+diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
+index e1a86a75524c3e3f3a9a4fbd447e01c7cb4d2b78..10a8c440f08535d90d8d1204a23c859ba296aa39 100644
+--- a/src/main/java/net/minecraft/server/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/HandshakeListener.java
+@@ -29,6 +29,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+ 
+             // CraftBukkit start - Connection throttle
+             try {
++                if (!(this.b.channel.localAddress() instanceof io.netty.channel.unix.DomainSocketAddress)) { // PandaSpigot - the connection throttle is useless when you have a Unix domain socket
+                 long currentTime = System.currentTimeMillis();
+                 long connectionThrottle = MinecraftServer.getServer().server.getConnectionThrottle();
+                 InetAddress address = ((java.net.InetSocketAddress) this.b.getSocketAddress()).getAddress();
+@@ -57,6 +58,7 @@ public class HandshakeListener implements PacketHandshakingInListener {
+                         }
+                     }
+                 }
++                } // PandaSpigot - add closing bracket for if check above
+             } catch (Throwable t) {
+                 org.apache.logging.log4j.LogManager.getLogger().debug("Failed to check connection throttle", t);
+             }
+@@ -103,8 +105,11 @@ public class HandshakeListener implements PacketHandshakingInListener {
+                 //if (org.spigotmc.SpigotConfig.bungee) { // PandaSpigot - comment out, we check above!
+                     String[] split = packethandshakinginsetprotocol.hostname.split("\00");
+                     if ( split.length == 3 || split.length == 4 ) {
++                        // PandaSpigot start - Unix domain socket support
++                        java.net.SocketAddress socketAddress = b.getSocketAddress();
+                         packethandshakinginsetprotocol.hostname = split[0];
+-                        b.l = new java.net.InetSocketAddress(split[1], ((java.net.InetSocketAddress) b.getSocketAddress()).getPort());
++                        b.l = new java.net.InetSocketAddress(split[1], socketAddress instanceof java.net.InetSocketAddress ? ((java.net.InetSocketAddress) socketAddress).getPort() : 0);
++                        // PandaSpigot end
+                         b.spoofedUUID = com.mojang.util.UUIDTypeAdapter.fromString( split[2] );
+                     } else
+                     {
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index 9d23c6c0ccaa91a46cb60474461f3977fa793122..fcf54e3a138f8408d7b85f087be03ca8cedb45f9 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -339,6 +339,11 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     // Spigot Start
+     public SocketAddress getRawAddress()
+     {
++        // PandaSpigot start - This can be null in the case of a Unix domain socket, so if it is, fake something
++        if (this.channel.remoteAddress() == null) {
++            return new java.net.InetSocketAddress(java.net.InetAddress.getLoopbackAddress(), 0);
++        }
++        // PandaSpigot end
+         return this.channel.remoteAddress();
+     }
+     // Spigot End
+diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
+index f13182c186723c0fe6ac695c8fe3a0c0bcfaab5d..578d03ead09c3c126fcd2da0657e1d94dbba9840 100644
+--- a/src/main/java/net/minecraft/server/ServerConnection.java
++++ b/src/main/java/net/minecraft/server/ServerConnection.java
+@@ -67,7 +67,12 @@ public class ServerConnection {
+         this.d = true;
+     }
+ 
++    // PandaSpigot start
+     public void a(InetAddress inetaddress, int i) throws IOException {
++        bind(new java.net.InetSocketAddress(inetaddress, i));
++    }
++    public void bind(java.net.SocketAddress address) throws IOException {
++    // PandaSpigot end
+         List list = this.g;
+ 
+         synchronized (this.g) {
+@@ -75,7 +80,13 @@ public class ServerConnection {
+             LazyInitVar lazyinitvar;
+ 
+             if (Epoll.isAvailable() && this.f.ai()) {
+-                oclass = EpollServerSocketChannel.class;
++                // PandaSpigot start - Unix domain socket support
++                if (address instanceof io.netty.channel.unix.DomainSocketAddress) {
++                    oclass = io.netty.channel.epoll.EpollServerDomainSocketChannel.class;
++                } else {
++                    oclass = EpollServerSocketChannel.class;
++                }
++                // PandaSpigot end
+                 lazyinitvar = ServerConnection.b;
+                 ServerConnection.e.info("Using epoll channel type");
+             } else {
+@@ -99,7 +110,7 @@ public class ServerConnection {
+                     channel.pipeline().addLast("packet_handler", networkmanager);
+                     networkmanager.a((PacketListener) (new HandshakeListener(ServerConnection.this.f, networkmanager)));
+                 }
+-            }).group((EventLoopGroup) lazyinitvar.c()).localAddress(inetaddress, i)).bind().syncUninterruptibly());
++            }).group((EventLoopGroup) lazyinitvar.c()).localAddress(address)).bind().syncUninterruptibly()); // PandaSpigot - Unix domain socket support
+         }
+     }
+ 
