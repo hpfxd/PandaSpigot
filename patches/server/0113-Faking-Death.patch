@@ -61,7 +61,7 @@ index 3a47eaf..cc105bd 100644
          return (CraftPlayer) super.getBukkitEntity();
 diff --git a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 index bed69c6..d95a058 100644
---- a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+--- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 +++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 @@ -274,21 +274,35 @@ public class EntityTrackerEntry {
  
