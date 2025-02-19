@@ -1,0 +1,56 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Alfie Cleveland <alfeh@me.com>
+Date: Fri, 25 Nov 2016 13:22:40 +0000
+Subject: [PATCH] Optimise removeQueue
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 23524af2dd05a6f14ff3bddbf524c5d4d483290f..b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -34,7 +34,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public double d;
+     public double e;
+     public final List<ChunkCoordIntPair> chunkCoordIntPairQueue = Lists.newLinkedList();
+-    public final List<Integer> removeQueue = Lists.newLinkedList();
++    public final java.util.Deque<Integer> removeQueue = new java.util.ArrayDeque<>(); // PandaSpigot
+     private final ServerStatisticManager bK;
+     private float bL = Float.MIN_VALUE;
+     private float bM = -1.0E8F;
+@@ -213,13 +213,20 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         while (!this.removeQueue.isEmpty()) {
+             int i = Math.min(this.removeQueue.size(), Integer.MAX_VALUE);
+             int[] aint = new int[i];
+-            Iterator iterator = this.removeQueue.iterator();
++            //Iterator iterator = this.removeQueue.iterator(); // PandaSpigot
+             int j = 0;
+ 
+-            while (iterator.hasNext() && j < i) {
++            // PandaSpigot start
++            /* while (iterator.hasNext() && j < i) {
+                 aint[j++] = ((Integer) iterator.next()).intValue();
+                 iterator.remove();
++            } */
++
++            Integer integer;
++            while (j < i && (integer = this.removeQueue.poll()) != null) {
++                aint[j++] = integer.intValue();
+             }
++            // PandaSpigot end
+ 
+             this.playerConnection.sendPacket(new PacketPlayOutEntityDestroy(aint));
+         }
+@@ -916,7 +923,12 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         this.lastSentExp = -1;
+         this.bM = -1.0F;
+         this.bN = -1;
+-        this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue);
++        // this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue); // PandaSpigot
++        // PandaSpigot start
++        if (this.removeQueue != ((EntityPlayer) entityhuman).removeQueue) {
++            this.removeQueue.addAll(((EntityPlayer) entityhuman).removeQueue);
++        }
++        // PandaSpigot end
+     }
+ 
+     protected void a(MobEffect mobeffect) {

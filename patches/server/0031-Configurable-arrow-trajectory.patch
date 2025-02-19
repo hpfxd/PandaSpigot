@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Thu, 4 Nov 2021 09:16:42 -0400
+Subject: [PATCH] Configurable arrow trajectory
+
+This patch works by passing 0 to shoot() instead of 1.
+
+We then check inside shoot() if "f1" is zero, and if so, don't apply
+the randomness. This is mostly an optimization, as it would be
+multiplied by zero anyways, causing the same effect.
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 04f04ce721aa06fba935618176c77587e305a5b0..05c9ebb76a3cb19e887bea1311ac36035334b9a1 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -36,6 +36,10 @@ public class PandaSpigotWorldConfig {
+             "This has the same effect as Spigot's \"nerf-spawner-mobs\" option, but applies to all entities.")
+     public boolean disableEntityAi = false;
+     
++    @Comment("This option controls whether or not to add a bit of randomness to an arrow's trajectory.\n" +
++            "By default, this is true (vanilla behaviour)")
++    public boolean randomArrowTrajectory = true;
++    
+     @Comment("These options control velocity players receive when damaged.")
+     public KnockbackConfig knockback;
+     
+diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
+index eac0363c2e8c2a75481000077725f09f2c492e3e..8c9b5c034d32349317bbeb8807f7e4a4c63229ae 100644
+--- a/src/main/java/net/minecraft/server/EntityArrow.java
++++ b/src/main/java/net/minecraft/server/EntityArrow.java
+@@ -95,7 +95,7 @@ public class EntityArrow extends Entity implements IProjectile {
+         this.motX = (double) (-MathHelper.sin(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F));
+         this.motZ = (double) (MathHelper.cos(this.yaw / 180.0F * 3.1415927F) * MathHelper.cos(this.pitch / 180.0F * 3.1415927F));
+         this.motY = (double) (-MathHelper.sin(this.pitch / 180.0F * 3.1415927F));
+-        this.shoot(this.motX, this.motY, this.motZ, f * 1.5F, 1.0F);
++        this.shoot(this.motX, this.motY, this.motZ, f * 1.5F, this.world.pandaSpigotConfig.randomArrowTrajectory ? 1.0F : 0); // PandaSpigot
+     }
+ 
+     protected void h() {
+@@ -108,9 +108,11 @@ public class EntityArrow extends Entity implements IProjectile {
+         d0 /= (double) f2;
+         d1 /= (double) f2;
+         d2 /= (double) f2;
++        if (f1 != 0) { // PandaSpigot - Configurable random arrow trajectory
+         d0 += this.random.nextGaussian() * (double) (this.random.nextBoolean() ? -1 : 1) * 0.007499999832361937D * (double) f1;
+         d1 += this.random.nextGaussian() * (double) (this.random.nextBoolean() ? -1 : 1) * 0.007499999832361937D * (double) f1;
+         d2 += this.random.nextGaussian() * (double) (this.random.nextBoolean() ? -1 : 1) * 0.007499999832361937D * (double) f1;
++        } // PandaSpigot - closing bracket
+         d0 *= (double) f;
+         d1 *= (double) f;
+         d2 *= (double) f;

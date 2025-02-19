@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Techcable <Techcable@outlook.com>
+Date: Sat, 14 Jan 2023 11:09:49 -0300
+Subject: [PATCH] Optimize armor stands
+
+Armor stands try and move() every tick, which can add up fast on creative servers with a lot of armor stands.
+This patch adds an option to prevent armor stands from moving.
+This patch also avoids armor stands looking up entities, which provides
+most of the benefits of avoiding move() while keeping gravity.
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 1e0393f667029809ac3476069cebe1ef34afadc8..3e85450bbccc54414be7998562fadc92d2541fb4 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -56,4 +56,6 @@ public class PandaSpigotWorldConfig {
+     public boolean optimizeTntMovement = false; // May not fully emulate vanilla behavior
+ 
+     public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
++
++    public boolean optimizeArmorStandMovement = false; // Doesn't fully emulate vanilla behavior, see TacoSpigot issue #1
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityArmorStand.java b/src/main/java/net/minecraft/server/EntityArmorStand.java
+index 2ea4a5fd32629a7931189786f86dce99d1db6d63..f8415dd404e14d85290724e66abc8a1ab1db95cb 100644
+--- a/src/main/java/net/minecraft/server/EntityArmorStand.java
++++ b/src/main/java/net/minecraft/server/EntityArmorStand.java
+@@ -705,4 +705,12 @@ public class EntityArmorStand extends EntityLiving {
+     public boolean ad() {
+         return super.ad() && !this.s();
+     }
++
++    // PandaSpigot start - add an option to make armor stands not move
++    @Override
++    public void move(double motX, double motY, double motZ) {
++        if (getWorld().pandaSpigotConfig.optimizeArmorStandMovement) return;
++        super.move(motX, motY, motZ);
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index bb0aedd1d640532691118101e4ddc344e5504739..326c881f76b6ba6414563ccb5bcfda7c06e1f798 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -1352,6 +1352,7 @@ public abstract class World implements IBlockAccess {
+         if (entity instanceof EntityItem) return arraylist; // PaperSpigot - Optimize item movement
+         if (entity instanceof EntityTNTPrimed) return arraylist; // PandaSpigot - Optimize tnt entity movement
+         if (entity instanceof EntityFallingBlock) return arraylist; // PandaSpigot - Optimize falling block movement
++        if (entity instanceof EntityArmorStand) return arraylist; // PandaSpigot - Optimize armor stand movement
+ 
+         double d0 = 0.25D;
+         List list = this.getEntities(entity, axisalignedbb.grow(d0, d0, d0));
