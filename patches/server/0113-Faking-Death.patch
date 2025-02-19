@@ -11,7 +11,7 @@ Subject: [PATCH] Faking Death
 
 diff --git a/AeSpigot-Server/src/main/java/net/minecraft/server/DataWatcher.java b/AeSpigot-Server/src/main/java/net/minecraft/server/DataWatcher.java
 index 3acc739..03da104 100644
---- a/src/main/java/net/net/minecraft/server/DataWatcher.java
+--- a/src/main/java/net/minecraft/server/DataWatcher.java
 +++ b/src/main/java/net/minecraft/server/DataWatcher.java
 @@ -115,6 +115,19 @@ public class DataWatcher {
          return (WatchableObject) this.dataValues.get(i);
@@ -35,7 +35,7 @@ index 3acc739..03da104 100644
      }
 diff --git a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityPlayer.java b/AeSpigot-Server/src/main/java/net/minecraft/server/EntityPlayer.java
 index 3a47eaf..cc105bd 100644
---- a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityPlayer.java
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/AeSpigot-Server/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -56,6 +56,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
      public boolean g;
@@ -62,7 +62,7 @@ index 3a47eaf..cc105bd 100644
 diff --git a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 index bed69c6..d95a058 100644
 --- a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java
-+++ b/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
 @@ -274,21 +274,35 @@ public class EntityTrackerEntry {
  
      private void b() {
