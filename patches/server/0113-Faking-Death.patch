@@ -1,0 +1,109 @@
+From 9e901f874e0c4fc29bd76fe5c56dd48b5993871f Mon Sep 17 00:00:00 2001
+From: dogsbean <lja0328@gmail.com>
+Date: Mon, 11 Nov 2024 10:24:02 +0900
+Subject: [PATCH] Faking Death
+
+---
+ .../net/minecraft/server/DataWatcher.java     | 13 ++++++++++
+ .../net/minecraft/server/EntityPlayer.java    |  9 +++++++
+ .../minecraft/server/EntityTrackerEntry.java  | 26 ++++++++++++++-----
+ 3 files changed, 42 insertions(+), 6 deletions(-)
+
+diff --git a/AeSpigot-Server/src/main/java/net/minecraft/server/DataWatcher.java b/AeSpigot-Server/src/main/java/net/minecraft/server/DataWatcher.java
+index 3acc739..03da104 100644
+--- a/src/main/java/net/net/minecraft/server/DataWatcher.java
++++ b/src/main/java/net/minecraft/server/DataWatcher.java
+@@ -115,6 +115,19 @@ public class DataWatcher {
+         return (WatchableObject) this.dataValues.get(i);
+     }
+ 
++    public DataWatcher clone() {
++        DataWatcher newWatcher = new DataWatcher(this.a);
++        int[] var2;
++        int var3 = (var2 = this.dataValues.keys()).length;
++
++        for(int var4 = 0; var4 < var3; ++var4) {
++            int i = var2[var4];
++            newWatcher.a(i, ((WatchableObject)this.dataValues.get(i)).b());
++        }
++
++        return newWatcher;
++    }
++
+     public Vector3f h(int i) {
+         return (Vector3f) this.j(i).b();
+     }
+diff --git a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityPlayer.java b/AeSpigot-Server/src/main/java/net/minecraft/server/EntityPlayer.java
+index 3a47eaf..cc105bd 100644
+--- a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/AeSpigot-Server/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -56,6 +56,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public boolean g;
+     public int ping;
+     public boolean viewingCredits;
++    private boolean fakingDeath;
+ 
+     // CraftBukkit start
+@@ -1270,6 +1271,14 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         this.keepLevel = false;
+     }
+ 
++    public void setFakingDeath(boolean fakingDeath) {
++        this.fakingDeath = fakingDeath;
++    }
++
++    public boolean isFakingDeath() {
++        return this.fakingDeath;
++    }
++
+     @Override
+     public CraftPlayer getBukkitEntity() {
+         return (CraftPlayer) super.getBukkitEntity();
+diff --git a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index bed69c6..d95a058 100644
+--- a/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/AeSpigot-Server/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+@@ -274,21 +274,35 @@ public class EntityTrackerEntry {
+ 
+     private void b() {
+         DataWatcher datawatcher = this.tracker.getDataWatcher();
++        boolean fakingDeath = false;
++        boolean isPlayer = this.tracker instanceof EntityPlayer;
++        if (isPlayer) {
++            fakingDeath = ((EntityPlayer)this.tracker).isFakingDeath();
++        }
++
++        if (datawatcher.a() || fakingDeath) {
++            if (isPlayer && fakingDeath) {
++                datawatcher.watch(6, 0.0F);
++                ((EntityPlayer)this.tracker).setFakingDeath(false);
++            }
+ 
+-        if (datawatcher.a()) {
+             this.broadcastIncludingSelf(new PacketPlayOutEntityMetadata(this.tracker.getId(), datawatcher, false));
++            if (isPlayer) {
++                DataWatcher otherWatcher = datawatcher.clone();
++                EntityPlayer player = (EntityPlayer)this.tracker;
++                otherWatcher.watch(6, player.getHealth());
++                player.playerConnection.sendPacket(new PacketPlayOutEntityMetadata(this.tracker.getId(), otherWatcher, false));
++            }
+         }
+ 
+         if (this.tracker instanceof EntityLiving) {
+-            AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).getAttributeMap();
++            AttributeMapServer attributemapserver = (AttributeMapServer)((EntityLiving)this.tracker).getAttributeMap();
+             Set set = attributemapserver.getAttributes();
+-
+             if (!set.isEmpty()) {
+-                // CraftBukkit start - Send scaled max health
+                 if (this.tracker instanceof EntityPlayer) {
+-                    ((EntityPlayer) this.tracker).getBukkitEntity().injectScaledMaxHealth(set, false);
++                    ((EntityPlayer)this.tracker).getBukkitEntity().injectScaledMaxHealth(set, false);
+                 }
+-                // CraftBukkit end
++
+                 this.broadcastIncludingSelf(new PacketPlayOutUpdateAttributes(this.tracker.getId(), set));
+             }
+ 
+-- 
+
