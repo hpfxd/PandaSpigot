@@ -1,8 +1,8 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: uRyanxD <familiarodrigues123ro@gmail.com>
 Date: Sat, 22 Feb 2025 14:17:47 -0300
-Subject: [PATCH] Fix SPIGOT-2622: Only one player receiving the server closing
- message
+Subject: [PATCH] Fix SPIGOT-2622: Only one player receiving the server
+ shutdown message
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
