@@ -12,14 +12,17 @@ workdir="$basedir/base"
 minecraftversion=$(cat "$workdir/Paper/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
 decompiledir="$workdir/mc-dev/spigot"
 
-find "$decompiledir/$nms" -name '*.java' -type f -print0 | while IFS= read -r -d $'\0' file; do
-  target_file="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$(basename "$file")"
-  if [[ ! -f "$target_file" ]]; then
-    cp "$file" "$target_file"
-  fi
-done
+export importedmcdev=""
+function import {
+    export importedmcdev="$importedmcdev $1"
+    file="${1}.java"
+    target="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$file"
+    base="$decompiledir/$nms/$file"
 
-cp -rt "$workdir/Paper/PaperSpigot-Server/src/main/resources" "$decompiledir/assets" "$decompiledir/yggdrasil_session_pubkey.der"
+    if [[ ! -f "$target" ]]; then
+        cp "$base" "$target"
+    fi
+}
 
 (
     cd "$workdir/Paper/PaperSpigot-Server/"
@@ -29,15 +32,11 @@ cp -rt "$workdir/Paper/PaperSpigot-Server/src/main/resources" "$decompiledir/ass
     fi
 )
 
-########################################################
-########################################################
-########################################################
-#                   NMS IMPORTS
-# Temporarily add new NMS dev imports here before you run paper patch
-# but after you have paper rb'd your changes, remove the line from this file before committing.
-# we do not need any lines added to this file for NMS
-
-# import FileName
+find "$decompiledir/$nms" -type f -name "*.java" | while read file; do
+    # Extrai o nome do arquivo sem a extensão .java
+    filename=$(basename "$file" .java)
+    import "$filename"
+done
 
 ########################################################
 ########################################################
