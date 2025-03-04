@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ptbnate <playsumer162@gmail.com>
+Date: Mon, 3 Feb 2025 18:43:24 +0500
+Subject: [PATCH] Accurate pearl Y level tracking (Configurable)
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 360ed37b95fce68941c234615b465090b8ea7308..4db44d9ce50feb9a08b8762f21a6dde8579afbbb 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -62,4 +62,7 @@ public class PandaSpigotWorldConfig {
+     @Comment("This option controls whether or not there is a chance for arrow crits to deal extra damage.\n" +
+             "By default, this is true (vanilla behaviour)")
+     public boolean randomArrowDamage = true;
++
++    @Comment("Whether the player teleports to the opponent's Y level when their pearl hits the opponent.")
++    public boolean pearlMatchY = false;
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityEnderPearl.java b/src/main/java/net/minecraft/server/EntityEnderPearl.java
+index 319c0bc6f621d54ca36e6e2b210a308122f1e070..4cfa2dc8a379d6386e8444999af0d3c0d33758a3 100644
+--- a/src/main/java/net/minecraft/server/EntityEnderPearl.java
++++ b/src/main/java/net/minecraft/server/EntityEnderPearl.java
+@@ -53,6 +53,12 @@ public class EntityEnderPearl extends EntityProjectile {
+                     location.setPitch(player.getLocation().getPitch());
+                     location.setYaw(player.getLocation().getYaw());
+ 
++                    // PandaSpigot start - Teleport the player to the opponent's Y level when hit.
++                    if (movingobjectposition.entity instanceof EntityPlayer && this.world.pandaSpigotConfig.pearlMatchY) {
++                        location.setY(movingobjectposition.entity.locY);
++                    }
++                    // PandaSpigot end
++
+                     PlayerTeleportEvent teleEvent = new PlayerTeleportEvent(player, player.getLocation(), location, PlayerTeleportEvent.TeleportCause.ENDER_PEARL);
+                     Bukkit.getPluginManager().callEvent(teleEvent);
+ 
