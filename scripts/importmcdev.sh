@@ -21,6 +21,8 @@ find "$decompiledir/$nms" -type f -name "*.java" | while read file; do
     fi
 done
 
+cp -rt "$workdir/Paper/PaperSpigot-Server/src/main/resources" "$decompiledir/assets" "$decompiledir/yggdrasil_session_pubkey.der"
+
 (
     cd "$workdir/Paper/PaperSpigot-Server/"
     lastlog=$($gitcmd log -1 --oneline)
