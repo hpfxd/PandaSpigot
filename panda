@@ -56,7 +56,7 @@ case "$1" in
     (
         set -e
         cd "$basedir"
-        scripts/build.sh "$basedir" || exit 1
+        scripts/applyPatches.sh "$basedir" || exit 1
     ) || failed=1
     ;;
     "j" | "jar")
