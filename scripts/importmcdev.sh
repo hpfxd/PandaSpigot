@@ -13,8 +13,8 @@ minecraftversion=$(cat "$workdir/Paper/BuildData/info.json" | grep minecraftVers
 decompiledir="$workdir/mc-dev/spigot"
 
 find "$decompiledir/$nms" -type f -name "*.java" | while read file; do
-    filename=$(basename "$file" .java)
-    target="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$filename.java"
+    filename=$(basename "$file")
+    target="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$filename"
 
     if [[ ! -f "$target" ]]; then
         cp "$file" "$target"
