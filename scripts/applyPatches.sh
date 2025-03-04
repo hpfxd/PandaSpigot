@@ -105,18 +105,22 @@ if [ "$2" == "--setup" ] || [ "$2" == "--jar" ]; then
     echo "Importing MC Dev"
 
     ./scripts/importmcdev.sh "$basedir" || exit 1
-elif [ ! -d "base/Paper/PaperSpigot-Server" ]; then
-    echo "Upstream directory does not exist. Did you forget to run 'panda setup'?"
-    exit 1
 fi
 
-# Apply PandaSpigot
-(
-    applyPatch "base/Paper/PaperSpigot-API" PandaSpigot-API HEAD patches/api &&
-    applyPatch "base/Paper/PaperSpigot-Server" PandaSpigot-Server HEAD patches/server
-    cd "$basedir"
-) || (
-    echo "Failed to apply PandaSpigot Patches"
-    exit 1
-) || exit 1
+if [ "$2" != "--setup" ]; then
+    if [ ! -d "base/Paper/PaperSpigot-Server" ]; then
+        echo "Upstream directory does not exist. Did you forget to run 'panda setup'?"
+        exit 1
+    else
+        # Apply PandaSpigot
+        (
+            applyPatch "base/Paper/PaperSpigot-API" PandaSpigot-API HEAD patches/api &&
+            applyPatch "base/Paper/PaperSpigot-Server" PandaSpigot-Server HEAD patches/server
+            cd "$basedir"
+        ) || (
+            echo "Failed to apply PandaSpigot Patches"
+            exit 1
+        ) || exit 1
+    fi
+fi
 ) || exit 1
