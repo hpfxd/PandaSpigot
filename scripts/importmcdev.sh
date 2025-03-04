@@ -12,17 +12,14 @@ workdir="$basedir/base"
 minecraftversion=$(cat "$workdir/Paper/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
 decompiledir="$workdir/mc-dev/spigot"
 
-export importedmcdev=""
-function import {
-    export importedmcdev="$importedmcdev $1"
-    file="${1}.java"
-    target="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$file"
-    base="$decompiledir/$nms/$file"
+find "$decompiledir/$nms" -type f -name "*.java" | while read file; do
+    filename=$(basename "$file" .java)
+    target="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$filename.java"
 
     if [[ ! -f "$target" ]]; then
-        cp "$base" "$target"
+        cp "$file" "$target"
     fi
-}
+done
 
 (
     cd "$workdir/Paper/PaperSpigot-Server/"
@@ -31,12 +28,6 @@ function import {
         $gitcmd reset --hard HEAD^
     fi
 )
-
-find "$decompiledir/$nms" -type f -name "*.java" | while read file; do
-    # Extrai o nome do arquivo sem a extensão .java
-    filename=$(basename "$file" .java)
-    import "$filename"
-done
 
 ########################################################
 ########################################################
