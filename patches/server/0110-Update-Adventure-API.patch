@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ptbnate <nasxeaty@gmail.com>
+Date: Tue, 11 Mar 2025 16:24:07 +0500
+Subject: [PATCH] Update Adventure API
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index c52b43cde3338206e3e76542386fd4f8d0417d1c..ff93a4644c35a4c04a97e313385e768d984cec58 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -42,7 +42,7 @@ dependencies {
+     implementation("org.jline:jline-terminal-jansi:3.20.0")
+     // PandaSpigot end
+ 
+-    implementation("net.kyori:adventure-key:4.10.1") // PandaSpigot - Add Channel initialization listeners
++    implementation("net.kyori:adventure-key:4.19.0") // PandaSpigot - Add Channel initialization listeners
+ 
+     testImplementation("junit:junit:4.11")
+     testImplementation("org.hamcrest:hamcrest-library:1.3")
