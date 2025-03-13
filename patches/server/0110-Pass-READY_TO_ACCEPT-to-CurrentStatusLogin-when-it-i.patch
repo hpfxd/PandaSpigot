@@ -6,21 +6,12 @@ Subject: [PATCH] Pass READY_TO_ACCEPT to CurrentStatusLogin when it is
 
 
 diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..a43e466a078197450931e6e73d65b67abb09e993 100644
+index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..2b8895114ee61021da253520de0e261457717ed1 100644
 --- a/src/main/java/net/minecraft/server/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/LoginListener.java
-@@ -172,13 +172,15 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
-             this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.Q().getPublic(), this.e));
-         } else {
-             // Spigot start
--            initUUID();
-+            // initUUID(); // PandaSpigot - Moved down
-             authenticatorPool.execute(new Runnable() { // PandaSpigot - Cache authenticator threads
- 
-                 @Override
+@@ -179,6 +179,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
                  public void run() {
                      try{
-+                        initUUID(); // PandaSpigot - Moved to the correct place
                          new LoginHandler().fireEvents();
 +                        LoginListener.this.g = LoginListener.EnumProtocolState.READY_TO_ACCEPT; // PandaSpigot - Re-add accidentally removed line
                      } catch (Exception ex) {
