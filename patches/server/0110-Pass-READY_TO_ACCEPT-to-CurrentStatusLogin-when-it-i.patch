@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Thu, 13 Mar 2025 13:43:47 -0300
+Subject: [PATCH] Pass READY_TO_ACCEPT to CurrentStatusLogin when it is
+ supposed to pass
+
+
+diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
+index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..a43e466a078197450931e6e73d65b67abb09e993 100644
+--- a/src/main/java/net/minecraft/server/LoginListener.java
++++ b/src/main/java/net/minecraft/server/LoginListener.java
+@@ -172,13 +172,15 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+             this.networkManager.handle(new PacketLoginOutEncryptionBegin(this.j, this.server.Q().getPublic(), this.e));
+         } else {
+             // Spigot start
+-            initUUID();
++            // initUUID(); // PandaSpigot - Moved down
+             authenticatorPool.execute(new Runnable() { // PandaSpigot - Cache authenticator threads
+ 
+                 @Override
+                 public void run() {
+                     try{
++                        initUUID(); // PandaSpigot - Moved to the correct place
+                         new LoginHandler().fireEvents();
++                        LoginListener.this.g = LoginListener.EnumProtocolState.READY_TO_ACCEPT; // PandaSpigot - Re-add accidentally removed line
+                     } catch (Exception ex) {
+                         disconnect("Failed to verify username!");
+                         server.server.getLogger().log(java.util.logging.Level.WARNING, "Exception verifying " + i.getName(), ex);
