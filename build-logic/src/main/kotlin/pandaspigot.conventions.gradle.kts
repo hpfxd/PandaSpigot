@@ -25,12 +25,12 @@ tasks {
 
     val prepareTestServerDir by registering {
         doLast {
-            mkdir("$buildDir/test-server")
+            mkdir(layout.buildDirectory.dir("test-server").get().asFile)
         }
     }
 
     test {
-        workingDir = file("$buildDir/test-server/")
+        workingDir = layout.buildDirectory.dir("test-server").get().asFile
 
         dependsOn(prepareTestServerDir)
     }
