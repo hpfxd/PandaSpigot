@@ -1,5 +1,5 @@
 plugins {
-    id("pandaspigot.extensions")
+    id("pandaspigot.conventions")
     id("paperclip")
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
