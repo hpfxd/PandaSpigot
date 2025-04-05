@@ -2238,7 +2238,7 @@ index f74b06794345a8be22ae02d23881c09125c1f52b..87c066c5cbeaaaaf46bdfc64784181f7
              iasynctaskhandler.postToMainThread(new Runnable() {
                  public void run() {
 diff --git a/src/main/java/net/minecraft/server/PlayerSelector.java b/src/main/java/net/minecraft/server/PlayerSelector.java
-index 6437ea63e279be35d1b99556de560fff52152350..f52c90722a75c7997985ae8ca31f35c769e42906 100644
+index 6437ea63e279be35d1b99556de560fff52152350..122b86b56760583315da9b6b090a10e968ed8e80 100644
 --- a/src/main/java/net/minecraft/server/PlayerSelector.java
 +++ b/src/main/java/net/minecraft/server/PlayerSelector.java
 @@ -30,9 +30,9 @@ public class PlayerSelector {
@@ -2284,11 +2284,11 @@ index 6437ea63e279be35d1b99556de560fff52152350..f52c90722a75c7997985ae8ca31f35c7
                  });
              }
          } else {
-+            final String s_f = s;
++            final String s1Final = s1;
              arraylist.add(new Predicate() {
                  public boolean a(Entity entity) {
 -                    return EntityTypes.a(entity, s) != flag;
-+                    return EntityTypes.a(entity, s1) != flag;
++                    return EntityTypes.a(entity, s1Final) != flag;
                  }
  
                  public boolean apply(Object object) {
