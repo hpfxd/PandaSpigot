@@ -2238,7 +2238,7 @@ index f74b06794345a8be22ae02d23881c09125c1f52b..87c066c5cbeaaaaf46bdfc64784181f7
              iasynctaskhandler.postToMainThread(new Runnable() {
                  public void run() {
 diff --git a/src/main/java/net/minecraft/server/PlayerSelector.java b/src/main/java/net/minecraft/server/PlayerSelector.java
-index 6437ea63e279be35d1b99556de560fff52152350..7b48073293ba8474e11b47d89071b751f0c67ca6 100644
+index 6437ea63e279be35d1b99556de560fff52152350..bcba6aca0d68ef48235f9f0f8649fd77b9f3ac0c 100644
 --- a/src/main/java/net/minecraft/server/PlayerSelector.java
 +++ b/src/main/java/net/minecraft/server/PlayerSelector.java
 @@ -30,9 +30,9 @@ public class PlayerSelector {
@@ -2280,7 +2280,19 @@ index 6437ea63e279be35d1b99556de560fff52152350..7b48073293ba8474e11b47d89071b751
          final boolean flag = s1 != null && s1.startsWith("!");
  
          if (flag) {
-@@ -213,12 +213,13 @@ public class PlayerSelector {
+@@ -146,9 +146,10 @@ public class PlayerSelector {
+                 });
+             }
+         } else {
++            final String s1Final = s1;
+             arraylist.add(new Predicate() {
+                 public boolean a(Entity entity) {
+-                    return EntityTypes.a(entity, s) != flag;
++                    return EntityTypes.a(entity, s1Final) != flag;
+                 }
+ 
+                 public boolean apply(Object object) {
+@@ -213,12 +214,13 @@ public class PlayerSelector {
  
      private static List<Predicate<Entity>> d(Map<String, String> map) {
          ArrayList arraylist = Lists.newArrayList();
@@ -2295,7 +2307,7 @@ index 6437ea63e279be35d1b99556de560fff52152350..7b48073293ba8474e11b47d89071b751
  
          if (s != null) {
              arraylist.add(new Predicate() {
-@@ -228,9 +229,9 @@ public class PlayerSelector {
+@@ -228,9 +230,9 @@ public class PlayerSelector {
                      } else {
                          EntityLiving entityliving = (EntityLiving) entity;
                          ScoreboardTeamBase scoreboardteambase = entityliving.getScoreboardTeam();
@@ -2307,7 +2319,16 @@ index 6437ea63e279be35d1b99556de560fff52152350..7b48073293ba8474e11b47d89071b751
                      }
                  }
  
-@@ -305,17 +306,18 @@ public class PlayerSelector {
+@@ -251,7 +253,7 @@ public class PlayerSelector {
+             arraylist.add(new Predicate() {
+                 public boolean a(Entity entity) {
+                     Scoreboard scoreboard = MinecraftServer.getServer().getWorldServer(0).getScoreboard();
+-                    Iterator iterator = map.entrySet().iterator();
++                    Iterator iterator = map1.entrySet().iterator();
+ 
+                     Entry entry;
+                     boolean flag;
+@@ -305,17 +307,18 @@ public class PlayerSelector {
  
      private static List<Predicate<Entity>> f(Map<String, String> map) {
          ArrayList arraylist = Lists.newArrayList();
@@ -2328,16 +2349,19 @@ index 6437ea63e279be35d1b99556de560fff52152350..7b48073293ba8474e11b47d89071b751
                  }
  
                  public boolean apply(Object object) {
-@@ -338,7 +340,7 @@ public class PlayerSelector {
+@@ -338,9 +341,9 @@ public class PlayerSelector {
  
              arraylist.add(new Predicate() {
                  public boolean a(Entity entity) {
 -                    int i = (int) entity.c(blockposition);
 +                    int i1 = (int) entity.c(blockposition);
  
-                     return (j < 0 || i >= k) && (l < 0 || i <= i1);
+-                    return (j < 0 || i >= k) && (l < 0 || i <= i1);
++                    return (i < 0 || i1 >= k) && (j < 0 || i1 <= l);
                  }
-@@ -354,12 +356,10 @@ public class PlayerSelector {
+ 
+                 public boolean apply(Object object) {
+@@ -354,12 +357,10 @@ public class PlayerSelector {
  
      private static List<Predicate<Entity>> g(Map<String, String> map) {
          ArrayList arraylist = Lists.newArrayList();
@@ -2352,7 +2376,7 @@ index 6437ea63e279be35d1b99556de560fff52152350..7b48073293ba8474e11b47d89071b751
              arraylist.add(new Predicate() {
                  public boolean a(Entity entity) {
                      int i = PlayerSelector.a((int) Math.floor((double) entity.yaw));
-@@ -374,8 +374,8 @@ public class PlayerSelector {
+@@ -374,8 +375,8 @@ public class PlayerSelector {
          }
  
          if (map.containsKey("rxm") || map.containsKey("rx")) {
@@ -2363,7 +2387,7 @@ index 6437ea63e279be35d1b99556de560fff52152350..7b48073293ba8474e11b47d89071b751
              arraylist.add(new Predicate() {
                  public boolean a(Entity entity) {
                      int i = PlayerSelector.a((int) Math.floor((double) entity.pitch));
-@@ -478,7 +478,7 @@ public class PlayerSelector {
+@@ -478,7 +479,7 @@ public class PlayerSelector {
          Entity entity = icommandlistener.f();
  
          if (entity != null && oclass.isAssignableFrom(entity.getClass()) && i == 1 && ((List) list).contains(entity) && !"r".equals(s)) {
