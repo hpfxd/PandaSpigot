@@ -2442,6 +2442,91 @@ index 0e2dac3d67a89f4ba99cca5130dd6a0d8a152b10..d9d458239d0f58e4e92092055c31f6b0
          }
  
          this.b.set(i, t0);
+diff --git a/src/main/java/net/minecraft/server/RemoteControlSession.java b/src/main/java/net/minecraft/server/RemoteControlSession.java
+index 1b45f81b6a63662db999f7441c487bba24f19fea..af1b66b3bf21a15425fbbcab20b4110a76da3262 100644
+--- a/src/main/java/net/minecraft/server/RemoteControlSession.java
++++ b/src/main/java/net/minecraft/server/RemoteControlSession.java
+@@ -32,12 +32,9 @@ public class RemoteControlSession extends RemoteConnectionThread {
+     }
+ 
+     public void run() {
+-        while (true) {
++        try {
+             try {
+-                if (!this.a) {
+-                    break;
+-                }
+-
++                while (this.a) {
+                 BufferedInputStream bufferedinputstream = new BufferedInputStream(this.j.getInputStream());
+                 int i = bufferedinputstream.read(this.k, 0, 1460);
+ 
+@@ -49,7 +46,7 @@ public class RemoteControlSession extends RemoteConnectionThread {
+                         return;
+                     }
+ 
+-                    int k = b0 + 4;
++                    k += 4;
+                     int l = StatusChallengeUtils.b(this.k, k, i);
+ 
+                     k += 4;
+@@ -66,45 +63,40 @@ public class RemoteControlSession extends RemoteConnectionThread {
+                             } catch (Exception exception) {
+                                 this.a(l, "Error executing: " + s + " (" + exception.getMessage() + ")");
+                             }
+-                            continue;
++                            break;
+                         }
+ 
+                         this.f();
+-                        continue;
++                        break;
+ 
+                     case 3:
+                         String s1 = StatusChallengeUtils.a(this.k, k, i);
+-                        int j1 = k + s1.length();
++                        k += s1.length();
+ 
+                         if (0 != s1.length() && s1.equals(this.l)) {
+                             this.i = true;
+                             this.a(l, 2, "");
+-                            continue;
++                            break;
+                         }
+ 
+                         this.i = false;
+                         this.f();
+-                        continue;
++                        break;
+ 
+                     default:
+-                        this.a(l, String.format("Unknown request %s", new Object[] { Integer.toHexString(i1)}));
+-                        continue;
++                        this.a(l, String.format("Unknown request %s", new Object[]{Integer.toHexString(i1)}));
+                     }
+                 }
+-            } catch (SocketTimeoutException sockettimeoutexception) {
+-                break;
++            }
++
++                return;
+             } catch (IOException ioexception) {
+-                break;
+             } catch (Exception exception1) {
+                 RemoteControlSession.h.error("Exception whilst parsing RCON input", exception1);
+-                break;
+-            } finally {
+-                this.g();
+             }
+-
+-            return;
++        } finally {
++            this.g();
+         }
+-
+     }
+ 
+     private void a(int i, int j, String s) throws IOException {
 diff --git a/src/main/java/net/minecraft/server/Scoreboard.java b/src/main/java/net/minecraft/server/Scoreboard.java
 index c547cc4904ba180bd67cbc937f6792f327bec26e..5ec2075778668991e752d7feb39a8668b24f7e39 100644
 --- a/src/main/java/net/minecraft/server/Scoreboard.java
