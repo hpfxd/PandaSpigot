@@ -2443,7 +2443,7 @@ index 0e2dac3d67a89f4ba99cca5130dd6a0d8a152b10..d9d458239d0f58e4e92092055c31f6b0
  
          this.b.set(i, t0);
 diff --git a/src/main/java/net/minecraft/server/RemoteControlSession.java b/src/main/java/net/minecraft/server/RemoteControlSession.java
-index 1b45f81b6a63662db999f7441c487bba24f19fea..f07de986ab56954ff74ba0813f1e29c9b957e92f 100644
+index 1b45f81b6a63662db999f7441c487bba24f19fea..774a711cb59e8c5414b481efcbfe9ead1a3fda97 100644
 --- a/src/main/java/net/minecraft/server/RemoteControlSession.java
 +++ b/src/main/java/net/minecraft/server/RemoteControlSession.java
 @@ -32,12 +32,9 @@ public class RemoteControlSession extends RemoteConnectionThread {
@@ -2489,9 +2489,8 @@ index 1b45f81b6a63662db999f7441c487bba24f19fea..f07de986ab56954ff74ba0813f1e29c9
 +                        break;
  
                      default:
--                        this.a(l, String.format("Unknown request %s", new Object[] { Integer.toHexString(i1)}));
+                         this.a(l, String.format("Unknown request %s", new Object[] { Integer.toHexString(i1)}));
 -                        continue;
-+                        this.a(l, String.format("Unknown request %s", new Object[]{Integer.toHexString(i1)}));
                      }
                  }
 -            } catch (SocketTimeoutException sockettimeoutexception) {
