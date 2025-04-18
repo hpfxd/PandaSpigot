@@ -2443,7 +2443,7 @@ index 0e2dac3d67a89f4ba99cca5130dd6a0d8a152b10..d9d458239d0f58e4e92092055c31f6b0
  
          this.b.set(i, t0);
 diff --git a/src/main/java/net/minecraft/server/RemoteControlSession.java b/src/main/java/net/minecraft/server/RemoteControlSession.java
-index 1b45f81b6a63662db999f7441c487bba24f19fea..9196e20b588807616234649ed2cf43c977a5fd60 100644
+index 1b45f81b6a63662db999f7441c487bba24f19fea..adb021aea627612243edbe6adbf0cd960a50a8ab 100644
 --- a/src/main/java/net/minecraft/server/RemoteControlSession.java
 +++ b/src/main/java/net/minecraft/server/RemoteControlSession.java
 @@ -32,12 +32,8 @@ public class RemoteControlSession extends RemoteConnectionThread {
@@ -2504,12 +2504,11 @@ index 1b45f81b6a63662db999f7441c487bba24f19fea..9196e20b588807616234649ed2cf43c9
                  RemoteControlSession.h.error("Exception whilst parsing RCON input", exception1);
 -                break;
              } finally {
--                this.g();
--            }
+                 this.g();
+             }
 -
 -            return;
-+            this.g();
-         }
+-        }
 -
      }
  
