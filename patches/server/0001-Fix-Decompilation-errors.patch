@@ -2443,25 +2443,21 @@ index 0e2dac3d67a89f4ba99cca5130dd6a0d8a152b10..d9d458239d0f58e4e92092055c31f6b0
  
          this.b.set(i, t0);
 diff --git a/src/main/java/net/minecraft/server/RemoteControlSession.java b/src/main/java/net/minecraft/server/RemoteControlSession.java
-index 1b45f81b6a63662db999f7441c487bba24f19fea..adb021aea627612243edbe6adbf0cd960a50a8ab 100644
+index 1b45f81b6a63662db999f7441c487bba24f19fea..1e35c0918f80f2a4cad65dc6de6e74c64e34fb4e 100644
 --- a/src/main/java/net/minecraft/server/RemoteControlSession.java
 +++ b/src/main/java/net/minecraft/server/RemoteControlSession.java
-@@ -32,12 +32,8 @@ public class RemoteControlSession extends RemoteConnectionThread {
+@@ -32,8 +32,8 @@ public class RemoteControlSession extends RemoteConnectionThread {
      }
  
      public void run() {
 -        while (true) {
 -            try {
--                if (!this.a) {
--                    break;
--                }
--
 +        try {
 +            while (this.a) {
-                 BufferedInputStream bufferedinputstream = new BufferedInputStream(this.j.getInputStream());
-                 int i = bufferedinputstream.read(this.k, 0, 1460);
- 
-@@ -66,11 +62,11 @@ public class RemoteControlSession extends RemoteConnectionThread {
+                 if (!this.a) {
+                     break;
+                 }
+@@ -66,11 +66,11 @@ public class RemoteControlSession extends RemoteConnectionThread {
                              } catch (Exception exception) {
                                  this.a(l, "Error executing: " + s + " (" + exception.getMessage() + ")");
                              }
@@ -2475,7 +2471,7 @@ index 1b45f81b6a63662db999f7441c487bba24f19fea..adb021aea627612243edbe6adbf0cd96
  
                      case 3:
                          String s1 = StatusChallengeUtils.a(this.k, k, i);
-@@ -79,32 +75,26 @@ public class RemoteControlSession extends RemoteConnectionThread {
+@@ -79,32 +79,26 @@ public class RemoteControlSession extends RemoteConnectionThread {
                          if (0 != s1.length() && s1.equals(this.l)) {
                              this.i = true;
                              this.a(l, 2, "");
