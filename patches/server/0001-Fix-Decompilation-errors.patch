@@ -2443,7 +2443,7 @@ index 0e2dac3d67a89f4ba99cca5130dd6a0d8a152b10..d9d458239d0f58e4e92092055c31f6b0
  
          this.b.set(i, t0);
 diff --git a/src/main/java/net/minecraft/server/RemoteControlSession.java b/src/main/java/net/minecraft/server/RemoteControlSession.java
-index 1b45f81b6a63662db999f7441c487bba24f19fea..1e35c0918f80f2a4cad65dc6de6e74c64e34fb4e 100644
+index 1b45f81b6a63662db999f7441c487bba24f19fea..d111cf73696b53df66e54adf7344089ba6c8b5e3 100644
 --- a/src/main/java/net/minecraft/server/RemoteControlSession.java
 +++ b/src/main/java/net/minecraft/server/RemoteControlSession.java
 @@ -32,8 +32,8 @@ public class RemoteControlSession extends RemoteConnectionThread {
@@ -2453,7 +2453,7 @@ index 1b45f81b6a63662db999f7441c487bba24f19fea..1e35c0918f80f2a4cad65dc6de6e74c6
 -        while (true) {
 -            try {
 +        try {
-+            while (this.a) {
++            while (true) {
                  if (!this.a) {
                      break;
                  }
