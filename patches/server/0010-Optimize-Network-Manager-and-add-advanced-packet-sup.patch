@@ -388,7 +388,7 @@ index fdc142b75b78289f01a9e9fed6f36432624735db..bb18dac7a3554a8a6cb93d24bc539901
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 180b1432e8fbbc516ecfb60ba2da4cd319d85a97..e390ceef529d98c10bc467ed5517e1ab17b336e0 100644
+index 8909aaf474093bc579dc72dc3b8e253e0561ae1c..f1638557ecf770a95c23f7400e16414050061c5e 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -63,10 +63,12 @@ public class ServerConnection {
@@ -397,7 +397,7 @@ index 180b1432e8fbbc516ecfb60ba2da4cd319d85a97..e390ceef529d98c10bc467ed5517e1ab
      private final java.util.Queue<NetworkManager> pending = new java.util.concurrent.ConcurrentLinkedQueue<>();
 +    private static final boolean disableFlushConsolidation = Boolean.getBoolean("Paper.disableFlushConsolidate"); // PandaSpigot
      private void addPending() {
-         NetworkManager manager = null;
+         NetworkManager manager;
          while ((manager = pending.poll()) != null) {
              h.add(manager);
 +            manager.isPending = false;

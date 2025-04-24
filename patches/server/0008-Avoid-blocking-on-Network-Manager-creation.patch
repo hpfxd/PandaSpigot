@@ -6,7 +6,7 @@ Subject: [PATCH] Avoid blocking on Network Manager creation
 Per Paper issue 294
 
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 578d03ead09c3c126fcd2da0657e1d94dbba9840..180b1432e8fbbc516ecfb60ba2da4cd319d85a97 100644
+index 578d03ead09c3c126fcd2da0657e1d94dbba9840..8909aaf474093bc579dc72dc3b8e253e0561ae1c 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -61,6 +61,15 @@ public class ServerConnection {
@@ -16,7 +16,7 @@ index 578d03ead09c3c126fcd2da0657e1d94dbba9840..180b1432e8fbbc516ecfb60ba2da4cd3
 +    // PandaSpigot start - Prevent blocking on adding a new network manager while the server is ticking
 +    private final java.util.Queue<NetworkManager> pending = new java.util.concurrent.ConcurrentLinkedQueue<>();
 +    private void addPending() {
-+        NetworkManager manager = null;
++        NetworkManager manager;
 +        while ((manager = pending.poll()) != null) {
 +            h.add(manager);
 +        }
