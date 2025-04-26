@@ -4,7 +4,7 @@
 PS1="$"
 basedir="$(cd "$1" && pwd -P)"
 workdir="$basedir/base"
-minecraftversion=$(cat "$workdir/Paper/BuildData/info.json"  | grep minecraftVersion | cut -d '"' -f 4)
+minecraftversion=$(cat "$workdir/Paper/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
 gitcmd="git -c commit.gpgsign=false"
 applycmd="$gitcmd am --3way --ignore-whitespace"
 # Windows detection to workaround ARG_MAX limitation
@@ -22,7 +22,7 @@ function applyPatch {
     $gitcmd branch -f upstream "$branch" >/dev/null
 
     cd "$basedir"
-    if [ ! -d  "$basedir/$target" ]; then
+    if [ ! -d "$basedir/$target" ]; then
         $gitcmd clone "$what" "$target"
     fi
     cd "$basedir/$target"
@@ -107,20 +107,18 @@ if [ "$2" == "--setup" ] || [ "$2" == "--jar" ]; then
     ./scripts/importmcdev.sh "$basedir" || exit 1
 fi
 
-if [ "$2" != "--setup" ]; then
-    if [ ! -d "base/Paper/PaperSpigot-Server" ]; then
-        echo "Upstream directory does not exist. Did you forget to run 'panda setup'?"
+if [ ! -d "base/Paper/PaperSpigot-Server" ]; then
+    echo "Upstream directory does not exist. Did you forget to run 'panda setup'?"
+    exit 1
+else
+    # Apply PandaSpigot
+    (
+        applyPatch "base/Paper/PaperSpigot-API" PandaSpigot-API HEAD patches/api &&
+        applyPatch "base/Paper/PaperSpigot-Server" PandaSpigot-Server HEAD patches/server
+        cd "$basedir"
+    ) || (
+        echo "Failed to apply PandaSpigot Patches"
         exit 1
-    else
-        # Apply PandaSpigot
-        (
-            applyPatch "base/Paper/PaperSpigot-API" PandaSpigot-API HEAD patches/api &&
-            applyPatch "base/Paper/PaperSpigot-Server" PandaSpigot-Server HEAD patches/server
-            cd "$basedir"
-        ) || (
-            echo "Failed to apply PandaSpigot Patches"
-            exit 1
-        ) || exit 1
-    fi
+    ) || exit 1
 fi
 ) || exit 1
