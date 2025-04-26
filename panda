@@ -66,13 +66,6 @@ case "$1" in
         scripts/build.sh "$basedir" "--jar" || exit 1
     ) || failed=1
     ;;
-    "fj" | "fastjar")
-    (
-        set -e
-        cd "$basedir"
-        ./gradlew build && ./scripts/paperclip.sh "$basedir"
-    ) || failed=1
-    ;;
     "pc" | "paperclip")
     (
         set -e
@@ -179,7 +172,6 @@ case "$1" in
         echo "  * setup               | Remap, decompile, and patch Minecraft. Can be run from anywhere."
         echo "  * p, patch            | Apply all patches to the project without building it. Can be run from anywhere."
         echo "  * j, jar              | Apply all patches and build the project, paperclip.jar will be output. Can be run from anywhere."
-        echo "  * fj, fastjar         | Similar to the "jar" argument, but skips patch application and the setup script."
         echo "  * c, clean            | Removes all generated files, PandaSpigot-API, PandaSpigot-Server, and work."
         echo "  * con, continue       | Shortcut command for running git am --continue, or git rebase --continue."
         echo ""
