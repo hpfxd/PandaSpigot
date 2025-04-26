@@ -16,7 +16,9 @@ find "$decompiledir/$nms" -type f -name "*.java" -print0 | while IFS= read -r -d
     filename="$(basename "$file")"
     target="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$filename"
     
-    [[ ! -f "$target" ]] && cp "$file" "$target"
+    if [[ ! -f "$target" ]]; then
+        cp "$file" "$target"
+    fi
 done
 
 cp -rt "$workdir/Paper/PaperSpigot-Server/src/main/resources" "$decompiledir/assets" "$decompiledir/yggdrasil_session_pubkey.der"
