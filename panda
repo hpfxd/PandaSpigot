@@ -63,12 +63,7 @@ case "$1" in
     (
         set -e
         cd "$basedir"
-
-        if [[ "$3" == "fast" ]]; then
-            scripts/build.sh "$basedir" "--jar" "--fast" || exit 1
-        else
-            scripts/build.sh "$basedir" "--jar" || exit 1
-        fi
+        scripts/build.sh "$basedir" "--jar" || exit 1
     ) || failed=1
     ;;
     "pc" | "paperclip")
