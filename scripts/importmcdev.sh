@@ -12,14 +12,12 @@ workdir="$basedir/base"
 minecraftversion=$(cat "$workdir/Paper/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
 decompiledir="$workdir/mc-dev/spigot"
 
-find "$decompiledir/$nms" -type f -name "*.java" | while read file; do
-    filename=$(basename "$file")
+while IFS= read -r -d '' file; do
+    filename="${file##*/}"
     target="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$filename"
 
-    if [[ ! -f "$target" ]]; then
-        cp "$file" "$target"
-    fi
-done
+    [[ -f "$target" ]] || cp "$file" "$target"
+done < <(find "$decompiledir/$nms" -type f -name "*.java" -print0)
 
 cp -rt "$workdir/Paper/PaperSpigot-Server/src/main/resources" "$decompiledir/assets" "$decompiledir/yggdrasil_session_pubkey.der"
 
