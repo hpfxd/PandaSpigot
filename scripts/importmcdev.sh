@@ -17,8 +17,6 @@ find "$decompiledir/$nms" -type f -name "*.java" -print0 | while IFS= read -r -d
     target="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$filename"
 
     if [ ! -f "$target" ]; then
-        #mkdir -p "$(dirname "$dest_file")"
-        #echo "Copiando $nms/$rel_path..."
         cp "$file" "$target"
     fi
 done
