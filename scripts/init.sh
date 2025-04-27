@@ -38,7 +38,7 @@ mkdir -p "$cb"
 while IFS= read -r -d '' file
 do
     patchFile="$file"
-    file="$(echo "$file" | cut -d "/" -f2- |  cut -d. -f1).java"
+    file="$(echo "$file" | cut -d "/" -f2- | cut -d. -f1).java"
     cp "$nms/$file" "$cb/$file"
 done < <(find nms-patches -type f -print0)
 $gitcmd add --force src
