@@ -48,7 +48,7 @@ $gitcmd commit -q -m "Minecraft $ $(date)" --author="Vanilla <auto@mated.null>"
 while IFS= read -r -d '' file
 do
     patchFile="$file"
-    file="$(echo "$file" | cut -d. -f1).java"
+    file="$(echo "$file" | cut -d "/" -f2- | cut -d. -f1).java"
 
     echo "Patching $file < $patchFile"
     set +e
