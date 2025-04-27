@@ -39,7 +39,7 @@ while IFS= read -r -d '' file
 do
     patchFile="$file"
     file="$(echo "$file" | cut -d. -f1).java"
-    mkdir -p "$(dirname $cb/"$file")"
+    cp "$nms/$file" "$cb/$file"
 done < <(find nms-patches -type f -print0)
 $gitcmd add --force src
 $gitcmd commit -q -m "Minecraft $ $(date)" --author="Vanilla <auto@mated.null>"
