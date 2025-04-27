@@ -12,7 +12,7 @@ workdir="$basedir/base"
 minecraftversion=$(cat "$workdir/Paper/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
 decompiledir="$workdir/mc-dev/spigot"
 
-find "$decompiledir/$nms" -type f -name "*.java" -print0 | while IFS= read -r -d '' file; do
+find "$decompiledir/$nms" -type f -name "*.java" | while read -r file; do
     filename="$(basename "$file")"
     target="$workdir/Paper/PaperSpigot-Server/src/main/java/$nms/$filename"
 
