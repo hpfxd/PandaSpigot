@@ -55,7 +55,7 @@ do
     strip_cr "$nms/$file" > /dev/null
     set -e
 
-    "$patch" -s -d src/main/java/ "net/minecraft/server/$file" < "$patchFile"
+    "$patch" -s -d src/main/java -p 1 < "$patchFile"
 done < <(find nms-patches -type f -print0)
 
 $gitcmd add --force src
