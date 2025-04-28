@@ -33,14 +33,14 @@ echo "Applying CraftBukkit patches to NMS..."
 cd "$workdir/Paper/CraftBukkit"
 $gitcmd checkout -B patched HEAD >/dev/null 2>&1
 rm -rf "$cb"
+mkdir -p "$cb"
 # create baseline NMS import so we can see diff of what CB changed
 while IFS= read -r -d '' file
 do
     patchFile="$file"
     file="$(echo "$file" | cut -d "/" -f2- | cut -d. -f1).java"
-    mkdir -p "$(dirname $cb/"$file")"
     cp "$nms/$file" "$cb/$file"
-done <   <(find nms-patches -type f -print0)
+done < <(find nms-patches -type f -print0)
 $gitcmd add --force src
 $gitcmd commit -q -m "Minecraft $ $(date)" --author="Vanilla <auto@mated.null>"
 
@@ -56,8 +56,7 @@ do
     set -e
 
     "$patch" -s -d src/main/java -p 1 < "$patchFile"
-done <   <(find nms-patches -type f -print0)
-
+done < <(find nms-patches -type f -print0)
 
 $gitcmd add --force src
 $gitcmd commit -q -m "CraftBukkit $ $(date)" --author="CraftBukkit <auto@mated.null>"
