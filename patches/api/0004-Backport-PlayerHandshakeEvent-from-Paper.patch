@@ -7,7 +7,7 @@ This patch was added in Paper 1.9.4, and is used by plugins such as BungeeGuard 
 
 diff --git a/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java b/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f9f1ea58e4fa7e582b08df907b1fd5d4ea057204
+index 0000000000000000000000000000000000000000..785bce1509a622a7941f8a837e2200c8b860345b
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/event/player/PlayerHandshakeEvent.java
 @@ -0,0 +1,239 @@
@@ -46,7 +46,7 @@ index 0000000000000000000000000000000000000000..f9f1ea58e4fa7e582b08df907b1fd5d4
 +     *
 +     * @param originalHandshake the original handshake string
 +     * @param cancelled         if this event is enabled
-+     * @deprecated in favour of {@link PlayerHandshakeEvent(String, String, boolean)}
++     * @deprecated in favour of {@link #PlayerHandshakeEvent(String, String, boolean)}
 +     */
 +    @Deprecated
 +    public PlayerHandshakeEvent(String originalHandshake, boolean cancelled) {
