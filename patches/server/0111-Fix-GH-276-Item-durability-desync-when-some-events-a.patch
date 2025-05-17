@@ -4,6 +4,7 @@ Date: Sat, 17 May 2025 18:02:19 -0300
 Subject: [PATCH] Fix GH-276: Item durability desync when some events are
  cancelled
 
+Co-authored-by: Rejomy <iyaargg@gmail.com>
 
 diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
 index 524ff60ada7392ec1fd803661f957c19c50b2c2e..5201f4055003df9601eeb87a1e9109a7626c7768 100644
