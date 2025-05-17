@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Sat, 17 May 2025 18:02:19 -0300
+Subject: [PATCH] Fix GH-276: Item durability desync when some events are
+ cancelled
+
+Co-authored-by: Rejomy <iyaargg@gmail.com>
+
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index 524ff60ada7392ec1fd803661f957c19c50b2c2e..5201f4055003df9601eeb87a1e9109a7626c7768 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -1103,6 +1103,17 @@ public abstract class EntityHuman extends EntityLiving {
+                     } else if (flag1) {
+                         entity.extinguish();
+                     }
++                    // PandaSpigot start - Fix item durability desync when damage event is cancelled
++                    if (this instanceof EntityPlayer) {
++                        EntityPlayer entityPlayer = (EntityPlayer) this;
++                        org.bukkit.craftbukkit.entity.CraftPlayer playerBukkitEntity = entityPlayer.getBukkitEntity();
++
++                        org.bukkit.inventory.ItemStack itemInHand = playerBukkitEntity.getInventory().getItemInHand();
++                        if (itemInHand != null && itemInHand.getType().getMaxDurability() > 0) {
++                            playerBukkitEntity.updateInventory();
++                        }
++                    }
++                    // PandaSpigot end
+                 }
+ 
+             }
+diff --git a/src/main/java/net/minecraft/server/PlayerInteractManager.java b/src/main/java/net/minecraft/server/PlayerInteractManager.java
+index 33a0a095ff525349275e5319999c1437091e0671..4a6b183900ff2b17084e45ac54b8b079ab8628cb 100644
+--- a/src/main/java/net/minecraft/server/PlayerInteractManager.java
++++ b/src/main/java/net/minecraft/server/PlayerInteractManager.java
+@@ -296,6 +296,14 @@ public class PlayerInteractManager {
+                 if (tileentity != null) {
+                     this.player.playerConnection.sendPacket(tileentity.getUpdatePacket());
+                 }
++                // PandaSpigot start - Fix item durability desync when block break event is cancelled
++                org.bukkit.craftbukkit.entity.CraftPlayer bukkitEntity = this.player.getBukkitEntity();
++
++                org.bukkit.inventory.ItemStack itemInHand = bukkitEntity.getInventory().getItemInHand();
++                if (itemInHand != null && itemInHand.getType().getMaxDurability() > 0) {
++                    bukkitEntity.updateInventory();
++                }
++                // PandaSpigot end
+                 return false;
+             }
+         }

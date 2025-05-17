@@ -27,7 +27,7 @@ jobs:
         run: ./panda patch
 
       - name: Build
-        uses: burrunan/gradle-cache-action@v2
+        uses: burrunan/gradle-cache-action@v3
         with:
           arguments: build
           read-only: false
