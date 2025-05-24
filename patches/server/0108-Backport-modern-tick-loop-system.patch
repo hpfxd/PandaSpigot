@@ -7,7 +7,7 @@ Also removes redundant empty list check before putting a task on the
 main thread
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..2cef5b5aaca54dfdb6b4aee197e9ea49d1d8de4c 100644
+index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..4e1d982854bc66541045595a4147ac1574f86531 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -78,7 +78,7 @@ index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..2cef5b5aaca54dfdb6b4aee197e9ea49
      // PaperSpigot End
 +
 +    // PandaSpigot start - New Tick Loop System
-+    private boolean canSleepForTick() {
++    private boolean isAheadOfTime() {
 +        return az() < this.ab;
 +    }
 +    // PandaSpigot end
@@ -140,7 +140,7 @@ index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..2cef5b5aaca54dfdb6b4aee197e9ea49
 +                    // PandaSpigot start - New Tick Loop System
 +                    this.ab += 50L;
 +
-+                    while(this.canSleepForTick()) {
++                    while(this.isAheadOfTime()) {
 +                        java.util.concurrent.locks.LockSupport.parkNanos(1_000_000);
 +                    }
 +                    // PandaSpigot end
