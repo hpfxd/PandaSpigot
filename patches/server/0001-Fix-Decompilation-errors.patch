@@ -829,7 +829,7 @@ index 4f5b45a57d2e970966ac744651c2991a8a552ecb..5361446db22a102f3a74604d5a03e5af
              map.put(object, iterator.next());
          }
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b400ce04db4dfefaca9a040902bf2d5e50168b7f..864b3bc1375cb72588b63855eee8fa4ff569a5d3 100644
+index b400ce04db4dfefaca9a040902bf2d5e50168b7f..fa737dac5420d0e3af68e5ea083b2fab27e93fbe 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -259,7 +259,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -841,6 +841,15 @@ index b400ce04db4dfefaca9a040902bf2d5e50168b7f..864b3bc1375cb72588b63855eee8fa4f
                  } else {
                      world = (WorldServer) (new WorldServer(this, idatamanager, worlddata, dimension, this.methodProfiler, org.bukkit.World.Environment.getEnvironment(dimension), gen)).b();
                  }
+@@ -1556,7 +1556,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     public <V> ListenableFuture<V> a(Callable<V> callable) {
+         Validate.notNull(callable);
+         if (!this.isMainThread()) { // CraftBukkit && !this.isStopped()) {
+-            ListenableFutureTask listenablefuturetask = ListenableFutureTask.create(callable);
++            ListenableFutureTask<V> listenablefuturetask = ListenableFutureTask.create(callable);
+             Queue queue = this.j;
+ 
+             // Spigot start
 diff --git a/src/main/java/net/minecraft/server/OpList.java b/src/main/java/net/minecraft/server/OpList.java
 index a85ad5d4087a127a69157cb69286e9740e2c7e8c..c33b3f6f7be82cb83c1a8b979f70e09a5bdf1bd5 100644
 --- a/src/main/java/net/minecraft/server/OpList.java
