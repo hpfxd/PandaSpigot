@@ -1,11 +1,13 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: uRyanxD <familiarodrigues123ro@gmail.com>
 Date: Mon, 10 Feb 2025 14:55:55 -0300
-Subject: [PATCH] Better Tick Loop System
+Subject: [PATCH] Backport modern tick loop system
 
+Also removes redundant empty list check before putting a task on the
+main thread
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b83d774412562540808440eec845da2593383d91..c1b664bec8a984a95e0ac3d98c33be413755509e 100644
+index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..2cef5b5aaca54dfdb6b4aee197e9ea49d1d8de4c 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -166,3 +168,16 @@ index b83d774412562540808440eec845da2593383d91..c1b664bec8a984a95e0ac3d98c33be41
          co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Spigot
      }
  
+@@ -773,8 +820,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+ 
+         // Spigot start
+         FutureTask<?> entry;
+-        int count = this.j.size();
+-        while (count-- > 0 && (entry = this.j.poll()) != null) {
++        // PandaSpigot start - Remove redundant empty list check
++        // int count = this.j.size();
++        while (/*count-- > 0 &&*/ (entry = this.j.poll()) != null) {
++        // PandaSpigot end
+             SystemUtils.a(entry, MinecraftServer.LOGGER);
+          }
+         // Spigot end
