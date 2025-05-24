@@ -1,0 +1,41 @@
+Subject: [PATCH] Fix chest visual open bug
+---
+Index: src/main/java/net/minecraft/server/PlayerConnection.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java	(revision c3c0231b17f661eeb1b2578be6289e2c3e60be5e)
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java	(date 1748128380756)
+@@ -701,6 +701,13 @@
+         // CraftBukkit start
+         if (this.player.dead) return;
+ 
++        // PandaSpigot start - Fix chest visual open bug
++        // Even if inventory is not open, active container will equal player inventory, same with defaultContainer.
++        if (com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().dropInteractPacketsInInventory && player.activeContainer != player.defaultContainer) {
++            return;
++        }
++        // PandaSpigot end
++
+         // CraftBukkit - if rightclick decremented the item, always send the update packet. */
+         // this is not here for CraftBukkit's own functionality; rather it is to fix
+         // a notch bug where the item doesn't update correctly.
+Index: src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java	(revision c3c0231b17f661eeb1b2578be6289e2c3e60be5e)
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java	(date 1748128329903)
+@@ -123,4 +123,8 @@
+     @Comment("Whether player IP addresses should be logged by the server. This does not impact\n" +
+         "the ability of plugins to log the IP addresses of players.")
+     public boolean logPlayerIpAddresses = true;
++
++    @Comment("Prevents sending interact packets while an inventory is open. This fixes the bug\n" +
++        "of chests showing as open when the aren't. ")
++    public boolean dropInteractPacketsInInventory = true;
+ }
