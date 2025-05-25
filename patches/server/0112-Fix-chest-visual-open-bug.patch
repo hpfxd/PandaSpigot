@@ -1,14 +1,31 @@
+From 5a115d5d06dfb6ade6dbcdc92c6b13c508e8dcd2 Mon Sep 17 00:00:00 2001
+From: FabrisNick <niccolofabris05@gmail.com>
+Date: Sun, 25 May 2025 20:37:52 +0200
 Subject: [PATCH] Fix chest visual open bug
+
 ---
-Index: src/main/java/net/minecraft/server/PlayerConnection.java
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
+ .../com/hpfxd/pandaspigot/config/PandaSpigotConfig.java    | 4 ++++
+ src/main/java/net/minecraft/server/PlayerConnection.java   | 7 +++++++
+ 2 files changed, 11 insertions(+)
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+index 1d8e4d105..47137cd6e 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+@@ -123,4 +123,8 @@ public class PandaSpigotConfig {
+     @Comment("Whether player IP addresses should be logged by the server. This does not impact\n" +
+         "the ability of plugins to log the IP addresses of players.")
+     public boolean logPlayerIpAddresses = true;
++
++    @Comment("Prevents sending interact packets while an inventory is open. This fixes the bug\n" +
++        "of chests showing as open when the aren't.")
++    public boolean dropInteractPacketsInInventory = true;
+ }
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
---- a/src/main/java/net/minecraft/server/PlayerConnection.java	(revision c3c0231b17f661eeb1b2578be6289e2c3e60be5e)
-+++ b/src/main/java/net/minecraft/server/PlayerConnection.java	(date 1748128380756)
-@@ -701,6 +701,13 @@
+index 303d145fe..9e38444f3 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -701,6 +701,13 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
          // CraftBukkit start
          if (this.player.dead) return;
  
@@ -22,20 +39,6 @@ diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main
          // CraftBukkit - if rightclick decremented the item, always send the update packet. */
          // this is not here for CraftBukkit's own functionality; rather it is to fix
          // a notch bug where the item doesn't update correctly.
-Index: src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
-IDEA additional info:
-Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
-<+>UTF-8
-===================================================================
-diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
---- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java	(revision c3c0231b17f661eeb1b2578be6289e2c3e60be5e)
-+++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java	(date 1748128329903)
-@@ -123,4 +123,8 @@
-     @Comment("Whether player IP addresses should be logged by the server. This does not impact\n" +
-         "the ability of plugins to log the IP addresses of players.")
-     public boolean logPlayerIpAddresses = true;
-+
-+    @Comment("Prevents sending interact packets while an inventory is open. This fixes the bug\n" +
-+        "of chests showing as open when the aren't. ")
-+    public boolean dropInteractPacketsInInventory = true;
- }
+-- 
+2.49.0
+
