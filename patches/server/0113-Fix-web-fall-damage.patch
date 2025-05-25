@@ -1,0 +1,57 @@
+From f8431d4379aa3afc05ad6e120dc2fade59b393e9 Mon Sep 17 00:00:00 2001
+From: FabrisNick <niccolofabris05@gmail.com>
+Date: Mon, 26 May 2025 00:24:40 +0200
+Subject: [PATCH] Fix web fall damage
+
+---
+ src/main/java/net/minecraft/server/Entity.java |  7 +++++++
+ src/main/java/net/minecraft/server/World.java  | 11 +++++++++--
+ 2 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index b8f4a69a1..bca46d15e 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -914,6 +914,13 @@ public abstract class Entity implements ICommandListener {
+     }
+ 
+     public boolean W() {
++        // PandaSpigot start - Fix web fall damage
++        if (this.fallDistance > 0.0F && this.world.a(this.getBoundingBox().grow(0.0D, -0.4000000059604645D, 0.0D).shrink(0.001D, 0.001D, 0.001D), Material.WEB, this)) {
++            this.fallDistance = 0.0F;
++            return false;
++        }
++        // PandaSpigot end
++
+         if (this.world.a(this.getBoundingBox().grow(0.0D, -0.4000000059604645D, 0.0D).shrink(0.001D, 0.001D, 0.001D), Material.WATER, this)) {
+             if (!this.inWater && !this.justCreated) {
+                 this.X();
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index fe9b4ea75..0b3ffbaea 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -1961,12 +1961,19 @@ public abstract class World implements IBlockAccess {
+                         Block block = iblockdata.getBlock();
+ 
+                         if (block.getMaterial() == material) {
+-                            double d0 = (double) ((float) (l1 + 1) - BlockFluids.b(((Integer) iblockdata.get(BlockFluids.LEVEL)).intValue()));
++                            // PandaSpigot start - Fix web fall damage
++                            if (material.isLiquid()) {
++                                double d0 = (double) ((float) (l1 + 1) - BlockFluids.b(((Integer) iblockdata.get(BlockFluids.LEVEL)).intValue()));
+ 
+-                            if ((double) l >= d0) {
++                                if ((double) l >= d0) {
++                                    flag = true;
++                                    vec3d = block.a(this, blockposition_mutableblockposition, entity, vec3d);
++                                }
++                            } else {
+                                 flag = true;
+                                 vec3d = block.a(this, blockposition_mutableblockposition, entity, vec3d);
+                             }
++                            //PandaSpigot end
+                         }
+                     }
+                 }
+-- 
+2.49.0
+
