@@ -5,7 +5,7 @@ Subject: [PATCH] Remove unnecessary permgen size check
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 51fa4bf3223c5a60a52a7287313a5819e7cc24b4..c5e612a1a1f53ce99b1840c9dd1737133cf3de3d 100644
+index 916efe7e9a8c31973449dcede960dfbed6736d4b..9f3df42ab7434dbc1525e20973519ea06c57c3df 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -208,6 +208,8 @@ public class Main {
@@ -23,6 +23,6 @@ index 51fa4bf3223c5a60a52a7287313a5819e7cc24b4..c5e612a1a1f53ce99b1840c9dd173713
                  // Spigot End
 +                */
 +                // PandaSpigot end
-                 System.setProperty("library.jansi.version", "PandaSpigot"); // PandaSpigot - set meaningless jansi version to prevent git builds from crashing on Windows
                  System.out.println("Loading libraries, please wait...");
                  MinecraftServer.main(options);
+             } catch (Throwable t) {

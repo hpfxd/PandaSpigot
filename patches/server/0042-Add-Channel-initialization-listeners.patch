@@ -5,11 +5,11 @@ Subject: [PATCH] Add Channel initialization listeners
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index f66de2ff7d7d73a69d9d780a9fddfd9d300b79c2..e3ff10603e6945ba25a73947a3451563602df9a5 100644
+index 31282510c2baab28256dc00ec35a5d4300f904d9..b3e2f058b82187ebbe14cd793c537dfaf8e2e767 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -41,6 +41,8 @@ dependencies {
-     implementation("org.jline:jline-terminal-jansi:3.20.0")
+     implementation("org.jline:jline-terminal-jni:3.30.3")
      // PandaSpigot end
  
 +    implementation("net.kyori:adventure-key:4.10.1") // PandaSpigot - Add Channel initialization listeners
@@ -116,7 +116,7 @@ index 0000000000000000000000000000000000000000..81bd7edb536a8da2bb88b45d7e3cd8c0
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index d36914ec45056328308bb77878a006df4b5e59bd..7cae1b6df32e289782663732fe9903b8cac89e7c 100644
+index a14a9442fafb7148489b354430fb97fcb2cf946c..3d99741bd6a3f3b337af3ff225a7fb7da34d73ed 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -131,6 +131,7 @@ public class ServerConnection {
