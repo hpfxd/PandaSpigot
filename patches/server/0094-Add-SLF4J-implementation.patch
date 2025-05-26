@@ -5,14 +5,14 @@ Subject: [PATCH] Add SLF4J implementation
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index e3ff10603e6945ba25a73947a3451563602df9a5..c52b43cde3338206e3e76542386fd4f8d0417d1c 100644
+index 9f9e5dae7d45b051b456d8ab82f0b033a123bad3..c1195aa000515f33f4909123cfeaff5603b4cba6 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -24,6 +24,7 @@ dependencies {
      // PandaSpigot start - Update log4j
-     implementation("org.apache.logging.log4j:log4j-api:2.17.1")
-     implementation("org.apache.logging.log4j:log4j-core:2.17.1")
-+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.1") // PandaSpigot - Add SLF4J logger
+     implementation("org.apache.logging.log4j:log4j-api:2.24.3")
+     implementation("org.apache.logging.log4j:log4j-core:2.24.3")
++    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.24.3") // PandaSpigot - Add SLF4J logger
      // PandaSpigot end
      implementation("org.apache.commons:commons-lang3:3.3.2")
      implementation("commons-io:commons-io:2.4")
