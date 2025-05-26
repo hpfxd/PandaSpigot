@@ -22,7 +22,7 @@ This patch contains heavy inspiration from:
 https://github.com/PaperMC/Paper/blob/master/patches/server/0137-Use-TerminalConsoleAppender-for-console-improvements.patch
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index a2d75d9056aed5c021799ea178832fe71187330d..31282510c2baab28256dc00ec35a5d4300f904d9 100644
+index a2d75d9056aed5c021799ea178832fe71187330d..bef52833107eaae110379eeb67484646dbf85cea 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -21,8 +21,10 @@ dependencies {
@@ -32,8 +32,8 @@ index a2d75d9056aed5c021799ea178832fe71187330d..31282510c2baab28256dc00ec35a5d43
 -    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
 -    implementation("org.apache.logging.log4j:log4j-core:2.17.0")
 +    // PandaSpigot start - Update log4j
-+    implementation("org.apache.logging.log4j:log4j-api:2.17.1")
-+    implementation("org.apache.logging.log4j:log4j-core:2.17.1")
++    implementation("org.apache.logging.log4j:log4j-api:2.24.3")
++    implementation("org.apache.logging.log4j:log4j-core:2.24.3")
 +    // PandaSpigot end
      implementation("org.apache.commons:commons-lang3:3.3.2")
      implementation("commons-io:commons-io:2.4")
@@ -465,12 +465,13 @@ index 772f730ffb32643d5bd5708e972bd026e5699833..efb35c7594f37c2aa811ea1c76a3af6a
 -}
 +*/} // PandaSpigot
 diff --git a/src/main/resources/log4j2.xml b/src/main/resources/log4j2.xml
-index 63cb069fe9162397eb3ece9f5b7d583f1307f3da..9af4553cb02303ef3450e5c61ab26dafca64bbda 100644
+index 63cb069fe9162397eb3ece9f5b7d583f1307f3da..3601a3189c84effa08fb65fa3180d1ffceeebbca 100644
 --- a/src/main/resources/log4j2.xml
 +++ b/src/main/resources/log4j2.xml
 @@ -1,12 +1,11 @@
  <?xml version="1.0" encoding="UTF-8"?>
- <Configuration status="WARN" packages="com.mojang.util">
+-<Configuration status="WARN" packages="com.mojang.util">
++<Configuration status="WARN" pluginPackages="com.mojang.util">
      <Appenders>
 -        <Console name="WINDOWS_COMPAT" target="SYSTEM_OUT"></Console>
 -        <Queue name="TerminalConsole">
