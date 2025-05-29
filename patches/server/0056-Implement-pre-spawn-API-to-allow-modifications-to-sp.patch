@@ -6,7 +6,7 @@ Subject: [PATCH] Implement pre-spawn API to allow modifications to spawned
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index 7640070937b361aeda4d200710deddfbbbc4fb42..f663a6468b40e8ddd1fee3ad46381d8eede45e64 100644
+index 7640070937b361aeda4d200710deddfbbbc4fb42..b1e389f16a2d5a85a15bb934117f4ba207c856b9 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -881,7 +881,14 @@ public class CraftWorld implements World {
@@ -25,7 +25,7 @@ index 7640070937b361aeda4d200710deddfbbbc4fb42..f663a6468b40e8ddd1fee3ad46381d8e
      }
  
      public FallingBlock spawnFallingBlock(Location location, org.bukkit.Material material, byte data) throws IllegalArgumentException {
-@@ -1151,20 +1158,32 @@ public class CraftWorld implements World {
+@@ -1151,20 +1158,38 @@ public class CraftWorld implements World {
  
      @SuppressWarnings("unchecked")
      public <T extends Entity> T addEntity(net.minecraft.server.Entity entity, SpawnReason reason) throws IllegalArgumentException {
@@ -51,8 +51,13 @@ index 7640070937b361aeda4d200710deddfbbbc4fb42..f663a6468b40e8ddd1fee3ad46381d8e
          return (T) entity.getBukkitEntity();
      }
  
--    public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason) throws IllegalArgumentException {
-+    public <T extends Entity> T spawn(Location location, Class<T> clazz, java.util.function.Consumer<T> function, SpawnReason reason) throws IllegalArgumentException { // PandaSpigot - function param
+     public <T extends Entity> T spawn(Location location, Class<T> clazz, SpawnReason reason) throws IllegalArgumentException {
++        // PandaSpigot start - function param
++        return spawn(location, clazz, null, reason);
++    }
++
++    public <T extends Entity> T spawn(Location location, Class<T> clazz, java.util.function.Consumer<T> function, SpawnReason reason) throws IllegalArgumentException {
++        // PandaSpigot end
          net.minecraft.server.Entity entity = createEntity(location, clazz);
  
 -        return addEntity(entity, reason);
