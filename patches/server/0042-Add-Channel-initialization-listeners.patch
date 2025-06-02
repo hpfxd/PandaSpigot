@@ -5,14 +5,14 @@ Subject: [PATCH] Add Channel initialization listeners
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 31282510c2baab28256dc00ec35a5d4300f904d9..b3e2f058b82187ebbe14cd793c537dfaf8e2e767 100644
+index bef52833107eaae110379eeb67484646dbf85cea..968e9466304b74e35886cad3871baeafe74f9bf8 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -41,6 +41,8 @@ dependencies {
      implementation("org.jline:jline-terminal-jni:3.30.3")
      // PandaSpigot end
  
-+    implementation("net.kyori:adventure-key:4.10.1") // PandaSpigot - Add Channel initialization listeners
++    implementation("net.kyori:adventure-key:4.21.0") // PandaSpigot - Add Channel initialization listeners
 +
      testImplementation("junit:junit:4.11")
      testImplementation("org.hamcrest:hamcrest-library:1.3")
