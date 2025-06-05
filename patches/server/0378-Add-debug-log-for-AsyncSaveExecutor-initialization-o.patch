@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Haniel Fialho <hanielcota@hotmail.com>
+Date: Tue, 20 May 2025 15:09:25 -0300
+Subject: [PATCH] Add debug log for AsyncSaveExecutor initialization on server
+ startup
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/async/AsyncSaveExecutor.java b/src/main/java/com/hpfxd/pandaspigot/async/AsyncSaveExecutor.java
+index 26f55cf87768f12074f06303630736128a9e5a40..3ce3f2c4e29083acb10b744d58450b8d0be4c906 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/async/AsyncSaveExecutor.java
++++ b/src/main/java/com/hpfxd/pandaspigot/async/AsyncSaveExecutor.java
+@@ -1,9 +1,13 @@
+ package com.hpfxd.pandaspigot.async;
+ 
++import net.minecraft.server.MinecraftServer;
++
+ import java.util.concurrent.ExecutorService;
+ import java.util.concurrent.Executors;
+ import java.util.concurrent.TimeUnit;
+ 
++import static org.bukkit.Bukkit.getLogger;
++
+ public final class AsyncSaveExecutor {
+ 
+     private static ExecutorService executor;
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 360ed37b95fce68941c234615b465090b8ea7308..044dc90b094ca10db48eb69a478c3ee506ed7e3e 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -6,6 +6,7 @@ import org.spongepowered.configurate.objectmapping.meta.Comment;
+ @ConfigSerializable
+ @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
+ public class PandaSpigotWorldConfig {
++
+     @Comment("How many ticks in between sending time updates to players?\n" +
+             "\n" +
+             "The vanilla option is 20 (every second), but PandaSpigot sets the default\n" +
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 43a7371e5c814b5bce7c4584ccac569a1d637615..babf3ae442cad0291d3d989236368b80691a05bb 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -193,6 +193,7 @@ public final class CraftServer implements Server {
+ 
+         // PandaSpigot start - async saves: initialize executor
+         AsyncSaveExecutor.init(Runtime.getRuntime().availableProcessors());
++        getLogger().info("[AsyncPanda] Async save executor initialized with " + Runtime.getRuntime().availableProcessors() + " threads.");
+         // PandaSpigot end
+ 
+         Bukkit.setServer(this);
