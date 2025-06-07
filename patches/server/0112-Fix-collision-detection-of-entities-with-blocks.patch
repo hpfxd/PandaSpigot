@@ -5,14 +5,14 @@ Subject: [PATCH] Fix collision detection of entities with blocks
 
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
-index b8f4a69a1cac37722077f0510c72b087255c892c..47e97735655f1ad4f67b88fee2df6e8733e5aafe 100644
+index b8f4a69a1cac37722077f0510c72b087255c892c..9d8bb72b469163db7def78f623d18dc4056b1f6b 100644
 --- a/src/main/java/net/minecraft/server/Entity.java
 +++ b/src/main/java/net/minecraft/server/Entity.java
 @@ -451,6 +451,8 @@ public abstract class Entity implements ICommandListener {
              this.a(this.getBoundingBox().c(d0, d1, d2));
              this.recalcPosition();
          } else {
-+            // PandaSpigot start - Fix collision detection with blocks, moved back to below
++            // PandaSpigot start - Fix collision detection of entities with blocks, moved back to below
 +            /*
              // CraftBukkit start - Don't do anything if we aren't moving
              // We need to do this regardless of whether or not we are moving thanks to portals
@@ -31,7 +31,7 @@ index b8f4a69a1cac37722077f0510c72b087255c892c..47e97735655f1ad4f67b88fee2df6e87
  
              // CraftBukkit start - Move to the top of the method
 -            /*
-+            // PandaSpigot start - Fix collision detection with blocks
++            // PandaSpigot start - Fix collision detection of entities with blocks
              try {
                  this.checkBlockCollisions();
              } catch (Throwable throwable) {
