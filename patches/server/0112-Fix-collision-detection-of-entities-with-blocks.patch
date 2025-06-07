@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: uRyanxD <familiarodrigues123ro@gmail.com>
 Date: Sat, 7 Jun 2025 19:53:49 -0300
-Subject: [PATCH] Fix collision detection with blocks
+Subject: [PATCH] Fix collision detection of entities with blocks
 
 
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
