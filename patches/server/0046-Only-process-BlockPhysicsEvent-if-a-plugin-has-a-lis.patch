@@ -6,7 +6,7 @@ Subject: [PATCH] Only process BlockPhysicsEvent if a plugin has a listener
 Saves on some object allocation and processing when no plugin listens to this
 
 diff --git a/src/main/java/net/minecraft/server/BlockPlant.java b/src/main/java/net/minecraft/server/BlockPlant.java
-index c1110242136e8fd98661886920b765bb5367c37d..4179b0a5b06dfac7795947e23df5c0cc23717686 100644
+index c1110242136e8fd98661886920b765bb5367c37d..558ab56e5f2e670dc17e8ffd39d8f09d6d2cd12e 100644
 --- a/src/main/java/net/minecraft/server/BlockPlant.java
 +++ b/src/main/java/net/minecraft/server/BlockPlant.java
 @@ -44,6 +44,7 @@ public class BlockPlant extends Block {
@@ -17,7 +17,7 @@ index c1110242136e8fd98661886920b765bb5367c37d..4179b0a5b06dfac7795947e23df5c0cc
              // CraftBukkit Start
              org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
              BlockPhysicsEvent event = new BlockPhysicsEvent(block, block.getTypeId());
-@@ -52,11 +53,11 @@ public class BlockPlant extends Block {
+@@ -52,6 +53,7 @@ public class BlockPlant extends Block {
              if (event.isCancelled()) {
                  return;
              }
@@ -25,11 +25,6 @@ index c1110242136e8fd98661886920b765bb5367c37d..4179b0a5b06dfac7795947e23df5c0cc
              // CraftBukkit end
              this.b(world, blockposition, iblockdata, 0);
              world.setTypeAndData(blockposition, Blocks.AIR.getBlockData(), 3);
-         }
--
-     }
- 
-     public boolean f(World world, BlockPosition blockposition, IBlockData iblockdata) {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
 index 3a45c247dd747e6b72a707423ed5d8109eac4f2c..dd0ab0cfc6c69b26d8af2db1adb86fe9e4e01a1f 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
