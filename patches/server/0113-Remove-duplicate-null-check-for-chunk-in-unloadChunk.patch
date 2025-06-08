@@ -1,5 +1,5 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: uRyanxD <familiarodrigues123ro@gmail.com>
+From: Peridot <peridot491@protonmail.com>
 Date: Sat, 7 Jun 2025 21:23:52 -0300
 Subject: [PATCH] Remove duplicate null check for chunk in unloadChunks method
 
