@@ -1,0 +1,27 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Peridot <peridot491@protonmail.com>
+Date: Sat, 7 Jun 2025 21:23:52 -0300
+Subject: [PATCH] Remove duplicate null check for chunk in unloadChunks method
+
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index d53bfc4a2424564ee0239d9009e4b090510123cd..f6bf12c12e12cb652a36e8ed8108acaba77cb755 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -381,12 +381,14 @@ public class ChunkProviderServer implements IChunkProvider {
+                 server.getPluginManager().callEvent(event);
+                 if (!event.isCancelled()) {
+ 
+-                    if (chunk != null) {
++                    // PandaSpigot start - Remove duplicate null check for chunk in unloadChunks method
++                    // if (chunk != null) {
+                         chunk.removeEntities();
+                         this.saveChunk(chunk);
+                         this.saveChunkNOP(chunk);
+                         this.chunks.remove(chunkcoordinates); // CraftBukkit
+-                    }
++                    // }
++                    // PandaSpigot end
+ 
+                     // this.unloadQueue.remove(olong);
+ 

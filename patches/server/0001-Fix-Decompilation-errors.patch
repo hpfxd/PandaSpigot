@@ -204,6 +204,19 @@ index bceccf341c2f4402364065209e53da0bcfb93ce3..2f2dbcd8f4c5e64316de5af81ae051d5
                  public void write(JsonWriter jsonwriter, T t0) throws IOException {
                      if (t0 == null) {
                          jsonwriter.nullValue();
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index c4dab42bdf868f73f0c3875e8adfb852b2b02e18..948f19d3f344a91c3588b5b9e6227d79fe34e116 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -49,7 +49,7 @@ public class ChunkProviderServer implements IChunkProvider {
+     }
+ 
+     // CraftBukkit start - Change return type to Collection and return the values of our chunk map
+-    public java.util.Collection a() {
++    public java.util.Collection<Chunk> a() {
+         // return this.chunkList;
+         return this.chunks.values();
+         // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/server/CommandAbstract.java b/src/main/java/net/minecraft/server/CommandAbstract.java
 index 8de31ea2569a2cb68b5a5a2b4d61fbb7007a824d..11218808402b3d88c99b4b44f654907c842d25d9 100644
 --- a/src/main/java/net/minecraft/server/CommandAbstract.java
