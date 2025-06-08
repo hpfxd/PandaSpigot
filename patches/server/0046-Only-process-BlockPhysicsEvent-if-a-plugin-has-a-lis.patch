@@ -6,20 +6,32 @@ Subject: [PATCH] Only process BlockPhysicsEvent if a plugin has a listener
 Saves on some object allocation and processing when no plugin listens to this
 
 diff --git a/src/main/java/net/minecraft/server/BlockPlant.java b/src/main/java/net/minecraft/server/BlockPlant.java
-index c1110242136e8fd98661886920b765bb5367c37d..81fc97dc295677f5c2914e8c9b97a3f42fa05fdf 100644
+index c1110242136e8fd98661886920b765bb5367c37d..4179b0a5b06dfac7795947e23df5c0cc23717686 100644
 --- a/src/main/java/net/minecraft/server/BlockPlant.java
 +++ b/src/main/java/net/minecraft/server/BlockPlant.java
-@@ -43,7 +43,7 @@ public class BlockPlant extends Block {
-     }
+@@ -44,6 +44,7 @@ public class BlockPlant extends Block {
  
      protected void e(World world, BlockPosition blockposition, IBlockData iblockdata) {
--        if (!this.f(world, blockposition, iblockdata)) {
-+        if (!this.f(world, blockposition, iblockdata) && ((WorldServer) world).hasPhysicsEvent) { // PandaSpigot - hasPhysicsEvent
+         if (!this.f(world, blockposition, iblockdata)) {
++            if (((WorldServer) world).hasPhysicsEvent) { // PandaSpigot - hasPhysicsEvent
              // CraftBukkit Start
              org.bukkit.block.Block block = world.getWorld().getBlockAt(blockposition.getX(), blockposition.getY(), blockposition.getZ());
              BlockPhysicsEvent event = new BlockPhysicsEvent(block, block.getTypeId());
+@@ -52,11 +53,11 @@ public class BlockPlant extends Block {
+             if (event.isCancelled()) {
+                 return;
+             }
++            }
+             // CraftBukkit end
+             this.b(world, blockposition, iblockdata, 0);
+             world.setTypeAndData(blockposition, Blocks.AIR.getBlockData(), 3);
+         }
+-
+     }
+ 
+     public boolean f(World world, BlockPosition blockposition, IBlockData iblockdata) {
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index a2003e1b73afe420aa181d4cfa4aa7c2020d80ef..cf2d21c7b05ae2c36d5871cd528e3e51ce513755 100644
+index 3a45c247dd747e6b72a707423ed5d8109eac4f2c..dd0ab0cfc6c69b26d8af2db1adb86fe9e4e01a1f 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -828,6 +828,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
