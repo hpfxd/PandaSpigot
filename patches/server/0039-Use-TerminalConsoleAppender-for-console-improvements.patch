@@ -465,7 +465,7 @@ index 772f730ffb32643d5bd5708e972bd026e5699833..efb35c7594f37c2aa811ea1c76a3af6a
 -}
 +*/} // PandaSpigot
 diff --git a/src/main/resources/log4j2.xml b/src/main/resources/log4j2.xml
-index 63cb069fe9162397eb3ece9f5b7d583f1307f3da..3601a3189c84effa08fb65fa3180d1ffceeebbca 100644
+index 63cb069fe9162397eb3ece9f5b7d583f1307f3da..afb5750bffec3d0fe42390ffe150a5426db5fa23 100644
 --- a/src/main/resources/log4j2.xml
 +++ b/src/main/resources/log4j2.xml
 @@ -1,12 +1,11 @@
@@ -478,11 +478,11 @@ index 63cb069fe9162397eb3ece9f5b7d583f1307f3da..3601a3189c84effa08fb65fa3180d1ff
 -            <PatternLayout pattern="[%d{HH:mm:ss} %level]: %msg%n" /> <!-- Paper - update log4j -->
 -        </Queue>
 +        <TerminalConsole name="TerminalConsole">
-+            <PatternLayout pattern="%highlightError{[%d{HH:mm:ss} %level]: %minecraftFormatting{%msg{nolookups}}%n%xEx}" />
++            <PatternLayout pattern="%highlightError{[%d{HH:mm:ss} %level]: %minecraftFormatting{%msg}%n%xEx}" />
 +        </TerminalConsole>
          <RollingRandomAccessFile name="File" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
 -            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %msg%n" /> <!-- Paper - update log4j -->
-+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %minecraftFormatting{%msg{nolookups}}{strip}%n" />
++            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level]: %minecraftFormatting{%msg}{strip}%n" />
              <Policies>
                  <TimeBasedTriggeringPolicy />
                  <OnStartupTriggeringPolicy />
