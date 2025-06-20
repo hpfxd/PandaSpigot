@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..c8e9a77895704a055eb5c309341d297d3031e87d
+index 0000000000000000000000000000000000000000..6fa167e91414b40808a1219308c9887ba6946645
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,122 @@
+@@ -0,0 +1,124 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    `maven-publish`
@@ -23,7 +23,9 @@ index 0000000000000000000000000000000000000000..c8e9a77895704a055eb5c309341d297d
 +dependencies {
 +    api("commons-lang:commons-lang:2.6")
 +    api("org.avaje:ebean:2.8.1")
-+    api("com.googlecode.json-simple:json-simple:1.1.1")
++    api("com.googlecode.json-simple:json-simple:1.1.1") {
++        isTransitive = false
++    }
 +    api("org.yaml:snakeyaml:1.15")
 +    api("net.md-5:bungeecord-chat:1.8-SNAPSHOT")
 +    compileOnlyApi("net.sf.trove4j:trove4j:3.0.3") // provided by server
