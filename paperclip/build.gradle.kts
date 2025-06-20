@@ -39,9 +39,9 @@ tasks {
             from(sourceSets["java9"].output)
         }
 
-        from(project.rootDir.resolve("LICENSE.md")) {
+        from(file("license.txt")) {
             into("META-INF/license")
-            rename { "pandaspigot-LICENSE.md" }
+            rename { "paperclip-LICENSE.txt" }
         }
     }
 }
