@@ -38,10 +38,5 @@ tasks {
         into("META-INF/versions/9") {
             from(sourceSets["java9"].output)
         }
-
-        from(file("license.txt")) {
-            into("META-INF/license")
-            rename { "paperclip-LICENSE.txt" }
-        }
     }
 }
