@@ -1,0 +1,175 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Haniel Fialho <hanielcota@hotmail.com>
+Date: Tue, 20 May 2025 14:41:19 -0300
+Subject: [PATCH] Implement async world and player saving for improved
+ performance
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/async/AsyncSaveExecutor.java b/src/main/java/com/hpfxd/pandaspigot/async/AsyncSaveExecutor.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..26f55cf87768f12074f06303630736128a9e5a40
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/async/AsyncSaveExecutor.java
+@@ -0,0 +1,48 @@
++package com.hpfxd.pandaspigot.async;
++
++import java.util.concurrent.ExecutorService;
++import java.util.concurrent.Executors;
++import java.util.concurrent.TimeUnit;
++
++public final class AsyncSaveExecutor {
++
++    private static ExecutorService executor;
++    private static boolean shutdown = false; // PandaSpigot - track shutdown status
++
++    private AsyncSaveExecutor() {
++        // Utility class
++    }
++
++    public static void init(int threads) {
++        // PandaSpigot start - do not allow re-init after shutdown
++        if (shutdown) {
++            throw new IllegalStateException("AsyncSaveExecutor cannot be initialized after shutdown.");
++        }
++        // PandaSpigot end
++        if (executor != null && !executor.isShutdown()) return;
++        executor = Executors.newFixedThreadPool(threads);
++    }
++
++    public static void runAsync(Runnable task) {
++        if (executor == null || executor.isShutdown()) {
++            throw new IllegalStateException("AsyncSaveExecutor not initialized or already shut down.");
++        }
++        executor.submit(task);
++    }
++
++    public static void shutdown() {
++        if (executor != null && !executor.isShutdown()) {
++            executor.shutdown();
++            try {
++                if (!executor.awaitTermination(10, TimeUnit.SECONDS)) {
++                    executor.shutdownNow();
++                }
++            } catch (InterruptedException e) {
++                executor.shutdownNow();
++                Thread.currentThread().interrupt();
++            }
++            shutdown = true; // PandaSpigot - mark as shutdown
++        }
++    }
++
++}
+diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+index ba13f3f20bb86f667178f51f4d3d1df63f5acf2d..2bb12f0048288132d154dc38739475b3e115d2c0 100644
+--- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
++++ b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+@@ -18,6 +18,10 @@ import org.bukkit.craftbukkit.entity.CraftPlayer;
+ import org.github.paperspigot.exception.ServerInternalException;
+ // CraftBukkit end
+ 
++// PandaSpigot start - Import Async Executor
++import com.hpfxd.pandaspigot.async.AsyncSaveExecutor;
++// PandaSpigot end
++
+ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+ 
+     private static final Logger a = LogManager.getLogger();
+@@ -116,7 +120,11 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+         return null;
+     }
+ 
++    // PandaSpigot start - Async world data saving
+     public void saveWorldData(WorldData worlddata, NBTTagCompound nbttagcompound) {
++        AsyncSaveExecutor.runAsync(() -> saveWorldDataSync(worlddata, nbttagcompound));
++    }
++    private void saveWorldDataSync(WorldData worlddata, NBTTagCompound nbttagcompound) {
+         NBTTagCompound nbttagcompound1 = worlddata.a(nbttagcompound);
+         NBTTagCompound nbttagcompound2 = new NBTTagCompound();
+ 
+@@ -145,10 +153,12 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+             exception.printStackTrace();
+             ServerInternalException.reportInternalException(exception); // Paper
+         }
+-
+     }
+ 
+     public void saveWorldData(WorldData worlddata) {
++        AsyncSaveExecutor.runAsync(() -> saveWorldDataSync(worlddata));
++    }
++    private void saveWorldDataSync(WorldData worlddata) {
+         NBTTagCompound nbttagcompound = worlddata.a();
+         NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+ 
+@@ -177,10 +187,23 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+             exception.printStackTrace();
+             ServerInternalException.reportInternalException(exception); // Paper
+         }
+-
+     }
+-
++    // PandaSpigot end
++
++    // PandaSpigot start - Make player data saving async for performance
++    /**
++     * Asynchronous player data saving.
++     *
++     * @param entityhuman The player entity to save.
++     */
+     public void save(EntityHuman entityhuman) {
++        AsyncSaveExecutor.runAsync(() -> saveSync(entityhuman)); // PandaSpigot
++    }
++
++    /**
++     * Synchronous player data saving logic. Not public, do not call directly outside this class.
++     */
++    private void saveSync(EntityHuman entityhuman) {
+         try {
+             if (entityhuman.world.pandaSpigotConfig.disablePlayerData) return; // PandaSpigot - Configurable player data
+             NBTTagCompound nbttagcompound = new NBTTagCompound();
+@@ -198,8 +221,8 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+         } catch (Exception exception) {
+             WorldNBTStorage.a.warn("Failed to save player data for " + entityhuman.getName());
+         }
+-
+     }
++    // PandaSpigot end
+ 
+     public NBTTagCompound load(EntityHuman entityhuman) {
+         if (entityhuman.world.pandaSpigotConfig.disablePlayerData) return null; // PandaSpigot - Configurable player data
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 0c6cdfed088a26380e6fe7052e747efeedda7b1e..43a7371e5c814b5bce7c4584ccac569a1d637615 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -23,6 +23,10 @@ import java.util.regex.Pattern;
+ 
+ import javax.imageio.ImageIO;
+ 
++// PandaSpigot start - async saves
++import com.hpfxd.pandaspigot.async.AsyncSaveExecutor;
++// PandaSpigot end
++
+ import net.minecraft.server.*;
+ 
+ import org.bukkit.BanList;
+@@ -187,6 +191,10 @@ public final class CraftServer implements Server {
+         this.serverVersion = CraftServer.class.getPackage().getImplementationVersion();
+         online.value = console.getPropertyManager().getBoolean("online-mode", true);
+ 
++        // PandaSpigot start - async saves: initialize executor
++        AsyncSaveExecutor.init(Runtime.getRuntime().availableProcessors());
++        // PandaSpigot end
++
+         Bukkit.setServer(this);
+ 
+         // Register all the Enchantments and PotionTypes now so we can stop new registration immediately after
+@@ -1331,6 +1339,10 @@ public final class CraftServer implements Server {
+     @Override
+     public void shutdown() {
+         console.safeShutdown();
++
++        // PandaSpigot start - async saves: shutdown executor
++        AsyncSaveExecutor.shutdown();
++        // PandaSpigot end
+     }
+ 
+     @Override
