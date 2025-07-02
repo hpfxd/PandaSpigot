@@ -5,10 +5,10 @@ Subject: [PATCH] Fix wrong handler name used for cast to PacketCompressor
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index ade812624b9d3e1b50617c049b57092af8c16bab..4ed8506a195c6307cdad4cd6c59935bbf84e9b22 100644
+index f18408e8b16dab15af8c0af26805d3a2f374a37b..4d6a8ec119369a93929be40e9cbaa5d5f0d1f4bc 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -493,7 +493,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -497,7 +497,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              }
  
              if (this.channel.pipeline().get("compress") instanceof PacketCompressor) {
