@@ -8,7 +8,7 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 108464c874585853de4f9cffc90d57f39dfbef8b..017c526e97a076fd2f52b5c24e40e5936dfce005 100644
+index 108464c874585853de4f9cffc90d57f39dfbef8b..8ba6ea1fef196c5f130e75ddee1a81438a8a5a58 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -80,6 +80,39 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -107,7 +107,7 @@ index 108464c874585853de4f9cffc90d57f39dfbef8b..017c526e97a076fd2f52b5c24e40e593
          try {
              // PandaSpigot end
 -            ChannelFuture channelfuture = NetworkManager.this.channel.writeAndFlush(packet);
-+            ChannelFuture channelfuture = (flush) NetworkManager.this.channel.writeAndFlush(packet) : NetworkManager.this.channel.write(packet); // PandaSpigot - add flush parameter
++            ChannelFuture channelfuture = (flush) ? this.channel.writeAndFlush(packet) : this.channel.write(packet); // PandaSpigot - add flush parameter
  
              if (agenericfuturelistener != null) {
                  channelfuture.addListeners(agenericfuturelistener);
