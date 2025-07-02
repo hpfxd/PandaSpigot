@@ -26,7 +26,7 @@ Also avoids spamming closed channel exception by rechecking closed state in disp
 and then catch exceptions and close if they fire.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb4b0c334e 100644
+index 52a4ddbb898901a41dd171a34f712e7139f6db8f..108464c874585853de4f9cffc90d57f39dfbef8b 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -38,19 +38,18 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb
      public Channel channel;
      // Spigot Start // PAIL
      public SocketAddress l;
-@@ -75,6 +75,11 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -75,6 +75,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      private boolean o;
      private boolean p;
      private static final boolean enableExplicitFlush = Boolean.getBoolean("paper.explicit-flush"); // PandaSpigot
 +    // PandaSpigot start - Optimize Network
 +    public boolean isPending = true;
-+    public boolean queueImmunity = false;
 +    public EnumProtocol protocol;
 +    // PandaSpigot end
  
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
-@@ -97,6 +102,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -97,6 +101,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      }
  
      public void a(EnumProtocol enumprotocol) {
@@ -58,7 +57,7 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb
          this.channel.attr(NetworkManager.c).set(enumprotocol);
          this.channel.config().setAutoRead(true);
          NetworkManager.g.debug("Enabled auto read");
-@@ -137,37 +143,49 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -137,37 +142,49 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      }
  
      public void handle(Packet packet) {
@@ -129,7 +128,7 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
          final EnumProtocol enumprotocol = EnumProtocol.a(packet);
          final EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
-@@ -178,6 +196,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -178,6 +195,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          }
  
          if (this.channel.eventLoop().inEventLoop()) {
@@ -138,7 +137,7 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb
              if (enumprotocol != enumprotocol1) {
                  this.a(enumprotocol);
              }
-@@ -189,42 +209,107 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -189,42 +208,107 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              }
  
              channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
@@ -268,7 +267,7 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb
  
      public void a() {
          this.m();
-@@ -239,9 +324,23 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -239,9 +323,23 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          return this.l;
      }
  
@@ -292,7 +291,7 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb
          // Spigot End
          if (this.channel.isOpen()) {
              this.channel.close(); // We can't wait as this may be called from an event loop.
-@@ -260,6 +359,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -260,6 +358,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          this.channel.pipeline().addBefore("prepender", "encrypt", new PacketEncrypter(MinecraftEncryption.a(1, secretkey)));
      }
  
@@ -300,7 +299,7 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb
      public boolean g() {
          return this.channel != null && this.channel.isOpen();
      }
-@@ -314,9 +414,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -314,9 +413,9 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                  } else if (this.getPacketListener() != null) {
                      this.getPacketListener().a(new ChatComponentText("Disconnected"));
                  }
@@ -312,7 +311,7 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb
              }
  
          }
-@@ -328,8 +428,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -328,8 +427,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
      static class QueuedPacket {
  
@@ -323,7 +322,7 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb
  
          public QueuedPacket(Packet packet, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
              this.a = packet;
-@@ -348,4 +448,44 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -348,4 +447,44 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
          return this.channel.remoteAddress();
      }
      // Spigot End

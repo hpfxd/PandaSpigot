@@ -20,10 +20,10 @@ up on this optimisation before he came along.
 Locally this patch drops the entity tracker tick by a full 1.5x.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index d319ab27416862c2c74af6ecfdb0941652219711..f3379da8d5621f47374892ba87c7fc6a6bef41bd 100644
+index 017c526e97a076fd2f52b5c24e40e5936dfce005..16d3d83c5b452979272d646494bcb342d42c4312 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -255,6 +255,16 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -254,6 +254,16 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              // PandaSpigot end
          } else {
              // PandaSpigot start - Simplify
@@ -40,7 +40,7 @@ index d319ab27416862c2c74af6ecfdb0941652219711..f3379da8d5621f47374892ba87c7fc6a
              this.channel.eventLoop().execute(() -> {
                  /*
                  if (enumprotocol != enumprotocol1) {
-@@ -270,6 +280,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -269,6 +279,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                  */
                  doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener, flush); // PandaSpigot - add flush parameter
              });
