@@ -5,7 +5,7 @@ Subject: [PATCH] Optimise non-flush packet sending
 
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 0b7fda26cde48e579761d44876e98f39f3ca0c1e..45798c777dc72aa4700c1bda1a9c676029867e8f 100644
+index 0b7fda26cde48e579761d44876e98f39f3ca0c1e..9948a34ab7b146a5564c1377e606b19d7df49990 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -269,6 +269,18 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -27,7 +27,7 @@ index 0b7fda26cde48e579761d44876e98f39f3ca0c1e..45798c777dc72aa4700c1bda1a9c6760
              this.channel.eventLoop().execute(new Runnable() {
                  public void run() {
                      if (enumprotocol != enumprotocol1) {
-@@ -303,10 +315,46 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -303,6 +315,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
                      // PandaSpigot end
                  }
              });
@@ -35,42 +35,3 @@ index 0b7fda26cde48e579761d44876e98f39f3ca0c1e..45798c777dc72aa4700c1bda1a9c6760
          }
  
      }
- 
-+    // PandaSpigot start - Add helper method
-+    private void doSendPacket(Packet<?> packet, EnumProtocol enumprotocol, EnumProtocol enumprotocol1, EntityPlayer player, GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener, boolean flush) {
-+        if (enumprotocol != enumprotocol1) {
-+            NetworkManager.this.a(enumprotocol);
-+        }
-+
-+        // PandaSpigot start
-+        if (!isConnected()) {
-+            packet.onPacketDispatchFinish(player, null);
-+            return;
-+        }
-+        try {
-+            // PandaSpigot end
-+            ChannelFuture channelfuture = (flush) ? NetworkManager.this.channel.writeAndFlush(packet) : NetworkManager.this.channel.write(packet); // PandaSpigot - add flush parameter
-+
-+            if (agenericfuturelistener != null) {
-+                channelfuture.addListeners(agenericfuturelistener);
-+            }
-+
-+            // PandaSpigot start
-+            if (packet.hasFinishListener()) {
-+                channelfuture.addListener((ChannelFutureListener) channelFuture -> packet.onPacketDispatchFinish(player, channelFuture));
-+            }
-+            // PandaSpigot end
-+            channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-+            // PandaSpigot start
-+        } catch (Exception e) {
-+            g.error("NetworkException: {}", player, e);
-+            close(new ChatMessage("disconnect.genericReason", "Internal Exception: " + e.getMessage()));
-+            packet.onPacketDispatchFinish(player, null);
-+        }
-+        // PandaSpigot end
-+    }
-+    // PandaSpigot end
-+
-     // PandaSpigot start - rewrite this to be safer if ran off main thread
-     private boolean sendPacketQueue() { return this.m(); } // OBFHELPER // void -> boolean
-     private boolean m() { // void -> boolean
