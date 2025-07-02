@@ -8,7 +8,7 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 65ce04de15e43f2ca5514bde49fad36057f125dd..0b7fda26cde48e579761d44876e98f39f3ca0c1e 100644
+index f3e9c10ac15a94330ee59ec46dcfaf9ddad3da29..c0f98ad7132ec80ae77affa47bd2ab703fc65f9b 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -81,6 +81,39 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -75,25 +75,43 @@ index 65ce04de15e43f2ca5514bde49fad36057f125dd..0b7fda26cde48e579761d44876e98f39
          final EnumProtocol enumprotocol = EnumProtocol.a(packet);
          final EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
  
-@@ -208,7 +249,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-             }
-             try {
+@@ -210,7 +251,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+ 
+             channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+             */
+-            doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener);
++            doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener, flush);
              // PandaSpigot end
--            ChannelFuture channelfuture = this.channel.writeAndFlush(packet);
-+            ChannelFuture channelfuture = (flush) ? this.channel.writeAndFlush(packet) : this.channel.write(packet); // PandaSpigot - add flush parameter
+         } else {
+             // PandaSpigot start - Simplify
+@@ -227,7 +268,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+ 
+                 channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+                 */
+-                doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener);
++                doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener, flush);
+             });
+             // PandaSpigot end
+         }
+@@ -235,7 +276,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     }
+ 
+     // PandaSpigot start - Add helper method
+-    private void doSendPacket(Packet<?> packet, EnumProtocol enumprotocol, EnumProtocol enumprotocol1, GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
++    private void doSendPacket(Packet<?> packet, EnumProtocol enumprotocol, EnumProtocol enumprotocol1, GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener, boolean flush) { // PandaSpigot - add flush parameter
+         if (enumprotocol != enumprotocol1) {
+             NetworkManager.this.a(enumprotocol);
+         }
+@@ -248,7 +289,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+         }
+         try {
+             // PandaSpigot end
+-            ChannelFuture channelfuture = NetworkManager.this.channel.writeAndFlush(packet);
++            ChannelFuture channelfuture = (flush) NetworkManager.this.channel.writeAndFlush(packet) : NetworkManager.this.channel.write(packet); // PandaSpigot - add flush parameter
  
              if (agenericfuturelistener != null) {
                  channelfuture.addListeners(agenericfuturelistener);
-@@ -241,7 +282,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-                     }
-                     try {
-                     // PandaSpigot end
--                    ChannelFuture channelfuture = NetworkManager.this.channel.writeAndFlush(packet);
-+                    ChannelFuture channelfuture = (flush) ? NetworkManager.this.channel.writeAndFlush(packet) : NetworkManager.this.channel.write(packet); // PandaSpigot - add flush parameter
- 
-                     if (agenericfuturelistener != null) {
-                         channelfuture.addListeners(agenericfuturelistener);
-@@ -285,22 +326,34 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -289,22 +330,34 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
      private boolean processQueue() {
          if (i.isEmpty()) return true;
