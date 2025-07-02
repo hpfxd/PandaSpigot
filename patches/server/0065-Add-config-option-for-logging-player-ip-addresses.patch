@@ -47,7 +47,7 @@ index 55e6a1755b7db3411865f1d0ad3b4c38cb66d0a8..9882c599533d8ef52369efb6404a967e
  
          // Spigot start - spawn location event
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index 7cae1b6df32e289782663732fe9903b8cac89e7c..4974b3730109cf915b0d4f20dcff66bcb1c2e94c 100644
+index 3d99741bd6a3f3b337af3ff225a7fb7da34d73ed..882bf62cc8a08e51b5d315c608194a68ae025489 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -198,7 +198,7 @@ public class ServerConnection {

@@ -317,7 +317,7 @@ index c51a1f7d1a57acde1e5c7378fe35c30547107052..3f9cdbff6746ed0776b32d9649e5689f
      }
  }
 diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
-index e390ceef529d98c10bc467ed5517e1ab17b336e0..d36914ec45056328308bb77878a006df4b5e59bd 100644
+index f1638557ecf770a95c23f7400e16414050061c5e..a14a9442fafb7148489b354430fb97fcb2cf946c 100644
 --- a/src/main/java/net/minecraft/server/ServerConnection.java
 +++ b/src/main/java/net/minecraft/server/ServerConnection.java
 @@ -115,7 +115,14 @@ public class ServerConnection {

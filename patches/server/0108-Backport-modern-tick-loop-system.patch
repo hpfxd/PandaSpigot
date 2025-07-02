@@ -7,21 +7,18 @@ Also removes redundant empty list check before putting a task on the
 main thread
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..4e1d982854bc66541045595a4147ac1574f86531 100644
+index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..ddc201207d3ec6ca278de6b3bcacebc2d258dad6 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -512,6 +512,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -512,6 +512,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      }
  
      // PaperSpigot start - Further improve tick loop
-+    // PandaSpigot start - New Tick Loop System
-+    private long lastTick = 0;
-+    private long catchupTime = 0;
-+    // PandaSpigot end
++    private long lastTick = 0; // PandaSpigot - New Tick Loop System
      private static final int TPS = 20;
      private static final long SEC_IN_NANO = 1000000000;
      private static final long TICK_TIME = SEC_IN_NANO / TPS;
-@@ -525,46 +529,60 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -525,46 +526,60 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      public static class RollingAverage {
          private final int size;
          private long time;
@@ -92,7 +89,7 @@ index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..4e1d982854bc66541045595a4147ac15
  
                  this.r.setMOTD(new ChatComponentText(this.motd));
                  this.r.setServerInfo(new ServerPing.ServerData("1.8.8", 47));
-@@ -573,10 +591,23 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -573,10 +588,23 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                  // Spigot start
                  // PaperSpigot start - Further improve tick loop
                  Arrays.fill( recentTps, 20 );
@@ -118,7 +115,7 @@ index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..4e1d982854bc66541045595a4147ac15
                      curTime = System.nanoTime();
                      // PaperSpigot start - Further improve tick loop
                      wait = TICK_TIME - (curTime - lastTick);
-@@ -598,11 +629,13 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -598,11 +626,13 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                      }
  
                      catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
@@ -133,7 +130,7 @@ index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..4e1d982854bc66541045595a4147ac15
                          tps1.add(currentTps, diff);
                          tps5.add(currentTps, diff);
                          tps15.add(currentTps, diff);
-@@ -616,6 +649,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -616,6 +646,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                      lastTick = curTime;
  
                      this.A();
@@ -148,7 +145,7 @@ index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..4e1d982854bc66541045595a4147ac15
                      this.Q = true;
                  }
                  // Spigot end
-@@ -705,6 +746,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -705,6 +743,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      protected void A() throws ExceptionWorldConflict { // CraftBukkit - added throws
          co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Spigot
          long i = System.nanoTime();
@@ -156,19 +153,19 @@ index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..4e1d982854bc66541045595a4147ac15
  
          ++this.ticks;
          if (this.T) {
-@@ -763,6 +805,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -763,6 +802,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
          this.methodProfiler.b();
          this.methodProfiler.b();
          org.spigotmc.WatchdogThread.tick(); // Spigot
 +        // PandaSpigot start - Add ServerTickEndEvent
 +        long endTime = System.nanoTime();
-+        long remaining = (TICK_TIME - (endTime - lastTick)) - catchupTime;
++        long remaining = (TICK_TIME - (endTime - lastTick));
 +        new com.destroystokyo.paper.event.server.ServerTickEndEvent(this.ticks, ((double)(endTime - lastTick) / 1000000D), remaining).callEvent();
 +        // PandaSpigot end
          co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Spigot
      }
  
-@@ -773,8 +820,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -773,8 +817,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
  
          // Spigot start
          FutureTask<?> entry;
