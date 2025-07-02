@@ -290,13 +290,13 @@ index 0000000000000000000000000000000000000000..d61d44e8e1126ed3bea6e633cc0bdebb
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 033c141e18e38e89d2e132836e301e913a557d45..a4f43727586d398f8d88d3f001bdc40ce576430c 100644
+index 90857689c8e0ee89d7fa6a48fe721fc4e12440e8..ade812624b9d3e1b50617c049b57092af8c16bab 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
-@@ -113,6 +113,22 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-         }
+@@ -114,6 +114,23 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      }
      // PandaSpigot end
+ 
 +    // PandaSpigot start - packet limiter
 +    protected final Object PACKET_LIMIT_LOCK = new Object();
 +    protected final com.hpfxd.pandaspigot.util.IntervalledCounter allPacketCounts = com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getAllPacketsLimit() != null ? new com.hpfxd.pandaspigot.util.IntervalledCounter(
@@ -313,10 +313,11 @@ index 033c141e18e38e89d2e132836e301e913a557d45..a4f43727586d398f8d88d3f001bdc40c
 +        }, (GenericFutureListener<? extends Future<? super Void>>) null);
 +    }
 +    // PandaSpigot end - packet limiter
++
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
      }
-@@ -159,6 +175,44 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -160,6 +177,44 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
      protected void a(ChannelHandlerContext channelhandlercontext, Packet packet) throws Exception {
          if (this.channel.isOpen()) {
