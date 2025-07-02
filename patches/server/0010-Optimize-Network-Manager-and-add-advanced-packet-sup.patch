@@ -26,7 +26,7 @@ Also avoids spamming closed channel exception by rechecking closed state in disp
 and then catch exceptions and close if they fire.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 52a4ddbb898901a41dd171a34f712e7139f6db8f..f3e9c10ac15a94330ee59ec46dcfaf9ddad3da29 100644
+index 52a4ddbb898901a41dd171a34f712e7139f6db8f..fe31c02131793a8c680ebd1178f07adb4b0c334e 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -62,7 +62,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -191,8 +191,8 @@ index 52a4ddbb898901a41dd171a34f712e7139f6db8f..f3e9c10ac15a94330ee59ec46dcfaf9d
 -            try {
 -                while (!this.i.isEmpty()) {
 -                    NetworkManager.QueuedPacket networkmanager_queuedpacket = (NetworkManager.QueuedPacket) this.i.poll();
-+        EntityPlayer player = getPlayer();
 +        // PandaSpigot start
++        EntityPlayer player = getPlayer();
 +        if (!isConnected()) {
 +            packet.onPacketDispatchFinish(player, null);
 +            return;
