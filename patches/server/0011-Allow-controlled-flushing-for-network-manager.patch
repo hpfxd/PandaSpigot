@@ -8,14 +8,14 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index f3e9c10ac15a94330ee59ec46dcfaf9ddad3da29..c0f98ad7132ec80ae77affa47bd2ab703fc65f9b 100644
+index f3e9c10ac15a94330ee59ec46dcfaf9ddad3da29..d319ab27416862c2c74af6ecfdb0941652219711 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -81,6 +81,39 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
      public EnumProtocol protocol;
      // PandaSpigot end
  
-+    // PandaSpigot start - Allow controlled flushing
++    // PandaSpigot start - allow controlled flushing
 +    volatile boolean canFlush = true;
 +    private final java.util.concurrent.atomic.AtomicInteger packetWrites = new java.util.concurrent.atomic.AtomicInteger();
 +    private int flushPacketsStart;
@@ -80,7 +80,7 @@ index f3e9c10ac15a94330ee59ec46dcfaf9ddad3da29..c0f98ad7132ec80ae77affa47bd2ab70
              channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
              */
 -            doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener);
-+            doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener, flush);
++            doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener, flush); // PandaSpigot - add flush parameter
              // PandaSpigot end
          } else {
              // PandaSpigot start - Simplify
@@ -89,7 +89,7 @@ index f3e9c10ac15a94330ee59ec46dcfaf9ddad3da29..c0f98ad7132ec80ae77affa47bd2ab70
                  channelfuture.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
                  */
 -                doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener);
-+                doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener, flush);
++                doSendPacket(packet, enumprotocol, enumprotocol1, agenericfuturelistener, flush); // PandaSpigot - add flush parameter
              });
              // PandaSpigot end
          }
