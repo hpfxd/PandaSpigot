@@ -8,7 +8,7 @@ Only make one flush call when emptying the packet queue too.
 This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 9dd98c1b5f23163ee42536c1e4aa4d11ac656e05..f655d58cf5725f9815abb577a2d60569ac03ce40 100644
+index 2604088ecbb85d359f8daf545127a65195965f79..033c141e18e38e89d2e132836e301e913a557d45 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -81,6 +81,38 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -50,16 +50,16 @@ index 9dd98c1b5f23163ee42536c1e4aa4d11ac656e05..f655d58cf5725f9815abb577a2d60569
      public NetworkManager(EnumProtocolDirection enumprotocoldirection) {
          this.h = enumprotocoldirection;
      }
-@@ -198,7 +230,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -161,7 +193,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              MinecraftServer.getServer().isMainThread() && packet.isReady() && this.i.isEmpty() &&
-                         (packet.getExtraPackets() == null || packet.getExtraPackets().isEmpty())
+                 (packet.getExtraPackets() == null || packet.getExtraPackets().isEmpty())
          ))) {
 -            this.dispatchPacket(packet, listeners);
 +            this.writePacket(packet, listeners, null); // PandaSpigot
              return;
          }
          // write the packets to the queue, then flush - antixray hooks there already
-@@ -224,6 +256,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -187,6 +219,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
  
      private void dispatchPacket(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) { this.a(packet, agenericfuturelistener); } // PandaSpigot - OBFHELPER
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
@@ -74,7 +74,7 @@ index 9dd98c1b5f23163ee42536c1e4aa4d11ac656e05..f655d58cf5725f9815abb577a2d60569
          final EnumProtocol enumprotocol = EnumProtocol.a(packet);
          final EnumProtocol enumprotocol1 = (EnumProtocol) this.channel.attr(NetworkManager.c).get();
  
-@@ -245,7 +285,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+@@ -208,7 +248,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
              }
              try {
              // PandaSpigot end
@@ -83,17 +83,17 @@ index 9dd98c1b5f23163ee42536c1e4aa4d11ac656e05..f655d58cf5725f9815abb577a2d60569
  
              if (agenericfuturelistener != null) {
                  channelfuture.addListeners(agenericfuturelistener);
-@@ -278,7 +318,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-                 }
-                 try {
-                 // PandaSpigot end
+@@ -241,7 +281,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+                     }
+                     try {
+                     // PandaSpigot end
 -                    ChannelFuture channelfuture = NetworkManager.this.channel.writeAndFlush(packet);
 +                    ChannelFuture channelfuture = (flush) ? NetworkManager.this.channel.writeAndFlush(packet) : NetworkManager.this.channel.write(packet); // PandaSpigot - add flush parameter
  
                      if (agenericfuturelistener != null) {
                          channelfuture.addListeners(agenericfuturelistener);
-@@ -321,22 +361,34 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
-     }
+@@ -285,22 +325,34 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+ 
      private boolean processQueue() {
          if (this.i.isEmpty()) return true;
 +        // PandaSpigot start - make only one flush call per sendPacketQueue() call

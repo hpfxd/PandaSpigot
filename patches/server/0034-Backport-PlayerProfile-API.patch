@@ -307,7 +307,7 @@ index 0000000000000000000000000000000000000000..c48b1cca7ac3b61e1a81b02cdb1a5c82
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
-index 9034e1ad7a013c7288e68322a65798e40d8b851d..86ab9994079c6e18e3aed885db4171d0d87b4c1a 100644
+index 04916c6a8ee6446e786eb23c54ae78e8d2cba84d..8388bb5bae0c3b072b191b9d3655873f4c2cc995 100644
 --- a/src/main/java/net/minecraft/server/EntityHuman.java
 +++ b/src/main/java/net/minecraft/server/EntityHuman.java
 @@ -57,7 +57,7 @@ public abstract class EntityHuman extends EntityLiving {
@@ -320,7 +320,7 @@ index 9034e1ad7a013c7288e68322a65798e40d8b851d..86ab9994079c6e18e3aed885db4171d0
      public EntityFishingHook hookedFish;
      public boolean affectsSpawning = true; // PaperSpigot
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 9d2b4037119030eea027b7d79ab4f36f28af71ae..e613c8afd3b02b91f224dcdeab28277227fa2a84 100644
+index 50d238e55f53322095d1d3c0a9e968ca8f6366af..88e49a137c34485464546d4c509e39e42fa59831 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1536,6 +1536,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -420,7 +420,7 @@ index 77f5dcc67f716a517c0dec6c5308469a91bbbe23..04ca21949a7d63b4265de2321303a1c2
      	return getBlockFace(rotation);
      }
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 801e19baa711b517eb437a173ea1edcc38b2e7e8..c588468c0af427efa3133e97de071544459a068a 100644
+index d44fc62b9d9454dad79514731efac024be35aa76..c77dd308fbd9126d36a5c518cb64ceacb4abfbea 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -973,9 +973,14 @@ public class CraftPlayer extends CraftHumanEntity implements Player {

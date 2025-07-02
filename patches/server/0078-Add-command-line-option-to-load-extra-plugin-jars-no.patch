@@ -75,7 +75,7 @@ index 949100d67ab3cc6e06e82a0eb64d9e5cbb4acb34..0c6cdfed088a26380e6fe7052e747efe
          if (type == PluginLoadOrder.STARTUP) {
              helpMap.clear();
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index ae10c0f07cfeb0a09dc221fb4c747dc772a81dda..51fa4bf3223c5a60a52a7287313a5819e7cc24b4 100644
+index 909db77d157194cb23937d90c4b2733383eb8cda..916efe7e9a8c31973449dcede960dfbed6736d4b 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -139,6 +139,11 @@ public class Main {

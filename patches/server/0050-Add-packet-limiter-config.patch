@@ -290,7 +290,7 @@ index 0000000000000000000000000000000000000000..d61d44e8e1126ed3bea6e633cc0bdebb
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 948d97d1c34721064588bb279690e4ddf046be30..f8d9480e7098f48fcc17ae9e9414dcffed6f8580 100644
+index 033c141e18e38e89d2e132836e301e913a557d45..a4f43727586d398f8d88d3f001bdc40ce576430c 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -113,6 +113,22 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
