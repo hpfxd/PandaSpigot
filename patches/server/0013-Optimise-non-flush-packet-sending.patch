@@ -1,8 +1,23 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: uRyanxD <familiarodrigues123ro@gmail.com>
-Date: Wed, 2 Jul 2025 16:37:23 -0300
+From: Spottedleaf <spottedleaf@spottedleaf.dev>
+Date: Fri, 29 Oct 2021 08:25:50 -0400
 Subject: [PATCH] Optimise non-flush packet sending
 
+Places like entity tracking make heavy use of packet sending,
+and internally netty will use some very expensive thread wakeup
+calls when scheduling.
+
+Thanks to various hacks in ProtocolLib as well as other
+plugins, we cannot simply use a queue of packets to group
+send on execute. We have to call execute for each packet.
+
+Tux's suggestion here is exactly what was needed - tag
+the Runnable indicating it should not make a wakeup call.
+
+Big thanks to Tux for making this possible as I had given
+up on this optimisation before he came along.
+
+Locally this patch drops the entity tracker tick by a full 1.5x.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
 index c0f98ad7132ec80ae77affa47bd2ab703fc65f9b..65238c4c05bef73aa44d1c238ccda76630be9eb9 100644
