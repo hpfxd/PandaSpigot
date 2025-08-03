@@ -465,13 +465,13 @@ index 772f730ffb32643d5bd5708e972bd026e5699833..efb35c7594f37c2aa811ea1c76a3af6a
 -}
 +*/} // PandaSpigot
 diff --git a/src/main/resources/log4j2.xml b/src/main/resources/log4j2.xml
-index 63cb069fe9162397eb3ece9f5b7d583f1307f3da..afb5750bffec3d0fe42390ffe150a5426db5fa23 100644
+index 63cb069fe9162397eb3ece9f5b7d583f1307f3da..a3fcd87111eb9165461a6d1258a1597d2f1340bf 100644
 --- a/src/main/resources/log4j2.xml
 +++ b/src/main/resources/log4j2.xml
 @@ -1,12 +1,11 @@
  <?xml version="1.0" encoding="UTF-8"?>
 -<Configuration status="WARN" packages="com.mojang.util">
-+<Configuration status="WARN" pluginPackages="com.mojang.util">
++<Configuration status="WARN">
      <Appenders>
 -        <Console name="WINDOWS_COMPAT" target="SYSTEM_OUT"></Console>
 -        <Queue name="TerminalConsole">
