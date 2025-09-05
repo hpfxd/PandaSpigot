@@ -9,7 +9,7 @@ new file mode 100644
 index 0000000000000000000000000000000000000000..6fa167e91414b40808a1219308c9887ba6946645
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,130 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    `maven-publish`
@@ -30,6 +30,7 @@ index 0000000000000000000000000000000000000000..6fa167e91414b40808a1219308c9887b
 +    api("net.md-5:bungeecord-chat:1.8-SNAPSHOT")
 +    api("net.kyori:adventure-api:4.24.0")
 +    api("net.kyori:adventure-text-serializer-legacy:4.24.0")
++    api("net.kyori:adventure-text-serializer-gson:4.24.0")
 +    api("net.kyori:adventure-text-serializer-json:4.24.0")
 +    api("net.kyori:adventure-text-serializer-plain:4.24.0")
 +    api("net.kyori:adventure-text-minimessage:4.24.0")
