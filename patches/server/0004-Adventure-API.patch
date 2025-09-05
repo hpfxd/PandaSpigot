@@ -52,7 +52,7 @@ index 000000000..7e1ab1774
 +
 +public class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer {
 +
-+    public static final Codec<NBTTagCompound, String, MojangsonParseException, RuntimeException> SNBT_CODEC = Codec.codec(MojangsonParser::parse, NBTBase::toString);
++    public static final Codec<NBTTagCompound, String, MojangsonParseException, RuntimeException> NBT_CODEC = Codec.codec(MojangsonParser::parse, NBTBase::toString);
 +
 +    public static final String ITEM_TYPE = "id";
 +    public static final String ITEM_COUNT = "Count";
@@ -67,13 +67,13 @@ index 000000000..7e1ab1774
 +        String raw = PlainTextComponentSerializer.plainText().serialize(input);
 +
 +        try {
-+            NBTTagCompound contents = SNBT_CODEC.decode(raw);
++            NBTTagCompound contents = NBT_CODEC.decode(raw);
 +            NBTTagCompound tag = contents.getCompound(ITEM_TAG);
 +
 +            return HoverEvent.ShowItem.showItem(
 +                Key.key(contents.getString(ITEM_TYPE)),
 +                contents.hasKey(ITEM_COUNT) ? contents.getByte(ITEM_COUNT) : 1,
-+                tag.isEmpty() ? null : BinaryTagHolder.encode(tag, SNBT_CODEC)
++                tag.isEmpty() ? null : BinaryTagHolder.encode(tag, NBT_CODEC)
 +            );
 +        } catch (MojangsonParseException ex) {
 +            throw new IOException(ex);
@@ -85,7 +85,7 @@ index 000000000..7e1ab1774
 +        String raw = PlainTextComponentSerializer.plainText().serialize(input);
 +
 +        try {
-+            NBTTagCompound contents = SNBT_CODEC.decode(raw);
++            NBTTagCompound contents = NBT_CODEC.decode(raw);
 +
 +            return HoverEvent.ShowEntity.showEntity(
 +                Key.key("minecraft", CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, contents.getString(ENTITY_TYPE))),
@@ -105,13 +105,13 @@ index 000000000..7e1ab1774
 +
 +        if (input.nbt() != null) {
 +            try {
-+                tag.set(ITEM_TAG, input.nbt().get(SNBT_CODEC));
++                tag.set(ITEM_TAG, input.nbt().get(NBT_CODEC));
 +            } catch (MojangsonParseException ex) {
 +                throw new IOException(ex);
 +            }
 +        }
 +
-+        return Component.text(SNBT_CODEC.encode(tag));
++        return Component.text(NBT_CODEC.encode(tag));
 +    }
 +
 +    @Override
@@ -124,7 +124,7 @@ index 000000000..7e1ab1774
 +            tag.setString(ENTITY_NAME, componentEncoder.encode(input.name()));
 +        }
 +
-+        return Component.text(SNBT_CODEC.encode(tag));
++        return Component.text(NBT_CODEC.encode(tag));
 +    }
 +
 +}
