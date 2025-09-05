@@ -709,7 +709,7 @@ index d44fc62b9..ceb8fb6c8 100644
 +    // PandaSpigot start - Adventure
 +    @Override
 +    public void sendMessage(final net.kyori.adventure.identity.Identity identity, final net.kyori.adventure.text.Component component, final net.kyori.adventure.audience.MessageType type) {
-+        if ( getHandle().playerConnection == null ) return;
++        if (getHandle().playerConnection == null) return;
 +
 +        PacketPlayOutChat packet = new PacketPlayOutChat(null, (byte) (type == net.kyori.adventure.audience.MessageType.CHAT ? 0 : 1));
 +        packet.adventure$message = component;
