@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Wed, 3 Nov 2021 19:55:46 -0400
+Subject: [PATCH] Optimize World.isLoaded(BlockPosition)Z
+
+Reduce method invocations for World.isLoaded(BlockPosition)Z
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 375d991f1ede3b352027192f5eccd8a8b988d17f..73de7d6d4dc619416363a7d8557b71b850313cfb 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -298,7 +298,7 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public boolean isLoaded(BlockPosition blockposition) {
+-        return this.a(blockposition, true);
++        return getChunkIfLoaded(blockposition.getX() >> 4, blockposition.getZ() >> 4) != null; // PandaSpigot
+     }
+ 
+     public boolean a(BlockPosition blockposition, boolean flag) {

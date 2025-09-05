@@ -1,0 +1,73 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Thinkofdeath <thinkofdeath@spigotmc.org>
+Date: Wed, 19 Oct 2022 19:21:01 -0300
+Subject: [PATCH] Fix issue with ProtocolSupport
+
+This is a particularly severe/exploitable issue -- clients can send packets forcing the server to allocate any valid array size, without actually sending any data for it to fill. This is fixed by limiting the size of read byte arrays to at most Short.MAX_VALUE (31 KB).
+
+However, we have to make an exception for 1.7 ProtocolSupport clients,
+or they will crash. For them we limit the packets to 31 MB, which should
+still be plenty although it leaves the server slightly more vulnearable.
+
+The arrays in encryption packets are limited to 256 bytes.
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/CompactHacks.java b/src/main/java/com/hpfxd/pandaspigot/CompactHacks.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..7e420027fa1e8c36b518beaf91cb5812c10ef4a0
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/CompactHacks.java
+@@ -0,0 +1,19 @@
++package com.hpfxd.pandaspigot;
++
++import org.bukkit.Bukkit;
++
++public class CompactHacks {
++
++    private CompactHacks() {}
++
++    private static Boolean hasProtocolSupport = null;
++
++    public static boolean hasProtocolSupport() {
++        if (hasProtocolSupport != null) {
++            return hasProtocolSupport;
++        }
++
++        hasProtocolSupport = Bukkit.getPluginManager().isPluginEnabled("ProtocolSupport");
++        return hasProtocolSupport;
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+index 6c46349fb24856bb2b0f94d84536f64d96daeece..a7b87ca013f0a08176a20aeb0bd0988fe5855624 100644
+--- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
++++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+@@ -31,7 +31,21 @@ public class PacketDataSerializer extends ByteBuf {
+ 
+     private final ByteBuf a;
+ 
++    // PandaSpigot start - large packet limit
++    private static final int DEFAULT_LIMIT = Short.MAX_VALUE;
++    private static final int LARGE_PACKET_LIMIT = Short.MAX_VALUE * 1024;
++    private final boolean allowLargePackets;
+     public PacketDataSerializer(ByteBuf bytebuf) {
++        /*
++         * By default, we limit the size of the received byte array to Short.MAX_VALUE, which is 31 KB.
++         * However, we make an exception when ProtocolSupport is installed, to allow 1.7 clients to work,
++         * and limit them to 31 MEGABYTES as they seem to need to send larger packets sometimes.
++         * Although a 31 MB limit leaves the server slightly vulnerable,
++         * it's still much better than the old system of having no limit,
++         * which would leave the server vulnerable to packets up to 2 GIGABYTES in size.
++         */
++        this.allowLargePackets = com.hpfxd.pandaspigot.CompactHacks.hasProtocolSupport();
++    // PandaSpigot end
+         this.a = bytebuf;
+     }
+ 
+@@ -52,7 +66,7 @@ public class PacketDataSerializer extends ByteBuf {
+ 
+     // Paper start
+     public byte[] a() {
+-        return readByteArray(Short.MAX_VALUE);
++        return readByteArray(this.allowLargePackets ? LARGE_PACKET_LIMIT : DEFAULT_LIMIT); // PandaSpigot - large packet limit
+     }
+ 
+     public byte[]readByteArray(int limit) {

@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Wed, 3 Nov 2021 20:22:36 -0400
+Subject: [PATCH] Cleanup allocated favicon ByteBuf
+
+Cleanups a bytebuffer which was allocated during the encoding of the
+favicon to be sent to the client.
+
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index 4557576fb2a930b3ac2f73c356eecb026f7bc358..e89e801f6aac5c91cc3fbe993392b5b130f453cd 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -671,6 +671,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+ 
+         if (file.isFile()) {
+             ByteBuf bytebuf = Unpooled.buffer();
++            ByteBuf bytebuf1 = null; // PandaSpigot - cleanup favicon bytebuf
+ 
+             try {
+                 BufferedImage bufferedimage = ImageIO.read(file);
+@@ -678,13 +679,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                 Validate.validState(bufferedimage.getWidth() == 64, "Must be 64 pixels wide", new Object[0]);
+                 Validate.validState(bufferedimage.getHeight() == 64, "Must be 64 pixels high", new Object[0]);
+                 ImageIO.write(bufferedimage, "PNG", new ByteBufOutputStream(bytebuf));
+-                ByteBuf bytebuf1 = Base64.encode(bytebuf);
++                /*ByteBuf */bytebuf1 = Base64.encode(bytebuf); // PandaSpigot - cleanup favicon bytebuf
+ 
+                 serverping.setFavicon("data:image/png;base64," + bytebuf1.toString(Charsets.UTF_8));
+             } catch (Exception exception) {
+                 MinecraftServer.LOGGER.error("Couldn\'t load server icon", exception);
+             } finally {
+                 bytebuf.release();
++                if (bytebuf1 != null) bytebuf1.release(); // PandaSpigot - cleanup favicon bytebuf
+             }
+         }
+ 

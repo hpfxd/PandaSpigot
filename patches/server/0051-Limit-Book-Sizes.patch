@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Sat, 17 Nov 2018 00:08:54 -0500
+Subject: [PATCH] Limit Book Sizes
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+index 99367c42858cf97190a3b090f258b18e4aea3ac2..7db0c0097bcb38e4e49ab12879c230770e47334d 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+@@ -109,4 +109,8 @@ public class PandaSpigotConfig {
+     public boolean isProxyOnlineMode() {
+         return Bukkit.getOnlineMode() || (SpigotConfig.bungee && this.proxyOnlineMode);
+     }
++
++    public int maxBookPageSize = 2560;
++
++    public double maxBookTotalSizeMultiplier = 0.98d;
+ }
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 5842cedc81b90b4f3565d71ba5dfa8c0c98dfca6..89d251abc16d7a98a5e6d5a5b3298b3a577c9442 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -1991,6 +1991,45 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+         this.player.a(packetplayinsettings);
+     }
+ 
++    // PandaSpigot start
++    private boolean validateBook(ItemStack testStack) {
++        NBTTagList pageList = testStack.getTag().getList("pages", 8);
++        long byteTotal = 0;
++        int maxBookPageSize = com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().maxBookPageSize;
++        double multiplier = Math.max(0.3D, Math.min(1D, com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().maxBookTotalSizeMultiplier));
++        long byteAllowed = maxBookPageSize;
++        for (int i = 0; i < pageList.size(); ++i) {
++            String testString = pageList.getString(i);
++            int byteLength = testString.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
++            byteTotal += byteLength;
++
++            int length = testString.length();
++            int multibytes = 0;
++            if (length != byteLength) {
++                for (char c : testString.toCharArray()) {
++                    if (c > 127) {
++                        multibytes++;
++                    }
++                }
++            }
++            byteAllowed += (maxBookPageSize * Math.min(1, Math.max(0.1D, (double) length / 255D))) * multiplier;
++
++            if (multibytes > 1) {
++                // penalize MB
++                byteAllowed -= multibytes;
++            }
++        }
++
++        if (byteTotal > byteAllowed) {
++            PlayerConnection.c.warn(this.player.getName() + " tried to send too large of a book. Book Size: " + byteTotal + " - Allowed:  "+ byteAllowed + " - Pages: " + pageList.size());
++            minecraftServer.postToMainThread(() -> this.disconnect("Book too large!"));
++            return false;
++        }
++
++        return true;
++    }
++    // PandaSpigot end
++
+     public void a(PacketPlayInCustomPayload packetplayincustompayload) {
+         PlayerConnectionUtils.ensureMainThread(packetplayincustompayload, this, this.player.u());
+         PacketDataSerializer packetdataserializer;
+@@ -2014,6 +2053,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+                 itemstack1 = this.player.inventory.getItemInHand();
+                 if (itemstack1 != null) {
+                     if (itemstack.getItem() == Items.WRITABLE_BOOK && itemstack.getItem() == itemstack1.getItem()) {
++                        if (!validateBook(itemstack)) return; // PandaSpigot
+                         itemstack1 = new ItemStack(Items.WRITABLE_BOOK); // CraftBukkit
+                         itemstack1.a("pages", (NBTBase) itemstack.getTag().getList("pages", 8));
+                         CraftEventFactory.handleEditBookEvent(player, itemstack1); // CraftBukkit
+@@ -2046,6 +2086,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+                 itemstack1 = this.player.inventory.getItemInHand();
+                 if (itemstack1 != null) {
+                     if (itemstack.getItem() == Items.WRITTEN_BOOK && itemstack1.getItem() == Items.WRITABLE_BOOK) {
++                        if (!validateBook(itemstack)) return; // PandaSpigot
+                         // CraftBukkit start
+                         itemstack1 = new ItemStack(Items.WRITTEN_BOOK);
+                         itemstack1.a("author", (NBTBase) (new NBTTagString(this.player.getName())));

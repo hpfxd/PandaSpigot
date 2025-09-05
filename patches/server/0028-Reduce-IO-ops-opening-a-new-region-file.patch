@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Antony Riley <antony@cyberiantiger.org>
+Date: Wed, 3 Nov 2021 19:52:10 -0400
+Subject: [PATCH] Reduce IO ops opening a new region file
+
+
+diff --git a/src/main/java/net/minecraft/server/RegionFile.java b/src/main/java/net/minecraft/server/RegionFile.java
+index 8165a5020c1969a136a5d60c5725433ba6b25190..6373527a96b172e8faa5e10f8bf66c97916fd747 100644
+--- a/src/main/java/net/minecraft/server/RegionFile.java
++++ b/src/main/java/net/minecraft/server/RegionFile.java
+@@ -66,10 +66,18 @@ public class RegionFile {
+             this.f.set(1, Boolean.valueOf(false));
+             this.c.seek(0L);
+ 
++            // PandaSpigot start - Reduce IO ops
++            java.nio.ByteBuffer header = java.nio.ByteBuffer.allocate(8192);
++            while (header.hasRemaining())  {
++                if (this.c.getChannel().read(header) == -1) throw new java.io.EOFException();
++            }
++            ((java.nio.Buffer) header).clear(); // cast required, due to Java 9+ changing return type
++            java.nio.IntBuffer headerAsInts = header.asIntBuffer();
++            // PandaSpigot end
+             int k;
+ 
+             for (j = 0; j < 1024; ++j) {
+-                k = this.c.readInt();
++                k = headerAsInts.get(); // PandaSpigot
+                 this.d[j] = k;
+                 if (k != 0 && (k >> 8) + (k & 255) <= this.f.size()) {
+                     for (int l = 0; l < (k & 255); ++l) {
+@@ -79,7 +87,7 @@ public class RegionFile {
+             }
+ 
+             for (j = 0; j < 1024; ++j) {
+-                k = this.c.readInt();
++                k = headerAsInts.get(); // PandaSpigot
+                 this.e[j] = k;
+             }
+         } catch (IOException ioexception) {

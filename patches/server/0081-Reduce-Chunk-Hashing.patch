@@ -1,0 +1,60 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sun, 4 Dec 2022 13:13:25 +0100
+Subject: [PATCH] Reduce Chunk Hashing
+
+These changes are from Akarin, previously called TorchSpigot
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index 835237563b5cd994b45943275586bc05c69f378b..d53bfc4a2424564ee0239d9009e4b090510123cd 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -56,8 +56,9 @@ public class ChunkProviderServer implements IChunkProvider {
+     }
+ 
+     public void queueUnload(int i, int j) {
++        long key = LongHash.toLong(i, j); // PandaSpigot - Only create key once
+         // PaperSpigot start - Asynchronous lighting updates
+-        Chunk chunk = chunks.get(LongHash.toLong(i, j));
++        Chunk chunk = chunks.get(key); // PandaSpigot - Reuse key
+         if (chunk != null && chunk.world.paperSpigotConfig.useAsyncLighting && (chunk.pendingLightUpdates.get() > 0 || chunk.world.getTime() - chunk.lightUpdateTime < 20)) {
+             return;
+         }
+@@ -78,7 +79,7 @@ public class ChunkProviderServer implements IChunkProvider {
+                 // CraftBukkit start
+                 this.unloadQueue.add(i, j);
+ 
+-                Chunk c = chunks.get(LongHash.toLong(i, j));
++                Chunk c = chunks.get(key); // PandaSpigot - Reuse key
+                 if (c != null) {
+                     c.mustSave = true;
+                 }
+@@ -88,7 +89,7 @@ public class ChunkProviderServer implements IChunkProvider {
+             // CraftBukkit start
+             this.unloadQueue.add(i, j);
+ 
+-            Chunk c = chunks.get(LongHash.toLong(i, j));
++            Chunk c = chunks.get(key); // PandaSpigot - Reuse key
+             if (c != null) {
+                 c.mustSave = true;
+             }
+@@ -146,8 +147,9 @@ public class ChunkProviderServer implements IChunkProvider {
+         return chunk;
+     }
+     public Chunk originalGetChunkAt(int i, int j) {
++        long key = LongHash.toLong(i, j); // PandaSpigot - Only create key once
+         this.unloadQueue.remove(i, j);
+-        Chunk chunk = (Chunk) this.chunks.get(LongHash.toLong(i, j));
++        Chunk chunk = (Chunk) this.chunks.get(key); // PandaSpigot - Reuse key
+         boolean newChunk = false;
+         // CraftBukkit end
+ 
+@@ -173,7 +175,7 @@ public class ChunkProviderServer implements IChunkProvider {
+                 newChunk = true; // CraftBukkit
+             }
+ 
+-            this.chunks.put(LongHash.toLong(i, j), chunk);
++            this.chunks.put(key, chunk); // PandaSpigot - Reuse key
+             
+             chunk.addEntities();
+             

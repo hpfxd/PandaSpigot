@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 27 Oct 2021 20:46:41 -0400
+Subject: [PATCH] Remove hacky stackable buckets code
+
+The old code for stackable buckets involved using reflection to set a final field in the Material class, and completely broke on Java 12+.
+
+The new system uses a method to set the Material's maximum stack size dynamically, without reflection.
+
+diff --git a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+index d6d9899e27f5c002f31598deeaea8c52b158c175..b118ecd457df670f34623800264435d46a2b4c71 100644
+--- a/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
++++ b/src/main/java/org/github/paperspigot/PaperSpigotConfig.java
+@@ -183,38 +183,23 @@ public class PaperSpigotConfig
+         stackableWaterBuckets = getBoolean( "stackable-buckets.water", false );
+         stackableMilkBuckets = getBoolean( "stackable-buckets.milk", false );
+ 
+-        Field maxStack;
+-
+-        try {
+-            maxStack = Material.class.getDeclaredField("maxStack");
+-            maxStack.setAccessible(true);
+-
+-            Field modifiers = Field.class.getDeclaredField("modifiers");
+-            modifiers.setAccessible(true);
+-            modifiers.setInt(maxStack, maxStack.getModifiers() & ~Modifier.FINAL);
+-        } catch (Exception e) {
+-            e.printStackTrace();
+-            return;
++        // PandaSpigot start - Remove hacky stackable buckets code that used reflection
++        int size = Material.BUCKET.getMaxStackSize();
++        if (stackableLavaBuckets) {
++            Material.LAVA_BUCKET.setMaxStackSize(size);
++            Items.LAVA_BUCKET.c(size);
+         }
+ 
+-        try {
+-            if (stackableLavaBuckets) {
+-                maxStack.set(Material.LAVA_BUCKET, Material.BUCKET.getMaxStackSize());
+-                Items.LAVA_BUCKET.c(Material.BUCKET.getMaxStackSize());
+-            }
+-
+-            if (stackableWaterBuckets) {
+-                maxStack.set(Material.WATER_BUCKET, Material.BUCKET.getMaxStackSize());
+-                Items.WATER_BUCKET.c(Material.BUCKET.getMaxStackSize());
+-            }
++        if (stackableWaterBuckets) {
++            Material.WATER_BUCKET.setMaxStackSize(size);
++            Items.WATER_BUCKET.c(size);
++        }
+ 
+-            if (stackableMilkBuckets) {
+-                maxStack.set(Material.MILK_BUCKET, Material.BUCKET.getMaxStackSize());
+-                Items.MILK_BUCKET.c(Material.BUCKET.getMaxStackSize());
+-            }
+-        } catch (Exception e) {
+-            e.printStackTrace();
++        if (stackableMilkBuckets) {
++            Material.MILK_BUCKET.setMaxStackSize(size);
++            Items.MILK_BUCKET.c(size);
+         }
++        // PandaSpigot end
+     }
+ 
+     public static boolean warnForExcessiveVelocity;

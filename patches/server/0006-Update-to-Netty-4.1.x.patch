@@ -1,0 +1,330 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 27 Oct 2021 06:29:44 -0400
+Subject: [PATCH] Update to Netty 4.1.x
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index fa35e6cdc4b3926cc9476830a841e91571117311..2f0f788388d7a6127371a191c5304008a0512cf0 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -13,7 +13,7 @@ dependencies {
+     implementation(project(":pandaspigot-api"))
+ 
+     // Minecraft libraries:
+-    implementation("com.mojang:netty:1.7.7")
++    implementation("io.netty:netty-all:4.1.121.Final") // PandaSpigot - Update Netty to 4.1.x
+     implementation("com.mojang:authlib:1.5.21")
+     implementation("org.apache.logging.log4j:log4j-api:2.17.0")
+     implementation("org.apache.logging.log4j:log4j-core:2.17.0")
+@@ -23,7 +23,6 @@ dependencies {
+     implementation("com.google.guava:guava:17.0")
+     implementation("com.google.code.gson:gson:2.2.4")
+     implementation("net.sf.trove4j:trove4j:3.0.3")
+-    implementation("io.netty:netty-all:4.0.23.Final")
+     implementation("net.sf.jopt-simple:jopt-simple:3.2")
+     implementation("jline:jline:2.12.1")
+ 
+@@ -53,6 +52,7 @@ tasks {
+     shadowJar {
+         mergeServiceFiles()
+         archiveClassifier.set("unmapped")
++        append("META-INF/io.netty.versions.properties")
+ 
+         val cbLibsPkg = "org.bukkit.craftbukkit.libs"
+ 
+diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+index e2eb305468ff76026dc9b24d59394cfc94501273..b48eeb63ad61b18a630f2feb4fd6203e5e3e6c80 100644
+--- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
++++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+@@ -20,6 +20,10 @@ import java.nio.channels.GatheringByteChannel;
+ import java.nio.channels.ScatteringByteChannel;
+ import java.nio.charset.Charset;
+ import java.util.UUID;
++// PandaSpigot start
++import io.netty.util.ByteProcessor;
++import java.nio.channels.FileChannel;
++// PandaSpigot end
+ 
+ import org.bukkit.craftbukkit.inventory.CraftItemStack; // CraftBukkit
+ 
+@@ -221,7 +225,11 @@ public class PacketDataSerializer extends ByteBuf {
+         } else if (j < 0) {
+             throw new DecoderException("The received encoded string buffer length is less than zero! Weird string!");
+         } else {
+-            String s = new String(this.readBytes(j).array(), Charsets.UTF_8);
++            // PandaSpigot start - Switch from readBytes().array() to readBytes(byte[]) as we could be dealing with a DirectByteBuf
++            byte[] b = new byte[j];
++            this.readBytes(b);
++            String s = new String(b, Charsets.UTF_8);
++            // PandaSpigot end
+ 
+             if (s.length() > i) {
+                 throw new DecoderException("The received string length is longer than maximum allowed (" + j + " > " + i + ")");
+@@ -822,4 +830,266 @@ public class PacketDataSerializer extends ByteBuf {
+     public boolean release(int i) {
+         return this.a.release(i);
+     }
++    
++    // PandaSpigot start - Delegate new Netty 4.1 methods.
++    @Override
++    public boolean isReadOnly() {
++        return a.isReadOnly();
++    }
++    
++    @Override
++    public ByteBuf asReadOnly() {
++        return a.asReadOnly();
++    }
++    
++    @Override
++    public int maxFastWritableBytes() {
++        return a.maxFastWritableBytes();
++    }
++    
++    @Override
++    public short getShortLE(int index) {
++        return a.getShortLE(index);
++    }
++    
++    @Override
++    public int getUnsignedShortLE(int index) {
++        return a.getUnsignedShortLE(index);
++    }
++    
++    @Override
++    public int getMediumLE(int index) {
++        return a.getMediumLE(index);
++    }
++    
++    @Override
++    public int getUnsignedMediumLE(int index) {
++        return a.getUnsignedMediumLE(index);
++    }
++    
++    @Override
++    public int getIntLE(int index) {
++        return a.getIntLE(index);
++    }
++    
++    @Override
++    public long getUnsignedIntLE(int index) {
++        return a.getUnsignedIntLE(index);
++    }
++    
++    @Override
++    public long getLongLE(int index) {
++        return a.getLongLE(index);
++    }
++    
++    @Override
++    public float getFloatLE(int index) {
++        return a.getFloatLE(index);
++    }
++    
++    @Override
++    public double getDoubleLE(int index) {
++        return a.getDoubleLE(index);
++    }
++    
++    @Override
++    public int getBytes(int index, FileChannel out, long position, int length) throws IOException {
++        return a.getBytes(index, out, position, length);
++    }
++    
++    @Override
++    public CharSequence getCharSequence(int index, int length, Charset charset) {
++        return a.getCharSequence(index, length, charset);
++    }
++    
++    @Override
++    public ByteBuf setShortLE(int index, int value) {
++        return a.setShortLE(index, value);
++    }
++    
++    @Override
++    public ByteBuf setMediumLE(int index, int value) {
++        return a.setMediumLE(index, value);
++    }
++    
++    @Override
++    public ByteBuf setIntLE(int index, int value) {
++        return a.setIntLE(index, value);
++    }
++    
++    @Override
++    public ByteBuf setLongLE(int index, long value) {
++        return a.setLongLE(index, value);
++    }
++    
++    @Override
++    public ByteBuf setFloatLE(int index, float value) {
++        return a.setFloatLE(index, value);
++    }
++    
++    @Override
++    public ByteBuf setDoubleLE(int index, double value) {
++        return a.setDoubleLE(index, value);
++    }
++    
++    @Override
++    public int setBytes(int index, FileChannel in, long position, int length) throws IOException {
++        return a.setBytes(index, in, position, length);
++    }
++    
++    @Override
++    public int setCharSequence(int index, CharSequence sequence, Charset charset) {
++        return a.setCharSequence(index, sequence, charset);
++    }
++    
++    @Override
++    public short readShortLE() {
++        return a.readShortLE();
++    }
++    
++    @Override
++    public int readUnsignedShortLE() {
++        return a.readUnsignedShortLE();
++    }
++    
++    @Override
++    public int readMediumLE() {
++        return a.readMediumLE();
++    }
++    
++    @Override
++    public int readUnsignedMediumLE() {
++        return a.readUnsignedMediumLE();
++    }
++    
++    @Override
++    public int readIntLE() {
++        return a.readIntLE();
++    }
++    
++    @Override
++    public long readUnsignedIntLE() {
++        return a.readUnsignedIntLE();
++    }
++    
++    @Override
++    public long readLongLE() {
++        return a.readLongLE();
++    }
++    
++    @Override
++    public float readFloatLE() {
++        return a.readFloatLE();
++    }
++    
++    @Override
++    public double readDoubleLE() {
++        return a.readDoubleLE();
++    }
++    
++    @Override
++    public ByteBuf readRetainedSlice(int length) {
++        return a.readRetainedSlice(length);
++    }
++    
++    @Override
++    public CharSequence readCharSequence(int length, Charset charset) {
++        return a.readCharSequence(length, charset);
++    }
++    
++    @Override
++    public int readBytes(FileChannel out, long position, int length) throws IOException {
++        return a.readBytes(out, position, length);
++    }
++    
++    @Override
++    public ByteBuf writeShortLE(int value) {
++        return a.writeShortLE(value);
++    }
++    
++    @Override
++    public ByteBuf writeMediumLE(int value) {
++        return a.writeMediumLE(value);
++    }
++    
++    @Override
++    public ByteBuf writeIntLE(int value) {
++        return a.writeIntLE(value);
++    }
++    
++    @Override
++    public ByteBuf writeLongLE(long value) {
++        return a.writeLongLE(value);
++    }
++    
++    @Override
++    public ByteBuf writeFloatLE(float value) {
++        return a.writeFloatLE(value);
++    }
++    
++    @Override
++    public ByteBuf writeDoubleLE(double value) {
++        return a.writeDoubleLE(value);
++    }
++    
++    @Override
++    public int writeBytes(FileChannel in, long position, int length) throws IOException {
++        return a.writeBytes(in, position, length);
++    }
++    
++    @Override
++    public int writeCharSequence(CharSequence sequence, Charset charset) {
++        return a.writeCharSequence(sequence, charset);
++    }
++    
++    @Override
++    public int forEachByte(ByteProcessor processor) {
++        return a.forEachByte(processor);
++    }
++    
++    @Override
++    public int forEachByte(int index, int length, ByteProcessor processor) {
++        return a.forEachByte(index, length, processor);
++    }
++    
++    @Override
++    public int forEachByteDesc(ByteProcessor processor) {
++        return a.forEachByteDesc(processor);
++    }
++    
++    @Override
++    public int forEachByteDesc(int index, int length, ByteProcessor processor) {
++        return a.forEachByteDesc(index, length, processor);
++    }
++    
++    @Override
++    public ByteBuf retainedSlice() {
++        return a.retainedSlice();
++    }
++    
++    @Override
++    public ByteBuf retainedSlice(int index, int length) {
++        return a.retainedSlice(index, length);
++    }
++    
++    @Override
++    public ByteBuf retainedDuplicate() {
++        return a.retainedDuplicate();
++    }
++    
++    @Override
++    public boolean isContiguous() {
++        return a.isContiguous();
++    }
++    
++    @Override
++    public ByteBuf touch() {
++        return a.touch();
++    }
++    
++    @Override
++    public ByteBuf touch(Object hint) {
++        return a.touch(hint);
++    }
++    // PandaSpigot end
+ }

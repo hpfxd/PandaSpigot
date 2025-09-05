@@ -1,0 +1,67 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Thu, 4 Nov 2021 18:00:50 -0400
+Subject: [PATCH] Sound events
+
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 73de7d6d4dc619416363a7d8557b71b850313cfb..42c077870727d1eb40bc9bf5e0a3ca580131331d 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -944,20 +944,54 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public void makeSound(Entity entity, String s, float f, float f1) {
++        // PandaSpigot start - EntitySoundEvent
++        com.hpfxd.pandaspigot.event.sound.EntitySoundEvent event = new com.hpfxd.pandaspigot.event.sound.EntitySoundEvent(
++                entity.getBukkitEntity(), s, f, f1);
++        if (!event.callEvent()) return;
++
++        org.bukkit.Location loc = event.getLocation();
++        s = event.getSound();
++        f = event.getVolume();
++        f1 = event.getPitch();
++        // PandaSpigot end
+         for (int i = 0; i < this.u.size(); ++i) {
+-            ((IWorldAccess) this.u.get(i)).a(s, entity.locX, entity.locY, entity.locZ, f, f1);
++            ((IWorldAccess) this.u.get(i)).a(s, loc.getX(), loc.getY(), loc.getZ(), f, f1); // PandaSpigot - Use x, y, z from event
+         }
+ 
+     }
+ 
+     public void a(EntityHuman entityhuman, String s, float f, float f1) {
++        // PandaSpigot start - PlayerSoundEvent
++        com.hpfxd.pandaspigot.event.sound.PlayerSoundEvent event = new com.hpfxd.pandaspigot.event.sound.PlayerSoundEvent(
++                (org.bukkit.entity.Player) entityhuman.getBukkitEntity(), s, f, f1);
++        if (!event.callEvent()) return;
++
++        org.bukkit.Location loc = event.getLocation();
++        s = event.getSound();
++        f = event.getVolume();
++        f1 = event.getPitch();
++        // PandaSpigot end
+         for (int i = 0; i < this.u.size(); ++i) {
+-            ((IWorldAccess) this.u.get(i)).a(entityhuman, s, entityhuman.locX, entityhuman.locY, entityhuman.locZ, f, f1);
++            ((IWorldAccess) this.u.get(i)).a(entityhuman, s, loc.getX(), loc.getY(), loc.getZ(), f, f1); // PandaSpigot - Use x, y, z from event
+         }
+ 
+     }
+ 
+     public void makeSound(double d0, double d1, double d2, String s, float f, float f1) {
++        // PandaSpigot start - SoundEvent
++        com.hpfxd.pandaspigot.event.sound.SoundEvent event = new com.hpfxd.pandaspigot.event.sound.SoundEvent(
++                new org.bukkit.Location(this.world, d0, d1, d2), s, f, f1);
++        if (!event.callEvent()) return;
++
++        org.bukkit.Location loc = event.getLocation();
++        d0 = loc.getX();
++        d1 = loc.getY();
++        d2 = loc.getZ();
++
++        s = event.getSound();
++        f = event.getVolume();
++        f1 = event.getPitch();
++        // PandaSpigot end
+         for (int i = 0; i < this.u.size(); ++i) {
+             ((IWorldAccess) this.u.get(i)).a(s, d0, d1, d2, f, f1);
+         }

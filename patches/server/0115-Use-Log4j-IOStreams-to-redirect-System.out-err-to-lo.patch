@@ -1,0 +1,88 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Minecrell <minecrell@minecrell.net>
+Date: Fri, 20 Jun 2025 16:43:51 -0300
+Subject: [PATCH] Use Log4j IOStreams to redirect System.out/err to logger
+
+Log4j2 provides an optimized implementation of PrintStream that
+redirects its output to a logger. Use it instead of a custom
+implementation for minor performance improvements and some fixes.
+
+With the old implementation, each call to System.print()
+results in a separate line, even though it should not result in
+a line break. Log4j's implementation handles it correctly.
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 698b0a08f85056d36c131515a0825aeca52755c3..83dcd2285e088f8620831e20893c44a122779daf 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -25,6 +25,7 @@ dependencies {
+     implementation("org.apache.logging.log4j:log4j-api:2.24.3")
+     implementation("org.apache.logging.log4j:log4j-core:2.24.3")
+     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.24.3") // PandaSpigot - Add SLF4J logger
++    implementation("org.apache.logging.log4j:log4j-iostreams:2.24.3") // PandaSpigot - Add Log4j IOStreams
+     // PandaSpigot end
+     implementation("org.apache.commons:commons-lang3:3.3.2")
+     implementation("commons-io:commons-io:2.4")
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index a2645bb4472bf753cda35861d75fb288a269840e..e6b5484518d0e37772850ab5452026e5c1e8e6fb 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
+ import java.io.PrintStream;
+ import org.apache.logging.log4j.Level;
+ 
+-import org.bukkit.craftbukkit.LoggerOutputStream;
++//import org.bukkit.craftbukkit.LoggerOutputStream; // PandaSpigot - Use Log4j IOStreams
+ import co.aikar.timings.SpigotTimings; // Spigot
+ import org.bukkit.event.server.ServerCommandEvent;
+ import org.bukkit.craftbukkit.util.Waitable;
+@@ -119,8 +119,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+         new Thread(new org.bukkit.craftbukkit.util.TerminalConsoleWriterThread(System.out, this.reader)).start();
+         */
+ 
+-        System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
+-        System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
++        // PandaSpigot start - Use Log4j IOStreams
++        System.setOut(org.apache.logging.log4j.io.IoBuilder.forLogger(logger).setLevel(Level.INFO).buildPrintStream());
++        System.setErr(org.apache.logging.log4j.io.IoBuilder.forLogger(logger).setLevel(Level.WARN).buildPrintStream());
++        // PandaSpigot end
+         // CraftBukkit end
+ 
+         thread.setDaemon(true);
+diff --git a/src/main/java/org/bukkit/craftbukkit/LoggerOutputStream.java b/src/main/java/org/bukkit/craftbukkit/LoggerOutputStream.java
+deleted file mode 100644
+index 93526ab602afe9640c73cd70c619065d86dc1abe..0000000000000000000000000000000000000000
+--- a/src/main/java/org/bukkit/craftbukkit/LoggerOutputStream.java
++++ /dev/null
+@@ -1,31 +0,0 @@
+-package org.bukkit.craftbukkit;
+-
+-import java.io.ByteArrayOutputStream;
+-import java.io.IOException;
+-import org.apache.logging.log4j.Level;
+-import org.apache.logging.log4j.Logger;
+-
+-public class LoggerOutputStream extends ByteArrayOutputStream {
+-    private final String separator = System.getProperty("line.separator");
+-    private final Logger logger;
+-    private final Level level;
+-
+-    public LoggerOutputStream(Logger logger, Level level) {
+-        super();
+-        this.logger = logger;
+-        this.level = level;
+-    }
+-
+-    @Override
+-    public void flush() throws IOException {
+-        synchronized (this) {
+-            super.flush();
+-            String record = this.toString();
+-            super.reset();
+-
+-            if ((record.length() > 0) && (!record.equals(separator))) {
+-                logger.log(level, record);
+-            }
+-        }
+-    }
+-}

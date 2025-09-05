@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Thu, 4 May 2023 14:27:42 -0300
+Subject: [PATCH] Fix Paper height nerf patch
+
+Upstream commit: https://github.com/PaperMC/Paper/commit/cf65e06d966649fa53f3b6b70bca3c157cf3c9a4
+
+diff --git a/src/main/java/net/minecraft/server/EntityFallingBlock.java b/src/main/java/net/minecraft/server/EntityFallingBlock.java
+index 36c384eb9c2280e618eac770ce67ad0abfd7dc88..4ed27bf9a31d06cc5d06d04cd3e46e91004eef35 100644
+--- a/src/main/java/net/minecraft/server/EntityFallingBlock.java
++++ b/src/main/java/net/minecraft/server/EntityFallingBlock.java
+@@ -93,7 +93,7 @@ public class EntityFallingBlock extends Entity {
+ 
+             // PaperSpigot start - Drop falling blocks above the specified height
+             if (this.world.paperSpigotConfig.fallingBlockHeightNerf != 0 && this.locY > this.world.paperSpigotConfig.fallingBlockHeightNerf) {
+-                if (this.dropItem) {
++                if (this.dropItem && this.world.getGameRules().getBoolean("doEntityDrops")) { // PandaSpigot
+                     this.a(new ItemStack(block, 1, block.getDropData(this.block)), 0.0F);
+                 }
+ 

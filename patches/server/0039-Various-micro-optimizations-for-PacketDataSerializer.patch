@@ -1,0 +1,68 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sat, 6 Nov 2021 13:21:21 -0400
+Subject: [PATCH] Various micro-optimizations for PacketDataSerializer
+
+
+diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+index b48eeb63ad61b18a630f2feb4fd6203e5e3e6c80..6c46349fb24856bb2b0f94d84536f64d96daeece 100644
+--- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
++++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+@@ -90,20 +90,7 @@ public class PacketDataSerializer extends ByteBuf {
+     }
+ 
+     public int e() {
+-        int i = 0;
+-        int j = 0;
+-
+-        byte b0;
+-
+-        do {
+-            b0 = this.readByte();
+-            i |= (b0 & 127) << j++ * 7;
+-            if (j > 5) {
+-                throw new RuntimeException("VarInt too big");
+-            }
+-        } while ((b0 & 128) == 128);
+-
+-        return i;
++        return com.hpfxd.pandaspigot.network.VarIntUtil.readVarInt(this.a); // PandaSpigot - Optimize VarInt reading
+     }
+ 
+     public long f() {
+@@ -133,12 +120,7 @@ public class PacketDataSerializer extends ByteBuf {
+     }
+ 
+     public void b(int i) {
+-        while ((i & -128) != 0) {
+-            this.writeByte(i & 127 | 128);
+-            i >>>= 7;
+-        }
+-
+-        this.writeByte(i);
++        com.hpfxd.pandaspigot.network.VarIntUtil.writeVarInt(this.a, i); // PandaSpigot - Optimize VarInt writing
+     }
+ 
+     public void b(long i) {
+@@ -240,15 +222,16 @@ public class PacketDataSerializer extends ByteBuf {
+     }
+ 
+     public PacketDataSerializer a(String s) {
+-        byte[] abyte = s.getBytes(Charsets.UTF_8);
+-
+-        if (abyte.length > 32767) {
++        // PandaSpigot start - Optimize string writing
++        int utf8Bytes = io.netty.buffer.ByteBufUtil.utf8Bytes(s);
++        if (utf8Bytes > 32767) {
+             throw new EncoderException("String too big (was " + s.length() + " bytes encoded, max " + 32767 + ")");
+         } else {
+-            this.b(abyte.length);
+-            this.writeBytes(abyte);
++            this.b(utf8Bytes);
++            this.writeCharSequence(s, Charsets.UTF_8);
+             return this;
+         }
++        // PandaSpigot end
+     }
+ 
+     public int capacity() {

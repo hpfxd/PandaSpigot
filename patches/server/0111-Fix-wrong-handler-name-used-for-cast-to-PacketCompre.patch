@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Thu, 24 Apr 2025 17:02:53 -0300
+Subject: [PATCH] Fix wrong handler name used for cast to PacketCompressor
+
+
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index c98286d79d8adb3059230cceb4b4a01168110f2f..238ec720db44a069516960951334fc31db5d8d9d 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -507,7 +507,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+             }
+ 
+             if (this.channel.pipeline().get("compress") instanceof PacketCompressor) {
+-                ((PacketCompressor) this.channel.pipeline().get("decompress")).a(i);
++                ((PacketCompressor) this.channel.pipeline().get("compress")).a(i); // PandaSpigot - Fix wrong handler name used for cast to PacketCompressor
+             } else {
+                 this.channel.pipeline().addBefore("encoder", "compress", new PacketCompressor(i));
+             }

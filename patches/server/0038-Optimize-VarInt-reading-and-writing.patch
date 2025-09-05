@@ -1,0 +1,338 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sat, 6 Nov 2021 13:04:43 -0400
+Subject: [PATCH] Optimize VarInt reading and writing
+
+The VarIntByteDecoder and VarIntUtil classes were borrowed from the Velocity project.
+See: https://github.com/VelocityPowered/Velocity
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/network/VarIntByteDecoder.java b/src/main/java/com/hpfxd/pandaspigot/network/VarIntByteDecoder.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..df2d56f9a0e38b165d03dbea9e02ecb4d14b1e78
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/network/VarIntByteDecoder.java
+@@ -0,0 +1,50 @@
++package com.hpfxd.pandaspigot.network;
++
++import io.netty.util.ByteProcessor;
++
++public class VarIntByteDecoder implements ByteProcessor {
++    private int readVarint;
++    private int bytesRead;
++    private DecodeResult result = DecodeResult.TOO_SHORT;
++    
++    @Override
++    public boolean process(byte k) {
++        if (k == 0 && bytesRead == 0) {
++            // tentatively say it's invalid, but there's a possibility of redemption
++            result = DecodeResult.RUN_OF_ZEROES;
++            return true;
++        }
++        if (result == DecodeResult.RUN_OF_ZEROES) {
++            return false;
++        }
++        readVarint |= (k & 0x7F) << bytesRead++ * 7;
++        if (bytesRead > 3) {
++            result = DecodeResult.TOO_BIG;
++            return false;
++        }
++        if ((k & 0x80) != 128) {
++            result = DecodeResult.SUCCESS;
++            return false;
++        }
++        return true;
++    }
++    
++    public int getReadVarint() {
++        return readVarint;
++    }
++    
++    public int getBytesRead() {
++        return bytesRead;
++    }
++    
++    public DecodeResult getResult() {
++        return result;
++    }
++    
++    public enum DecodeResult {
++        SUCCESS,
++        TOO_SHORT,
++        TOO_BIG,
++        RUN_OF_ZEROES
++    }
++}
+diff --git a/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java b/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..c0040dd80559d30f963eb952f6ef3372d38f7208
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java
+@@ -0,0 +1,114 @@
++package com.hpfxd.pandaspigot.network;
++
++import io.netty.buffer.ByteBuf;
++import io.netty.handler.codec.CorruptedFrameException;
++
++public class VarIntUtil {
++    private static final int[] VARINT_EXACT_BYTE_LENGTHS = new int[33];
++    
++    static {
++        for (int i = 0; i <= 32; ++i) {
++            VARINT_EXACT_BYTE_LENGTHS[i] = (int) Math.ceil((31d - (i - 1)) / 7d);
++        }
++        VARINT_EXACT_BYTE_LENGTHS[32] = 1; // Special case for the number 0.
++    }
++    
++    /**
++     * Reads a Minecraft-style VarInt from the specified {@code buf}.
++     *
++     * @param buf the buffer to read from
++     * @return the decoded VarInt
++     */
++    public static int readVarInt(ByteBuf buf) {
++        int read = readVarIntSafely(buf);
++        if (read == Integer.MIN_VALUE) {
++            throw new CorruptedFrameException("Bad VarInt decoded");
++        }
++        return read;
++    }
++    
++    /**
++     * Reads a Minecraft-style VarInt from the specified {@code buf}. The difference between this
++     * method and {@link #readVarInt(ByteBuf)} is that this function returns a sentinel value if the
++     * varint is invalid.
++     *
++     * @param buf the buffer to read from
++     * @return the decoded VarInt, or {@code Integer.MIN_VALUE} if the varint is invalid
++     */
++    public static int readVarIntSafely(ByteBuf buf) {
++        int i = 0;
++        int maxRead = Math.min(5, buf.readableBytes());
++        for (int j = 0; j < maxRead; j++) {
++            int k = buf.readByte();
++            i |= (k & 0x7F) << j * 7;
++            if ((k & 0x80) != 128) {
++                return i;
++            }
++        }
++        return Integer.MIN_VALUE;
++    }
++    
++    /**
++     * Returns the exact byte size of {@code value} if it were encoded as a VarInt.
++     *
++     * @param value the value to encode
++     * @return the byte size of {@code value} if encoded as a VarInt
++     */
++    public static int varIntBytes(int value) {
++        return VARINT_EXACT_BYTE_LENGTHS[Integer.numberOfLeadingZeros(value)];
++    }
++    
++    /**
++     * Writes a Minecraft-style VarInt to the specified {@code buf}.
++     *
++     * @param buf   the buffer to read from
++     * @param value the integer to write
++     */
++    public static void writeVarInt(ByteBuf buf, int value) {
++        // Peel the one and two byte count cases explicitly as they are the most common VarInt sizes
++        // that the proxy will write, to improve inlining.
++        if ((value & (0xFFFFFFFF << 7)) == 0) {
++            buf.writeByte(value);
++        } else if ((value & (0xFFFFFFFF << 14)) == 0) {
++            int w = (value & 0x7F | 0x80) << 8 | (value >>> 7);
++            buf.writeShort(w);
++        } else {
++            writeVarIntFull(buf, value);
++        }
++    }
++    
++    private static void writeVarIntFull(ByteBuf buf, int value) {
++        // See https://steinborn.me/posts/performance/how-fast-can-you-write-a-varint/
++        if ((value & (0xFFFFFFFF << 7)) == 0) {
++            buf.writeByte(value);
++        } else if ((value & (0xFFFFFFFF << 14)) == 0) {
++            int w = (value & 0x7F | 0x80) << 8 | (value >>> 7);
++            buf.writeShort(w);
++        } else if ((value & (0xFFFFFFFF << 21)) == 0) {
++            int w = (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
++            buf.writeMedium(w);
++        } else if ((value & (0xFFFFFFFF << 28)) == 0) {
++            int w = (value & 0x7F | 0x80) << 24 | (((value >>> 7) & 0x7F | 0x80) << 16)
++                | ((value >>> 14) & 0x7F | 0x80) << 8 | (value >>> 21);
++            buf.writeInt(w);
++        } else {
++            int w = (value & 0x7F | 0x80) << 24 | ((value >>> 7) & 0x7F | 0x80) << 16
++                | ((value >>> 14) & 0x7F | 0x80) << 8 | ((value >>> 21) & 0x7F | 0x80);
++            buf.writeInt(w);
++            buf.writeByte(value >>> 28);
++        }
++    }
++    
++    /**
++     * Writes the specified {@code value} as a 21-bit Minecraft VarInt to the specified {@code buf}.
++     * The upper 11 bits will be discarded.
++     *
++     * @param buf   the buffer to read from
++     * @param value the integer to write
++     */
++    public static void write21BitVarInt(ByteBuf buf, int value) {
++        // See https://steinborn.me/posts/performance/how-fast-can-you-write-a-varint/
++        int w = (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
++        buf.writeMedium(w);
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/PacketPrepender.java b/src/main/java/net/minecraft/server/PacketPrepender.java
+index 70cb2632a7de8023facb56e218384cee9a15e889..db51c60501d3a498f60147a1c4638903235cfa65 100644
+--- a/src/main/java/net/minecraft/server/PacketPrepender.java
++++ b/src/main/java/net/minecraft/server/PacketPrepender.java
+@@ -4,26 +4,29 @@ import io.netty.buffer.ByteBuf;
+ import io.netty.channel.ChannelHandlerContext;
+ import io.netty.handler.codec.MessageToByteEncoder;
+ 
++@io.netty.channel.ChannelHandler.Sharable // PandaSpigot
+ public class PacketPrepender extends MessageToByteEncoder<ByteBuf> {
+ 
+-    public PacketPrepender() {}
++    public static final PacketPrepender INSTANCE = new PacketPrepender(); // PandaSpigot
++    private PacketPrepender() {} // PandaSpigot - private
+ 
+     protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
+-        int i = bytebuf.readableBytes();
+-        int j = PacketDataSerializer.a(i);
+-
+-        if (j > 3) {
+-            throw new IllegalArgumentException("unable to fit " + i + " into " + 3);
+-        } else {
+-            PacketDataSerializer packetdataserializer = new PacketDataSerializer(bytebuf1);
+-
+-            packetdataserializer.ensureWritable(j + i);
+-            packetdataserializer.b(i);
+-            packetdataserializer.writeBytes(bytebuf, bytebuf.readerIndex(), i);
+-        }
++        // PandaSpigot start
++        com.hpfxd.pandaspigot.network.VarIntUtil.writeVarInt(bytebuf1, bytebuf.readableBytes());
++        bytebuf1.writeBytes(bytebuf);
++        // PandaSpigot end
+     }
+ 
+     protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
+         this.a(channelhandlercontext, object, bytebuf);
+     }
++    // PandaSpigot start
++    @Override
++    protected ByteBuf allocateBuffer(ChannelHandlerContext ctx, ByteBuf msg, boolean preferDirect) throws Exception {
++        int anticipatedRequiredCapacity = com.hpfxd.pandaspigot.network.VarIntUtil.varIntBytes(msg.readableBytes())
++            + msg.readableBytes();
++        
++        return ctx.alloc().directBuffer(anticipatedRequiredCapacity);
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/net/minecraft/server/PacketSplitter.java b/src/main/java/net/minecraft/server/PacketSplitter.java
+index c51a1f7d1a57acde1e5c7378fe35c30547107052..3f9cdbff6746ed0776b32d9649e5689f397873da 100644
+--- a/src/main/java/net/minecraft/server/PacketSplitter.java
++++ b/src/main/java/net/minecraft/server/PacketSplitter.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.server;
+ 
++import com.hpfxd.pandaspigot.network.VarIntByteDecoder; // PandaSpigot
+ import io.netty.buffer.ByteBuf;
+ import io.netty.buffer.Unpooled;
+ import io.netty.channel.ChannelHandlerContext;
+@@ -12,36 +13,48 @@ public class PacketSplitter extends ByteToMessageDecoder {
+     public PacketSplitter() {}
+ 
+     protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
+-        bytebuf.markReaderIndex();
+-        byte[] abyte = new byte[3];
+-
+-        for (int i = 0; i < abyte.length; ++i) {
+-            if (!bytebuf.isReadable()) {
+-                bytebuf.resetReaderIndex();
+-                return;
++        // PandaSpigot start
++        if (!channelhandlercontext.channel().isActive()) {
++            bytebuf.clear();
++            return;
++        }
++        
++        final VarIntByteDecoder reader = new VarIntByteDecoder();
++        int varIntEnd = bytebuf.forEachByte(reader);
++        
++        if (varIntEnd == -1) {
++            // We tried to go beyond the end of the buffer. This is probably a good sign that the
++            // buffer was too short to hold a proper varint.
++            if (reader.getResult() == VarIntByteDecoder.DecodeResult.RUN_OF_ZEROES) {
++                // Special case where the entire packet is just a run of zeroes. We ignore them all.
++                bytebuf.clear();
+             }
+-
+-            abyte[i] = bytebuf.readByte();
+-            if (abyte[i] >= 0) {
+-                PacketDataSerializer packetdataserializer = new PacketDataSerializer(Unpooled.wrappedBuffer(abyte));
+-
+-                try {
+-                    int j = packetdataserializer.e();
+-
+-                    if (bytebuf.readableBytes() >= j) {
+-                        list.add(bytebuf.readBytes(j));
+-                        return;
+-                    }
+-
+-                    bytebuf.resetReaderIndex();
+-                } finally {
+-                    packetdataserializer.release();
++            return;
++        }
++    
++        if (reader.getResult() == VarIntByteDecoder.DecodeResult.RUN_OF_ZEROES) {
++            // this will return to the point where the next varint starts
++            bytebuf.readerIndex(varIntEnd);
++        } else if (reader.getResult() == VarIntByteDecoder.DecodeResult.SUCCESS) {
++            int readVarint = reader.getReadVarint();
++            int bytesRead = reader.getBytesRead();
++            if (readVarint < 0) {
++                bytebuf.clear();
++                throw new CorruptedFrameException("Bad packet length");
++            } else if (readVarint == 0) {
++                // skip over the empty packet(s) and ignore it
++                bytebuf.readerIndex(varIntEnd + 1);
++            } else {
++                int minimumRead = bytesRead + readVarint;
++                if (bytebuf.isReadable(minimumRead)) {
++                    list.add(bytebuf.retainedSlice(varIntEnd + 1, readVarint));
++                    bytebuf.skipBytes(minimumRead);
+                 }
+-
+-                return;
+             }
++        } else if (reader.getResult() == VarIntByteDecoder.DecodeResult.TOO_BIG) {
++            bytebuf.clear();
++            throw new CorruptedFrameException("VarInt too big");
+         }
+-
+-        throw new CorruptedFrameException("length wider than 21-bit");
++        // PandaSpigot end
+     }
+ }
+diff --git a/src/main/java/net/minecraft/server/ServerConnection.java b/src/main/java/net/minecraft/server/ServerConnection.java
+index f1638557ecf770a95c23f7400e16414050061c5e..a14a9442fafb7148489b354430fb97fcb2cf946c 100644
+--- a/src/main/java/net/minecraft/server/ServerConnection.java
++++ b/src/main/java/net/minecraft/server/ServerConnection.java
+@@ -115,7 +115,14 @@ public class ServerConnection {
+                     }
+ 
+                     if (!disableFlushConsolidation) channel.pipeline().addFirst(new io.netty.handler.flush.FlushConsolidationHandler()); // PandaSpigot
+-                    channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30)).addLast("legacy_query", new LegacyPingHandler(ServerConnection.this)).addLast("splitter", new PacketSplitter()).addLast("decoder", new PacketDecoder(EnumProtocolDirection.SERVERBOUND)).addLast("prepender", new PacketPrepender()).addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
++                    // PandaSpigot start - newlines
++                    channel.pipeline().addLast("timeout", new ReadTimeoutHandler(30))
++                        .addLast("legacy_query", new LegacyPingHandler(ServerConnection.this))
++                        .addLast("splitter", new PacketSplitter())
++                        .addLast("decoder", new PacketDecoder(EnumProtocolDirection.SERVERBOUND))
++                        .addLast("prepender", PacketPrepender.INSTANCE) // PandaSpigot - Share PacketPrepender instance
++                        .addLast("encoder", new PacketEncoder(EnumProtocolDirection.CLIENTBOUND));
++                    // PandaSpigot end
+                     NetworkManager networkmanager = new NetworkManager(EnumProtocolDirection.SERVERBOUND);
+ 
+                     // PandaSpigot start

@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Fri, 11 Nov 2022 23:08:10 +0100
+Subject: [PATCH] Fix AIOOBE in inventory handling
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 977675f6155a1ccb1d9cdfdcb48a9f922805df9a..1f80521c97fd7b0ef263b9e17cb79bcc51db0433 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -1600,7 +1600,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+                 } else if (packetplayinwindowclick.f() == 3) {
+                     if (packetplayinwindowclick.c() == 2) {
+                         click = ClickType.MIDDLE;
+-                        if (packetplayinwindowclick.b() == -999) {
++                        if (packetplayinwindowclick.b() < 0) { // PandaSpigot - Paper Issue GH-404
+                             action = InventoryAction.NOTHING;
+                         } else {
+                             Slot slot = this.player.activeContainer.getSlot(packetplayinwindowclick.b());

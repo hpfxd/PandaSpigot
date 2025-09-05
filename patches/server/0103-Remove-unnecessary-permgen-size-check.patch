@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Wed, 30 Oct 2024 17:56:59 -0300
+Subject: [PATCH] Remove unnecessary permgen size check
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
+index 916efe7e9a8c31973449dcede960dfbed6736d4b..9f3df42ab7434dbc1525e20973519ea06c57c3df 100644
+--- a/src/main/java/org/bukkit/craftbukkit/Main.java
++++ b/src/main/java/org/bukkit/craftbukkit/Main.java
+@@ -208,6 +208,8 @@ public class Main {
+                     // PandaSpigot end
+                 }
+ 
++                // PandaSpigot start - Not necessary to check permgen size anymore
++                /*
+                 // Spigot Start
+                 int maxPermGen = 0; // In kb
+                 for ( String s : java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments() )
+@@ -224,6 +226,8 @@ public class Main {
+                     System.out.println( "Please see http://www.spigotmc.org/wiki/changing-permgen-size/ for more details and more in-depth instructions." );
+                 }
+                 // Spigot End
++                */
++                // PandaSpigot end
+                 System.out.println("Loading libraries, please wait...");
+                 MinecraftServer.main(options);
+             } catch (Throwable t) {

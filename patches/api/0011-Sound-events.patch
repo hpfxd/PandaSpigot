@@ -1,0 +1,178 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Thu, 4 Nov 2021 18:00:53 -0400
+Subject: [PATCH] Sound events
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/event/sound/EntitySoundEvent.java b/src/main/java/com/hpfxd/pandaspigot/event/sound/EntitySoundEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..511aba38bb66789c45c4e7fa45d0f30dd5fde7bb
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/event/sound/EntitySoundEvent.java
+@@ -0,0 +1,24 @@
++package com.hpfxd.pandaspigot.event.sound;
++
++import org.bukkit.entity.Entity;
++
++/**
++ * Called when a sound is about to be played.
++ */
++public class EntitySoundEvent extends SoundEvent {
++    private final Entity entity;
++    
++    public EntitySoundEvent(Entity entity, String sound, float volume, float pitch) {
++        super(entity.getLocation(), sound, volume, pitch);
++        this.entity = entity;
++    }
++    
++    /**
++     * Get the entity playing the sound.
++     *
++     * @return The entity.
++     */
++    public Entity getEntity() {
++        return this.entity;
++    }
++}
+diff --git a/src/main/java/com/hpfxd/pandaspigot/event/sound/PlayerSoundEvent.java b/src/main/java/com/hpfxd/pandaspigot/event/sound/PlayerSoundEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..bbe3fbb8f0b5d2800ef651689a217d0ec46dbcc9
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/event/sound/PlayerSoundEvent.java
+@@ -0,0 +1,21 @@
++package com.hpfxd.pandaspigot.event.sound;
++
++import org.bukkit.entity.Player;
++
++/**
++ * Called when a sound is about to be played.
++ */
++public class PlayerSoundEvent extends EntitySoundEvent {
++    public PlayerSoundEvent(Player player, String sound, float volume, float pitch) {
++        super(player, sound, volume, pitch);
++    }
++    
++    /**
++     * Get the player playing the sound.
++     *
++     * @return The player.
++     */
++    public Player getPlayer() {
++        return (Player) super.getEntity();
++    }
++}
+diff --git a/src/main/java/com/hpfxd/pandaspigot/event/sound/SoundEvent.java b/src/main/java/com/hpfxd/pandaspigot/event/sound/SoundEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2f28ae4900a9a1cafdaeacef032a632c27853993
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/event/sound/SoundEvent.java
+@@ -0,0 +1,109 @@
++package com.hpfxd.pandaspigot.event.sound;
++
++import org.bukkit.Location;
++import org.bukkit.Sound;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.Event;
++import org.bukkit.event.HandlerList;
++
++/**
++ * Called when a sound is about to be played.
++ */
++public class SoundEvent extends Event implements Cancellable {
++    private static final HandlerList handlers = new HandlerList();
++    private Location location;
++    private String sound;
++    private float volume;
++    private float pitch;
++    private boolean cancelled;
++    
++    public SoundEvent(Location location, String sound, float volume, float pitch) {
++        this.location = location;
++        this.sound = sound;
++        this.volume = volume;
++        this.pitch = pitch;
++    }
++    
++    /**
++     * @return The location the sound will be played at.
++     */
++    public Location getLocation() {
++        return this.location;
++    }
++    
++    /**
++     * Set the location the sound will be played at.
++     *
++     * @param location The sound's new location.
++     */
++    public void setLocation(Location location) {
++        this.location = location;
++    }
++    
++    /**
++     * @return The sound that will be played.
++     * @see org.bukkit.entity.Player#playSound(Location, Sound, float, float)
++     */
++    public String getSound() {
++        return this.sound;
++    }
++    
++    /**
++     * Set the sound that will be played.
++     *
++     * @param sound The new sound.
++     */
++    public void setSound(String sound) {
++        this.sound = sound;
++    }
++    
++    /**
++     * @return The sound's volume.
++     */
++    public float getVolume() {
++        return this.volume;
++    }
++    
++    /**
++     * Set the sound's volume.
++     *
++     * @param volume The sound's new volume.
++     */
++    public void setVolume(float volume) {
++        this.volume = volume;
++    }
++    
++    /**
++     * @return The sound's pitch.
++     */
++    public float getPitch() {
++        return this.pitch;
++    }
++    
++    /**
++     * Set the sound's pitch.
++     *
++     * @param pitch The sound's new pitch.
++     */
++    public void setPitch(float pitch) {
++        this.pitch = pitch;
++    }
++    
++    @Override
++    public boolean isCancelled() {
++        return this.cancelled;
++    }
++    
++    @Override
++    public void setCancelled(boolean cancelled) {
++        this.cancelled = cancelled;
++    }
++    
++    public HandlerList getHandlers() {
++        return handlers;
++    }
++    
++    public static HandlerList getHandlerList() {
++        return handlers;
++    }
++}

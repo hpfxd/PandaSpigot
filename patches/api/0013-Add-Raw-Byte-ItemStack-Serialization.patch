@@ -1,0 +1,52 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Fri, 18 Mar 2022 16:01:52 -0400
+Subject: [PATCH] Add Raw Byte ItemStack Serialization
+
+
+diff --git a/src/main/java/org/bukkit/UnsafeValues.java b/src/main/java/org/bukkit/UnsafeValues.java
+index 568c83e371b700a441267661d5b10404d6b7b6a8..73dd599c1a90560b2e834574f15e62d326ebad37 100644
+--- a/src/main/java/org/bukkit/UnsafeValues.java
++++ b/src/main/java/org/bukkit/UnsafeValues.java
+@@ -30,4 +30,10 @@ public interface UnsafeValues {
+     Achievement getAchievementFromInternalName(String name);
+ 
+     List<String> tabCompleteInternalStatisticOrAchievementName(String token, List<String> completions);
++
++    // PandaSpigot start
++    byte[] serializeItem(ItemStack item);
++
++    ItemStack deserializeItem(byte[] data);
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/org/bukkit/inventory/ItemStack.java b/src/main/java/org/bukkit/inventory/ItemStack.java
+index d9cff5b0df6e43ef0eb23227c4a7d0f4a0140d71..caa7462433f7b4be59bab5dbcaa7000cf798b85f 100644
+--- a/src/main/java/org/bukkit/inventory/ItemStack.java
++++ b/src/main/java/org/bukkit/inventory/ItemStack.java
+@@ -559,6 +559,26 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
+         return result;
+     }
+ 
++    // PandaSpigot start
++    /**
++     * Deserializes this ItemStack from raw NBT bytes.
++     *
++     * @param bytes bytes representing an item in NBT
++     * @return Deserialized ItemStack.
++     */
++    public static ItemStack deserializeBytes(byte[] bytes) {
++        return org.bukkit.Bukkit.getUnsafe().deserializeItem(bytes);
++    }
++
++    /**
++     * Serializes this ItemStack to raw bytes in NBT.
++     * @return bytes representing this item in NBT.
++     */
++    public byte[] serializeAsBytes() {
++        return org.bukkit.Bukkit.getUnsafe().serializeItem(this);
++    }
++    // PandaSpigot end
++
+     /**
+      * Get a copy of this ItemStack's {@link ItemMeta}.
+      *

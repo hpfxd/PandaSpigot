@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 3 Nov 2021 18:01:06 -0400
+Subject: [PATCH] Configurable entity AI
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index fb9db2dafcf180dbb25c768936cb59a58a7a3584..04f04ce721aa06fba935618176c77587e305a5b0 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -31,6 +31,11 @@ public class PandaSpigotWorldConfig {
+     @Comment("When enabled, this option will disable saving world chunks.")
+     public boolean disableChunkSaving = false;
+     
++    @Comment("When enabled, entity AI will be disabled.\n" +
++            "\n" +
++            "This has the same effect as Spigot's \"nerf-spawner-mobs\" option, but applies to all entities.")
++    public boolean disableEntityAi = false;
++    
+     @Comment("These options control velocity players receive when damaged.")
+     public KnockbackConfig knockback;
+     
+diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
+index b82b98473f516e5963fed51ba892bfa59a80c2f5..c1f100c3bd68329b77f9a899cc7353374064daf6 100644
+--- a/src/main/java/net/minecraft/server/EntityInsentient.java
++++ b/src/main/java/net/minecraft/server/EntityInsentient.java
+@@ -459,7 +459,7 @@ public abstract class EntityInsentient extends EntityLiving {
+         this.D();
+         this.world.methodProfiler.b();
+         // Spigot Start
+-        if ( this.fromMobSpawner )
++        if ( this.world.pandaSpigotConfig.disableEntityAi || this.fromMobSpawner ) // PandaSpigot - configurable entity AI
+         {
+             // PaperSpigot start - Allow nerfed mobs to jump
+             if (goalFloat != null) {

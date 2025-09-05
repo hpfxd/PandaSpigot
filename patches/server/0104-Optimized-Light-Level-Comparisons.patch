@@ -1,0 +1,128 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Mon, 11 Nov 2024 19:10:53 -0300
+Subject: [PATCH] Optimized Light Level Comparisons
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockCrops.java b/src/main/java/net/minecraft/server/BlockCrops.java
+index b91b2200d56d9f0b4a50293fbc497a7aca7b9cec..f9429059302cfeba9d7ea6c1cb7f0dbee27bf0e4 100644
+--- a/src/main/java/net/minecraft/server/BlockCrops.java
++++ b/src/main/java/net/minecraft/server/BlockCrops.java
+@@ -26,7 +26,7 @@ public class BlockCrops extends BlockPlant implements IBlockFragilePlantElement
+ 
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
+         super.b(world, blockposition, iblockdata, random);
+-        if (world.getLightLevel(blockposition.up()) >= 9) {
++        if (world.isLightLevel(blockposition.up(), 9)) { // PandaSpigot - Use isLightLevel
+             int i = ((Integer) iblockdata.get(BlockCrops.AGE)).intValue();
+ 
+             if (i < 7) {
+diff --git a/src/main/java/net/minecraft/server/BlockGrass.java b/src/main/java/net/minecraft/server/BlockGrass.java
+index 844ad30fd55cd8fed6e9b6c1d9f964a72a501b16..fdef82427d2721ac068f7d24025438c70f6e237c 100644
+--- a/src/main/java/net/minecraft/server/BlockGrass.java
++++ b/src/main/java/net/minecraft/server/BlockGrass.java
+@@ -29,7 +29,8 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
+ 
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
+         if (!world.isClientSide) {
+-            if (world.getLightLevel(blockposition.up()) < 4 && world.getType(blockposition.up()).getBlock().p() > 2) {
++            int lightLevel = -1; // PandaSpigot
++            if (world.getType(blockposition.up()).getBlock().p() > 2 && (lightLevel = world.getLightLevel(blockposition.up())) < 4) { // PandaSpigot - Move light check to end to avoid unneeded light lookups
+                 // CraftBukkit start
+                 // world.setTypeUpdate(blockposition, Blocks.DIRT.getBlockData());
+                 org.bukkit.World bworld = world.getWorld();
+@@ -44,13 +45,23 @@ public class BlockGrass extends Block implements IBlockFragilePlantElement {
+                 }
+                 // CraftBukkit end
+             } else {
+-                if (world.getLightLevel(blockposition.up()) >= 9) {
++                // PandaSpigot start - If light was calculated above, reuse it, else grab it
++                if (lightLevel == -1) {
++                    lightLevel = world.getLightLevel(blockposition.up());
++                }
++                if (lightLevel >= 9) {
++                // PandaSpigot end
+                     for (int i = 0; i < Math.min(4, Math.max(20, (int) (4 * 100F / world.growthOdds))); ++i) { // Spigot
+                         BlockPosition blockposition1 = blockposition.a(random.nextInt(3) - 1, random.nextInt(5) - 3, random.nextInt(3) - 1);
+                         Block block = world.getType(blockposition1.up()).getBlock();
+-                        IBlockData iblockdata1 = world.getType(blockposition1);
++                        // PandaSpigot start
++                        IBlockData iblockdata1 = world.getTypeIfLoaded(blockposition1);
++                        if (iblockdata1 == null) {
++                            return;
++                        }
+ 
+-                        if (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.DIRT && world.getLightLevel(blockposition1.up()) >= 4 && block.p() <= 2) {
++                        if (iblockdata1.getBlock() == Blocks.DIRT && iblockdata1.get(BlockDirt.VARIANT) == BlockDirt.EnumDirtVariant.DIRT && block.p() <= 2 && world.isLightLevel(blockposition1.up(), 4)) { // Move last check before isLightLevel to avoid unneeded light checks
++                        // PandaSpigot end
+                             // CraftBukkit start
+                             // world.setTypeUpdate(blockposition1, Blocks.GRASS.getBlockData());
+                             org.bukkit.World bworld = world.getWorld();
+diff --git a/src/main/java/net/minecraft/server/BlockSapling.java b/src/main/java/net/minecraft/server/BlockSapling.java
+index 45fbf5c341fc6ea8163e4363f654772921332789..c8b8e5b0691cd009a362d54960303c876e811949 100644
+--- a/src/main/java/net/minecraft/server/BlockSapling.java
++++ b/src/main/java/net/minecraft/server/BlockSapling.java
+@@ -32,7 +32,7 @@ public class BlockSapling extends BlockPlant implements IBlockFragilePlantElemen
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
+         if (!world.isClientSide) {
+             super.b(world, blockposition, iblockdata, random);
+-            if (world.getLightLevel(blockposition.up()) >= 9 && (random.nextInt(Math.max(2, (int) ((world.growthOdds / world.spigotConfig.saplingModifier * 7) + 0.5F))) == 0)) { // Spigot) {
++            if (world.isLightLevel(blockposition.up(), 9) && (random.nextInt(Math.max(2, (int) ((world.growthOdds / world.spigotConfig.saplingModifier * 7) + 0.5F))) == 0)) { // Spigot) { // PandaSpigot - Use isLightLevel
+                 // CraftBukkit start
+                 world.captureTreeGeneration = true;
+                 // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/server/BlockStem.java b/src/main/java/net/minecraft/server/BlockStem.java
+index 2618c40f25ccf51d50e83aaa1109b493bf13c2fb..24daf93ef18f46e307cf35e627f900a545509de0 100644
+--- a/src/main/java/net/minecraft/server/BlockStem.java
++++ b/src/main/java/net/minecraft/server/BlockStem.java
+@@ -52,7 +52,7 @@ public class BlockStem extends BlockPlant implements IBlockFragilePlantElement {
+ 
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
+         super.b(world, blockposition, iblockdata, random);
+-        if (world.getLightLevel(blockposition.up()) >= 9) {
++        if (world.isLightLevel(blockposition.up(), 9)) { // PandaSpigot - Use isLightLevel
+             float f = BlockCrops.a((Block) this, world, blockposition);
+ 
+             if (random.nextInt((int) (world.growthOdds / (this == Blocks.PUMPKIN_STEM? world.spigotConfig.pumpkinModifier : world.spigotConfig.melonModifier) * (25.0F / f)) + 1) == 0) { // Spigot
+diff --git a/src/main/java/net/minecraft/server/EntityMonster.java b/src/main/java/net/minecraft/server/EntityMonster.java
+index 9fefb867bca8685b7c571dda0d05091c05d335d6..05e4dbc1d130c497e2455d9eb1b339d10cd1527b 100644
+--- a/src/main/java/net/minecraft/server/EntityMonster.java
++++ b/src/main/java/net/minecraft/server/EntityMonster.java
+@@ -107,17 +107,20 @@ public abstract class EntityMonster extends EntityCreature implements IMonster {
+         if (this.world.b(EnumSkyBlock.SKY, blockposition) > this.random.nextInt(32)) {
+             return false;
+         } else {
+-            int i = this.world.getLightLevel(blockposition);
++            // PandaSpigot start
++            // int i = this.world.getLightLevel(blockposition);
++            boolean passes;
++            // PandaSpigot end
+ 
+             if (this.world.R()) {
+                 int j = this.world.ab();
+ 
+                 this.world.c(10);
+-                i = this.world.getLightLevel(blockposition);
++                passes = !this.world.isLightLevel(blockposition, this.random.nextInt(8)); // PandaSpigot
+                 this.world.c(j);
+-            }
++            } else { passes = !this.world.isLightLevel(blockposition, this.random.nextInt(8)); } // PandaSpigot
+ 
+-            return i <= this.random.nextInt(8);
++            return passes; // PandaSpigot
+         }
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/EntityZombie.java b/src/main/java/net/minecraft/server/EntityZombie.java
+index 6d3b002bc768e32f4cc95c9f37b274baf5dc4599..5165f6e66431079ae756a0c967ca8c9cae466a29 100644
+--- a/src/main/java/net/minecraft/server/EntityZombie.java
++++ b/src/main/java/net/minecraft/server/EntityZombie.java
+@@ -182,7 +182,7 @@ public class EntityZombie extends EntityMonster {
+                     int j1 = j + MathHelper.nextInt(this.random, 7, 40) * MathHelper.nextInt(this.random, -1, 1);
+                     int k1 = k + MathHelper.nextInt(this.random, 7, 40) * MathHelper.nextInt(this.random, -1, 1);
+ 
+-                    if (World.a((IBlockAccess) this.world, new BlockPosition(i1, j1 - 1, k1)) && this.world.getLightLevel(new BlockPosition(i1, j1, k1)) < 10) {
++                    if (World.a((IBlockAccess) this.world, new BlockPosition(i1, j1 - 1, k1)) && !this.world.isLightLevel(new BlockPosition(i1, j1, k1), 10)) { // PandaSpigot - Use isLightLevel
+                         entityzombie.setPosition((double) i1, (double) j1, (double) k1);
+                         if (!this.world.isPlayerNearby((double) i1, (double) j1, (double) k1, 7.0D) && this.world.a(entityzombie.getBoundingBox(), (Entity) entityzombie) && this.world.getCubes(entityzombie, entityzombie.getBoundingBox()).isEmpty() && !this.world.containsLiquid(entityzombie.getBoundingBox())) {
+                             this.world.addEntity(entityzombie, CreatureSpawnEvent.SpawnReason.REINFORCEMENTS); // CraftBukkit

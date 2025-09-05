@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Tue, 10 May 2022 14:50:40 -0400
+Subject: [PATCH] SPIGOT-1401: Fix dispenser, dropper, furnace placement
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockDispenser.java b/src/main/java/net/minecraft/server/BlockDispenser.java
+index 010d7c6d660cffc59a10c82925769f4375ab5b84..49400ae5d2e5e0f0ce5f979991ff12fba8b25c2f 100644
+--- a/src/main/java/net/minecraft/server/BlockDispenser.java
++++ b/src/main/java/net/minecraft/server/BlockDispenser.java
+@@ -20,6 +20,7 @@ public class BlockDispenser extends BlockContainer {
+         return 4;
+     }
+ 
++    /* // PandaSpigot - comment out - SPIGOT-1401
+     public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
+         super.onPlace(world, blockposition, iblockdata);
+         this.e(world, blockposition, iblockdata);
+@@ -49,6 +50,7 @@ public class BlockDispenser extends BlockContainer {
+             world.setTypeAndData(blockposition, iblockdata.set(BlockDispenser.FACING, enumdirection).set(BlockDispenser.TRIGGERED, Boolean.valueOf(false)), 2);
+         }
+     }
++    */ // PandaSpigot
+ 
+     public boolean interact(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman, EnumDirection enumdirection, float f, float f1, float f2) {
+         if (world.isClientSide) {
+diff --git a/src/main/java/net/minecraft/server/BlockFurnace.java b/src/main/java/net/minecraft/server/BlockFurnace.java
+index 233f30025190df849a8ca8b28f249d60fb171bac..21d868ca674475859ff0389d289dfde24c775347 100644
+--- a/src/main/java/net/minecraft/server/BlockFurnace.java
++++ b/src/main/java/net/minecraft/server/BlockFurnace.java
+@@ -19,6 +19,7 @@ public class BlockFurnace extends BlockContainer {
+         return Item.getItemOf(Blocks.FURNACE);
+     }
+ 
++    /* // PandaSpigot - comment out - SPIGOT-1401
+     public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
+         this.e(world, blockposition, iblockdata);
+     }
+@@ -44,6 +45,7 @@ public class BlockFurnace extends BlockContainer {
+             world.setTypeAndData(blockposition, iblockdata.set(BlockFurnace.FACING, enumdirection), 2);
+         }
+     }
++    */ // PandaSpigot
+ 
+     public boolean interact(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman, EnumDirection enumdirection, float f, float f1, float f2) {
+         if (world.isClientSide) {

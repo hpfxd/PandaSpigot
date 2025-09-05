@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sun, 31 Oct 2021 08:38:32 -0400
+Subject: [PATCH] Configurable data saving
+
+This patch adds configuration options for:
+- Player data reading/writing
+- Region writing (world data)
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index bde014f003bccca916dbc74fc27436bf4b193fdf..fb9db2dafcf180dbb25c768936cb59a58a7a3584 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -22,6 +22,15 @@ public class PandaSpigotWorldConfig {
+             "With this option enabled, they will be able to move their head just like normal.")
+     public boolean smoothTeleportation = false;
+     
++    @Comment("When enabled, this option disables reading and writing player data such as:\n" +
++            "- Position\n" +
++            "- Inventory\n" +
++            "- Enderchest")
++    public boolean disablePlayerData = false;
++    
++    @Comment("When enabled, this option will disable saving world chunks.")
++    public boolean disableChunkSaving = false;
++    
+     @Comment("These options control velocity players receive when damaged.")
+     public KnockbackConfig knockback;
+     
+diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+index b4056a28a00ba706a4cec5c22ed815ca9c980196..ba13f3f20bb86f667178f51f4d3d1df63f5acf2d 100644
+--- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
++++ b/src/main/java/net/minecraft/server/WorldNBTStorage.java
+@@ -182,6 +182,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+ 
+     public void save(EntityHuman entityhuman) {
+         try {
++            if (entityhuman.world.pandaSpigotConfig.disablePlayerData) return; // PandaSpigot - Configurable player data
+             NBTTagCompound nbttagcompound = new NBTTagCompound();
+ 
+             entityhuman.e(nbttagcompound);
+@@ -201,6 +202,7 @@ public class WorldNBTStorage implements IDataManager, IPlayerFileData {
+     }
+ 
+     public NBTTagCompound load(EntityHuman entityhuman) {
++        if (entityhuman.world.pandaSpigotConfig.disablePlayerData) return null; // PandaSpigot - Configurable player data
+         NBTTagCompound nbttagcompound = null;
+ 
+         try {
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 87529552aa27fc89a542130a27a6b2bfdda44ccd..f54a279407ad09fabcac038b11e8d668e68c35f6 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -958,7 +958,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+                 iprogressupdate.c("Saving chunks");
+             }
+ 
++            if (!this.pandaSpigotConfig.disableChunkSaving) { // PandaSpigot - Configurable chunk saving
+             this.chunkProvider.saveChunks(flag, iprogressupdate);
++            } // PandaSpigot
+             // CraftBukkit - ArrayList -> Collection
+             Collection arraylist = this.chunkProviderServer.a();
+             Iterator iterator = arraylist.iterator();

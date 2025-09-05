@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Thu, 4 Nov 2021 09:32:54 -0400
+Subject: [PATCH] Cache user authenticator threads
+
+Uses a cached thread pool ExecutorService instead of creating a new
+thread every time someone joins. This should somewhat improve
+overall login performance when many players join, as thread
+creation is quite expensive.
+
+diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
+index 541cec7cfb0fcc680af4bb34eeeb1eb20131d3cc..416769221c099d5bd2a7facd5bb34cb4b2aed71a 100644
+--- a/src/main/java/net/minecraft/server/LoginListener.java
++++ b/src/main/java/net/minecraft/server/LoginListener.java
+@@ -40,6 +40,12 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+     private SecretKey loginKey;
+     private EntityPlayer l;
+     public String hostname = ""; // CraftBukkit - add field
++    // PandaSpigot start - Cache threads
++    private static final AtomicInteger threadId = new AtomicInteger(0);
++    private static final java.util.concurrent.ExecutorService authenticatorPool = java.util.concurrent.Executors.newCachedThreadPool(
++            r -> new Thread(r, "User Authenticator #" + threadId.incrementAndGet())
++    );
++    // PandaSpigot end
+ 
+     public LoginListener(MinecraftServer minecraftserver, NetworkManager networkmanager) {
+         this.g = LoginListener.EnumProtocolState.HELLO;
+@@ -164,7 +170,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+         } else {
+             // Spigot start
+             initUUID();
+-            new Thread(new Runnable() {
++            authenticatorPool.execute(new Runnable() { // PandaSpigot - Cache authenticator threads
+ 
+                 @Override
+                 public void run() {
+@@ -175,7 +181,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+                         server.server.getLogger().log(java.util.logging.Level.WARNING, "Exception verifying " + i.getName(), ex);
+                     }
+                 }
+-            }).start();
++            }); // PandaSpigot - Remove start()
+             // Spigot end
+         }
+ 
+@@ -191,7 +197,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+             this.loginKey = packetlogininencryptionbegin.a(privatekey);
+             this.g = LoginListener.EnumProtocolState.AUTHENTICATING;
+             this.networkManager.a(this.loginKey);
+-            (new Thread("User Authenticator #" + LoginListener.b.incrementAndGet()) {
++            authenticatorPool.execute(new Runnable() { // PandaSpigot - Cache authenticator threads
+                 public void run() {
+                     GameProfile gameprofile = LoginListener.this.i;
+ 
+@@ -231,7 +237,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+                     }
+ 
+                 }
+-            }).start();
++            }); // PandaSpigot - Remove start()
+         }
+     }
+ 

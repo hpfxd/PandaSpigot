@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jake Potrebic <jake.m.potrebic@gmail.com>
+Date: Sun, 8 Jan 2023 17:38:28 -0800
+Subject: [PATCH] Use single player info update packet on join
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 9882c599533d8ef52369efb6404a967e736548e0..ada9cf25b091c2df24301bb5e82d1f76fbd929e5 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -326,6 +326,7 @@ public abstract class PlayerList {
+         // CraftBukkit start - sendAll above replaced with this loop
+         PacketPlayOutPlayerInfo packet = new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, entityplayer);
+ 
++        final List<EntityPlayer> onlinePlayers = Lists.newArrayListWithExpectedSize(this.players.size() - 1); // PandaSpigot - use single player info update packet
+         for (int i = 0; i < this.players.size(); ++i) {
+             EntityPlayer entityplayer1 = (EntityPlayer) this.players.get(i);
+ 
+@@ -333,12 +334,17 @@ public abstract class PlayerList {
+                 entityplayer1.playerConnection.sendPacket(packet);
+             }
+ 
+-            if (!entityplayer.getBukkitEntity().canSee(entityplayer1.getBukkitEntity())) {
++            if (entityplayer1 == entityplayer || !entityplayer.getBukkitEntity().canSee(entityplayer1.getBukkitEntity())) { // PandaSpigot - don't include joining player
+                 continue;
+             }
+ 
+-            entityplayer.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, new EntityPlayer[] { entityplayer1}));
++            onlinePlayers.add(entityplayer1); // PandaSpigot - use single player info update packet
+         }
++        // PandaSpigot start - use single player info update packet
++        if (!onlinePlayers.isEmpty()) {
++            entityplayer.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, onlinePlayers.toArray(new EntityPlayer[0])));
++        }
++        // PandaSpigot end
+         // CraftBukkit end
+ 
+         // CraftBukkit start - Only add if the player wasn't moved in the event

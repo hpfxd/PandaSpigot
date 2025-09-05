@@ -1,0 +1,78 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sun, 31 Oct 2021 05:30:25 -0400
+Subject: [PATCH] Smooth teleportation
+
+When teleporting, if the player's yaw & pitch are the same, the server
+will send a relative teleport packet indicating that the player's
+rotation should stay the same as it currently is on the client.
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index b5f16e8cab9e43ad7597b2ea5bc921399b37872b..bde014f003bccca916dbc74fc27436bf4b193fdf 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -13,6 +13,15 @@ public class PandaSpigotWorldConfig {
+             "higher, unless you're constantly changing the time, or the server is lagging.")
+     public int timeUpdateFrequency = 100;
+     
++    @Comment("This option makes it so that when players are teleported to a location\n" +
++            "with the same rotation they currently have, the server will send a special\n" +
++            "packet indicating that the client should not update it's rotation at all.\n" +
++            "\n" +
++            "For example, normally constantly teleporting a player to their own location\n" +
++            "will make moving their head very difficult, especially for players with higher latency.\n" +
++            "With this option enabled, they will be able to move their head just like normal.")
++    public boolean smoothTeleportation = false;
++    
+     @Comment("These options control velocity players receive when damaged.")
+     public KnockbackConfig knockback;
+     
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 4391ad7e7cf547b5e179c06e64b3a6e02cbe7a41..5842cedc81b90b4f3565d71ba5dfa8c0c98dfca6 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -68,6 +68,13 @@ import org.github.paperspigot.PaperSpigotConfig; // PaperSpigot
+ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerListBox {
+ 
+     private static final Logger c = LogManager.getLogger();
++    // PandaSpigot start - Smooth teleportation
++    private static final Set<PacketPlayOutPosition.EnumPlayerTeleportFlags> TELEPORT_NO_ROT =
++            com.google.common.collect.Sets.immutableEnumSet(
++                    PacketPlayOutPosition.EnumPlayerTeleportFlags.X_ROT,
++                    PacketPlayOutPosition.EnumPlayerTeleportFlags.Y_ROT
++            );
++    // PandaSpigot end
+     public final NetworkManager networkManager;
+     private final MinecraftServer minecraftServer;
+     public EntityPlayer player;
+@@ -274,7 +281,13 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+ 
+                         // If the event is cancelled we move the player back to their old location.
+                         if (event.isCancelled()) {
++                            // PandaSpigot start - Smooth teleportation
++                            if (this.player.world.pandaSpigotConfig.smoothTeleportation) {
++                                this.player.playerConnection.sendPacket(new PacketPlayOutPosition(from.getX(), from.getY(), from.getZ(), 0, 0, TELEPORT_NO_ROT));
++                            } else {
++                            // PandaSpigot end
+                             this.player.playerConnection.sendPacket(new PacketPlayOutPosition(from.getX(), from.getY(), from.getZ(), from.getYaw(), from.getPitch(), Collections.<PacketPlayOutPosition.EnumPlayerTeleportFlags>emptySet()));
++                            } // PandaSpigot - closing bracket
+                             return;
+                         }
+ 
+@@ -518,6 +531,16 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+     }
+ 
+     private void internalTeleport(double d0, double d1, double d2, float f, float f1, Set set) {
++        // PandaSpigot start - Smooth teleportation
++        if (this.player.world.pandaSpigotConfig.smoothTeleportation && set.isEmpty()) {
++            // if yaw & pitch are same, send a relative teleport
++            if (this.player.yaw == f && this.player.pitch == f1) {
++                set = TELEPORT_NO_ROT; // provided set is probably immutable
++                f = 0;
++                f1 = 0;
++            }
++        }
++        // PandaSpigot end
+         if (Float.isNaN(f)) {
+             f = 0;
+         }

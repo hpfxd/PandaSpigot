@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Sat, 22 Feb 2025 14:17:47 -0300
+Subject: [PATCH] Fix SPIGOT-2622: Only one player receiving the server
+ shutdown message
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index ada9cf25b091c2df24301bb5e82d1f76fbd929e5..b9a547ed0d5754c529526fc41b0b8b6cee724cb5 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -1194,8 +1194,10 @@ public abstract class PlayerList {
+     }
+ 
+     public void u() {
+-        for (int i = 0; i < this.players.size(); ++i) {
+-            ((EntityPlayer) this.players.get(i)).playerConnection.disconnect(this.server.server.getShutdownMessage()); // CraftBukkit - add custom shutdown message
++        // PandaSpigot start - Fix SPIGOT-2622: Only one player receiving the server shutdown message
++        for (EntityPlayer player : this.players) {
++            player.playerConnection.disconnect(this.server.server.getShutdownMessage()); // CraftBukkit - add custom shutdown message
++        // PandaSpigot end
+         }
+ 
+     }

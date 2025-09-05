@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 3 Nov 2021 14:29:02 -0400
+Subject: [PATCH] Player Chunk Load/Unload Events
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 0c49a256cc481af1ceb7a873b03763e1d942a362..23524af2dd05a6f14ff3bddbf524c5d4d483290f 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -241,6 +241,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+                             arraylist.add(chunk);
+                             arraylist1.addAll(chunk.tileEntities.values()); // CraftBukkit - Get tile entities directly from the chunk instead of the world
+                             iterator1.remove();
++                            new io.papermc.paper.event.packet.PlayerChunkLoadEvent(chunk.bukkitChunk, this.getBukkitEntity()).callEvent(); // PandaSpigot
+                         }
+                     }
+                 } else {
+diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+index 38586aad7548b69275f0e5b3f5e8b2c2734076fe..1c9dbe212cfbeb571f1e09f224fb7ed905dd475b 100644
+--- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+@@ -428,6 +428,10 @@ public class PlayerChunkMap {
+                 this.players.remove(entityplayer); // CraftBukkit
+                 this.b.remove(entityplayer);
+                 entityplayer.chunkCoordIntPairQueue.remove(this.location);
++                org.bukkit.Chunk bukkitChunk = chunk.bukkitChunk;
++                if (bukkitChunk != null) {
++                    new io.papermc.paper.event.packet.PlayerChunkUnloadEvent(bukkitChunk, entityplayer.getBukkitEntity()).callEvent(); // PandaSpigot
++                }
+                 if (this.b.isEmpty()) {
+                     long i = (long) this.location.x + 2147483647L | (long) this.location.z + 2147483647L << 32;
+ 

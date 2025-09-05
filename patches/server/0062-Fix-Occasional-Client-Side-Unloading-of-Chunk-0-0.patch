@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sun, 22 May 2022 23:42:48 +0200
+Subject: [PATCH] Fix Occasional Client Side Unloading of Chunk 0 0
+
+Ported from MineTick
+
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index 948f19d3f344a91c3588b5b9e6227d79fe34e116..835237563b5cd994b45943275586bc05c69f378b 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -38,7 +38,7 @@ public class ChunkProviderServer implements IChunkProvider {
+     public WorldServer world;
+ 
+     public ChunkProviderServer(WorldServer worldserver, IChunkLoader ichunkloader, IChunkProvider ichunkprovider) {
+-        this.emptyChunk = new EmptyChunk(worldserver, 0, 0);
++        this.emptyChunk = new EmptyChunk(worldserver, Integer.MIN_VALUE, Integer.MIN_VALUE); // PandaSpigot - Occasional Client Side Unloading of 0,0 chunk
+         this.world = worldserver;
+         this.chunkLoader = ichunkloader;
+         this.chunkProvider = ichunkprovider;

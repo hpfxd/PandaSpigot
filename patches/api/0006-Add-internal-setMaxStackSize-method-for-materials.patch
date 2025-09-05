@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 27 Oct 2021 20:45:30 -0400
+Subject: [PATCH] Add internal setMaxStackSize method for materials
+
+This is to be used by internal systems that need to set a Material's maximum stack size dynamically, such as stackable buckets in Paper's config.
+
+diff --git a/src/main/java/org/bukkit/Material.java b/src/main/java/org/bukkit/Material.java
+index 0fb260555ce50f5348293a17f85512a4fb08918d..0fd42a85f05be7ee26e63d241645745d63becbee 100644
+--- a/src/main/java/org/bukkit/Material.java
++++ b/src/main/java/org/bukkit/Material.java
+@@ -461,7 +461,7 @@ public enum Material {
+     private final Constructor<? extends MaterialData> ctor;
+     private static Material[] byId = new Material[383];
+     private final static Map<String, Material> BY_NAME = Maps.newHashMap();
+-    private final int maxStack;
++    private int maxStack; // PandaSpigot - Make non-final
+     private final short durability;
+ 
+     private Material(final int id) {
+@@ -517,6 +517,21 @@ public enum Material {
+     public int getMaxStackSize() {
+         return maxStack;
+     }
++    
++    // PandaSpigot start - Add setMaxStackSize()
++    /**
++     * Sets the maximum amount of this material that can be held in a stack.
++     * <p>
++     * <b>This method is for internal use only. Use at your own risk.</b>
++     *
++     * @param maxStack The new maximum stack size for this material.
++     * @deprecated For internal use only.
++     */
++    @Deprecated
++    public void setMaxStackSize(int maxStack) {
++        this.maxStack = maxStack;
++    }
++    // PandaSpigot end
+ 
+     /**
+      * Gets the maximum durability of this material

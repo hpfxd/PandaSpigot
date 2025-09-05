@@ -1,0 +1,43 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Wed, 3 Nov 2021 19:26:02 -0400
+Subject: [PATCH] Fix SPIGOT-2380
+
+Issue description: Hitting in the air will always load the chunk at 0,0
+
+See:
+- JIRA issue: https://hub.spigotmc.org/jira/browse/SPIGOT-2380
+- md_5's fix: https://hub.spigotmc.org/stash/projects/SPIGOT/repos/craftbukkit/commits/6d3efa063495d5dc9d81cdc9e472f009ea6daa58
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index db915033b217518a918e3553d90d1c193d78e67b..7cf870537490a553f81d5cf5c9dabe1ac9d90950 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -188,7 +188,7 @@ public class CraftEventFactory {
+         if (action != Action.LEFT_CLICK_AIR && action != Action.RIGHT_CLICK_AIR) {
+             throw new IllegalArgumentException(String.format("%s performing %s with %s", who, action, itemstack)); // Spigot
+         }
+-        return callPlayerInteractEvent(who, action, new BlockPosition(0, 256, 0), EnumDirection.SOUTH, itemstack);
++        return callPlayerInteractEvent(who, action, null, EnumDirection.SOUTH, itemstack); // PandaSpigot - SPIGOT-2380 - Change BlockPosition to null
+     }
+ 
+     public static PlayerInteractEvent callPlayerInteractEvent(EntityHuman who, Action action, BlockPosition position, EnumDirection direction, ItemStack itemstack) {
+@@ -202,11 +202,15 @@ public class CraftEventFactory {
+         CraftWorld craftWorld = (CraftWorld) player.getWorld();
+         CraftServer craftServer = (CraftServer) player.getServer();
+ 
+-        Block blockClicked = craftWorld.getBlockAt(position.getX(), position.getY(), position.getZ());
++        //Block blockClicked = craftWorld.getBlockAt(position.getX(), position.getY(), position.getZ()); // PandaSpigot - move down
+         BlockFace blockFace = CraftBlock.notchToBlockFace(direction);
+ 
+-        if (position.getY() > 255) {
+-            blockClicked = null;
++        // PandaSpigot start - SPIGOT-2380
++        Block blockClicked = null;
++        if (position != null) {
++            blockClicked = craftWorld.getBlockAt(position.getX(), position.getY(), position.getZ());
++        } else {
++        // PandaSpigot end
+             switch (action) {
+             case LEFT_CLICK_BLOCK:
+                 action = Action.LEFT_CLICK_AIR;

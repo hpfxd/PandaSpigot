@@ -1,0 +1,54 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Wed, 3 Nov 2021 19:39:25 -0400
+Subject: [PATCH] Use a Shared Random for Entities
+
+Reduces memory usage and provides ensures more randomness, Especially since a lot of garbage entity objects get created.
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 2da303feee4191d6a47108ef904d32958ce6a23d..58e485c2e5845dda15c33ee1beb170860535f88b 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -45,6 +45,20 @@ public abstract class Entity implements ICommandListener {
+         return tag.hasKey("Bukkit.updateLevel") && tag.getInt("Bukkit.updateLevel") >= level;
+     }
+     // CraftBukikt end
++    // PandaSpigot start - Use shared random for entities
++    public static final Random SHARED_RANDOM = new Random() {
++        private boolean locked = false;
++        @Override
++        public synchronized void setSeed(long seed) {
++            if (locked) {
++                MinecraftServer.LOGGER.error("Ignoring setSeed on Entity.SHARED_RANDOM", new Throwable());
++            } else {
++                super.setSeed(seed);
++                locked = true;
++            }
++        }
++    };
++    // PandaSpigot end
+ 
+     private static final AxisAlignedBB a = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 0.0D, 0.0D, 0.0D);
+     private static int entityCount;
+@@ -160,7 +174,7 @@ public abstract class Entity implements ICommandListener {
+         this.width = 0.6F;
+         this.length = 1.8F;
+         this.h = 1;
+-        this.random = new Random();
++        this.random = SHARED_RANDOM; // PandaSpigot
+         this.maxFireTicks = 1;
+         this.justCreated = true;
+         this.uniqueID = MathHelper.a(this.random);
+diff --git a/src/main/java/net/minecraft/server/EntitySquid.java b/src/main/java/net/minecraft/server/EntitySquid.java
+index 31996b4621736e36fea5c931c9b52fe090c1fae4..93885eeb572b24dc8fb47f763b8837dbabe05f1f 100644
+--- a/src/main/java/net/minecraft/server/EntitySquid.java
++++ b/src/main/java/net/minecraft/server/EntitySquid.java
+@@ -20,7 +20,7 @@ public class EntitySquid extends EntityWaterAnimal {
+     public EntitySquid(World world) {
+         super(world);
+         this.setSize(0.95F, 0.95F);
+-        this.random.setSeed((long) (1 + this.getId()));
++        //this.random.setSeed((long) (1 + this.getId())); // PandaSpigot - shared random
+         this.bq = 1.0F / (this.random.nextFloat() + 1.0F) * 0.2F;
+         this.goalSelector.a(0, new EntitySquid.PathfinderGoalSquid(this));
+     }

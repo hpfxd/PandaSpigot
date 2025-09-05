@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Aikar <aikar@aikar.co>
+Date: Fri, 18 Mar 2022 15:22:04 -0400
+Subject: [PATCH] Ability to change PlayerProfile in AsyncPreLoginEvent
+
+This will allow you to change the players name or skin on login.
+
+diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
+index 416769221c099d5bd2a7facd5bb34cb4b2aed71a..b32c64263d6d996008d0aa3b25df1d8d54482aa1 100644
+--- a/src/main/java/net/minecraft/server/LoginListener.java
++++ b/src/main/java/net/minecraft/server/LoginListener.java
+@@ -250,8 +250,16 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+                             java.util.UUID uniqueId = i.getId();
+                             final org.bukkit.craftbukkit.CraftServer server = LoginListener.this.server.server;
+ 
+-                            AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(playerName, address, uniqueId);
++                            // PandaSpigot start - Ability to change PlayerProfile in AsyncPreLoginEvent
++                            com.destroystokyo.paper.profile.PlayerProfile profile = com.destroystokyo.paper.profile.CraftPlayerProfile.asBukkitCopy(i);
++                            AsyncPlayerPreLoginEvent asyncEvent = new AsyncPlayerPreLoginEvent(playerName, address, uniqueId, profile);
+                             server.getPluginManager().callEvent(asyncEvent);
++                            profile = asyncEvent.getPlayerProfile();
++                            profile.complete();
++                            i = com.destroystokyo.paper.profile.CraftPlayerProfile.asAuthlib(profile);
++                            playerName = i.getName();
++                            uniqueId = i.getId();
++                            // PandaSpigot end
+ 
+                             if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
+                                 final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address, uniqueId);

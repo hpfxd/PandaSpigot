@@ -1,0 +1,89 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sun, 8 May 2022 19:50:37 -0400
+Subject: [PATCH] Add Git information to version command/on startup
+
+
+diff --git a/src/main/java/io/papermc/paper/util/JarManifests.java b/src/main/java/io/papermc/paper/util/JarManifests.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..3bfdef86ac069a355645600a314aefb439404bf2
+--- /dev/null
++++ b/src/main/java/io/papermc/paper/util/JarManifests.java
+@@ -0,0 +1,33 @@
++package io.papermc.paper.util;
++
++import java.io.IOException;
++import java.io.InputStream;
++import java.net.URL;
++import java.util.Collections;
++import java.util.Map;
++import java.util.WeakHashMap;
++import java.util.jar.Manifest;
++
++public final class JarManifests {
++    private JarManifests() {
++    }
++
++    private static final Map<ClassLoader, Manifest> MANIFESTS = Collections.synchronizedMap(new WeakHashMap<>());
++
++    public static Manifest manifest(final Class<?> clazz) {
++        return MANIFESTS.computeIfAbsent(clazz.getClassLoader(), classLoader -> {
++            final String classLocation = "/" + clazz.getName().replace(".", "/") + ".class";
++            final URL resource = clazz.getResource(classLocation);
++            if (resource == null) {
++                return null;
++            }
++            final String classFilePath = resource.toString().replace("\\", "/");
++            final String archivePath = classFilePath.substring(0, classFilePath.length() - classLocation.length());
++            try (final InputStream stream = new URL(archivePath + "/META-INF/MANIFEST.MF").openStream()) {
++                return new Manifest(stream);
++            } catch (final IOException ex) {
++                return null;
++            }
++        });
++    }
++}
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index c5a51d00b6d690213716b9bab71b4cfa8bf8af09..21c48d2b072ab4440d20a65d3294553657ff34c6 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -76,8 +76,25 @@ public final class Bukkit {
+         }
+ 
+         Bukkit.server = server;
+-        server.getLogger().info("This server is running " + getName() + " version " + getVersion() + " (Implementing API version " + getBukkitVersion() + ")");
++        server.getLogger().info(getVersionMessage()); // PandaSpigot - Use Bukkit.getVersionMessage
+     }
++    // PandaSpigot start
++    /**
++     * Gets message describing the version server is running.
++     *
++     * @return message describing the version server is running
++     */
++    public static String getVersionMessage() {
++        final java.util.jar.Manifest manifest = io.papermc.paper.util.JarManifests.manifest(Bukkit.getServer().getClass());
++        final String gitBranch = manifest == null ? null : manifest.getMainAttributes().getValue("Git-Branch");
++        final String gitCommit = manifest == null ? null : manifest.getMainAttributes().getValue("Git-Commit");
++        String branchMsg = " on " + gitBranch;
++        if ("master".equals(gitBranch) || "main".equals(gitBranch)) {
++            branchMsg = "";  // Don't show branch on main/master
++        }
++        return "This server is running " + getName() + " version " + getVersion() + " (Implementing API version " + getBukkitVersion() + ") (Git: " + gitCommit + branchMsg + ")";
++    }
++    // PandaSpgiot end
+ 
+     /**
+      * Gets the name of this server implementation.
+diff --git a/src/main/java/org/bukkit/command/defaults/VersionCommand.java b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+index 62f36e8f9d033c82318141e4edc0636cfc58613a..04195613b2c230aa5e28fb2fabc2b3f2b32ec169 100644
+--- a/src/main/java/org/bukkit/command/defaults/VersionCommand.java
++++ b/src/main/java/org/bukkit/command/defaults/VersionCommand.java
+@@ -48,7 +48,7 @@ public class VersionCommand extends BukkitCommand {
+         if (!testPermission(sender)) return true;
+ 
+         if (args.length == 0) {
+-            sender.sendMessage("This server is running " + Bukkit.getName() + " version " + Bukkit.getVersion() + " (Implementing API version " + Bukkit.getBukkitVersion() + ")");
++            sender.sendMessage(Bukkit.getVersionMessage()); // PandaSpigot - Use Bukkit.getVersionMessage
+             sendVersion(sender);
+         } else {
+             StringBuilder name = new StringBuilder();

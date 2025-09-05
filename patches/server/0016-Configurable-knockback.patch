@@ -1,0 +1,88 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: hpfxd <me@hpfxd.com>
+Date: Sat, 30 Oct 2021 14:26:06 -0400
+Subject: [PATCH] Configurable knockback
+
+This patch allows velocity applied when a player is hit to be modified in the configuration.
+
+Reference: https://gist.github.com/YoungOG/e3265d98661957abece71594b70d6a01
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 9afaf630481a9533fb014f306d4d90b8de80a129..3dd3d0702c17541083d0d365ca46e93602105bce 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -6,4 +6,16 @@ import org.spongepowered.configurate.objectmapping.meta.Comment;
+ @ConfigSerializable
+ @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
+ public class PandaSpigotWorldConfig {
++    @Comment("These options control velocity players receive when damaged.")
++    public KnockbackConfig knockback;
++    
++    @ConfigSerializable
++    public static class KnockbackConfig {
++        public double friction = 2.0;
++        public double horizontal = 0.4;
++        public double vertical = 0.4;
++        public double verticalLimit = 0.4000000059604645;
++        public double extraHorizontal = 0.5;
++        public double extraVertical = 0.1;
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index 0ad4edb8390f396d935d321caf67af0f209d5420..04916c6a8ee6446e786eb23c54ae78e8d2cba84d 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -1003,7 +1003,13 @@ public abstract class EntityHuman extends EntityLiving {
+ 
+                     if (flag2) {
+                         if (i > 0) {
+-                            entity.g((double) (-MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * 0.5F), 0.1D, (double) (MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * 0.5F));
++                            // PandaSpigot start - Configurable knockback
++                            com.hpfxd.pandaspigot.config.PandaSpigotWorldConfig.KnockbackConfig knockbackConfig = entity.world.pandaSpigotConfig.knockback;
++                            entity.g(
++                                    -MathHelper.sin(this.yaw * 3.1415927F / 180.0F) * (float) i * knockbackConfig.extraHorizontal,
++                                    knockbackConfig.extraVertical,
++                                    MathHelper.cos(this.yaw * 3.1415927F / 180.0F) * (float) i * knockbackConfig.extraHorizontal);
++                            // PandaSpigot end
+                             this.motX *= 0.6D;
+                             this.motZ *= 0.6D;
+                             this.setSprinting(false);
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index c8b4e292849486eadfb437110466d6eafe275411..72c7e6fc8bb0a71877d6759af44d39030bcf51f5 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -897,18 +897,23 @@ public abstract class EntityLiving extends Entity {
+     public void a(Entity entity, float f, double d0, double d1) {
+         if (this.random.nextDouble() >= this.getAttributeInstance(GenericAttributes.c).getValue()) {
+             this.ai = true;
+-            float f1 = MathHelper.sqrt(d0 * d0 + d1 * d1);
+-            float f2 = 0.4F;
+-
+-            this.motX /= 2.0D;
+-            this.motY /= 2.0D;
+-            this.motZ /= 2.0D;
+-            this.motX -= d0 / (double) f1 * (double) f2;
+-            this.motY += (double) f2;
+-            this.motZ -= d1 / (double) f1 * (double) f2;
+-            if (this.motY > 0.4000000059604645D) {
+-                this.motY = 0.4000000059604645D;
++            // PandaSpigot start - Configurable knockback
++            com.hpfxd.pandaspigot.config.PandaSpigotWorldConfig.KnockbackConfig knockbackConfig = entity.world.pandaSpigotConfig.knockback;
++            double magnitude = MathHelper.sqrt(d0 * d0 + d1 * d1);
++    
++            double friction = knockbackConfig.friction;
++            this.motX /= friction;
++            this.motY /= friction;
++            this.motZ /= friction;
++    
++            this.motX -= d0 / magnitude * knockbackConfig.horizontal;
++            this.motY += knockbackConfig.vertical;
++            this.motZ -= d1 / magnitude * knockbackConfig.horizontal;
++    
++            if (this.motY > knockbackConfig.verticalLimit) {
++                this.motY = knockbackConfig.verticalLimit;
+             }
++            // PandaSpigot end
+ 
+         }
+     }

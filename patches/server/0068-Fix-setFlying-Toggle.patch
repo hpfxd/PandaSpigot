@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Mon, 7 Nov 2022 15:52:38 +0100
+Subject: [PATCH] Fix setFlying Toggle
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 3eb44a09f628a37cd945a447e1abef56bb670c68..49477a0f4d237db75d869ed91dc5088f4b4385fe 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -1313,7 +1313,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+ 
+     @Override
+     public void setFlying(boolean value) {
+-        boolean needsUpdate = getHandle().abilities.canFly != value; // PaperSpigot - Only refresh abilities if needed
++        boolean needsUpdate = getHandle().abilities.isFlying != value; // PaperSpigot - Only refresh abilities if needed // PandaSpigot - Fix GH-37
+         if (!getAllowFlight() && value) {
+             throw new IllegalArgumentException("Cannot make player fly if getAllowFlight() is false");
+         }

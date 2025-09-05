@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Owen1212055 <23108066+Owen1212055@users.noreply.github.com>
+Date: Sun, 18 Sep 2022 13:10:18 -0400
+Subject: [PATCH] Add PrePlayerAttackEntityEvent
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityHuman.java b/src/main/java/net/minecraft/server/EntityHuman.java
+index 8388bb5bae0c3b072b191b9d3655873f4c2cc995..524ff60ada7392ec1fd803661f957c19c50b2c2e 100644
+--- a/src/main/java/net/minecraft/server/EntityHuman.java
++++ b/src/main/java/net/minecraft/server/EntityHuman.java
+@@ -955,8 +955,16 @@ public abstract class EntityHuman extends EntityLiving {
+     }
+ 
+     public void attack(Entity entity) {
+-        if (entity.aD()) {
+-            if (!entity.l(this)) {
++        // PandaSpigot start - PrePlayerAttackEntityEvent
++        boolean willAttack = entity.aD() && !entity.l(this); // Vanilla logic
++        io.papermc.paper.event.player.PrePlayerAttackEntityEvent playerAttackEntityEvent = new io.papermc.paper.event.player.PrePlayerAttackEntityEvent(
++            (org.bukkit.entity.Player) this.getBukkitEntity(),
++            entity.getBukkitEntity(),
++            willAttack
++        );
++        if (playerAttackEntityEvent.callEvent() && willAttack) { // Logic moved to willAttack local variable.
++            {
++        // PandaSpigot end
+                 float f = (float) this.getAttributeInstance(GenericAttributes.ATTACK_DAMAGE).getValue();
+                 byte b0 = 0;
+                 float f1 = 0.0F;

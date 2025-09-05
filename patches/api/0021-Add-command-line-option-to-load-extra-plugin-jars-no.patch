@@ -1,0 +1,163 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jason Penilla <11360596+jpenilla@users.noreply.github.com>
+Date: Tue, 18 May 2021 14:42:26 -0700
+Subject: [PATCH] Add command line option to load extra plugin jars not in the
+ plugins folder
+
+ex: java -jar paperclip.jar nogui -add-plugin=/path/to/plugin.jar -add-plugin=/path/to/another/plugin_jar.jar
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 21c48d2b072ab4440d20a65d3294553657ff34c6..4ae094a9d190e23efcebd866a8ecb11ebf9167e6 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -1212,6 +1212,21 @@ public final class Bukkit {
+     }
+     // PandaSpigot end
+ 
++    // PandaSpigot start
++    /**
++     * Returns the de facto plugins directory, generally used for storing plugin jars to be loaded,
++     * as well as their {@link org.bukkit.plugin.Plugin#getDataFolder() data folders}.
++     *
++     * <p>Plugins should use {@link org.bukkit.plugin.Plugin#getDataFolder()} rather than traversing this
++     * directory manually when determining the location in which to store their data and configuration files.</p>
++     *
++     * @return plugins directory
++     */
++    public static File getPluginsFolder() {
++        return server.getPluginsFolder();
++    }
++    // PandaSpigot end
++
+     public static Server.Spigot spigot()
+     {
+         return server.spigot();
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 2662f9c005ac1c7712f55e9cb264f4f07e80aea9..1ad82f5eddb477d2d9a753c1d2540ccff3d4f392 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -977,6 +977,19 @@ public interface Server extends PluginMessageRecipient {
+     com.destroystokyo.paper.profile.PlayerProfile createProfile(UUID uuid, String name);
+     // PandaSpigot end
+ 
++    // PandaSpigot start
++    /**
++     * Returns the de facto plugins directory, generally used for storing plugin jars to be loaded,
++     * as well as their {@link org.bukkit.plugin.Plugin#getDataFolder() data folders}.
++     *
++     * <p>Plugins should use {@link org.bukkit.plugin.Plugin#getDataFolder()} rather than traversing this
++     * directory manually when determining the location in which to store their data and configuration files.</p>
++     *
++     * @return plugins directory
++     */
++    File getPluginsFolder();
++    // PandaSpigot end
++
+     public class Spigot
+     {
+         @Deprecated
+diff --git a/src/main/java/org/bukkit/plugin/SimplePluginManager.java b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+index 59db3e527c7e63cc7a23d11a82ce0ec891c78818..729b8084d9de1dad3e9a6ed25ed4c60134243519 100644
+--- a/src/main/java/org/bukkit/plugin/SimplePluginManager.java
++++ b/src/main/java/org/bukkit/plugin/SimplePluginManager.java
+@@ -104,6 +104,11 @@ public final class SimplePluginManager implements PluginManager {
+      * @return A list of all plugins loaded
+      */
+     public Plugin[] loadPlugins(File directory) {
++        // PandaSpigot start - extra jars
++        return this.loadPlugins(directory, java.util.Collections.emptyList());
++    }
++    public Plugin[] loadPlugins(File directory, List<File> extraPluginJars) {
++        // PandaSpigot end
+         Validate.notNull(directory, "Directory cannot be null");
+         Validate.isTrue(directory.isDirectory(), "Directory must be a directory");
+ 
+@@ -120,7 +125,11 @@ public final class SimplePluginManager implements PluginManager {
+         Map<String, Collection<String>> softDependencies = new HashMap<String, Collection<String>>();
+ 
+         // This is where it figures out all possible plugins
+-        for (File file : directory.listFiles()) {
++        // PandaSpigot start - extra jars
++        List<File> pluginJars = new ArrayList<>(java.util.Arrays.asList(directory.listFiles()));
++        pluginJars.addAll(extraPluginJars);
++        for (File file : pluginJars) {
++        // PandaSpigot end
+             PluginLoader loader = null;
+             for (Pattern filter : filters) {
+                 Matcher match = filter.matcher(file.getName());
+@@ -136,7 +145,7 @@ public final class SimplePluginManager implements PluginManager {
+                 description = loader.getPluginDescription(file);
+                 String name = description.getName();
+                 if (name.equalsIgnoreCase("bukkit") || name.equalsIgnoreCase("minecraft") || name.equalsIgnoreCase("mojang")) {
+-                    server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + directory.getPath() + "': Restricted Name");
++                    server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + file.getParentFile().getPath() + "': Restricted Name"); // PandaSpigot
+                     continue;
+                 } else if (description.rawName.indexOf(' ') != -1) {
+                     server.getLogger().warning(String.format(
+@@ -146,7 +155,7 @@ public final class SimplePluginManager implements PluginManager {
+                         ));
+                 }
+             } catch (InvalidDescriptionException ex) {
+-                server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + directory.getPath() + "'", ex);
++                server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + file.getParentFile().getPath() + "'", ex); // PandaSpigot
+                 continue;
+             }
+ 
+@@ -157,7 +166,7 @@ public final class SimplePluginManager implements PluginManager {
+                     description.getName(),
+                     file.getPath(),
+                     replacedFile.getPath(),
+-                    directory.getPath()
++                    file.getParentFile().getPath() // PandaSpigot
+                     ));
+             }
+ 
+@@ -218,7 +227,7 @@ public final class SimplePluginManager implements PluginManager {
+ 
+                             server.getLogger().log(
+                                 Level.SEVERE,
+-                                "Could not load '" + file.getPath() + "' in folder '" + directory.getPath() + "'",
++                                "Could not load '" + file.getPath() + "' in folder '" + file.getParentFile().getPath() + "'", // PandaSpigot
+                                 new UnknownDependencyException(dependency));
+                             break;
+                         }
+@@ -255,7 +264,7 @@ public final class SimplePluginManager implements PluginManager {
+                         loadedPlugins.add(plugin);
+                         continue;
+                     } catch (InvalidPluginException ex) {
+-                        server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + directory.getPath() + "'", ex);
++                        server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + file.getParentFile().getPath() + "'", ex); // PandaSpigot
+                     }
+                 }
+             }
+@@ -279,7 +288,7 @@ public final class SimplePluginManager implements PluginManager {
+                             loadedPlugins.add(plugin);
+                             break;
+                         } catch (InvalidPluginException ex) {
+-                            server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + directory.getPath() + "'", ex);
++                            server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + file.getParentFile().getPath() + "'", ex); // PandaSpigot
+                         }
+                     }
+                 }
+@@ -292,7 +301,7 @@ public final class SimplePluginManager implements PluginManager {
+                     while (failedPluginIterator.hasNext()) {
+                         File file = failedPluginIterator.next();
+                         failedPluginIterator.remove();
+-                        server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + directory.getPath() + "': circular dependency detected");
++                        server.getLogger().log(Level.SEVERE, "Could not load '" + file.getPath() + "' in folder '" + file.getParentFile().getPath() + "': circular dependency detected"); // PandaSpigot
+                     }
+                 }
+             }
+diff --git a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
+index b057b053bb638c2746db0f14293453e990259618..bc6b9d12fe2e008fbac6c7fcc30495e5ff3591c9 100644
+--- a/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
++++ b/src/main/java/org/bukkit/plugin/java/JavaPluginLoader.java
+@@ -75,7 +75,7 @@ public final class JavaPluginLoader implements PluginLoader {
+             throw new InvalidPluginException(ex);
+         }
+ 
+-        final File parentFile = file.getParentFile();
++        final File parentFile = this.server.getPluginsFolder(); // PandaSpigot
+         final File dataFolder = new File(parentFile, description.getName());
+         @SuppressWarnings("deprecation")
+         final File oldDataFolder = new File(parentFile, description.getRawName());
