@@ -65,7 +65,7 @@ index 8fbc8283..70a79757 100644
 +    public static Inventory createInventory(InventoryHolder owner, int size, net.kyori.adventure.text.Component title) throws IllegalArgumentException {
 +        return server.createInventory(owner, size, title);
 +    }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Gets user-specified limit for number of monsters that can spawn in a
@@ -121,7 +121,7 @@ index 1b62463a..8358ef2a 100644
 +    default void sendPlainMessage(String message) {
 +        this.sendMessage(net.kyori.adventure.text.Component.text(message));
 +    }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Gets the name of the update folder. The update folder is used to safely
@@ -157,7 +157,7 @@ index 1b62463a..8358ef2a 100644
 +     * @throws IllegalArgumentException if the size is not a multiple of 9
 +     */
 +    Inventory createInventory(InventoryHolder owner, int size, net.kyori.adventure.text.Component title);
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Gets user-specified limit for number of monsters that can spawn in a
@@ -180,7 +180,7 @@ index 1b62463a..8358ef2a 100644
 +     * @return the shutdown message
 +     */
 +    net.kyori.adventure.text.Component shutdownMessage();
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Gets the current warning state for the server.
@@ -207,7 +207,7 @@ index 325d65a3..446c905b 100644
 +    default Iterable<? extends net.kyori.adventure.audience.Audience> audiences() {
 +        return this.getPlayers();
 +    }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Returns a list of entities within a bounding box centered around a Location.
@@ -251,7 +251,7 @@ index 5d7a633d..e3d5829a 100644
 +     * @throws IndexOutOfBoundsException If the index is out of the range 0..3
 +     */
 +    public void line(int index, net.kyori.adventure.text.Component line) throws IndexOutOfBoundsException;
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/command/CommandSender.java b/src/main/java/org/bukkit/command/CommandSender.java
 index 148756b9..3978eb9f 100644
@@ -309,7 +309,7 @@ index 148756b9..3978eb9f 100644
 +    default void sendPlainMessage(String message) {
 +        this.sendMessage(net.kyori.adventure.text.Component.text(message));
 +    }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Returns the server instance that this command is running on
@@ -341,7 +341,7 @@ index 24c4ebad..ba31adaf 100644
 +    default net.kyori.adventure.audience.Audience audience() {
 +        return this.getCaller();
 +    }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
  }
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
@@ -413,7 +413,7 @@ index d02fe560..3c4c5a20 100644
 +     * @throws IllegalArgumentException if the length of the name is too long
 +     */
 +    public void playerListName(net.kyori.adventure.text.Component playerListName);
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Set the target of the player's compass.
@@ -429,7 +429,7 @@ index d02fe560..3c4c5a20 100644
 +     * @param message kick message
 +     */
 +    public void kick(net.kyori.adventure.text.Component message);
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Says a message (or runs a command).
@@ -453,7 +453,7 @@ index d02fe560..3c4c5a20 100644
 +     * @return player list footer or null
 +     */
 +    public net.kyori.adventure.text.Component playerListFooter();
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Update the times for titles displayed to the player
@@ -468,7 +468,7 @@ index d02fe560..3c4c5a20 100644
 +    default net.kyori.adventure.identity.Identity identity() {
 +        return net.kyori.adventure.identity.Identity.identity(this.getUniqueId());
 +    }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/event/block/SignChangeEvent.java b/src/main/java/org/bukkit/event/block/SignChangeEvent.java
 index 83188cf5..ed2f9bfb 100644
@@ -489,7 +489,7 @@ index 83188cf5..ed2f9bfb 100644
 +        for (String line : theLines) {
 +            this.lines.add(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(line));
 +        }
-+        // PandaSpigot end - Adventure
++        // PandaSpigot end
 +    }
 +
 +    // PandaSpigot start - Adventure
@@ -498,7 +498,7 @@ index 83188cf5..ed2f9bfb 100644
          this.player = thePlayer;
          this.lines = theLines;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Gets the player changing the sign involved in this event.
@@ -562,7 +562,7 @@ index 83188cf5..ed2f9bfb 100644
 +    public void line(int index, net.kyori.adventure.text.Component line) throws IndexOutOfBoundsException {
 +        lines.set(index, line);
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      public boolean isCancelled() {
          return cancel;
@@ -606,7 +606,7 @@ index aad03549..06dd9fa0 100644
          this.newLevel = newLevel;
          this.deathMessage = deathMessage;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      @Override
      public Player getEntity() {
@@ -644,7 +644,7 @@ index aad03549..06dd9fa0 100644
 +    public net.kyori.adventure.text.Component deathMessage() {
          return deathMessage;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Gets how much EXP the Player should have at respawn.
@@ -759,7 +759,7 @@ index 1d571889..2dcda19d 100644
          this.result = result == null ? null : Result.valueOf(result.name());
          this.message = message;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Gets the player's name.
@@ -784,7 +784,7 @@ index e7481f92..0f134dc7 100644
          super(playerJoined);
          this.joinMessage = joinMessage;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Gets the join message to send to all online players
@@ -822,7 +822,7 @@ index e7481f92..0f134dc7 100644
 +    public void joinMessage(net.kyori.adventure.text.Component joinMessage) {
          this.joinMessage = joinMessage;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      @Override
      public HandlerList getHandlers() {
@@ -839,7 +839,7 @@ index 39e81b67..c0ed7dba 100644
 +    // PandaSpigot start - Adventure
 +    private net.kyori.adventure.text.Component leaveMessage;
 +    private net.kyori.adventure.text.Component kickReason;
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
      private Boolean cancel;
  
      public PlayerKickEvent(final Player playerKicked, final String kickReason, final String leaveMessage) {
@@ -847,7 +847,7 @@ index 39e81b67..c0ed7dba 100644
 +        // PandaSpigot start - Adventure
 +        this.kickReason = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(kickReason);
 +        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(leaveMessage);
-+        // PandaSpigot end - Adventure
++        // PandaSpigot end
 +        this.cancel = false;
 +    }
 +
@@ -858,7 +858,7 @@ index 39e81b67..c0ed7dba 100644
          this.leaveMessage = leaveMessage;
          this.cancel = false;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Gets the reason why the player is getting kicked
@@ -932,7 +932,7 @@ index 39e81b67..c0ed7dba 100644
 +    public void leaveMessage(net.kyori.adventure.text.Component leaveMessage) {
          this.leaveMessage = leaveMessage;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      @Override
      public HandlerList getHandlers() {
@@ -972,7 +972,7 @@ index 4bc024ff..84d3af60 100644
 +        this.result = result;
          this.message = message;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      // Spigot start
      /**
@@ -1041,7 +1041,7 @@ index 4bc024ff..84d3af60 100644
          this.result = result;
          this.message = message;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Gets the {@link InetAddress} for the Player associated with this event.
@@ -1132,7 +1132,7 @@ index e8553f0f..2f8b9920 100644
          this.result = result;
          this.message = message;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Gets the player's name.
@@ -1157,7 +1157,7 @@ index 5c8dc1b9..f0fd6e14 100644
          super(who);
          this.quitMessage = quitMessage;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Gets the quit message to send to all online players
@@ -1195,7 +1195,7 @@ index 5c8dc1b9..f0fd6e14 100644
 +    public void quitMessage(net.kyori.adventure.text.Component quitMessage) {
          this.quitMessage = quitMessage;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      @Override
      public HandlerList getHandlers() {
@@ -1255,7 +1255,7 @@ index 3c38d857..d7bfd946 100644
          this.motd = motd;
          this.maxPlayers = maxPlayers;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Get the address the ping is coming from.
@@ -1293,7 +1293,7 @@ index 3c38d857..d7bfd946 100644
 +    public void motd(net.kyori.adventure.text.Component motd) {
          this.motd = motd;
      }
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  
      /**
       * Get the number of players sent.
@@ -1354,7 +1354,7 @@ index d8cc8218..c4dbaa6d 100644
 +     * @param lore the lore that will be set
 +     */
 +    void lore(List<net.kyori.adventure.text.Component> lore);
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/scoreboard/Objective.java b/src/main/java/org/bukkit/scoreboard/Objective.java
 index 321aac79..c7e6a35b 100644
@@ -1372,7 +1372,7 @@ index 321aac79..c7e6a35b 100644
 +     * @throws IllegalStateException if this objective has been unregistered
 +     */
 +    net.kyori.adventure.text.Component displayName() throws  IllegalStateException;
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Sets the name displayed to players for this objective.
@@ -1409,7 +1409,7 @@ index 0fdcebd9..25a6a56b 100644
 +     * @throws IllegalStateException if this team has been unregistered
 +     */
 +    net.kyori.adventure.text.Component suffix() throws IllegalStateException;
-+    // PandaSpigot end - Adventure
++    // PandaSpigot end
 +
      /**
       * Gets the team friendly fire state

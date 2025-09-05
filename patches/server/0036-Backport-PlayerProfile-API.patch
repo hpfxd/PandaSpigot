@@ -369,8 +369,8 @@ index 1caffab6e75abf6010e8f1f2d2a29a2a22692fb7..e218b127c6dcdce2c4f8154684f58d42
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1769,6 +1769,27 @@ public final class CraftServer implements Server {
-         return CraftMagicNumbers.INSTANCE;
      }
+     // PandaSpigot end
  
 +    // PandaSpigot start - PlayerProfile API
 +    @Override
