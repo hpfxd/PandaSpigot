@@ -31,7 +31,7 @@ new file mode 100644
 index 000000000..7e1ab1774
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
-@@ -0,0 +1,96 @@
+@@ -0,0 +1,97 @@
 +package com.hpfxd.pandaspigot.adventure;
 +
 +import com.google.common.base.CaseFormat;
@@ -40,6 +40,7 @@ index 000000000..7e1ab1774
 +import net.kyori.adventure.text.Component;
 +import net.kyori.adventure.text.event.HoverEvent;
 +import net.kyori.adventure.text.serializer.json.LegacyHoverEventSerializer;
++import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 +import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 +import net.kyori.adventure.util.Codec;
 +import net.minecraft.server.MojangsonParseException;
@@ -90,7 +91,7 @@ index 000000000..7e1ab1774
 +            return HoverEvent.ShowEntity.showEntity(
 +                Key.key("minecraft", CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, contents.getString(ENTITY_TYPE))),
 +                UUID.fromString(contents.getString(ENTITY_ID)),
-+                componentDecoder.decode(contents.getString(ENTITY_NAME))
++                LegacyComponentSerializer.legacySection().deserialize(contents.getString(ENTITY_NAME))
 +            );
 +        } catch (MojangsonParseException ex) {
 +            throw new IOException(ex);
@@ -121,7 +122,7 @@ index 000000000..7e1ab1774
 +        tag.setString(ENTITY_TYPE, CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, input.type().value()));
 +
 +        if (input.name() != null) {
-+            tag.setString(ENTITY_NAME, componentEncoder.encode(input.name()));
++            tag.setString(ENTITY_NAME, LegacyComponentSerializer.legacySection().serialize(input.name()));
 +        }
 +
 +        return Component.text(NBT_CODEC.encode(tag));
