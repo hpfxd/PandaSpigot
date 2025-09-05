@@ -116,7 +116,7 @@ index 000000000..7e1ab1774
 +    }
 +
 +    @Override
-+    public Component serializeShowEntity(HoverEvent.ShowEntity input, Codec.Encoder<Component, String, ? extends RuntimeException> componentEncoder) throws IOException {
++    public Component serializeShowEntity(HoverEvent.ShowEntity input, Codec.Encoder<Component, String, ? extends RuntimeException> componentEncoder) {
 +        NBTTagCompound tag = new NBTTagCompound();
 +        tag.setString(ENTITY_ID, input.id().toString());
 +        tag.setString(ENTITY_TYPE, CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, input.type().value()));
@@ -711,7 +711,7 @@ index d44fc62b9..ceb8fb6c8 100644
 +    public void sendMessage(final net.kyori.adventure.identity.Identity identity, final net.kyori.adventure.text.Component component, final net.kyori.adventure.audience.MessageType type) {
 +        if ( getHandle().playerConnection == null ) return;
 +
-+        PacketPlayOutChat packet = new PacketPlayOutChat();
++        PacketPlayOutChat packet = new PacketPlayOutChat(null, (byte) (type == net.kyori.adventure.audience.MessageType.CHAT ? 0 : 1));
 +        packet.adventure$message = component;
 +        getHandle().playerConnection.sendPacket(packet);
 +    }
