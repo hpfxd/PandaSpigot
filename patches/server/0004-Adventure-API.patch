@@ -1,28 +1,28 @@
-From 3b6783f8c36f81b84dea67c2d83ecc346e1209b9 Mon Sep 17 00:00:00 2001
+From 7f7cac2af8585440e706ae4c2b109c8038f6884a Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
-Date: Fri, 5 Sep 2025 00:55:57 -0600
+Date: Fri, 5 Sep 2025 03:05:14 -0600
 Subject: [PATCH] Adventure API
 
 ---
- .../NBTLegacyHoverEventSerializer.java        | 95 ++++++++++++++++++
- .../pandaspigot/adventure/PandaAdventure.java | 74 ++++++++++++++
- .../net/minecraft/server/EntityPlayer.java    | 20 ++--
- .../net/minecraft/server/LoginListener.java   | 19 ++--
- .../minecraft/server/PacketPlayOutChat.java   |  7 +-
- .../PacketPlayOutPlayerListHeaderFooter.java  | 13 ++-
- .../minecraft/server/PacketPlayOutTitle.java  |  7 +-
- .../minecraft/server/PlayerConnection.java    | 29 +++---
- .../java/net/minecraft/server/PlayerList.java | 27 ++---
- .../org/bukkit/craftbukkit/CraftServer.java   | 34 +++++++
- .../bukkit/craftbukkit/block/CraftSign.java   | 34 +++++--
- .../craftbukkit/entity/CraftPlayer.java       | 99 ++++++++++++++++++-
- .../craftbukkit/event/CraftEventFactory.java  |  4 +-
- .../craftbukkit/inventory/CraftMetaBook.java  | 37 ++++++-
- .../inventory/CraftMetaBookSigned.java        |  2 +-
- .../craftbukkit/inventory/CraftMetaItem.java  | 24 +++++
- .../scoreboard/CraftObjective.java            |  9 ++
- .../craftbukkit/scoreboard/CraftTeam.java     | 17 ++++
- 18 files changed, 490 insertions(+), 61 deletions(-)
+ .../NBTLegacyHoverEventSerializer.java        |  95 ++++++++++++++
+ .../pandaspigot/adventure/PandaAdventure.java |  74 +++++++++++
+ .../net/minecraft/server/EntityPlayer.java    |  20 ++-
+ .../net/minecraft/server/LoginListener.java   |  19 +--
+ .../minecraft/server/PacketPlayOutChat.java   |   7 +-
+ .../PacketPlayOutPlayerListHeaderFooter.java  |  13 +-
+ .../minecraft/server/PacketPlayOutTitle.java  |   7 +-
+ .../minecraft/server/PlayerConnection.java    |  29 ++--
+ .../java/net/minecraft/server/PlayerList.java |  27 ++--
+ .../org/bukkit/craftbukkit/CraftServer.java   |  34 +++++
+ .../bukkit/craftbukkit/block/CraftSign.java   |  34 +++--
+ .../craftbukkit/entity/CraftPlayer.java       | 124 +++++++++++++++++-
+ .../craftbukkit/event/CraftEventFactory.java  |   4 +-
+ .../craftbukkit/inventory/CraftMetaBook.java  |  37 +++++-
+ .../inventory/CraftMetaBookSigned.java        |   2 +-
+ .../craftbukkit/inventory/CraftMetaItem.java  |  24 ++++
+ .../scoreboard/CraftObjective.java            |   9 ++
+ .../craftbukkit/scoreboard/CraftTeam.java     |  17 +++
+ 18 files changed, 515 insertions(+), 61 deletions(-)
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java
 
@@ -685,7 +685,7 @@ index 43adfccd7..13f3dd4fa 100644
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index d44fc62b9..35f5ac410 100644
+index d44fc62b9..ceb8fb6c8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -80,6 +80,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -762,8 +762,35 @@ index d44fc62b9..35f5ac410 100644
          PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
          packet.header = header;
          packet.footer = footer;
-@@ -260,12 +318,12 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -258,14 +316,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+     }
+     // Paper end
  
++    // PandaSpigot start - Adventure
++    @Override
++    public <T> void sendTitlePart(net.kyori.adventure.title.TitlePart<T> part, T value) {
++        if (part.equals(net.kyori.adventure.title.TitlePart.TITLE) || part.equals(net.kyori.adventure.title.TitlePart.SUBTITLE)) {
++            EnumTitleAction action = part == net.kyori.adventure.title.TitlePart.TITLE ? EnumTitleAction.TITLE : EnumTitleAction.SUBTITLE;
++            IChatBaseComponent ichatbasecomponent = com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla((net.kyori.adventure.text.Component) value);
++
++            getHandle().playerConnection.sendPacket(new PacketPlayOutTitle(action, ichatbasecomponent));
++        } else if (part.equals(net.kyori.adventure.title.TitlePart.TIMES)) {
++            net.kyori.adventure.title.Title.Times times = (net.kyori.adventure.title.Title.Times) value;
++            getHandle().playerConnection.sendPacket(new PacketPlayOutTitle(times.fadeIn().getNano(), times.stay().getNano(), times.fadeOut().getNano()));
++        }
++    }
++
++    @Override
++    public void clearTitle() {
++        getHandle().playerConnection.sendPacket(new PacketPlayOutTitle(EnumTitleAction.CLEAR, null));
++    }
++
++    @Override
++    public void sendActionBar(net.kyori.adventure.text.Component message) {
++        getHandle().playerConnection.sendPacket(new PacketPlayOutChat(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(message), (byte) 2));
++    }
++    // PandaSpigot end
++
      @Override
      public String getDisplayName() {
 -        return getHandle().displayName;
@@ -777,7 +804,7 @@ index d44fc62b9..35f5ac410 100644
      }
  
      @Override
-@@ -286,6 +344,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -286,6 +369,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
      }
  
@@ -811,7 +838,7 @@ index d44fc62b9..35f5ac410 100644
      @Override
      public boolean equals(Object obj) {
          if (!(obj instanceof OfflinePlayer)) {
-@@ -314,6 +399,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -314,6 +424,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          getHandle().playerConnection.disconnect(message == null ? "" : message);
      }
  
