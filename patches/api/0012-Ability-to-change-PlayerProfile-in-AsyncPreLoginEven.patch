@@ -12,7 +12,7 @@ index 1d571889979f161b3c99792432e9739f462ebae6..62562d3503d856a3dce22c3e972543f1
 @@ -15,22 +15,46 @@ public class AsyncPlayerPreLoginEvent extends Event {
      private static final HandlerList handlers = new HandlerList();
      private Result result;
-     private String message;
+     private net.kyori.adventure.text.Component message; // PandaSpigot - Adventure
 -    private final String name;
 +    //private final String name; // PandaSpigot - Not used anymore
      private final InetAddress ipAddress;
@@ -51,7 +51,7 @@ index 1d571889979f161b3c99792432e9739f462ebae6..62562d3503d856a3dce22c3e972543f1
 +        this.profile = profile;
 +    // PandaSpigot end
          this.result = Result.ALLOWED;
-         this.message = "";
+         this.message = net.kyori.adventure.text.Component.empty(); // PandaSpigot - Adventure
 -        this.name = name;
 +        //this.name = name; // PandaSpigot - Not used anymore
          this.ipAddress = ipAddress;
