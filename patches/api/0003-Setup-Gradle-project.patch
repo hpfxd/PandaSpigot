@@ -28,11 +28,11 @@ index 0000000000000000000000000000000000000000..6fa167e91414b40808a1219308c9887b
 +    }
 +    api("org.yaml:snakeyaml:1.15")
 +    api("net.md-5:bungeecord-chat:1.8-SNAPSHOT")
-+    api("net.kyori:adventure-api:4.24.0")
-+    api("net.kyori:adventure-text-serializer-legacy:4.24.0")
-+    api("net.kyori:adventure-text-serializer-json:4.24.0")
-+    api("net.kyori:adventure-text-serializer-plain:4.24.0")
-+    api("net.kyori:adventure-text-minimessage:4.24.0")
++    implementation("net.kyori:adventure-api:4.24.0")
++    implementation("net.kyori:adventure-text-serializer-legacy:4.24.0")
++    implementation("net.kyori:adventure-text-serializer-json:4.24.0")
++    implementation("net.kyori:adventure-text-serializer-plain:4.24.0")
++    implementation("net.kyori:adventure-text-minimessage:4.24.0")
 +    compileOnlyApi("net.sf.trove4j:trove4j:3.0.3") // provided by server
 +
 +    // bundled with Minecraft, should be kept in sync
