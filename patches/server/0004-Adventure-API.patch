@@ -1,6 +1,6 @@
-From 7f7cac2af8585440e706ae4c2b109c8038f6884a Mon Sep 17 00:00:00 2001
+From 7a625eb7921a9200d246d663ccff1ca0dc5bb80b Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
-Date: Fri, 5 Sep 2025 03:05:14 -0600
+Date: Fri, 5 Sep 2025 03:25:06 -0600
 Subject: [PATCH] Adventure API
 
 ---
@@ -12,7 +12,7 @@ Subject: [PATCH] Adventure API
  .../PacketPlayOutPlayerListHeaderFooter.java  |  13 +-
  .../minecraft/server/PacketPlayOutTitle.java  |   7 +-
  .../minecraft/server/PlayerConnection.java    |  29 ++--
- .../java/net/minecraft/server/PlayerList.java |  27 ++--
+ .../java/net/minecraft/server/PlayerList.java |  29 ++--
  .../org/bukkit/craftbukkit/CraftServer.java   |  34 +++++
  .../bukkit/craftbukkit/block/CraftSign.java   |  34 +++--
  .../craftbukkit/entity/CraftPlayer.java       | 124 +++++++++++++++++-
@@ -22,7 +22,7 @@ Subject: [PATCH] Adventure API
  .../craftbukkit/inventory/CraftMetaItem.java  |  24 ++++
  .../scoreboard/CraftObjective.java            |   9 ++
  .../craftbukkit/scoreboard/CraftTeam.java     |  17 +++
- 18 files changed, 515 insertions(+), 61 deletions(-)
+ 18 files changed, 515 insertions(+), 63 deletions(-)
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java
 
@@ -388,7 +388,7 @@ index 20016b5c4..98080450b 100644
              } else {
                  packetdataserializer.a(this.b);
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 4391ad7e7..f9fc9cdd8 100644
+index 4391ad7e7..3cd1e2476 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -159,11 +159,17 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
@@ -432,7 +432,7 @@ index 4391ad7e7..f9fc9cdd8 100644
          this.networkManager.k();
          // CraftBukkit - Don't wait
          this.minecraftServer.postToMainThread(new Runnable() {
-@@ -872,9 +877,11 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -872,10 +877,12 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
          */
  
          this.player.q();
@@ -443,10 +443,11 @@ index 4391ad7e7..f9fc9cdd8 100644
 +        net.kyori.adventure.text.Component quitMessage = this.minecraftServer.getPlayerList().disconnect(this.player);
 +        if (quitMessage != null && quitMessage != net.kyori.adventure.text.Component.empty()) {
 +            this.minecraftServer.getPlayerList().sendMessage(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(quitMessage));
-+        // PandaSpigot end
          }
++        // PandaSpigot end
          // CraftBukkit end
          if (this.minecraftServer.T() && this.player.getName().equals(this.minecraftServer.S())) {
+             PlayerConnection.c.info("Stopping singleplayer server as player logged out");
 @@ -1904,7 +1911,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
              this.server.getPluginManager().callEvent(event);
  
@@ -457,7 +458,7 @@ index 4391ad7e7..f9fc9cdd8 100644
               }
              // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 3c2d3197f..066612890 100644
+index 3c2d3197f..7c3c0565f 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -159,15 +159,18 @@ public abstract class PlayerList {
@@ -491,7 +492,7 @@ index 3c2d3197f..066612890 100644
          this.players.add(entityplayer);
          this.playersByName.put(entityplayer.getName(), entityplayer); // Spigot
          this.j.put(entityplayer.getUniqueID(), entityplayer);
-@@ -313,10 +316,12 @@ public abstract class PlayerList {
+@@ -313,13 +316,13 @@ public abstract class PlayerList {
          PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(cserver.getPlayer(entityplayer), joinMessage);
          cserver.getPluginManager().callEvent(playerJoinEvent);
  
@@ -501,13 +502,16 @@ index 3c2d3197f..066612890 100644
  
 -        if (joinMessage != null && joinMessage.length() > 0) {
 -            for (IChatBaseComponent line : org.bukkit.craftbukkit.util.CraftChatMessage.fromString(joinMessage)) {
+-                server.getPlayerList().sendAll(new PacketPlayOutChat(line));
+-            }
 +        if (joinMessage != null && joinMessage != net.kyori.adventure.text.Component.empty()) {
-+            for (IChatBaseComponent line : com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(joinMessage)) {
-+        // PandaSpigot end
-                 server.getPlayerList().sendAll(new PacketPlayOutChat(line));
-             }
++            server.getPlayerList().sendMessage(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(joinMessage));
          }
-@@ -354,13 +359,13 @@ public abstract class PlayerList {
++        // PandaSpigot end
+ 
+         ChunkIOExecutor.adjustPoolSize(getPlayerCount());
+         // CraftBukkit end
+@@ -354,13 +357,13 @@ public abstract class PlayerList {
          entityplayer.u().getPlayerChunkMap().movePlayer(entityplayer);
      }
  
@@ -523,7 +527,7 @@ index 3c2d3197f..066612890 100644
          cserver.getPluginManager().callEvent(playerQuitEvent);
          entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
          // CraftBukkit end
-@@ -403,7 +408,7 @@ public abstract class PlayerList {
+@@ -403,7 +406,7 @@ public abstract class PlayerList {
  
          ChunkIOExecutor.adjustPoolSize(this.getPlayerCount()); // CraftBukkit
  
@@ -532,7 +536,7 @@ index 3c2d3197f..066612890 100644
      }
  
      // CraftBukkit start - Whole method, SocketAddress to LoginListener, added hostname to signature, return EntityPlayer
-@@ -471,7 +476,7 @@ public abstract class PlayerList {
+@@ -471,7 +474,7 @@ public abstract class PlayerList {
  
          cserver.getPluginManager().callEvent(event);
          if (event.getResult() != PlayerLoginEvent.Result.ALLOWED) {
