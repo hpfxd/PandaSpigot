@@ -31,9 +31,10 @@ new file mode 100644
 index 000000000..7e1ab1774
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,96 @@
 +package com.hpfxd.pandaspigot.adventure;
 +
++import com.google.common.base.CaseFormat;
 +import net.kyori.adventure.key.Key;
 +import net.kyori.adventure.nbt.api.BinaryTagHolder;
 +import net.kyori.adventure.text.Component;
@@ -87,7 +88,7 @@ index 000000000..7e1ab1774
 +            NBTTagCompound contents = SNBT_CODEC.decode(raw);
 +
 +            return HoverEvent.ShowEntity.showEntity(
-+                Key.key(contents.getString(ENTITY_TYPE)),
++                Key.key("minecraft", CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, contents.getString(ENTITY_TYPE))),
 +                UUID.fromString(contents.getString(ENTITY_ID)),
 +                componentDecoder.decode(contents.getString(ENTITY_NAME))
 +            );
@@ -117,7 +118,7 @@ index 000000000..7e1ab1774
 +    public Component serializeShowEntity(HoverEvent.ShowEntity input, Codec.Encoder<Component, String, ? extends RuntimeException> componentEncoder) throws IOException {
 +        NBTTagCompound tag = new NBTTagCompound();
 +        tag.setString(ENTITY_ID, input.id().toString());
-+        tag.setString(ENTITY_TYPE, input.type().toString());
++        tag.setString(ENTITY_TYPE, CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, input.type().value()));
 +
 +        if (input.name() != null) {
 +            tag.setString(ENTITY_NAME, componentEncoder.encode(input.name()));
