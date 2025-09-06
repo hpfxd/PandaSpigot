@@ -1,32 +1,32 @@
-From afc21b05e92eeb96c65ce735ab9c7806f3953c83 Mon Sep 17 00:00:00 2001
+From 3b429891dfaef89e20d41f89bfc2f51561fe8c2d Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
-Date: Fri, 5 Sep 2025 19:29:25 -0600
+Date: Fri, 5 Sep 2025 20:37:32 -0600
 Subject: [PATCH] Adventure API
 
 ---
- src/main/java/org/bukkit/Bukkit.java          |  89 ++++++++++++++
- src/main/java/org/bukkit/Server.java          |  91 +++++++++++++-
- src/main/java/org/bukkit/World.java           |   9 +-
- src/main/java/org/bukkit/block/Sign.java      |  38 ++++++
- .../org/bukkit/command/CommandSender.java     |  43 ++++++-
- .../bukkit/command/ProxiedCommandSender.java  |  14 ++-
- src/main/java/org/bukkit/entity/Entity.java   |  39 ++++++
- src/main/java/org/bukkit/entity/Player.java   | 112 +++++++++++++++++-
- .../bukkit/event/block/SignChangeEvent.java   |  57 ++++++++-
- .../bukkit/event/entity/PlayerDeathEvent.java |  42 ++++++-
- .../player/AsyncPlayerPreLoginEvent.java      |  59 ++++++++-
- .../bukkit/event/player/PlayerJoinEvent.java  |  31 ++++-
- .../bukkit/event/player/PlayerKickEvent.java  |  61 +++++++++-
- .../bukkit/event/player/PlayerLoginEvent.java |  58 ++++++++-
- .../event/player/PlayerPreLoginEvent.java     |  42 ++++++-
- .../bukkit/event/player/PlayerQuitEvent.java  |  31 ++++-
- .../event/server/ServerListPingEvent.java     |  54 ++++++++-
- .../java/org/bukkit/inventory/Inventory.java  |  11 ++
- .../org/bukkit/inventory/meta/BookMeta.java   |  37 +++++-
- .../org/bukkit/inventory/meta/ItemMeta.java   |  63 ++++++++++
- .../java/org/bukkit/scoreboard/Objective.java |  12 ++
- src/main/java/org/bukkit/scoreboard/Team.java |  32 +++++
- 22 files changed, 986 insertions(+), 39 deletions(-)
+ src/main/java/org/bukkit/Bukkit.java          | 89 ++++++++++++++++++
+ src/main/java/org/bukkit/Server.java          | 91 ++++++++++++++++++-
+ src/main/java/org/bukkit/World.java           |  9 +-
+ src/main/java/org/bukkit/block/Sign.java      | 38 ++++++++
+ .../org/bukkit/command/CommandSender.java     | 43 ++++++++-
+ .../bukkit/command/ProxiedCommandSender.java  | 14 ++-
+ src/main/java/org/bukkit/entity/Entity.java   | 39 ++++++++
+ src/main/java/org/bukkit/entity/Player.java   | 88 +++++++++++++++++-
+ .../bukkit/event/block/SignChangeEvent.java   | 57 +++++++++++-
+ .../bukkit/event/entity/PlayerDeathEvent.java | 42 ++++++++-
+ .../player/AsyncPlayerPreLoginEvent.java      | 59 ++++++++++--
+ .../bukkit/event/player/PlayerJoinEvent.java  | 31 ++++++-
+ .../bukkit/event/player/PlayerKickEvent.java  | 61 ++++++++++++-
+ .../bukkit/event/player/PlayerLoginEvent.java | 58 +++++++++++-
+ .../event/player/PlayerPreLoginEvent.java     | 42 ++++++++-
+ .../bukkit/event/player/PlayerQuitEvent.java  | 31 ++++++-
+ .../event/server/ServerListPingEvent.java     | 54 ++++++++++-
+ .../java/org/bukkit/inventory/Inventory.java  | 11 +++
+ .../org/bukkit/inventory/meta/BookMeta.java   | 37 +++++++-
+ .../org/bukkit/inventory/meta/ItemMeta.java   | 63 +++++++++++++
+ .../java/org/bukkit/scoreboard/Objective.java | 12 +++
+ src/main/java/org/bukkit/scoreboard/Team.java | 32 +++++++
+ 22 files changed, 962 insertions(+), 39 deletions(-)
 
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
 index 8fbc8283..14f742df 100644
@@ -481,7 +481,7 @@ index 7fb08af4..075b0f52 100644
       * Sets whether or not to display the mob's custom name client side. The
       * name will be displayed above the mob similarly to a player.
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index d02fe560..0aa496cc 100644
+index d02fe560..98aa51e7 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
 @@ -26,7 +26,7 @@ import org.github.paperspigot.Title;
@@ -493,7 +493,7 @@ index d02fe560..0aa496cc 100644
  
      /**
       * Gets the "friendly" name to display of this player. This may include
-@@ -80,6 +80,78 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+@@ -80,6 +80,60 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
       */
      public void setPlayerListName(String name);
  
@@ -507,9 +507,7 @@ index d02fe560..0aa496cc 100644
 +     *
 +     * @return the friendly name
 +     */
-+    default net.kyori.adventure.text.Component displayName() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(getDisplayName());
-+    }
++    public net.kyori.adventure.text.Component displayName();
 +
 +    /**
 +     * Sets the "friendly" name to display of this player. This may include
@@ -520,23 +518,14 @@ index d02fe560..0aa496cc 100644
 +     *
 +     * @param displayName The new display name.
 +     */
-+    default void displayName(net.kyori.adventure.text.Component displayName) {
-+        if (displayName == null) {
-+            setDisplayName(null);
-+            return;
-+        }
-+
-+        setDisplayName(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(displayName));
-+    }
++    public void displayName(net.kyori.adventure.text.Component displayName);
 +
 +    /**
 +     * Gets the name that is shown on the player list.
 +     *
 +     * @return the player list name
 +     */
-+    default net.kyori.adventure.text.Component playerListName() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(getPlayerListName());
-+    }
++    public net.kyori.adventure.text.Component playerListName();
 +
 +    /**
 +     * Sets the name that is shown on the in-game player list.
@@ -559,20 +548,13 @@ index d02fe560..0aa496cc 100644
 +     *     else
 +     * @throws IllegalArgumentException if the length of the name is too long
 +     */
-+    default void playerListName(net.kyori.adventure.text.Component playerListName) {
-+        if (playerListName == null) {
-+            setPlayerListName(null);
-+            return;
-+        }
-+
-+        setPlayerListName(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(playerListName));
-+    }
++    public void playerListName(net.kyori.adventure.text.Component playerListName);
 +    // PandaSpigot end
 +
      /**
       * Set the target of the player's compass.
       *
-@@ -115,6 +187,17 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+@@ -115,6 +169,15 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
       */
      public void kickPlayer(String message);
  
@@ -582,15 +564,13 @@ index d02fe560..0aa496cc 100644
 +     *
 +     * @param message kick message
 +     */
-+    default void kick(net.kyori.adventure.text.Component message) {
-+        kickPlayer(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(message));
-+    }
++    public void kick(net.kyori.adventure.text.Component message);
 +    // PandaSpigot end
 +
      /**
       * Says a message (or runs a command).
       *
-@@ -364,6 +447,26 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+@@ -364,6 +427,22 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
       */
      public void setPlayerListHeaderFooter(net.md_5.bungee.api.chat.BaseComponent header, net.md_5.bungee.api.chat.BaseComponent footer);
  
@@ -600,24 +580,20 @@ index d02fe560..0aa496cc 100644
 +     *
 +     * @return player list header or null
 +     */
-+    default net.kyori.adventure.text.Component playerListHeader() {
-+        return net.kyori.adventure.text.Component.empty();
-+    }
++    public net.kyori.adventure.text.Component playerListHeader();
 +
 +    /**
 +     * Gets the current displayed player list footer for this player.
 +     *
 +     * @return player list footer or null
 +     */
-+    default net.kyori.adventure.text.Component playerListFooter() {
-+        return net.kyori.adventure.text.Component.empty();
-+    }
++    public net.kyori.adventure.text.Component playerListFooter();
 +    // PandaSpigot end
 +
      /**
       * Update the times for titles displayed to the player
       *
-@@ -1336,4 +1439,11 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
+@@ -1336,4 +1415,11 @@ public interface Player extends HumanEntity, Conversable, CommandSender, Offline
  
      Spigot spigot();
      // Spigot end
