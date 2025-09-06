@@ -1,10 +1,10 @@
-From 7a625eb7921a9200d246d663ccff1ca0dc5bb80b Mon Sep 17 00:00:00 2001
+From 5860c5fb6a4fc5d72eab15e5834999ed4f3abb0a Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
-Date: Fri, 5 Sep 2025 03:25:06 -0600
+Date: Fri, 5 Sep 2025 19:29:05 -0600
 Subject: [PATCH] Adventure API
 
 ---
- .../NBTLegacyHoverEventSerializer.java        |  95 ++++++++++++++
+ .../NBTLegacyHoverEventSerializer.java        |  97 ++++++++++++++
  .../pandaspigot/adventure/PandaAdventure.java |  74 +++++++++++
  .../net/minecraft/server/EntityPlayer.java    |  20 ++-
  .../net/minecraft/server/LoginListener.java   |  19 +--
@@ -13,22 +13,19 @@ Subject: [PATCH] Adventure API
  .../minecraft/server/PacketPlayOutTitle.java  |   7 +-
  .../minecraft/server/PlayerConnection.java    |  29 ++--
  .../java/net/minecraft/server/PlayerList.java |  29 ++--
- .../org/bukkit/craftbukkit/CraftServer.java   |  34 +++++
+ .../org/bukkit/craftbukkit/CraftServer.java   |   7 +
  .../bukkit/craftbukkit/block/CraftSign.java   |  34 +++--
  .../craftbukkit/entity/CraftPlayer.java       | 124 +++++++++++++++++-
  .../craftbukkit/event/CraftEventFactory.java  |   4 +-
- .../craftbukkit/inventory/CraftMetaBook.java  |  37 +++++-
+ .../craftbukkit/inventory/CraftMetaBook.java  |  15 ++-
  .../inventory/CraftMetaBookSigned.java        |   2 +-
- .../craftbukkit/inventory/CraftMetaItem.java  |  24 ++++
- .../scoreboard/CraftObjective.java            |   9 ++
- .../craftbukkit/scoreboard/CraftTeam.java     |  17 +++
- 18 files changed, 515 insertions(+), 63 deletions(-)
+ 15 files changed, 418 insertions(+), 63 deletions(-)
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java b/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
 new file mode 100644
-index 000000000..7e1ab1774
+index 000000000..25cb4506f
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
 @@ -0,0 +1,97 @@
@@ -548,58 +545,10 @@ index 3c2d3197f..7c3c0565f 100644
          }
          return entity;
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index ad8c5da90..36f0d15b9 100644
+index ad8c5da90..f8700f717 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -1203,6 +1203,13 @@ public final class CraftServer implements Server {
-         return configuration.getString("settings.shutdown-message");
-     }
- 
-+    // PandaSpigot start - Adventure
-+    @Override
-+    public net.kyori.adventure.text.Component shutdownMessage() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(getShutdownMessage());
-+    }
-+    // PandaSpigot end
-+
-     @Override
-     public int getSpawnRadius() {
-         return ((DedicatedServer) console).propertyManager.getInt("spawn-protection", 16);
-@@ -1569,6 +1576,19 @@ public final class CraftServer implements Server {
-         return new CraftInventoryCustom(owner, size, title);
-     }
- 
-+    // PandaSpigot start - Adventure
-+    @Override
-+    public Inventory createInventory(InventoryHolder owner, InventoryType type, net.kyori.adventure.text.Component title) {
-+        return new CraftInventoryCustom(owner, type, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(title));
-+    }
-+
-+    @Override
-+    public Inventory createInventory(InventoryHolder owner, int size, net.kyori.adventure.text.Component title) {
-+        Validate.isTrue(size % 9 == 0, "Chests must have a size that is a multiple of 9!");
-+        return new CraftInventoryCustom(owner, size, net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(title));
-+    }
-+    // PandaSpigot end
-+
-     @Override
-     public HelpMap getHelpMap() {
-         return helpMap;
-@@ -1609,6 +1629,13 @@ public final class CraftServer implements Server {
-         return console.getMotd();
-     }
- 
-+    // PandaSpigot start - Adventure
-+    @Override
-+    public net.kyori.adventure.text.Component motd() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(getMotd());
-+    }
-+    // PandaSpigot end
-+
-     @Override
-     public WarningState getWarningState() {
-         return warningState;
-@@ -1767,6 +1794,13 @@ public final class CraftServer implements Server {
+@@ -1767,6 +1767,13 @@ public final class CraftServer implements Server {
          return CraftMagicNumbers.INSTANCE;
      }
  
@@ -614,7 +563,7 @@ index ad8c5da90..36f0d15b9 100644
      {
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java b/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
-index 43adfccd7..13f3dd4fa 100644
+index 43adfccd7..f82bc7aa4 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
 @@ -11,7 +11,7 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -669,12 +618,12 @@ index 43adfccd7..13f3dd4fa 100644
 +    }
 +
 +    @Override
-+    public net.kyori.adventure.text.Component line(int index) {
++    public net.kyori.adventure.text.Component line(int index) throws IndexOutOfBoundsException {
 +        return lines[index];
 +    }
 +
 +    @Override
-+    public void line(int index, net.kyori.adventure.text.Component line) {
++    public void line(int index, net.kyori.adventure.text.Component line) throws IndexOutOfBoundsException {
          lines[index] = line;
      }
 +    // PandaSpigot end
@@ -691,7 +640,7 @@ index 43adfccd7..13f3dd4fa 100644
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index d44fc62b9..ceb8fb6c8 100644
+index d44fc62b9..a84e7b366 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -80,6 +80,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -884,36 +833,14 @@ index db915033b..02d1e004e 100644
          craftServer.getPluginManager().callEvent(event);
          return event;
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
-index 0b5ada011..41c43b73d 100644
+index 0b5ada011..fac233923 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
-@@ -262,6 +262,41 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+@@ -262,6 +262,19 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
          }
      }
  
 +    // PandaSpigot start - Adventure
-+    @Override
-+    public net.kyori.adventure.text.Component title() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(title);
-+    }
-+
-+    @Override
-+    public net.kyori.adventure.inventory.Book title(net.kyori.adventure.text.Component title) {
-+        this.title = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(title);
-+        return this;
-+    }
-+
-+    @Override
-+    public net.kyori.adventure.text.Component author() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(author);
-+    }
-+
-+    @Override
-+    public net.kyori.adventure.inventory.Book author(net.kyori.adventure.text.Component author) {
-+        this.author = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(author);
-+        return this;
-+    }
-+
 +    @Override
 +    public List<net.kyori.adventure.text.Component> pages() {
 +        return com.hpfxd.pandaspigot.adventure.PandaAdventure.asAdventure(pages);
@@ -929,7 +856,7 @@ index 0b5ada011..41c43b73d 100644
      private boolean isValidPage(int page) {
          return page > 0 && page <= pages.size();
      }
-@@ -310,7 +345,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+@@ -310,7 +323,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
      }
  
      @Override
@@ -951,96 +878,6 @@ index ae3341c4e..c19545bac 100644
          super.serialize(builder);
          return builder;
      }
-diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
-index eaaa6a11a..71f96e2eb 100644
---- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
-+++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaItem.java
-@@ -647,6 +647,18 @@ class CraftMetaItem implements ItemMeta, Repairable {
-         this.displayName = name;
-     }
- 
-+    // PandaSpigot start - Adventure
-+    @Override
-+    public net.kyori.adventure.text.Component displayName() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(displayName);
-+    }
-+
-+    @Override
-+    public void displayName(net.kyori.adventure.text.Component displayName) {
-+        this.displayName = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(displayName);
-+    }
-+    // PandaSpigot end
-+
-     public boolean hasDisplayName() {
-         return !Strings.isNullOrEmpty(displayName);
-     }
-@@ -760,6 +772,18 @@ class CraftMetaItem implements ItemMeta, Repairable {
-         }
-     }
- 
-+    // PandaSpigot start - Adventure
-+    @Override
-+    public List<net.kyori.adventure.text.Component> lore() {
-+        return lore.stream().map(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()::deserialize).collect(java.util.stream.Collectors.toList());
-+    }
-+
-+    @Override
-+    public void lore(List<net.kyori.adventure.text.Component> lore) {
-+        this.lore = lore.stream().map(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()::serialize).collect(java.util.stream.Collectors.toList());
-+    }
-+    // PandaSpigot end
-+
-     public int getRepairCost() {
-         return repairCost;
-     }
-diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftObjective.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftObjective.java
-index 5bd8cf9d7..e9a65739d 100644
---- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftObjective.java
-+++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftObjective.java
-@@ -35,6 +35,15 @@ final class CraftObjective extends CraftScoreboardComponent implements Objective
-         return objective.getDisplayName();
-     }
- 
-+    // PandaSpigot start - Adventure
-+    @Override
-+    public net.kyori.adventure.text.Component displayName() throws IllegalStateException {
-+        checkState();
-+
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(objective.getDisplayName());
-+    }
-+    // PandaSpigot end
-+
-     public void setDisplayName(String displayName) throws IllegalStateException, IllegalArgumentException {
-         Validate.notNull(displayName, "Display name cannot be null");
-         Validate.isTrue(displayName.length() <= 32, "Display name '" + displayName + "' is longer than the limit of 32 characters");
-diff --git a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftTeam.java b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftTeam.java
-index f5ff0f712..df836be2c 100644
---- a/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftTeam.java
-+++ b/src/main/java/org/bukkit/craftbukkit/scoreboard/CraftTeam.java
-@@ -69,6 +69,23 @@ final class CraftTeam extends CraftScoreboardComponent implements Team {
-         team.setSuffix(suffix);
-     }
- 
-+    // PandaSpigot start - Adventure
-+    @Override
-+    public net.kyori.adventure.text.Component displayName() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(team.getDisplayName());
-+    }
-+
-+    @Override
-+    public net.kyori.adventure.text.Component prefix() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(team.getPrefix());
-+    }
-+
-+    @Override
-+    public net.kyori.adventure.text.Component suffix() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(team.getSuffix());
-+    }
-+    // PandaSpigot end
-+
-     public boolean allowFriendlyFire() throws IllegalStateException {
-         CraftScoreboard scoreboard = checkState();
- 
 -- 
 2.50.0.windows.1
 
