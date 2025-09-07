@@ -1,9 +1,10 @@
-From 36b68855dfebe3569341b0d5021a468743053da6 Mon Sep 17 00:00:00 2001
+From a29d7324f02a6601375d6fdc9e42213236ff7c5b Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
-Date: Fri, 5 Sep 2025 20:37:58 -0600
+Date: Sun, 7 Sep 2025 11:57:08 -0600
 Subject: [PATCH] Adventure API
 
 ---
+ build.gradle.kts                              |   3 +-
  .../NBTLegacyHoverEventSerializer.java        |  97 ++++++++++++++
  .../pandaspigot/adventure/PandaAdventure.java |  74 +++++++++++
  .../net/minecraft/server/EntityPlayer.java    |  20 ++-
@@ -11,18 +12,39 @@ Subject: [PATCH] Adventure API
  .../minecraft/server/PacketPlayOutChat.java   |   7 +-
  .../PacketPlayOutPlayerListHeaderFooter.java  |  13 +-
  .../minecraft/server/PacketPlayOutTitle.java  |   7 +-
- .../minecraft/server/PlayerConnection.java    |  29 ++--
- .../java/net/minecraft/server/PlayerList.java |  29 ++--
- .../org/bukkit/craftbukkit/CraftServer.java   |   7 +
+ .../minecraft/server/PlayerConnection.java    |  33 +++--
+ .../java/net/minecraft/server/PlayerList.java |  29 +++--
+ .../org/bukkit/craftbukkit/CraftServer.java   |   7 ++
  .../bukkit/craftbukkit/block/CraftSign.java   |  34 +++--
- .../craftbukkit/entity/CraftPlayer.java       | 124 +++++++++++++++++-
+ .../craftbukkit/entity/CraftPlayer.java       | 119 +++++++++++++++++-
  .../craftbukkit/event/CraftEventFactory.java  |   4 +-
  .../craftbukkit/inventory/CraftMetaBook.java  |  15 ++-
  .../inventory/CraftMetaBookSigned.java        |   2 +-
- 15 files changed, 418 insertions(+), 63 deletions(-)
+ 16 files changed, 417 insertions(+), 66 deletions(-)
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java
 
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 83dcd2285..8c8aa2274 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -4,6 +4,7 @@ plugins {
+ }
+ 
+ val minecraftVersion = "1_8_R3"
++val adventureVersion = "4.24.0" // PandaSpigot - Adventure
+ 
+ repositories {
+     maven(url = "https://libraries.minecraft.net")
+@@ -43,7 +44,7 @@ dependencies {
+     implementation("org.jline:jline-terminal-jni:3.30.3")
+     // PandaSpigot end
+ 
+-    implementation("net.kyori:adventure-key:4.21.0") // PandaSpigot - Add Channel initialization listeners
++    implementation("net.kyori:adventure-text-serializer-json:$adventureVersion") // PandaSpigot - Adventure
+ 
+     testImplementation("junit:junit:4.11")
+     testImplementation("org.hamcrest:hamcrest-library:1.3")
 diff --git a/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java b/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
 new file mode 100644
 index 000000000..858987bb7
@@ -207,7 +229,7 @@ index 000000000..a09959c1c
 +
 +}
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index 0c49a256c..0d559a45c 100644
+index b4f301a3e..a2f60f7a0 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -52,7 +52,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -224,11 +246,11 @@ index 0c49a256c..0d559a45c 100644
  
          // CraftBukkit start
 -        this.displayName = this.getName();
-+        this.displayName = net.kyori.adventure.text.Component.text(getName()); // PandaSpigot - Adventure
++        this.displayName = net.kyori.adventure.text.Component.text(this.getName()); // PandaSpigot - Adventure
          // this.canPickUpLoot = true; TODO
          this.maxHealthCache = this.getMaxHealth();
          // CraftBukkit end
-@@ -421,18 +421,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -429,18 +429,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
          IChatBaseComponent chatmessage = this.bs().b();
  
@@ -255,10 +277,10 @@ index 0c49a256c..0d559a45c 100644
          // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
          if (!event.getKeepInventory()) {
 diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index 541cec7cf..1e1767dbd 100644
+index 9faa98501..5d5037917 100644
 --- a/src/main/java/net/minecraft/server/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/LoginListener.java
-@@ -69,17 +69,20 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+@@ -75,17 +75,20 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
      }
  
      public void disconnect(String s) {
@@ -285,7 +307,7 @@ index 541cec7cf..1e1767dbd 100644
  
      // Spigot start
      public void initUUID()
-@@ -261,12 +264,12 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+@@ -278,12 +281,12 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
  
                                  LoginListener.this.server.processQueue.add(waitable);
                                  if (waitable.get() != PlayerPreLoginEvent.Result.ALLOWED) {
@@ -387,10 +409,10 @@ index 20016b5c4..98080450b 100644
              } else {
                  packetdataserializer.a(this.b);
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 4391ad7e7..3cd1e2476 100644
+index 303d145fe..7a78c213f 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -159,11 +159,17 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -167,11 +167,17 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
          return this.networkManager;
      }
  
@@ -410,7 +432,7 @@ index 4391ad7e7..3cd1e2476 100644
  
          if (this.server.getServer().isRunning()) {
              this.server.getPluginManager().callEvent(event);
-@@ -174,16 +180,15 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -182,21 +188,20 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
              return;
          }
          // Send the possibly modified leave message
@@ -431,7 +453,14 @@ index 4391ad7e7..3cd1e2476 100644
          this.networkManager.k();
          // CraftBukkit - Don't wait
          this.minecraftServer.postToMainThread(new Runnable() {
-@@ -872,10 +877,12 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+-             public void run() {
+-                 PlayerConnection.this.networkManager.l();
++            public void run() {
++                PlayerConnection.this.networkManager.l();
+             }
+         });
+     }
+@@ -896,10 +901,12 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
          */
  
          this.player.q();
@@ -447,7 +476,7 @@ index 4391ad7e7..3cd1e2476 100644
          // CraftBukkit end
          if (this.minecraftServer.T() && this.player.getName().equals(this.minecraftServer.S())) {
              PlayerConnection.c.info("Stopping singleplayer server as player logged out");
-@@ -1904,7 +1911,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -1937,7 +1944,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
              this.server.getPluginManager().callEvent(event);
  
              if (!event.isCancelled()) {
@@ -457,10 +486,10 @@ index 4391ad7e7..3cd1e2476 100644
               }
              // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 3c2d3197f..7c3c0565f 100644
+index b9a547ed0..767c0a8ae 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
-@@ -159,15 +159,18 @@ public abstract class PlayerList {
+@@ -158,15 +158,18 @@ public abstract class PlayerList {
          // CraftBukkit start - login message is handled in the event
          // ChatMessage chatmessage;
  
@@ -482,7 +511,7 @@ index 3c2d3197f..7c3c0565f 100644
          // chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
          // this.sendMessage(chatmessage);
          this.onPlayerJoin(entityplayer, joinMessage);
-@@ -302,7 +305,7 @@ public abstract class PlayerList {
+@@ -301,7 +304,7 @@ public abstract class PlayerList {
  
      }
  
@@ -491,7 +520,7 @@ index 3c2d3197f..7c3c0565f 100644
          this.players.add(entityplayer);
          this.playersByName.put(entityplayer.getName(), entityplayer); // Spigot
          this.j.put(entityplayer.getUniqueID(), entityplayer);
-@@ -313,13 +316,13 @@ public abstract class PlayerList {
+@@ -312,13 +315,13 @@ public abstract class PlayerList {
          PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(cserver.getPlayer(entityplayer), joinMessage);
          cserver.getPluginManager().callEvent(playerJoinEvent);
  
@@ -510,7 +539,7 @@ index 3c2d3197f..7c3c0565f 100644
  
          ChunkIOExecutor.adjustPoolSize(getPlayerCount());
          // CraftBukkit end
-@@ -354,13 +357,13 @@ public abstract class PlayerList {
+@@ -359,13 +362,13 @@ public abstract class PlayerList {
          entityplayer.u().getPlayerChunkMap().movePlayer(entityplayer);
      }
  
@@ -526,7 +555,7 @@ index 3c2d3197f..7c3c0565f 100644
          cserver.getPluginManager().callEvent(playerQuitEvent);
          entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
          // CraftBukkit end
-@@ -403,7 +406,7 @@ public abstract class PlayerList {
+@@ -408,7 +411,7 @@ public abstract class PlayerList {
  
          ChunkIOExecutor.adjustPoolSize(this.getPlayerCount()); // CraftBukkit
  
@@ -535,7 +564,7 @@ index 3c2d3197f..7c3c0565f 100644
      }
  
      // CraftBukkit start - Whole method, SocketAddress to LoginListener, added hostname to signature, return EntityPlayer
-@@ -471,7 +474,7 @@ public abstract class PlayerList {
+@@ -476,7 +479,7 @@ public abstract class PlayerList {
  
          cserver.getPluginManager().callEvent(event);
          if (event.getResult() != PlayerLoginEvent.Result.ALLOWED) {
@@ -545,12 +574,12 @@ index 3c2d3197f..7c3c0565f 100644
          }
          return entity;
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index ad8c5da90..f8700f717 100644
+index 0c6cdfed0..e24b7309e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-@@ -1767,6 +1767,13 @@ public final class CraftServer implements Server {
-         return CraftMagicNumbers.INSTANCE;
+@@ -1832,6 +1832,13 @@ public final class CraftServer implements Server {
      }
+     // PandaSpigot end
  
 +    // PandaSpigot start - Adventure
 +    @Override
@@ -640,7 +669,7 @@ index 43adfccd7..f82bc7aa4 100644
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index d44fc62b9..a84e7b366 100644
+index 49477a0f4..e60b255be 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -80,6 +80,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -651,8 +680,8 @@ index d44fc62b9..a84e7b366 100644
  
      public CraftPlayer(CraftServer server, EntityPlayer entity) {
          super(server, entity);
-@@ -180,8 +181,65 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-         getHandle().playerConnection.sendPacket(packet);
+@@ -194,6 +195,58 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+                 footer == null ? null : new BaseComponent[]{footer});
      }
  
 +    // PandaSpigot start - Adventure
@@ -707,17 +736,10 @@ index d44fc62b9..a84e7b366 100644
 +        return playerListFooter;
 +    }
 +    // PandaSpigot end
-+
+ 
      @Override
-     public void setPlayerListHeaderFooter(BaseComponent[] header, BaseComponent[] footer) {
-+        // PandaSpigot start - Adventure
-+        playerListHeader = com.hpfxd.pandaspigot.adventure.PandaAdventure.asAdventure(header);
-+        playerListFooter = com.hpfxd.pandaspigot.adventure.PandaAdventure.asAdventure(footer);
-+        // PandaSpigot end
-         PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
-         packet.header = header;
-         packet.footer = footer;
-@@ -258,14 +316,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+     public void setTitleTimes(int fadeInTicks, int stayTicks, int fadeOutTicks) {
+@@ -258,14 +311,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      }
      // Paper end
  
@@ -759,7 +781,7 @@ index d44fc62b9..a84e7b366 100644
      }
  
      @Override
-@@ -286,6 +369,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -286,6 +364,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
      }
  
@@ -793,7 +815,7 @@ index d44fc62b9..a84e7b366 100644
      @Override
      public boolean equals(Object obj) {
          if (!(obj instanceof OfflinePlayer)) {
-@@ -314,6 +424,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -314,6 +419,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          getHandle().playerConnection.disconnect(message == null ? "" : message);
      }
  
@@ -811,10 +833,10 @@ index d44fc62b9..a84e7b366 100644
      public void setCompassTarget(Location loc) {
          if (getHandle().playerConnection == null) return;
 diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-index db915033b..02d1e004e 100644
+index 82ad58bc2..2b05648ba 100644
 --- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
 +++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
-@@ -388,7 +388,7 @@ public class CraftEventFactory {
+@@ -392,7 +392,7 @@ public class CraftEventFactory {
          return event;
      }
  
@@ -823,7 +845,7 @@ index db915033b..02d1e004e 100644
          CraftPlayer entity = victim.getBukkitEntity();
          PlayerDeathEvent event = new PlayerDeathEvent(entity, drops, victim.getExpReward(), 0, deathMessage);
          event.setKeepInventory(keepInventory);
-@@ -417,7 +417,7 @@ public class CraftEventFactory {
+@@ -421,7 +421,7 @@ public class CraftEventFactory {
      /**
       * Server methods
       */
@@ -833,10 +855,10 @@ index db915033b..02d1e004e 100644
          craftServer.getPluginManager().callEvent(event);
          return event;
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
-index 0b5ada011..fac233923 100644
+index 44b3c3ac1..7cc2423fe 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 +++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
-@@ -262,6 +262,19 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+@@ -271,6 +271,19 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
          }
      }
  
@@ -856,7 +878,7 @@ index 0b5ada011..fac233923 100644
      private boolean isValidPage(int page) {
          return page > 0 && page <= pages.size();
      }
-@@ -310,7 +323,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+@@ -319,7 +332,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
      }
  
      @Override
