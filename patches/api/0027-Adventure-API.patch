@@ -1,25 +1,25 @@
-From 11c3bfda32632748a93acb192f7cdfa232703727 Mon Sep 17 00:00:00 2001
+From c2742d569c88ce9cc8aaf0ff80c509588425a05d Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
-Date: Sun, 7 Sep 2025 11:56:27 -0600
+Date: Sun, 7 Sep 2025 12:04:26 -0600
 Subject: [PATCH] Adventure API
 
 ---
- build.gradle.kts                              | 10 +++
- src/main/java/org/bukkit/Bukkit.java          | 89 +++++++++++++++++++
- src/main/java/org/bukkit/Server.java          | 87 +++++++++++++++++-
+ build.gradle.kts                              | 10 ++
+ src/main/java/org/bukkit/Bukkit.java          | 89 ++++++++++++++++++
+ src/main/java/org/bukkit/Server.java          | 91 ++++++++++++++++++-
  src/main/java/org/bukkit/World.java           |  9 +-
  src/main/java/org/bukkit/block/Sign.java      | 32 +++++++
  .../org/bukkit/command/CommandSender.java     | 43 ++++++++-
  .../bukkit/command/ProxiedCommandSender.java  | 14 ++-
- src/main/java/org/bukkit/entity/Entity.java   | 40 +++++++++
+ src/main/java/org/bukkit/entity/Entity.java   | 40 ++++++++
  src/main/java/org/bukkit/entity/Player.java   | 88 +++++++++++++++++-
- .../bukkit/event/block/SignChangeEvent.java   | 55 +++++++++++-
+ .../bukkit/event/block/SignChangeEvent.java   | 55 ++++++++++-
  .../bukkit/event/entity/PlayerDeathEvent.java | 42 ++++++++-
  .../player/AsyncPlayerPreLoginEvent.java      | 59 ++++++++++--
  .../bukkit/event/player/PlayerJoinEvent.java  | 31 ++++++-
- .../bukkit/event/player/PlayerKickEvent.java  | 61 +++++++++++--
+ .../bukkit/event/player/PlayerKickEvent.java  | 61 ++++++++++++-
  .../bukkit/event/player/PlayerLoginEvent.java | 58 +++++++++++-
- .../event/player/PlayerPreLoginEvent.java     | 42 +++++++--
+ .../event/player/PlayerPreLoginEvent.java     | 42 ++++++++-
  .../bukkit/event/player/PlayerQuitEvent.java  | 31 ++++++-
  .../event/server/ServerListPingEvent.java     | 54 ++++++++++-
  .../java/org/bukkit/inventory/Inventory.java  | 11 +++
@@ -27,7 +27,7 @@ Subject: [PATCH] Adventure API
  .../org/bukkit/inventory/meta/ItemMeta.java   | 63 +++++++++++++
  .../java/org/bukkit/scoreboard/Objective.java | 12 +++
  src/main/java/org/bukkit/scoreboard/Team.java | 32 +++++++
- 23 files changed, 951 insertions(+), 38 deletions(-)
+ 23 files changed, 955 insertions(+), 38 deletions(-)
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 index 462d7e12..5b438e88 100644
@@ -179,7 +179,7 @@ index 4ae094a9..2ae8b301 100644
       * Gets the current warning state for the server.
       *
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 1ad82f5e..eba18f52 100644
+index 1ad82f5e..51849294 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -47,7 +47,7 @@ import org.bukkit.inventory.meta.ItemMeta;
@@ -274,7 +274,7 @@ index 1ad82f5e..eba18f52 100644
      /**
       * Gets user-specified limit for number of monsters that can spawn in a
       * chunk.
-@@ -842,6 +911,22 @@ public interface Server extends PluginMessageRecipient {
+@@ -842,6 +911,26 @@ public interface Server extends PluginMessageRecipient {
       */
      String getShutdownMessage();
  
@@ -284,14 +284,18 @@ index 1ad82f5e..eba18f52 100644
 +     *
 +     * @return the servers MOTD
 +     */
-+    net.kyori.adventure.text.Component motd();
++    default net.kyori.adventure.text.Component motd() {
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(getMotd());
++    }
 +
 +    /**
 +     * Gets the default message that is displayed when the server is stopped.
 +     *
 +     * @return the shutdown message
 +     */
-+    net.kyori.adventure.text.Component shutdownMessage();
++    default net.kyori.adventure.text.Component shutdownMessage() {
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(getShutdownMessage());
++    }
 +    // PandaSpigot end
 +
      /**
