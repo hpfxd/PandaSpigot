@@ -7,7 +7,7 @@ Also removes redundant empty list check before putting a task on the
 main thread
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..8a1632562dbd9aa7e0c7d0fec7eefa16f6b6b5be 100644
+index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..fddce2c87809e18db936e6b07a8bf4f4b50174ef 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -103,13 +103,13 @@ index 4d0888fa6f7296bb4361a6bd642858bb7906e1d5..8a1632562dbd9aa7e0c7d0fec7eefa16
                  while (this.isRunning) {
 +                    // PandaSpigot start - New Tick Loop System
 +                    curTime = System.nanoTime();
-+                    long timeDiff = az() - this.ab;
-+                    if (timeDiff > 5000L && this.ab - this.R >= 30000L) { // CraftBukkit
-+                        long ticksBehind = timeDiff / 50L;
++                    long i = az() - this.ab;
++                    if (i > 5000L && this.ab - this.R >= 30000L) { // CraftBukkit
++                        long j = i / 50L;
 +                        if (server.getWarnOnOverload()) { // CraftBukkit
-+                            LOGGER.info("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", timeDiff, ticksBehind);
++                            LOGGER.info("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", i, j);
 +                        }
-+                        this.ab += ticksBehind * 50L;
++                        this.ab += h * 50L;
 +                        this.R = this.ab;
 +                    }
 +                    /*
