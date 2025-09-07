@@ -1,6 +1,6 @@
-From a29d7324f02a6601375d6fdc9e42213236ff7c5b Mon Sep 17 00:00:00 2001
+From c25d4d08529616c38aa47b0e31c63a0a168d8996 Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
-Date: Sun, 7 Sep 2025 11:57:08 -0600
+Date: Sun, 7 Sep 2025 12:31:05 -0600
 Subject: [PATCH] Adventure API
 
 ---
@@ -14,13 +14,13 @@ Subject: [PATCH] Adventure API
  .../minecraft/server/PacketPlayOutTitle.java  |   7 +-
  .../minecraft/server/PlayerConnection.java    |  33 +++--
  .../java/net/minecraft/server/PlayerList.java |  29 +++--
- .../org/bukkit/craftbukkit/CraftServer.java   |   7 ++
+ .../org/bukkit/craftbukkit/CraftServer.java   |   7 +
  .../bukkit/craftbukkit/block/CraftSign.java   |  34 +++--
- .../craftbukkit/entity/CraftPlayer.java       | 119 +++++++++++++++++-
+ .../craftbukkit/entity/CraftPlayer.java       | 122 +++++++++++++++++-
  .../craftbukkit/event/CraftEventFactory.java  |   4 +-
  .../craftbukkit/inventory/CraftMetaBook.java  |  15 ++-
  .../inventory/CraftMetaBookSigned.java        |   2 +-
- 16 files changed, 417 insertions(+), 66 deletions(-)
+ 16 files changed, 420 insertions(+), 66 deletions(-)
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
  create mode 100644 src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java
 
@@ -669,7 +669,7 @@ index 43adfccd7..f82bc7aa4 100644
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 49477a0f4..e60b255be 100644
+index 49477a0f4..ba75b4ccf 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -80,6 +80,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -739,7 +739,7 @@ index 49477a0f4..e60b255be 100644
  
      @Override
      public void setTitleTimes(int fadeInTicks, int stayTicks, int fadeOutTicks) {
-@@ -258,14 +311,39 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -258,14 +311,42 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      }
      // Paper end
  
@@ -764,7 +764,10 @@ index 49477a0f4..e60b255be 100644
 +
 +    @Override
 +    public void sendActionBar(net.kyori.adventure.text.Component message) {
-+        getHandle().playerConnection.sendPacket(new PacketPlayOutChat(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(message), (byte) 2));
++        PacketPlayOutChat packet = new PacketPlayOutChat(null, (byte) 2);
++        packet.adventure$message = message;
++
++        getHandle().playerConnection.sendPacket(packet);
 +    }
 +    // PandaSpigot end
 +
@@ -781,7 +784,7 @@ index 49477a0f4..e60b255be 100644
      }
  
      @Override
-@@ -286,6 +364,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -286,6 +367,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
      }
  
@@ -815,7 +818,7 @@ index 49477a0f4..e60b255be 100644
      @Override
      public boolean equals(Object obj) {
          if (!(obj instanceof OfflinePlayer)) {
-@@ -314,6 +419,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -314,6 +422,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          getHandle().playerConnection.disconnect(message == null ? "" : message);
      }
  
