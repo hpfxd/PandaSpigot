@@ -1,6 +1,6 @@
-From c25d4d08529616c38aa47b0e31c63a0a168d8996 Mon Sep 17 00:00:00 2001
+From 8842c963cb55c226cebd465754be628a603ef69d Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
-Date: Sun, 7 Sep 2025 12:31:05 -0600
+Date: Sun, 7 Sep 2025 13:58:56 -0600
 Subject: [PATCH] Adventure API
 
 ---
@@ -229,7 +229,7 @@ index 000000000..a09959c1c
 +
 +}
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index b4f301a3e..a2f60f7a0 100644
+index b4f301a3e..d981c89fd 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
 @@ -52,7 +52,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
@@ -269,7 +269,7 @@ index b4f301a3e..a2f60f7a0 100644
 -            } else {
 -                this.server.getPlayerList().sendMessage(org.bukkit.craftbukkit.util.CraftChatMessage.fromString(deathMessage));
 -            }
-+        if (deathMessage != null && deathMessage != net.kyori.adventure.text.Component.empty() && this.world.getGameRules().getBoolean("showDeathMessages")) { // TODO: allow plugins to override?
++        if (deathMessage != null && !deathMessage.equals(net.kyori.adventure.text.Component.empty()) && this.world.getGameRules().getBoolean("showDeathMessages")) { // TODO: allow plugins to override?
 +            this.server.getPlayerList().sendMessage(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(deathMessage));
          }
 +        // PandaSpigot end
@@ -409,7 +409,7 @@ index 20016b5c4..98080450b 100644
              } else {
                  packetdataserializer.a(this.b);
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 303d145fe..7a78c213f 100644
+index 303d145fe..e505ea398 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -167,11 +167,17 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
@@ -469,7 +469,7 @@ index 303d145fe..7a78c213f 100644
 -            this.minecraftServer.getPlayerList().sendMessage(CraftChatMessage.fromString(quitMessage));
 +        // PandaSpigot start - Adventure
 +        net.kyori.adventure.text.Component quitMessage = this.minecraftServer.getPlayerList().disconnect(this.player);
-+        if (quitMessage != null && quitMessage != net.kyori.adventure.text.Component.empty()) {
++        if (quitMessage != null && !quitMessage.equals(net.kyori.adventure.text.Component.empty())) {
 +            this.minecraftServer.getPlayerList().sendMessage(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(quitMessage));
          }
 +        // PandaSpigot end
@@ -486,7 +486,7 @@ index 303d145fe..7a78c213f 100644
               }
              // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index b9a547ed0..767c0a8ae 100644
+index b9a547ed0..c9a5f387f 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -158,15 +158,18 @@ public abstract class PlayerList {
@@ -532,7 +532,7 @@ index b9a547ed0..767c0a8ae 100644
 -            for (IChatBaseComponent line : org.bukkit.craftbukkit.util.CraftChatMessage.fromString(joinMessage)) {
 -                server.getPlayerList().sendAll(new PacketPlayOutChat(line));
 -            }
-+        if (joinMessage != null && joinMessage != net.kyori.adventure.text.Component.empty()) {
++        if (joinMessage != null && !joinMessage.equals(net.kyori.adventure.text.Component.empty())) {
 +            server.getPlayerList().sendMessage(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(joinMessage));
          }
 +        // PandaSpigot end

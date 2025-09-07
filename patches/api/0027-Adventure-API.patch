@@ -1,6 +1,6 @@
-From c2742d569c88ce9cc8aaf0ff80c509588425a05d Mon Sep 17 00:00:00 2001
+From 55891bbf3956b3e646df605caefd675d560df2c5 Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
-Date: Sun, 7 Sep 2025 12:04:26 -0600
+Date: Sun, 7 Sep 2025 13:58:36 -0600
 Subject: [PATCH] Adventure API
 
 ---
@@ -9,25 +9,30 @@ Subject: [PATCH] Adventure API
  src/main/java/org/bukkit/Server.java          | 91 ++++++++++++++++++-
  src/main/java/org/bukkit/World.java           |  9 +-
  src/main/java/org/bukkit/block/Sign.java      | 32 +++++++
+ src/main/java/org/bukkit/command/Command.java | 34 +++++--
  .../org/bukkit/command/CommandSender.java     | 43 ++++++++-
  .../bukkit/command/ProxiedCommandSender.java  | 14 ++-
- src/main/java/org/bukkit/entity/Entity.java   | 40 ++++++++
+ src/main/java/org/bukkit/entity/Entity.java   | 31 +++++++
  src/main/java/org/bukkit/entity/Player.java   | 88 +++++++++++++++++-
  .../bukkit/event/block/SignChangeEvent.java   | 55 ++++++++++-
  .../bukkit/event/entity/PlayerDeathEvent.java | 42 ++++++++-
+ .../bukkit/event/inventory/InventoryType.java |  8 ++
  .../player/AsyncPlayerPreLoginEvent.java      | 59 ++++++++++--
  .../bukkit/event/player/PlayerJoinEvent.java  | 31 ++++++-
  .../bukkit/event/player/PlayerKickEvent.java  | 61 ++++++++++++-
+ .../event/player/PlayerLocaleChangeEvent.java | 27 +++++-
  .../bukkit/event/player/PlayerLoginEvent.java | 58 +++++++++++-
  .../event/player/PlayerPreLoginEvent.java     | 42 ++++++++-
  .../bukkit/event/player/PlayerQuitEvent.java  | 31 ++++++-
  .../event/server/ServerListPingEvent.java     | 54 ++++++++++-
  .../java/org/bukkit/inventory/Inventory.java  | 11 +++
+ .../org/bukkit/inventory/InventoryView.java   |  9 ++
  .../org/bukkit/inventory/meta/BookMeta.java   | 26 +++++-
  .../org/bukkit/inventory/meta/ItemMeta.java   | 63 +++++++++++++
- .../java/org/bukkit/scoreboard/Objective.java | 12 +++
- src/main/java/org/bukkit/scoreboard/Team.java | 32 +++++++
- 23 files changed, 955 insertions(+), 38 deletions(-)
+ .../org/bukkit/permissions/Permissible.java   | 30 ++++++
+ .../java/org/bukkit/scoreboard/Objective.java | 25 +++++
+ src/main/java/org/bukkit/scoreboard/Team.java | 70 ++++++++++++++
+ 28 files changed, 1097 insertions(+), 46 deletions(-)
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 index 462d7e12..5b438e88 100644
@@ -369,6 +374,79 @@ index 5d7a633d..452e540a 100644
 +    public void line(int index, net.kyori.adventure.text.Component line) throws IndexOutOfBoundsException;
 +    // PandaSpigot end
  }
+diff --git a/src/main/java/org/bukkit/command/Command.java b/src/main/java/org/bukkit/command/Command.java
+index c126a1e7..627f3b8e 100644
+--- a/src/main/java/org/bukkit/command/Command.java
++++ b/src/main/java/org/bukkit/command/Command.java
+@@ -31,7 +31,7 @@ public abstract class Command {
+     protected String description = "";
+     protected String usageMessage;
+     private String permission;
+-    private String permissionMessage;
++    private net.kyori.adventure.text.Component permissionMessage; // PandaSpigot - Adventure
+     public co.aikar.timings.Timing timings; // Spigot
+     public String getTimingName() {return getName();} // Spigot
+ 
+@@ -199,10 +199,10 @@ public abstract class Command {
+ 
+         if (permissionMessage == null) {
+             target.sendMessage(ChatColor.RED + "I'm sorry, but you do not have permission to perform this command. Please contact the server administrators if you believe that this is in error.");
+-        } else if (permissionMessage.length() != 0) {
+-            for (String line : permissionMessage.replace("<permission>", permission).split("\n")) {
+-                target.sendMessage(line);
+-            }
++        // PandaSpigot start - Adventure
++        } else if (!permissionMessage.equals(net.kyori.adventure.text.Component.empty())) {
++            target.sendMessage(permissionMessage.replaceText(net.kyori.adventure.text.TextReplacementConfig.builder().matchLiteral("<permission>").replacement(permission).build()));
++        // PandaSpigot end
+         }
+ 
+         return false;
+@@ -326,7 +326,7 @@ public abstract class Command {
+      * @return Permission check failed message
+      */
+     public String getPermissionMessage() {
+-        return permissionMessage;
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(permissionMessage); // PandaSpigot - Adventure
+     }
+ 
+     /**
+@@ -385,7 +385,7 @@ public abstract class Command {
+      * @return this command object, for chaining
+      */
+     public Command setPermissionMessage(String permissionMessage) {
+-        this.permissionMessage = permissionMessage;
++        this.permissionMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(permissionMessage); // PandaSpigot - Adventure
+         return this;
+     }
+ 
+@@ -400,6 +400,26 @@ public abstract class Command {
+         return this;
+     }
+ 
++    // PandaSpigot start - Adventure
++    /**
++     * Gets the permission message.
++     *
++     * @return the permission message
++     */
++    public net.kyori.adventure.text.Component permissionMessage() {
++        return permissionMessage;
++    }
++
++    /**
++     * Sets the permission message.
++     *
++     * @param permissionMessage the permission message
++     */
++    public void permissionMessage(net.kyori.adventure.text.Component permissionMessage) {
++        this.permissionMessage = permissionMessage;
++    }
++    // PandaSpigot end
++
+     public static void broadcastCommandMessage(CommandSender source, String message) {
+         broadcastCommandMessage(source, message, true);
+     }
 diff --git a/src/main/java/org/bukkit/command/CommandSender.java b/src/main/java/org/bukkit/command/CommandSender.java
 index 148756b9..d4feeaa1 100644
 --- a/src/main/java/org/bukkit/command/CommandSender.java
@@ -461,10 +539,10 @@ index 24c4ebad..325104b3 100644
 +
  }
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 7fb08af4..9645b83d 100644
+index 7fb08af4..5b0cfaf7 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
-@@ -322,6 +322,46 @@ public interface Entity extends Metadatable, CommandSender {
+@@ -322,6 +322,37 @@ public interface Entity extends Metadatable, CommandSender {
       */
      public String getCustomName();
  
@@ -480,11 +558,7 @@ index 7fb08af4..9645b83d 100644
 +     * @return name of the mob or null
 +     */
 +    default net.kyori.adventure.text.Component customName() {
-+        if (getCustomName() == null) {
-+            return null;
-+        }
-+
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(getCustomName());
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(getCustomName());
 +    }
 +
 +    /**
@@ -499,12 +573,7 @@ index 7fb08af4..9645b83d 100644
 +     * @param customName the name to set
 +     */
 +    default void customName(net.kyori.adventure.text.Component customName) {
-+        if (customName == null) {
-+            setCustomName(null);
-+            return;
-+        }
-+
-+        setCustomName(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(customName));
++        setCustomName(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(customName));
 +    }
 +    // PandaSpigot end
 +
@@ -813,6 +882,36 @@ index aad03549..e805bb28 100644
  
      /**
       * Gets how much EXP the Player should have at respawn.
+diff --git a/src/main/java/org/bukkit/event/inventory/InventoryType.java b/src/main/java/org/bukkit/event/inventory/InventoryType.java
+index c36e0467..043ac88d 100644
+--- a/src/main/java/org/bukkit/event/inventory/InventoryType.java
++++ b/src/main/java/org/bukkit/event/inventory/InventoryType.java
+@@ -73,10 +73,12 @@ public enum InventoryType {
+ 
+     private final int size;
+     private final String title;
++    private final net.kyori.adventure.text.Component adventure$title; // PandaSpigot - Adventure
+ 
+     private InventoryType(int defaultSize, String defaultTitle) {
+         size = defaultSize;
+         title = defaultTitle;
++        adventure$title = net.kyori.adventure.text.Component.text(defaultTitle);
+     }
+ 
+     public int getDefaultSize() {
+@@ -87,6 +89,12 @@ public enum InventoryType {
+         return title;
+     }
+ 
++    // PandaSpigot start - Adventure
++    public net.kyori.adventure.text.Component defaultTitle() {
++        return adventure$title;
++    }
++    // PandaSpigot end
++
+     public enum SlotType {
+         /**
+          * A result slot in a furnace or crafting inventory.
 diff --git a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
 index 62562d35..076c6e83 100644
 --- a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
@@ -1101,6 +1200,61 @@ index 39e81b67..df0700e5 100644
  
      @Override
      public HandlerList getHandlers() {
+diff --git a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java b/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
+index 3efd1597..f856c68a 100644
+--- a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
++++ b/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
+@@ -10,11 +10,16 @@ public class PlayerLocaleChangeEvent extends PlayerEvent {
+     private static final HandlerList handlers = new HandlerList();
+     private final String oldLocale;
+     private final String newLocale;
++    private final java.util.Locale adventure$oldLocale, adventure$newLocale; // PandaSpigot - Adventure
+ 
+     public PlayerLocaleChangeEvent(final Player player, final String oldLocale, final String newLocale) {
+         super(player);
+         this.oldLocale = oldLocale;
+         this.newLocale = newLocale;
++        // PandaSpigot start - Adventure
++        this.adventure$oldLocale = oldLocale == null ? java.util.Locale.US : net.kyori.adventure.translation.Translator.parseLocale(oldLocale);
++        this.adventure$newLocale = newLocale == null ? java.util.Locale.US : net.kyori.adventure.translation.Translator.parseLocale(newLocale);
++        // PandaSpigot end
+     }
+ 
+     /**
+@@ -35,6 +40,26 @@ public class PlayerLocaleChangeEvent extends PlayerEvent {
+         return newLocale;
+     }
+ 
++    // PandaSpigot start - Adventure
++    /**
++     * Gets the locale the player switched from.
++     *
++     * @return player's old locale
++     */
++    public java.util.Locale oldLocale() {
++        return adventure$oldLocale;
++    }
++
++    /**
++     * Gets the locale the player is changed to.
++     *
++     * @return player's new locale
++     */
++    public java.util.Locale newLocale() {
++        return adventure$newLocale;
++    }
++    // PandaSpigot end
++
+     @Override
+     public HandlerList getHandlers() {
+         return handlers;
+@@ -43,4 +68,4 @@ public class PlayerLocaleChangeEvent extends PlayerEvent {
+     public static HandlerList getHandlerList() {
+         return handlers;
+     }
+-}
+\ No newline at end of file
++}
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 index 4bc024ff..e9a4a227 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
@@ -1484,6 +1638,24 @@ index da5d83e0..60155118 100644
      /**
       * Returns what type of inventory this is.
       *
+diff --git a/src/main/java/org/bukkit/inventory/InventoryView.java b/src/main/java/org/bukkit/inventory/InventoryView.java
+index 46242f8a..0e7f7bee 100644
+--- a/src/main/java/org/bukkit/inventory/InventoryView.java
++++ b/src/main/java/org/bukkit/inventory/InventoryView.java
+@@ -229,4 +229,13 @@ public abstract class InventoryView {
+     public final String getTitle() {
+         return getTopInventory().getTitle();
+     }
++
++    /**
++     * Get the title of this inventory window.
++     *
++     * @return The title.
++     */
++    public final net.kyori.adventure.text.Component title() {
++        return getTopInventory().title();
++    }
+ }
 diff --git a/src/main/java/org/bukkit/inventory/meta/BookMeta.java b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
 index 00175963..56d247be 100644
 --- a/src/main/java/org/bukkit/inventory/meta/BookMeta.java
@@ -1602,13 +1774,52 @@ index d8cc8218..a09862e1 100644
      /**
       * Checks for the existence of any enchantments.
       *
+diff --git a/src/main/java/org/bukkit/permissions/Permissible.java b/src/main/java/org/bukkit/permissions/Permissible.java
+index 5cd3cff0..c90f73e4 100644
+--- a/src/main/java/org/bukkit/permissions/Permissible.java
++++ b/src/main/java/org/bukkit/permissions/Permissible.java
+@@ -119,4 +119,34 @@ public interface Permissible extends ServerOperator {
+      * @return Set of currently effective permissions
+      */
+     public Set<PermissionAttachmentInfo> getEffectivePermissions();
++
++    // PandaSpigot start - Adventure
++    /**
++     * Checks if this object has a permission set and, if it is set, the value of the permission.
++     *
++     * @param permission the permission to check
++     * @return a tri-state of if the permission is set and, if it is set, it's value
++     */
++    default net.kyori.adventure.util.TriState permissionValue(Permission permission) {
++        if (this.isPermissionSet(permission)) {
++            return net.kyori.adventure.util.TriState.byBoolean(this.hasPermission(permission));
++        } else {
++            return net.kyori.adventure.util.TriState.NOT_SET;
++        }
++    }
++
++    /**
++     * Checks if this object has a permission set and, if it is set, the value of the permission.
++     *
++     * @param permission the permission to check
++     * @return a tri-state of if the permission is set and, if it is set, it's value
++     */
++    default net.kyori.adventure.util.TriState permissionValue(String permission) {
++        if (this.isPermissionSet(permission)) {
++            return net.kyori.adventure.util.TriState.byBoolean(this.hasPermission(permission));
++        } else {
++            return net.kyori.adventure.util.TriState.NOT_SET;
++        }
++    }
++    // PandaSpigot end
+ }
 diff --git a/src/main/java/org/bukkit/scoreboard/Objective.java b/src/main/java/org/bukkit/scoreboard/Objective.java
-index 321aac79..ae87a1f0 100644
+index 321aac79..75230152 100644
 --- a/src/main/java/org/bukkit/scoreboard/Objective.java
 +++ b/src/main/java/org/bukkit/scoreboard/Objective.java
-@@ -25,6 +25,18 @@ public interface Objective {
+@@ -36,6 +36,31 @@ public interface Objective {
       */
-     String getDisplayName() throws IllegalStateException;
+     void setDisplayName(String displayName) throws IllegalStateException, IllegalArgumentException;
  
 +    // PandaSpigot start - Adventure
 +    /**
@@ -1620,16 +1831,29 @@ index 321aac79..ae87a1f0 100644
 +    default net.kyori.adventure.text.Component displayName() throws IllegalStateException {
 +        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(getDisplayName());
 +    };
++
++    /**
++     * Sets the name displayed to players for this objective.
++     *
++     * @param displayName Display name to set
++     * @throws IllegalStateException if this objective has been unregistered
++     * @throws IllegalArgumentException if displayName is null
++     * @throws IllegalArgumentException if displayName is longer than 32
++     *     characters.
++     */
++    default void displayName(net.kyori.adventure.text.Component displayName) throws IllegalStateException {
++        setDisplayName(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(displayName));
++    }
 +    // PandaSpigot end
 +
      /**
-      * Sets the name displayed to players for this objective.
+      * Gets the criteria this objective tracks.
       *
 diff --git a/src/main/java/org/bukkit/scoreboard/Team.java b/src/main/java/org/bukkit/scoreboard/Team.java
-index 0fdcebd9..fe82bf68 100644
+index 0fdcebd9..2eaf0c90 100644
 --- a/src/main/java/org/bukkit/scoreboard/Team.java
 +++ b/src/main/java/org/bukkit/scoreboard/Team.java
-@@ -76,6 +76,38 @@ public interface Team {
+@@ -76,6 +76,76 @@ public interface Team {
       */
      void setSuffix(String suffix) throws IllegalStateException, IllegalArgumentException;
  
@@ -1645,6 +1869,18 @@ index 0fdcebd9..fe82bf68 100644
 +    }
 +
 +    /**
++     * Sets the name displayed to entries for this team
++     *
++     * @param displayName New display name
++     * @throws IllegalArgumentException if displayName is longer than 32
++     *     characters.
++     * @throws IllegalStateException if this team has been unregistered
++     */
++    default void displayName(net.kyori.adventure.text.Component displayName) throws IllegalStateException {
++        setDisplayName(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(displayName));
++    }
++
++    /**
 +     * Gets the prefix prepended to the display of entries on this team.
 +     *
 +     * @return Team prefix
@@ -1655,6 +1891,19 @@ index 0fdcebd9..fe82bf68 100644
 +    }
 +
 +    /**
++     * Sets the prefix prepended to the display of entries on this team.
++     *
++     * @param prefix New prefix
++     * @throws IllegalArgumentException if prefix is null
++     * @throws IllegalArgumentException if prefix is longer than 16
++     *     characters
++     * @throws IllegalStateException if this team has been unregistered
++     */
++    default void prefix(net.kyori.adventure.text.Component prefix) throws IllegalStateException {
++        setPrefix(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(prefix));
++    }
++
++    /**
 +     * Gets the suffix appended to the display of entries on this team.
 +     *
 +     * @return the team's current suffix
@@ -1662,6 +1911,19 @@ index 0fdcebd9..fe82bf68 100644
 +     */
 +    default net.kyori.adventure.text.Component suffix() throws IllegalStateException {
 +        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(getSuffix());
++    }
++
++    /**
++     * Sets the suffix appended to the display of entries on this team.
++     *
++     * @param suffix the new suffix for this team.
++     * @throws IllegalArgumentException if suffix is null
++     * @throws IllegalArgumentException if suffix is longer than 16
++     *     characters
++     * @throws IllegalStateException if this team has been unregistered
++     */
++    default void suffix(net.kyori.adventure.text.Component suffix) throws IllegalStateException {
++        setSuffix(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(suffix));
 +    }
 +    // PandaSpigot end
 +
