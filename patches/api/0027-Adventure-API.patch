@@ -1,41 +1,11 @@
-From 55891bbf3956b3e646df605caefd675d560df2c5 Mon Sep 17 00:00:00 2001
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: MasterDash5 <constant4337@molecularmail.com>
 Date: Sun, 7 Sep 2025 13:58:36 -0600
 Subject: [PATCH] Adventure API
 
----
- build.gradle.kts                              | 10 ++
- src/main/java/org/bukkit/Bukkit.java          | 89 ++++++++++++++++++
- src/main/java/org/bukkit/Server.java          | 91 ++++++++++++++++++-
- src/main/java/org/bukkit/World.java           |  9 +-
- src/main/java/org/bukkit/block/Sign.java      | 32 +++++++
- src/main/java/org/bukkit/command/Command.java | 34 +++++--
- .../org/bukkit/command/CommandSender.java     | 43 ++++++++-
- .../bukkit/command/ProxiedCommandSender.java  | 14 ++-
- src/main/java/org/bukkit/entity/Entity.java   | 31 +++++++
- src/main/java/org/bukkit/entity/Player.java   | 88 +++++++++++++++++-
- .../bukkit/event/block/SignChangeEvent.java   | 55 ++++++++++-
- .../bukkit/event/entity/PlayerDeathEvent.java | 42 ++++++++-
- .../bukkit/event/inventory/InventoryType.java |  8 ++
- .../player/AsyncPlayerPreLoginEvent.java      | 59 ++++++++++--
- .../bukkit/event/player/PlayerJoinEvent.java  | 31 ++++++-
- .../bukkit/event/player/PlayerKickEvent.java  | 61 ++++++++++++-
- .../event/player/PlayerLocaleChangeEvent.java | 27 +++++-
- .../bukkit/event/player/PlayerLoginEvent.java | 58 +++++++++++-
- .../event/player/PlayerPreLoginEvent.java     | 42 ++++++++-
- .../bukkit/event/player/PlayerQuitEvent.java  | 31 ++++++-
- .../event/server/ServerListPingEvent.java     | 54 ++++++++++-
- .../java/org/bukkit/inventory/Inventory.java  | 11 +++
- .../org/bukkit/inventory/InventoryView.java   |  9 ++
- .../org/bukkit/inventory/meta/BookMeta.java   | 26 +++++-
- .../org/bukkit/inventory/meta/ItemMeta.java   | 63 +++++++++++++
- .../org/bukkit/permissions/Permissible.java   | 30 ++++++
- .../java/org/bukkit/scoreboard/Objective.java | 25 +++++
- src/main/java/org/bukkit/scoreboard/Team.java | 70 ++++++++++++++
- 28 files changed, 1097 insertions(+), 46 deletions(-)
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 462d7e12..5b438e88 100644
+index 462d7e12d9f38d32e4aa0c9e222d390ee49ebb39..5b438e8867a7a41c955700eae992ae08890f7757 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -8,6 +8,8 @@ java {
@@ -70,7 +40,7 @@ index 462d7e12..5b438e88 100644
          }
      }
 diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
-index 4ae094a9..2ae8b301 100644
+index 4ae094a9d190e23efcebd866a8ecb11ebf9167e6..2ae8b301052020afc17c15435d8022c55cce9675 100644
 --- a/src/main/java/org/bukkit/Bukkit.java
 +++ b/src/main/java/org/bukkit/Bukkit.java
 @@ -329,6 +329,42 @@ public final class Bukkit {
@@ -184,7 +154,7 @@ index 4ae094a9..2ae8b301 100644
       * Gets the current warning state for the server.
       *
 diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
-index 1ad82f5e..51849294 100644
+index 1ad82f5eddb477d2d9a753c1d2540ccff3d4f392..51849294e3618b94aec5c81c0438d95e00e3a33a 100644
 --- a/src/main/java/org/bukkit/Server.java
 +++ b/src/main/java/org/bukkit/Server.java
 @@ -47,7 +47,7 @@ import org.bukkit.inventory.meta.ItemMeta;
@@ -307,7 +277,7 @@ index 1ad82f5e..51849294 100644
       * Gets the current warning state for the server.
       *
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index e1d61e63..36a07f02 100644
+index e1d61e63798aa7e70974e52a7a49f590ec78e5ff..36a07f027fb05eba32b08e3a566486a02621c663 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
 @@ -20,7 +20,7 @@ import org.bukkit.util.Vector;
@@ -334,7 +304,7 @@ index e1d61e63..36a07f02 100644
       * Returns a list of entities within a bounding box centered around a Location.
       *
 diff --git a/src/main/java/org/bukkit/block/Sign.java b/src/main/java/org/bukkit/block/Sign.java
-index 5d7a633d..452e540a 100644
+index 5d7a633dcb3ce53a9178c30d0e11161c0cb40c08..452e540ade45138d8093861447e4fc0265836bfc 100644
 --- a/src/main/java/org/bukkit/block/Sign.java
 +++ b/src/main/java/org/bukkit/block/Sign.java
 @@ -34,4 +34,36 @@ public interface Sign extends BlockState {
@@ -375,7 +345,7 @@ index 5d7a633d..452e540a 100644
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/command/Command.java b/src/main/java/org/bukkit/command/Command.java
-index c126a1e7..627f3b8e 100644
+index c126a1e7e68fd8b81e51d8bdb10dd24eccd9db63..627f3b8e88e5d54fb98ee26cf029fd9ae54933f8 100644
 --- a/src/main/java/org/bukkit/command/Command.java
 +++ b/src/main/java/org/bukkit/command/Command.java
 @@ -31,7 +31,7 @@ public abstract class Command {
@@ -448,7 +418,7 @@ index c126a1e7..627f3b8e 100644
          broadcastCommandMessage(source, message, true);
      }
 diff --git a/src/main/java/org/bukkit/command/CommandSender.java b/src/main/java/org/bukkit/command/CommandSender.java
-index 148756b9..d4feeaa1 100644
+index 148756b9ca60beeb7643ab584dbfcb6defec8d54..d4feeaa1f604a529f2f6c021618344a131af95ee 100644
 --- a/src/main/java/org/bukkit/command/CommandSender.java
 +++ b/src/main/java/org/bukkit/command/CommandSender.java
 @@ -3,7 +3,7 @@ package org.bukkit.command;
@@ -509,7 +479,7 @@ index 148756b9..d4feeaa1 100644
       * Returns the server instance that this command is running on
       *
 diff --git a/src/main/java/org/bukkit/command/ProxiedCommandSender.java b/src/main/java/org/bukkit/command/ProxiedCommandSender.java
-index 24c4ebad..325104b3 100644
+index 24c4ebad5326c56d3cc30a745c897431ec947248..325104b3dbdc7c874b04e639b7a1fa84f69c80be 100644
 --- a/src/main/java/org/bukkit/command/ProxiedCommandSender.java
 +++ b/src/main/java/org/bukkit/command/ProxiedCommandSender.java
 @@ -1,7 +1,7 @@
@@ -539,7 +509,7 @@ index 24c4ebad..325104b3 100644
 +
  }
 diff --git a/src/main/java/org/bukkit/entity/Entity.java b/src/main/java/org/bukkit/entity/Entity.java
-index 7fb08af4..5b0cfaf7 100644
+index 7fb08af407dcacfbe37222dfd66064ffc3dd6963..5b0cfaf76a6f2d178e9fd50ce6123955863c16c3 100644
 --- a/src/main/java/org/bukkit/entity/Entity.java
 +++ b/src/main/java/org/bukkit/entity/Entity.java
 @@ -322,6 +322,37 @@ public interface Entity extends Metadatable, CommandSender {
@@ -581,7 +551,7 @@ index 7fb08af4..5b0cfaf7 100644
       * Sets whether or not to display the mob's custom name client side. The
       * name will be displayed above the mob similarly to a player.
 diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
-index ec618758..751f2f0f 100644
+index ec6187582a696f5705390eac92a04a36511c3a6c..751f2f0f6b9fb4af753584c890555dfa92d74fa1 100644
 --- a/src/main/java/org/bukkit/entity/Player.java
 +++ b/src/main/java/org/bukkit/entity/Player.java
 @@ -26,7 +26,7 @@ import org.github.paperspigot.Title;
@@ -706,7 +676,7 @@ index ec618758..751f2f0f 100644
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/event/block/SignChangeEvent.java b/src/main/java/org/bukkit/event/block/SignChangeEvent.java
-index 83188cf5..634ade9e 100644
+index 83188cf583695c55708c49b2596bc030ef9e8322..634ade9e9e74072f746263438b56105f52ec488f 100644
 --- a/src/main/java/org/bukkit/event/block/SignChangeEvent.java
 +++ b/src/main/java/org/bukkit/event/block/SignChangeEvent.java
 @@ -14,13 +14,26 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
@@ -801,7 +771,7 @@ index 83188cf5..634ade9e 100644
      public boolean isCancelled() {
          return cancel;
 diff --git a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
-index aad03549..e805bb28 100644
+index aad03549523391d22e574778250f8169bbac33f6..e805bb28147735786c219122c906883ec06e1bfa 100644
 --- a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
 +++ b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
 @@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
@@ -883,7 +853,7 @@ index aad03549..e805bb28 100644
      /**
       * Gets how much EXP the Player should have at respawn.
 diff --git a/src/main/java/org/bukkit/event/inventory/InventoryType.java b/src/main/java/org/bukkit/event/inventory/InventoryType.java
-index c36e0467..043ac88d 100644
+index c36e0467281fef62c8362640df1b9e4990562d47..043ac88d080efdc475decd665ef990ce9c574b68 100644
 --- a/src/main/java/org/bukkit/event/inventory/InventoryType.java
 +++ b/src/main/java/org/bukkit/event/inventory/InventoryType.java
 @@ -73,10 +73,12 @@ public enum InventoryType {
@@ -913,7 +883,7 @@ index c36e0467..043ac88d 100644
          /**
           * A result slot in a furnace or crafting inventory.
 diff --git a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
-index 62562d35..076c6e83 100644
+index 62562d3503d856a3dce22c3e972543f1a2d63cca..076c6e83ff7fa4fb55c09da8263a46c7597101b7 100644
 --- a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
 @@ -14,7 +14,7 @@ import org.bukkit.event.HandlerList;
@@ -1028,7 +998,7 @@ index 62562d35..076c6e83 100644
       * Gets the player's name.
       *
 diff --git a/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java b/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java
-index e7481f92..ebe6b7d6 100644
+index e7481f92c758396ea2035d404042d5fd8193def0..ebe6b7d6cc45c024a13f31a21b3e3b5bb7f9a72c 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java
 @@ -8,12 +8,19 @@ import org.bukkit.event.HandlerList;
@@ -1091,7 +1061,7 @@ index e7481f92..ebe6b7d6 100644
      @Override
      public HandlerList getHandlers() {
 diff --git a/src/main/java/org/bukkit/event/player/PlayerKickEvent.java b/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
-index 39e81b67..df0700e5 100644
+index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..df0700e5632a42f639b9d7223fa39ee7a4bb2c90 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
 @@ -9,16 +9,29 @@ import org.bukkit.event.HandlerList;
@@ -1201,7 +1171,7 @@ index 39e81b67..df0700e5 100644
      @Override
      public HandlerList getHandlers() {
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java b/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
-index 3efd1597..f856c68a 100644
+index 3efd15972e79afebce3d30a24b7dabdf8b963d7c..f856c68a4de9dd6d88673a87e5db3758e1f0444c 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
 @@ -10,11 +10,16 @@ public class PlayerLocaleChangeEvent extends PlayerEvent {
@@ -1256,7 +1226,7 @@ index 3efd1597..f856c68a 100644
 \ No newline at end of file
 +}
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
-index 4bc024ff..e9a4a227 100644
+index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..e9a4a227850329ba52f58a99bb9886ab7c04149d 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 @@ -13,7 +13,7 @@ public class PlayerLoginEvent extends PlayerEvent {
@@ -1365,7 +1335,7 @@ index 4bc024ff..e9a4a227 100644
      /**
       * Gets the {@link InetAddress} for the Player associated with this event.
 diff --git a/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
-index e8553f0f..4686c71e 100644
+index e8553f0f36b1b25bf44087f8d72fb81d8c8424e5..4686c71ee373cb63a1af994fc8a712c3160d7d81 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
 @@ -19,7 +19,7 @@ import org.bukkit.event.HandlerList;
@@ -1456,7 +1426,7 @@ index e8553f0f..4686c71e 100644
      /**
       * Gets the player's name.
 diff --git a/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java b/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
-index 5c8dc1b9..f23eb88c 100644
+index 5c8dc1b91c297b40e05dcbabf48cc12d194b34eb..f23eb88cdfea5c58c3dee7efae962548c0fe6fe7 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
 @@ -8,12 +8,19 @@ import org.bukkit.event.HandlerList;
@@ -1519,7 +1489,7 @@ index 5c8dc1b9..f23eb88c 100644
      @Override
      public HandlerList getHandlers() {
 diff --git a/src/main/java/org/bukkit/event/server/ServerListPingEvent.java b/src/main/java/org/bukkit/event/server/ServerListPingEvent.java
-index 3c38d857..bcf68ca2 100644
+index 3c38d85735d37b401061feae686dea50adb5b650..bcf68ca2bea489e7d39e90e4157f8cca5a150eda 100644
 --- a/src/main/java/org/bukkit/event/server/ServerListPingEvent.java
 +++ b/src/main/java/org/bukkit/event/server/ServerListPingEvent.java
 @@ -16,7 +16,7 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
@@ -1617,7 +1587,7 @@ index 3c38d857..bcf68ca2 100644
      /**
       * Get the number of players sent.
 diff --git a/src/main/java/org/bukkit/inventory/Inventory.java b/src/main/java/org/bukkit/inventory/Inventory.java
-index da5d83e0..60155118 100644
+index da5d83e021d3dacd1032750432bb02658170260d..60155118eeda28f78379e3809b2c25851abae84e 100644
 --- a/src/main/java/org/bukkit/inventory/Inventory.java
 +++ b/src/main/java/org/bukkit/inventory/Inventory.java
 @@ -351,6 +351,17 @@ public interface Inventory extends Iterable<ItemStack> {
@@ -1639,7 +1609,7 @@ index da5d83e0..60155118 100644
       * Returns what type of inventory this is.
       *
 diff --git a/src/main/java/org/bukkit/inventory/InventoryView.java b/src/main/java/org/bukkit/inventory/InventoryView.java
-index 46242f8a..0e7f7bee 100644
+index 46242f8a219c3c9a2cbfb71c71af32100723365e..0e7f7beec449d36b0cceb68d84d8a1cff9d636d6 100644
 --- a/src/main/java/org/bukkit/inventory/InventoryView.java
 +++ b/src/main/java/org/bukkit/inventory/InventoryView.java
 @@ -229,4 +229,13 @@ public abstract class InventoryView {
@@ -1657,7 +1627,7 @@ index 46242f8a..0e7f7bee 100644
 +    }
  }
 diff --git a/src/main/java/org/bukkit/inventory/meta/BookMeta.java b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
-index 00175963..56d247be 100644
+index 00175963005cebabf758ed9b4aee6d77dd03e908..56d247be3b6a6f3e47dbc1bef6883c31b0a4adb9 100644
 --- a/src/main/java/org/bukkit/inventory/meta/BookMeta.java
 +++ b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
 @@ -8,7 +8,7 @@ import org.bukkit.Material;
@@ -1701,7 +1671,7 @@ index 00175963..56d247be 100644
       * Adds new pages to the end of the book. Up to a maximum of 50 pages with
       * 256 characters per page.
 diff --git a/src/main/java/org/bukkit/inventory/meta/ItemMeta.java b/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
-index d8cc8218..a09862e1 100644
+index d8cc8218d370db66c6c4aac96372c2c6e00ad5f6..a09862e1aa10db1ba812ee3dbc3e59b26733f56b 100644
 --- a/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
 +++ b/src/main/java/org/bukkit/inventory/meta/ItemMeta.java
 @@ -65,6 +65,69 @@ public interface ItemMeta extends Cloneable, ConfigurationSerializable {
@@ -1775,7 +1745,7 @@ index d8cc8218..a09862e1 100644
       * Checks for the existence of any enchantments.
       *
 diff --git a/src/main/java/org/bukkit/permissions/Permissible.java b/src/main/java/org/bukkit/permissions/Permissible.java
-index 5cd3cff0..c90f73e4 100644
+index 5cd3cff0232765c52cd7d85896c374799b9ba081..c90f73e4b17336b12580c0994522b3b345c6d170 100644
 --- a/src/main/java/org/bukkit/permissions/Permissible.java
 +++ b/src/main/java/org/bukkit/permissions/Permissible.java
 @@ -119,4 +119,34 @@ public interface Permissible extends ServerOperator {
@@ -1814,7 +1784,7 @@ index 5cd3cff0..c90f73e4 100644
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/scoreboard/Objective.java b/src/main/java/org/bukkit/scoreboard/Objective.java
-index 321aac79..75230152 100644
+index 321aac7912571cb5d29c10068e14d12e3b1c6e11..752301525c77d178494ae79d49be760dbe5a3521 100644
 --- a/src/main/java/org/bukkit/scoreboard/Objective.java
 +++ b/src/main/java/org/bukkit/scoreboard/Objective.java
 @@ -36,6 +36,31 @@ public interface Objective {
@@ -1850,7 +1820,7 @@ index 321aac79..75230152 100644
       * Gets the criteria this objective tracks.
       *
 diff --git a/src/main/java/org/bukkit/scoreboard/Team.java b/src/main/java/org/bukkit/scoreboard/Team.java
-index 0fdcebd9..2eaf0c90 100644
+index 0fdcebd91b9e9dabf0f4a63b332005b95e2d9b14..2eaf0c90292bba1d16caf9cffeca52f4175e7a55 100644
 --- a/src/main/java/org/bukkit/scoreboard/Team.java
 +++ b/src/main/java/org/bukkit/scoreboard/Team.java
 @@ -76,6 +76,76 @@ public interface Team {
@@ -1930,6 +1900,3 @@ index 0fdcebd9..2eaf0c90 100644
      /**
       * Gets the team friendly fire state
       *
--- 
-2.50.0.windows.1
-
