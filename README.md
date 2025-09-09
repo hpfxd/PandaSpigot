@@ -7,6 +7,7 @@ Fork of Paper for 1.8.8 focused on improved performance and stability.
     - PlayerChunkLoadEvent & PlayerChunkUnloadEvent
     - PlayerHandshakeEvent
     - EntityMoveEvent
+    - Native Kyori Adventure support
 
 - **Greatly improved network performance**
     - **Updating to Netty 4.1** offers the ability to use newer Java versions with epoll on Linux.
