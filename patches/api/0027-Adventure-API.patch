@@ -819,7 +819,7 @@ index aad03549523391d22e574778250f8169bbac33f6..e805bb28147735786c219122c906883e
       */
      public void setDeathMessage(String deathMessage) {
 -        this.deathMessage = deathMessage;
-+        this.deathMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(deathMessage); // PandaSpigot - Adventure
++        this.deathMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(deathMessage); // PandaSpigot - Adventure
      }
  
      /**
@@ -827,7 +827,7 @@ index aad03549523391d22e574778250f8169bbac33f6..e805bb28147735786c219122c906883e
       * @return Message to appear to other players on the server.
       */
      public String getDeathMessage() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(deathMessage); // PandaSpigot - Adventure
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(deathMessage); // PandaSpigot - Adventure
 +    }
 +
 +    // PandaSpigot start - Adventure
@@ -1027,7 +1027,7 @@ index e7481f92c758396ea2035d404042d5fd8193def0..ebe6b7d6cc45c024a13f31a21b3e3b5b
       */
      public String getJoinMessage() {
 -        return joinMessage;
-+        return this.joinMessage == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(joinMessage); // PandaSpigot - Adventure
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(joinMessage); // PandaSpigot - Adventure
      }
  
      /**
@@ -1035,7 +1035,7 @@ index e7481f92c758396ea2035d404042d5fd8193def0..ebe6b7d6cc45c024a13f31a21b3e3b5b
       * @param joinMessage join message
       */
      public void setJoinMessage(String joinMessage) {
-+        this.joinMessage = joinMessage == null ? null : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(joinMessage); // PandaSpigot - Adventure
++        this.joinMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(joinMessage); // PandaSpigot - Adventure
 +    }
 +
 +    // PandaSpigot start - Adventure
@@ -1110,7 +1110,7 @@ index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..df0700e5632a42f639b9d7223fa39ee7
       */
      public String getLeaveMessage() {
 -        return leaveMessage;
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(leaveMessage);
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(leaveMessage);
      }
  
      public boolean isCancelled() {
@@ -1127,7 +1127,7 @@ index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..df0700e5632a42f639b9d7223fa39ee7
       * @param leaveMessage leave message
       */
      public void setLeaveMessage(String leaveMessage) {
-+        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(leaveMessage);
++        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(leaveMessage);
 +    }
 +
 +    // PandaSpigot start - Adventure
@@ -1455,7 +1455,7 @@ index 5c8dc1b91c297b40e05dcbabf48cc12d194b34eb..f23eb88cdfea5c58c3dee7efae962548
       */
      public String getQuitMessage() {
 -        return quitMessage;
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(quitMessage); // PandaSpigot - Adventure
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(quitMessage); // PandaSpigot - Adventure
      }
  
      /**
@@ -1463,7 +1463,7 @@ index 5c8dc1b91c297b40e05dcbabf48cc12d194b34eb..f23eb88cdfea5c58c3dee7efae962548
       * @param quitMessage quit message
       */
      public void setQuitMessage(String quitMessage) {
-+        this.quitMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(quitMessage); // PandaSpigot - Adventure
++        this.quitMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(quitMessage); // PandaSpigot - Adventure
 +    }
 +
 +    // PandaSpigot start - Adventure
