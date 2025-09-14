@@ -303,17 +303,17 @@ index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..5d50379171901bd9cd0fce6b379deead
                                  }
                              }
 diff --git a/src/main/java/net/minecraft/server/PacketPlayOutChat.java b/src/main/java/net/minecraft/server/PacketPlayOutChat.java
-index 6cd5df2e8dfae1829d17c117b4a7422711a0db22..bddf23753e359c88fb0146d5a70a83b001cd7335 100644
+index 6cd5df2e8dfae1829d17c117b4a7422711a0db22..48fcdafeb56f5cae5361d3981170d58c0b5b717b 100644
 --- a/src/main/java/net/minecraft/server/PacketPlayOutChat.java
 +++ b/src/main/java/net/minecraft/server/PacketPlayOutChat.java
-@@ -6,6 +6,7 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
- 
+@@ -7,6 +7,7 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
      private IChatBaseComponent a;
      public net.md_5.bungee.api.chat.BaseComponent[] components; // Spigot
-+    public net.kyori.adventure.text.Component adventure$message; // PandaSpigot - Adventure;
      private byte b;
++    public net.kyori.adventure.text.Component adventure$message; // PandaSpigot - Adventure;
  
      public PacketPlayOutChat() {}
+ 
 @@ -26,7 +27,11 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
  
      public void b(PacketDataSerializer packetdataserializer) throws IOException {
@@ -328,17 +328,17 @@ index 6cd5df2e8dfae1829d17c117b4a7422711a0db22..bddf23753e359c88fb0146d5a70a83b0
          } else {
              packetdataserializer.a(this.a);
 diff --git a/src/main/java/net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java b/src/main/java/net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java
-index 795e70aa7134065dad1841709afc1a2ad5bbf013..13e8e63b001fe0c82fa72cf7ee8adc443a797333 100644
+index 795e70aa7134065dad1841709afc1a2ad5bbf013..4d0bb38bae58eb994f1a46d4d4df16828298052b 100644
 --- a/src/main/java/net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java
 +++ b/src/main/java/net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java
-@@ -5,6 +5,7 @@ import java.io.IOException;
- public class PacketPlayOutPlayerListHeaderFooter implements Packet<PacketListenerPlayOut> {
- 
-     public net.md_5.bungee.api.chat.BaseComponent[] header, footer; // Paper
-+    public net.kyori.adventure.text.Component adventure$header, adventure$footer; // PandaSpigot - Adventure
+@@ -8,6 +8,7 @@ public class PacketPlayOutPlayerListHeaderFooter implements Packet<PacketListene
  
      private IChatBaseComponent a;
      private IChatBaseComponent b;
++    public net.kyori.adventure.text.Component adventure$header, adventure$footer; // PandaSpigot - Adventure
+ 
+     public PacketPlayOutPlayerListHeaderFooter() {}
+ 
 @@ -22,13 +23,21 @@ public class PacketPlayOutPlayerListHeaderFooter implements Packet<PacketListene
  
      public void b(PacketDataSerializer packetdataserializer) throws IOException {
