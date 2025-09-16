@@ -649,7 +649,7 @@ index 43adfccd72c0629f5b93c735119fa4f84074d12b..f82bc7aa44e7299768aabf00fef7a995
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 49477a0f4d237db75d869ed91dc5088f4b4385fe..ba75b4ccf0fdf27e3bfe8f983815ec9d969e2827 100644
+index 49477a0f4d237db75d869ed91dc5088f4b4385fe..6d2357123c716f5f43d7f0f08fc96addde2f5342 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -80,6 +80,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -719,7 +719,7 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..ba75b4ccf0fdf27e3bfe8f983815ec9d
  
      @Override
      public void setTitleTimes(int fadeInTicks, int stayTicks, int fadeOutTicks) {
-@@ -258,14 +311,42 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -258,14 +311,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      }
      // Paper end
  
@@ -741,14 +741,6 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..ba75b4ccf0fdf27e3bfe8f983815ec9d
 +    public void clearTitle() {
 +        getHandle().playerConnection.sendPacket(new PacketPlayOutTitle(EnumTitleAction.CLEAR, null));
 +    }
-+
-+    @Override
-+    public void sendActionBar(net.kyori.adventure.text.Component message) {
-+        PacketPlayOutChat packet = new PacketPlayOutChat(null, (byte) 2);
-+        packet.adventure$message = message;
-+
-+        getHandle().playerConnection.sendPacket(packet);
-+    }
 +    // PandaSpigot end
 +
      @Override
@@ -764,7 +756,7 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..ba75b4ccf0fdf27e3bfe8f983815ec9d
      }
  
      @Override
-@@ -286,6 +367,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -286,6 +359,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
      }
  
@@ -798,7 +790,7 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..ba75b4ccf0fdf27e3bfe8f983815ec9d
      @Override
      public boolean equals(Object obj) {
          if (!(obj instanceof OfflinePlayer)) {
-@@ -314,6 +422,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -314,6 +414,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          getHandle().playerConnection.disconnect(message == null ? "" : message);
      }
  
