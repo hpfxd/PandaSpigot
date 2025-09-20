@@ -24,7 +24,7 @@ index 698b0a08f85056d36c131515a0825aeca52755c3..83dcd2285e088f8620831e20893c44a1
      implementation("org.apache.commons:commons-lang3:3.3.2")
      implementation("commons-io:commons-io:2.4")
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index a2645bb4472bf753cda35861d75fb288a269840e..e6b5484518d0e37772850ab5452026e5c1e8e6fb 100644
+index 6ca2e2b5ac993f42f99712237df2f06e71adae6a..8a302b2678916f862cac0c020fa3247043204e6a 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
 @@ -19,7 +19,7 @@ import org.apache.logging.log4j.Logger;
@@ -37,8 +37,8 @@ index a2645bb4472bf753cda35861d75fb288a269840e..e6b5484518d0e37772850ab5452026e5
  import org.bukkit.event.server.ServerCommandEvent;
  import org.bukkit.craftbukkit.util.Waitable;
 @@ -119,8 +119,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
-         new Thread(new org.bukkit.craftbukkit.util.TerminalConsoleWriterThread(System.out, this.reader)).start();
          */
+         // PandaSpigot end
  
 -        System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
 -        System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
