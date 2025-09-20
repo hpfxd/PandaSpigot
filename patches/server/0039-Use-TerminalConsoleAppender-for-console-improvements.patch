@@ -200,49 +200,49 @@ index 0000000000000000000000000000000000000000..1aa335eca007be52e9813ce933d271ea
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 97699e7f86cef3ab8c4560066f0ef93c18a8f5ad..afdab7c1366b115a21ae3d934058671f66f7deff 100644
+index 97699e7f86cef3ab8c4560066f0ef93c18a8f5ad..9bcfa3d9f26f88e704903d90695ab88b6532f5cc 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
-@@ -69,6 +69,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -69,6 +69,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                  }
                  // CraftBukkit end
  
 +                // PandaSpigot start - Use TerminalConsoleAppender
 +                new com.hpfxd.pandaspigot.console.PandaConsole(DedicatedServer.this).start();
 +                /*
-+                // PandaSpigot end
                  jline.console.ConsoleReader bufferedreader = reader; // CraftBukkit
                  String s;
  
-@@ -88,6 +92,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -88,6 +91,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
                  } catch (IOException ioexception) {
                      DedicatedServer.LOGGER.error("Exception handling console input", ioexception);
                  }
-+                */ // PandaSpigot
++                */
++                // PandaSpigot end
  
              }
          };
-@@ -100,6 +105,10 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -100,6 +105,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
          }
          global.addHandler(new org.bukkit.craftbukkit.util.ForwardLogHandler());
  
 +        // PandaSpigot start - Not needed with TerminalConsoleAppender
 +        final org.apache.logging.log4j.Logger logger = LogManager.getRootLogger();
 +        /*
-+        // PandaSpigot end
          final org.apache.logging.log4j.core.Logger logger = ((org.apache.logging.log4j.core.Logger) LogManager.getRootLogger());
          for (org.apache.logging.log4j.core.Appender appender : logger.getAppenders().values()) {
              if (appender instanceof org.apache.logging.log4j.core.appender.ConsoleAppender) {
-@@ -108,6 +117,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+@@ -108,6 +116,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
          }
  
          new Thread(new org.bukkit.craftbukkit.util.TerminalConsoleWriterThread(System.out, this.reader)).start();
 +        */
++        // PandaSpigot end
  
          System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
          System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 88e49a137c34485464546d4c509e39e42fa59831..3a45c247dd747e6b72a707423ed5d8109eac4f2c 100644
+index 88e49a137c34485464546d4c509e39e42fa59831..19b6a9951f642a22d49378eb63330ee959de7fcb 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;
@@ -267,7 +267,7 @@ index 88e49a137c34485464546d4c509e39e42fa59831..3a45c247dd747e6b72a707423ed5d810
          this.Y = this.V.createProfileRepository();
          // CraftBukkit start
          this.options = options;
-+        /* // PandaSpigot - Handled by TerminalConsoleAppender
++        /* // PandaSpigot start - Handled by TerminalConsoleAppender
          // Try to see if we're actually running in a terminal, disable jline if not
          if (System.console() == null && System.getProperty("jline.terminal") == null) {
              System.setProperty("jline.terminal", "jline.UnsupportedTerminal");
@@ -275,7 +275,7 @@ index 88e49a137c34485464546d4c509e39e42fa59831..3a45c247dd747e6b72a707423ed5d810
                  LOGGER.warn((String) null, ex);
              }
          }
-+        */ // PandaSpigot
++        */ // PandaSpigot end
          Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
  
          this.serverThread = primaryThread = new Thread(this, "Server thread"); // Moved from main
@@ -298,7 +298,7 @@ index 88e49a137c34485464546d4c509e39e42fa59831..3a45c247dd747e6b72a707423ed5d810
  
      public boolean a(int i, String s) {
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 3c2d3197faa7e5212f7c6f9970e56426ae02ade7..55e6a1755b7db3411865f1d0ad3b4c38cb66d0a8 100644
+index 3c2d3197faa7e5212f7c6f9970e56426ae02ade7..c8fb991f1a9c88d4f519ae812921085366e09b92 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -69,8 +69,7 @@ public abstract class PlayerList {
@@ -307,12 +307,12 @@ index 3c2d3197faa7e5212f7c6f9970e56426ae02ade7..55e6a1755b7db3411865f1d0ad3b4c38
          this.cserver = minecraftserver.server = new CraftServer(minecraftserver, this);
 -        minecraftserver.console = org.bukkit.craftbukkit.command.ColouredConsoleSender.getInstance();
 -        minecraftserver.reader.addCompleter(new org.bukkit.craftbukkit.command.ConsoleCommandCompleter(minecraftserver.server));
-+        minecraftserver.console = new com.hpfxd.pandaspigot.console.PandaConsoleCommandSender();
++        minecraftserver.console = new com.hpfxd.pandaspigot.console.PandaConsoleCommandSender(); // PandaSpigot
          // CraftBukkit end
          
          this.k = new GameProfileBanList(PlayerList.a);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index e218b127c6dcdce2c4f8154684f58d4295c6c247..e355f31d852fa15ff2c6bba55931f38be9e81d91 100644
+index e218b127c6dcdce2c4f8154684f58d4295c6c247..73530a14e0bf737745520226ef53ab4fa3637302 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -122,7 +122,7 @@ import io.netty.buffer.ByteBuf;
@@ -328,16 +328,16 @@ index e218b127c6dcdce2c4f8154684f58d4295c6c247..e355f31d852fa15ff2c6bba55931f38b
          return logger;
      }
  
-+    /* // PandaSpigot - jline update
++    /* // PandaSpigot start - jline update
      public ConsoleReader getReader() {
          return console.reader;
      }
-+    */ // PandaSpigot
++    */ // PandaSpigot end
  
      @Override
      public PluginCommand getPluginCommand(String name) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index b2a99effdf3ee503f94c39239f01e462c810e4c0..909db77d157194cb23937d90c4b2733383eb8cda 100644
+index b2a99effdf3ee503f94c39239f01e462c810e4c0..493aa08c0d6d92ff5fda076f317db748b0912381 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -10,7 +10,7 @@ import java.util.logging.Logger;
@@ -353,17 +353,16 @@ index b2a99effdf3ee503f94c39239f01e462c810e4c0..909db77d157194cb23937d90c4b27333
              }
  
              try {
-+                /* // PandaSpigot - Handled by TerminalConsoleAppender
++                /* // PandaSpigot start - Handled by TerminalConsoleAppender
                  // This trick bypasses Maven Shade's clever rewriting of our getProperty call when using String literals
                  String jline_UnsupportedTerminal = new String(new char[] {'j','l','i','n','e','.','U','n','s','u','p','p','o','r','t','e','d','T','e','r','m','i','n','a','l'});
                  String jline_terminal = new String(new char[] {'j','l','i','n','e','.','t','e','r','m','i','n','a','l'});
-@@ -185,10 +186,21 @@ public class Main {
+@@ -185,10 +186,20 @@ public class Main {
                      // This ensures the terminal literal will always match the jline implementation
                      System.setProperty(jline.TerminalFactory.JLINE_TERMINAL, jline.UnsupportedTerminal.class.getName());
                  }
 +                */
  
-+                // PandaSpigot start
 +                if (options.has("nojline")) {
 +                    System.setProperty(TerminalConsoleAppender.JLINE_OVERRIDE_PROPERTY, "false");
 +                    useJline = false;
