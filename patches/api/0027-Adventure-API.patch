@@ -1171,7 +1171,7 @@ index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..f13bbbaaba286fe436a497dab7755b88
      @Override
      public HandlerList getHandlers() {
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java b/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
-index 3efd15972e79afebce3d30a24b7dabdf8b963d7c..f856c68a4de9dd6d88673a87e5db3758e1f0444c 100644
+index 3efd15972e79afebce3d30a24b7dabdf8b963d7c..53ff5b655b981ae6e8d4702af05166e13439fc90 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
 @@ -10,11 +10,16 @@ public class PlayerLocaleChangeEvent extends PlayerEvent {
@@ -1218,13 +1218,6 @@ index 3efd15972e79afebce3d30a24b7dabdf8b963d7c..f856c68a4de9dd6d88673a87e5db3758
      @Override
      public HandlerList getHandlers() {
          return handlers;
-@@ -43,4 +68,4 @@ public class PlayerLocaleChangeEvent extends PlayerEvent {
-     public static HandlerList getHandlerList() {
-         return handlers;
-     }
--}
-\ No newline at end of file
-+}
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..e9a4a227850329ba52f58a99bb9886ab7c04149d 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
