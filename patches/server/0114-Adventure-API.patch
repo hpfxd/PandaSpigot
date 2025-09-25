@@ -257,7 +257,7 @@ index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..d981c89fd182bae75c928616edc5944f
          // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
          if (!event.getKeepInventory()) {
 diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..5d50379171901bd9cd0fce6b379deeadb00598aa 100644
+index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..fe5dcad624982134cf4f7c4e651be457b3073218 100644
 --- a/src/main/java/net/minecraft/server/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/LoginListener.java
 @@ -75,17 +75,20 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
@@ -287,6 +287,15 @@ index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..5d50379171901bd9cd0fce6b379deead
  
      // Spigot start
      public void initUUID()
+@@ -267,7 +270,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+                             if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
+                                 final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address, uniqueId);
+                                 if (asyncEvent.getResult() != PlayerPreLoginEvent.Result.ALLOWED) {
+-                                    event.disallow(asyncEvent.getResult(), asyncEvent.getKickMessage());
++                                    event.disallow(asyncEvent.getResult(), event.kickMessage()); // PandaSpigot - Adventure
+                                 }
+                                 Waitable<PlayerPreLoginEvent.Result> waitable = new Waitable<PlayerPreLoginEvent.Result>() {
+                                     @Override
 @@ -278,12 +281,12 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
  
                                  LoginListener.this.server.processQueue.add(waitable);
