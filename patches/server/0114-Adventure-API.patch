@@ -398,7 +398,7 @@ index 20016b5c4f6c3aa8782555b3ffeeead0b7c46844..98080450b4fa91129d96022b1175b93f
              } else {
                  packetdataserializer.a(this.b);
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 303d145fedb3488df4686f83a63c04c0c24eacc9..e505ea398c523a839dfbd2e1d83b4ebde7a80ac1 100644
+index 303d145fedb3488df4686f83a63c04c0c24eacc9..676e597d2fcaf6956f0ede46b2623e2361117661 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -167,11 +167,17 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
@@ -421,7 +421,7 @@ index 303d145fedb3488df4686f83a63c04c0c24eacc9..e505ea398c523a839dfbd2e1d83b4ebd
  
          if (this.server.getServer().isRunning()) {
              this.server.getPluginManager().callEvent(event);
-@@ -182,21 +188,20 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -182,16 +188,15 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
              return;
          }
          // Send the possibly modified leave message
@@ -442,13 +442,6 @@ index 303d145fedb3488df4686f83a63c04c0c24eacc9..e505ea398c523a839dfbd2e1d83b4ebd
          this.networkManager.k();
          // CraftBukkit - Don't wait
          this.minecraftServer.postToMainThread(new Runnable() {
--             public void run() {
--                 PlayerConnection.this.networkManager.l();
-+            public void run() {
-+                PlayerConnection.this.networkManager.l();
-             }
-         });
-     }
 @@ -896,10 +901,12 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
          */
  
