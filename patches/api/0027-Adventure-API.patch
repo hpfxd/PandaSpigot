@@ -1189,7 +1189,7 @@ index 3efd15972e79afebce3d30a24b7dabdf8b963d7c..53ff5b655b981ae6e8d4702af05166e1
      public HandlerList getHandlers() {
          return handlers;
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
-index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..1ecabb0c6c1c306324230c7ac61be5b042b35476 100644
+index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..b1e50d838d5580ff966d4a1db55b48e9b4546791 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 @@ -13,7 +13,7 @@ public class PlayerLoginEvent extends PlayerEvent {
@@ -1206,7 +1206,7 @@ index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..1ecabb0c6c1c306324230c7ac61be5b0
          this(player, hostname, address, realAddress); // Spigot
          this.result = result;
 +     // PandaSpigot start - Adventure
-+        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // PandaSpigot - Adventure
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message);
 +    }
 +
 +    /**
