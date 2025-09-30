@@ -853,7 +853,7 @@ index aad03549523391d22e574778250f8169bbac33f6..de569c5eaeeb7de954017b7b4e80f4a8
      /**
       * Gets how much EXP the Player should have at respawn.
 diff --git a/src/main/java/org/bukkit/event/inventory/InventoryType.java b/src/main/java/org/bukkit/event/inventory/InventoryType.java
-index c36e0467281fef62c8362640df1b9e4990562d47..043ac88d080efdc475decd665ef990ce9c574b68 100644
+index c36e0467281fef62c8362640df1b9e4990562d47..db080e2907b61dbd407e10351a751ac0fd5813a1 100644
 --- a/src/main/java/org/bukkit/event/inventory/InventoryType.java
 +++ b/src/main/java/org/bukkit/event/inventory/InventoryType.java
 @@ -73,10 +73,12 @@ public enum InventoryType {
@@ -865,7 +865,7 @@ index c36e0467281fef62c8362640df1b9e4990562d47..043ac88d080efdc475decd665ef990ce
      private InventoryType(int defaultSize, String defaultTitle) {
          size = defaultSize;
          title = defaultTitle;
-+        adventure$title = net.kyori.adventure.text.Component.text(defaultTitle);
++        adventure$title = net.kyori.adventure.text.Component.text(defaultTitle); // PandaSpigot - Adventure
      }
  
      public int getDefaultSize() {

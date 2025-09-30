@@ -257,36 +257,30 @@ index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..d981c89fd182bae75c928616edc5944f
          // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
          if (!event.getKeepInventory()) {
 diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..fe5dcad624982134cf4f7c4e651be457b3073218 100644
+index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..8d2a07782d370d3cdd8d26790a17c88498b8d258 100644
 --- a/src/main/java/net/minecraft/server/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/LoginListener.java
-@@ -75,17 +75,20 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+@@ -75,12 +75,15 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
      }
  
      public void disconnect(String s) {
--        try {
++        // PandaSpigot start - Adventure
++        disconnect(new ChatComponentText(s));
++    }
++    public void disconnect(IChatBaseComponent ichatbasecomponent) {
+         try {
 -            LoginListener.c.info("Disconnecting " + this.d() + ": " + s);
 -            ChatComponentText chatcomponenttext = new ChatComponentText(s);
-+        disconnect(new ChatComponentText(s)); // PandaSpigot - Adventure
-+    }
- 
+-
 -            this.networkManager.handle(new PacketLoginOutDisconnect(chatcomponenttext));
 -            this.networkManager.close(chatcomponenttext);
-+    // PandaSpigot start - Adventure
-+    public void disconnect(IChatBaseComponent ichatbasecomponent) {
-+        try {
 +            LoginListener.c.info("Disconnecting {}: {}", this.d(), ichatbasecomponent.getText());
 +            this.networkManager.handle(new PacketLoginOutDisconnect(ichatbasecomponent));
 +            this.networkManager.close(ichatbasecomponent);
++        // PandaSpigot end
          } catch (Exception exception) {
              LoginListener.c.error("Error whilst disconnecting player", exception);
          }
--
-     }
-+    // PandaSpigot end
- 
-     // Spigot start
-     public void initUUID()
 @@ -267,7 +270,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
                              if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
                                  final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address, uniqueId);
