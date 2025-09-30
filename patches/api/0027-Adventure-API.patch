@@ -867,7 +867,7 @@ index c36e0467281fef62c8362640df1b9e4990562d47..db080e2907b61dbd407e10351a751ac0
          /**
           * A result slot in a furnace or crafting inventory.
 diff --git a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
-index 62562d3503d856a3dce22c3e972543f1a2d63cca..076c6e83ff7fa4fb55c09da8263a46c7597101b7 100644
+index 62562d3503d856a3dce22c3e972543f1a2d63cca..202443301038cfe95bded5e5c85aa9e030e64cf2 100644
 --- a/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/AsyncPlayerPreLoginEvent.java
 @@ -14,7 +14,7 @@ import org.bukkit.event.HandlerList;
@@ -928,10 +928,10 @@ index 62562d3503d856a3dce22c3e972543f1a2d63cca..076c6e83ff7fa4fb55c09da8263a46c7
      @Deprecated
      public void disallow(final PlayerPreLoginEvent.Result result, final String message) {
          this.result = result == null ? null : Result.valueOf(result.name());
-+        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // PandaSpigot - Adventure
++    // PandaSpigot start - Adventure
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * Gets the current kick message that will be used if getResult() !=
 +     * Result.ALLOWED
@@ -1040,7 +1040,7 @@ index e7481f92c758396ea2035d404042d5fd8193def0..6cee8370285487ce691bb38dfaa09c5e
      }
  
 diff --git a/src/main/java/org/bukkit/event/player/PlayerKickEvent.java b/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
-index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..88955dcc529a938745787e80187e4cd855cb9e91 100644
+index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..6aa7b904353194f177282d5fe16462ac0ea9fafd 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
 @@ -9,11 +9,22 @@ import org.bukkit.event.HandlerList;
@@ -1099,10 +1099,10 @@ index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..88955dcc529a938745787e80187e4cd8
       * @param leaveMessage leave message
       */
      public void setLeaveMessage(String leaveMessage) {
-+        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(leaveMessage); // PandaSpigot - Adventure
++    // PandaSpigot start - Adventure
++        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(leaveMessage);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * Gets the reason why the player is getting kicked
 +     *
@@ -1189,7 +1189,7 @@ index 3efd15972e79afebce3d30a24b7dabdf8b963d7c..53ff5b655b981ae6e8d4702af05166e1
      public HandlerList getHandlers() {
          return handlers;
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
-index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..d83faca470ffe44c4dd5c7610e1acb2c4087db20 100644
+index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..1ecabb0c6c1c306324230c7ac61be5b042b35476 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 @@ -13,7 +13,7 @@ public class PlayerLoginEvent extends PlayerEvent {
@@ -1201,7 +1201,7 @@ index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..d83faca470ffe44c4dd5c7610e1acb2c
      private final InetAddress realAddress; // Spigot
  
      /**
-@@ -82,8 +82,26 @@ public class PlayerLoginEvent extends PlayerEvent {
+@@ -82,6 +82,24 @@ public class PlayerLoginEvent extends PlayerEvent {
      public PlayerLoginEvent(final Player player, String hostname, final InetAddress address, final Result result, final String message, final InetAddress realAddress) { // Spigot
          this(player, hostname, address, realAddress); // Spigot
          this.result = result;
@@ -1222,12 +1222,10 @@ index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..d83faca470ffe44c4dd5c7610e1acb2c
 +    public PlayerLoginEvent(final Player player, String hostname, final InetAddress address, final Result result, final net.kyori.adventure.text.Component message, final InetAddress realAddress) {
 +        this(player, hostname, address, realAddress);
 +        this.result = result;
++    // PandaSpigot end
          this.message = message;
      }
-+    // PandaSpigot end
  
-     // Spigot start
-     /**
 @@ -121,7 +139,7 @@ public class PlayerLoginEvent extends PlayerEvent {
       * @return Current kick message
       */
@@ -1259,11 +1257,11 @@ index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..d83faca470ffe44c4dd5c7610e1acb2c
       * @param message Kick message to display to the user
       */
      public void disallow(final Result result, final String message) {
++    // PandaSpigot start - Adventure
 +        this.result = result;
-+        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // PandaSpigot - Adventure
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * Gets the current kick message that will be used if getResult() !=
 +     * Result.ALLOWED
