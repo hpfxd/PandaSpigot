@@ -676,10 +676,10 @@ index ec6187582a696f5705390eac92a04a36511c3a6c..751f2f0f6b9fb4af753584c890555dfa
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/event/block/SignChangeEvent.java b/src/main/java/org/bukkit/event/block/SignChangeEvent.java
-index 83188cf583695c55708c49b2596bc030ef9e8322..634ade9e9e74072f746263438b56105f52ec488f 100644
+index 83188cf583695c55708c49b2596bc030ef9e8322..a060ea07c2ccf4bfb801ca877009acccd0db6423 100644
 --- a/src/main/java/org/bukkit/event/block/SignChangeEvent.java
 +++ b/src/main/java/org/bukkit/event/block/SignChangeEvent.java
-@@ -14,13 +14,26 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
+@@ -14,9 +14,20 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
      private static final HandlerList handlers = new HandlerList();
      private boolean cancel = false;
      private final Player player;
@@ -687,27 +687,21 @@ index 83188cf583695c55708c49b2596bc030ef9e8322..634ade9e9e74072f746263438b56105f
 +    private final net.kyori.adventure.text.Component[] lines; // PandaSpigot - Adventure
  
      public SignChangeEvent(final Block theBlock, final Player thePlayer, final String[] theLines) {
++    // PandaSpigot start - Adventure
 +        super(theBlock);
 +        this.player = thePlayer;
-+        // PandaSpigot start - Adventure
 +        this.lines = new net.kyori.adventure.text.Component[theLines.length];
 +        for (int i = 0; i < theLines.length; i++) {
 +            this.lines[i] = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(theLines[i]);
 +        }
-+        // PandaSpigot end
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    public SignChangeEvent(final Block theBlock, final Player thePlayer, final net.kyori.adventure.text.Component[] theLines) {
++    // PandaSpigot end
          super(theBlock);
          this.player = thePlayer;
          this.lines = theLines;
-     }
-+    // PandaSpigot end
- 
-     /**
-      * Gets the player changing the sign involved in this event.
-@@ -37,7 +50,7 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
+@@ -37,7 +48,7 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
       * @return the String array for the sign's lines new text
       */
      public String[] getLines() {
@@ -716,7 +710,7 @@ index 83188cf583695c55708c49b2596bc030ef9e8322..634ade9e9e74072f746263438b56105f
      }
  
      /**
-@@ -50,7 +63,7 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
+@@ -50,7 +61,7 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
       *     or < 0}
       */
      public String getLine(int index) throws IndexOutOfBoundsException {
@@ -725,14 +719,14 @@ index 83188cf583695c55708c49b2596bc030ef9e8322..634ade9e9e74072f746263438b56105f
      }
  
      /**
-@@ -62,8 +75,44 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
+@@ -62,6 +73,42 @@ public class SignChangeEvent extends BlockEvent implements Cancellable {
       *     or < 0}
       */
      public void setLine(int index, String line) throws IndexOutOfBoundsException {
-+        lines[index] = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(line); // PandaSpigot - Adventure
++    // PandaSpigot start - Adventure
++        lines[index] = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(line);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * Gets all the lines of text from the sign involved in this event.
 +     *
@@ -764,14 +758,12 @@ index 83188cf583695c55708c49b2596bc030ef9e8322..634ade9e9e74072f746263438b56105f
 +     *     or < 0}
 +     */
 +    public void line(int index, net.kyori.adventure.text.Component line) throws IndexOutOfBoundsException {
++    // PandaSpigot end
          lines[index] = line;
      }
-+    // PandaSpigot end
  
-     public boolean isCancelled() {
-         return cancel;
 diff --git a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
-index aad03549523391d22e574778250f8169bbac33f6..de569c5eaeeb7de954017b7b4e80f4a89739e1bf 100644
+index aad03549523391d22e574778250f8169bbac33f6..b18ba658559072b142622544e2469d009b9c649b 100644
 --- a/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
 +++ b/src/main/java/org/bukkit/event/entity/PlayerDeathEvent.java
 @@ -10,7 +10,7 @@ import org.bukkit.inventory.ItemStack;
@@ -783,18 +775,18 @@ index aad03549523391d22e574778250f8169bbac33f6..de569c5eaeeb7de954017b7b4e80f4a8
      private int newLevel = 0;
      private int newTotalExp = 0;
      private boolean keepLevel = false;
-@@ -25,12 +25,30 @@ public class PlayerDeathEvent extends EntityDeathEvent {
+@@ -25,6 +25,24 @@ public class PlayerDeathEvent extends EntityDeathEvent {
      }
  
      public PlayerDeathEvent(final Player player, final List<ItemStack> drops, final int droppedExp, final int newExp, final int newTotalExp, final int newLevel, final String deathMessage) {
++    // PandaSpigot start - Adventure
 +        super(player, drops, droppedExp);
 +        this.newExp = newExp;
 +        this.newTotalExp = newTotalExp;
 +        this.newLevel = newLevel;
-+        this.deathMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(deathMessage); // PandaSpigot - Adventure
++        this.deathMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(deathMessage);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    public PlayerDeathEvent(final Player player, final List<ItemStack> drops, final int droppedExp, final net.kyori.adventure.text.Component deathMessage) {
 +        this(player, drops, droppedExp, 0, deathMessage);
 +    }
@@ -804,16 +796,10 @@ index aad03549523391d22e574778250f8169bbac33f6..de569c5eaeeb7de954017b7b4e80f4a8
 +    }
 +
 +    public PlayerDeathEvent(final Player player, final List<ItemStack> drops, final int droppedExp, final int newExp, final int newTotalExp, final int newLevel, final net.kyori.adventure.text.Component deathMessage) {
++     // PandaSpigot end
          super(player, drops, droppedExp);
          this.newExp = newExp;
          this.newTotalExp = newTotalExp;
-         this.newLevel = newLevel;
-         this.deathMessage = deathMessage;
-     }
-+    // PandaSpigot end
- 
-     @Override
-     public Player getEntity() {
 @@ -43,7 +61,7 @@ public class PlayerDeathEvent extends EntityDeathEvent {
       * @param deathMessage Message to appear to other players on the server.
       */
@@ -823,14 +809,14 @@ index aad03549523391d22e574778250f8169bbac33f6..de569c5eaeeb7de954017b7b4e80f4a8
      }
  
      /**
-@@ -52,8 +70,28 @@ public class PlayerDeathEvent extends EntityDeathEvent {
+@@ -52,6 +70,26 @@ public class PlayerDeathEvent extends EntityDeathEvent {
       * @return Message to appear to other players on the server.
       */
      public String getDeathMessage() {
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(deathMessage); // PandaSpigot - Adventure
++    // PandaSpigot start - Adventure
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(deathMessage);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * Set the death message that will appear to everyone on the server.
 +     *
@@ -846,12 +832,10 @@ index aad03549523391d22e574778250f8169bbac33f6..de569c5eaeeb7de954017b7b4e80f4a8
 +     * @return Message to appear to other players on the server.
 +     */
 +    public net.kyori.adventure.text.Component deathMessage() {
++    // PandaSpigot end
          return deathMessage;
      }
-+    // PandaSpigot end
  
-     /**
-      * Gets how much EXP the Player should have at respawn.
 diff --git a/src/main/java/org/bukkit/event/inventory/InventoryType.java b/src/main/java/org/bukkit/event/inventory/InventoryType.java
 index c36e0467281fef62c8362640df1b9e4990562d47..db080e2907b61dbd407e10351a751ac0fd5813a1 100644
 --- a/src/main/java/org/bukkit/event/inventory/InventoryType.java
@@ -998,10 +982,10 @@ index 62562d3503d856a3dce22c3e972543f1a2d63cca..076c6e83ff7fa4fb55c09da8263a46c7
       * Gets the player's name.
       *
 diff --git a/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java b/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java
-index e7481f92c758396ea2035d404042d5fd8193def0..5ea0f4a9a9d320cb78af81d51abe058ff783983e 100644
+index e7481f92c758396ea2035d404042d5fd8193def0..6cee8370285487ce691bb38dfaa09c5e1dffc74a 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerJoinEvent.java
-@@ -8,12 +8,19 @@ import org.bukkit.event.HandlerList;
+@@ -8,9 +8,16 @@ import org.bukkit.event.HandlerList;
   */
  public class PlayerJoinEvent extends PlayerEvent {
      private static final HandlerList handlers = new HandlerList();
@@ -1009,19 +993,16 @@ index e7481f92c758396ea2035d404042d5fd8193def0..5ea0f4a9a9d320cb78af81d51abe058f
 +    private net.kyori.adventure.text.Component joinMessage; // PandaSpigot - Adventure
  
      public PlayerJoinEvent(final Player playerJoined, final String joinMessage) {
++    // PandaSpigot start - Adventure
 +        super(playerJoined);
-+        this.joinMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(joinMessage); // PandaSpigot - Adventure
++        this.joinMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(joinMessage);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    public PlayerJoinEvent(final Player playerJoined, final net.kyori.adventure.text.Component joinMessage) {
++    // PandaSpigot end
          super(playerJoined);
          this.joinMessage = joinMessage;
      }
-+    // PandaSpigot end
- 
-     /**
-      * Gets the join message to send to all online players
 @@ -21,7 +28,7 @@ public class PlayerJoinEvent extends PlayerEvent {
       * @return string join message
       */
@@ -1031,14 +1012,14 @@ index e7481f92c758396ea2035d404042d5fd8193def0..5ea0f4a9a9d320cb78af81d51abe058f
      }
  
      /**
-@@ -30,8 +37,28 @@ public class PlayerJoinEvent extends PlayerEvent {
+@@ -30,6 +37,26 @@ public class PlayerJoinEvent extends PlayerEvent {
       * @param joinMessage join message
       */
      public void setJoinMessage(String joinMessage) {
-+        this.joinMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(joinMessage); // PandaSpigot - Adventure
++    // PandaSpigot start - Adventure
++        this.joinMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(joinMessage);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * Gets the join message to send to all online players
 +     *
@@ -1054,17 +1035,15 @@ index e7481f92c758396ea2035d404042d5fd8193def0..5ea0f4a9a9d320cb78af81d51abe058f
 +     * @param joinMessage join message
 +     */
 +    public void joinMessage(net.kyori.adventure.text.Component joinMessage) {
++    // PandaSpigot end
          this.joinMessage = joinMessage;
      }
-+    // PandaSpigot end
  
-     @Override
-     public HandlerList getHandlers() {
 diff --git a/src/main/java/org/bukkit/event/player/PlayerKickEvent.java b/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
-index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..f13bbbaaba286fe436a497dab7755b8819b622af 100644
+index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..88955dcc529a938745787e80187e4cd855cb9e91 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerKickEvent.java
-@@ -9,16 +9,29 @@ import org.bukkit.event.HandlerList;
+@@ -9,11 +9,22 @@ import org.bukkit.event.HandlerList;
   */
  public class PlayerKickEvent extends PlayerEvent implements Cancellable {
      private static final HandlerList handlers = new HandlerList();
@@ -1077,57 +1056,50 @@ index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..f13bbbaaba286fe436a497dab7755b88
      private Boolean cancel;
  
      public PlayerKickEvent(final Player playerKicked, final String kickReason, final String leaveMessage) {
-+        super(playerKicked);
 +        // PandaSpigot start - Adventure
++        super(playerKicked);
 +        this.kickReason = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(kickReason);
 +        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(leaveMessage);
-+        // PandaSpigot end
 +        this.cancel = false;
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    public PlayerKickEvent(final Player playerKicked, final net.kyori.adventure.text.Component kickReason, final net.kyori.adventure.text.Component leaveMessage) {
++        // PandaSpigot end
          super(playerKicked);
          this.kickReason = kickReason;
          this.leaveMessage = leaveMessage;
-         this.cancel = false;
-     }
-+    // PandaSpigot end
- 
-     /**
-      * Gets the reason why the player is getting kicked
-@@ -26,7 +39,7 @@ public class PlayerKickEvent extends PlayerEvent implements Cancellable {
+@@ -26,7 +37,7 @@ public class PlayerKickEvent extends PlayerEvent implements Cancellable {
       * @return string kick reason
       */
      public String getReason() {
 -        return kickReason;
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(kickReason);
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(kickReason); // PandaSpigot - Adventure
      }
  
      /**
-@@ -35,7 +48,7 @@ public class PlayerKickEvent extends PlayerEvent implements Cancellable {
+@@ -35,7 +46,7 @@ public class PlayerKickEvent extends PlayerEvent implements Cancellable {
       * @return string kick reason
       */
      public String getLeaveMessage() {
 -        return leaveMessage;
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(leaveMessage);
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serializeOrNull(leaveMessage); // PandaSpigot - Adventure
      }
  
      public boolean isCancelled() {
-@@ -52,7 +65,7 @@ public class PlayerKickEvent extends PlayerEvent implements Cancellable {
+@@ -52,7 +63,7 @@ public class PlayerKickEvent extends PlayerEvent implements Cancellable {
       * @param kickReason kick reason
       */
      public void setReason(String kickReason) {
 -        this.kickReason = kickReason;
-+        this.kickReason = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(kickReason);
++        this.kickReason = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(kickReason); // PandaSpigot - Adventure
      }
  
      /**
-@@ -61,8 +74,46 @@ public class PlayerKickEvent extends PlayerEvent implements Cancellable {
+@@ -61,6 +72,44 @@ public class PlayerKickEvent extends PlayerEvent implements Cancellable {
       * @param leaveMessage leave message
       */
      public void setLeaveMessage(String leaveMessage) {
-+        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(leaveMessage);
++        this.leaveMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(leaveMessage); // PandaSpigot - Adventure
 +    }
 +
 +    // PandaSpigot start - Adventure
@@ -1164,12 +1136,10 @@ index 39e81b67840eadf4f41aab8a8eb4549f9f7043fa..f13bbbaaba286fe436a497dab7755b88
 +     * @param leaveMessage leave message
 +     */
 +    public void leaveMessage(net.kyori.adventure.text.Component leaveMessage) {
++    // PandaSpigot end
          this.leaveMessage = leaveMessage;
      }
-+    // PandaSpigot end
  
-     @Override
-     public HandlerList getHandlers() {
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java b/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
 index 3efd15972e79afebce3d30a24b7dabdf8b963d7c..53ff5b655b981ae6e8d4702af05166e13439fc90 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLocaleChangeEvent.java
@@ -1219,7 +1189,7 @@ index 3efd15972e79afebce3d30a24b7dabdf8b963d7c..53ff5b655b981ae6e8d4702af05166e1
      public HandlerList getHandlers() {
          return handlers;
 diff --git a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
-index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..e9a4a227850329ba52f58a99bb9886ab7c04149d 100644
+index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..d83faca470ffe44c4dd5c7610e1acb2c4087db20 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerLoginEvent.java
 @@ -13,7 +13,7 @@ public class PlayerLoginEvent extends PlayerEvent {
@@ -1235,10 +1205,10 @@ index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..e9a4a227850329ba52f58a99bb9886ab
      public PlayerLoginEvent(final Player player, String hostname, final InetAddress address, final Result result, final String message, final InetAddress realAddress) { // Spigot
          this(player, hostname, address, realAddress); // Spigot
          this.result = result;
++     // PandaSpigot start - Adventure
 +        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // PandaSpigot - Adventure
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * This constructor pre-configures the event with a result and message
 +     *
@@ -1285,7 +1255,7 @@ index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..e9a4a227850329ba52f58a99bb9886ab
      }
  
      /**
-@@ -158,9 +176,41 @@ public class PlayerLoginEvent extends PlayerEvent {
+@@ -158,6 +176,38 @@ public class PlayerLoginEvent extends PlayerEvent {
       * @param message Kick message to display to the user
       */
      public void disallow(final Result result, final String message) {
@@ -1320,15 +1290,12 @@ index 4bc024ffd3f94c161dd9f64ad5c6201c495e08fa..e9a4a227850329ba52f58a99bb9886ab
 +     * @param message Kick message to display to the user
 +     */
 +    public void disallow(final Result result, final net.kyori.adventure.text.Component message) {
++    // PandaSpigot end
          this.result = result;
          this.message = message;
      }
-+    // PandaSpigot end
- 
-     /**
-      * Gets the {@link InetAddress} for the Player associated with this event.
 diff --git a/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java b/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
-index e8553f0f36b1b25bf44087f8d72fb81d8c8424e5..4686c71ee373cb63a1af994fc8a712c3160d7d81 100644
+index e8553f0f36b1b25bf44087f8d72fb81d8c8424e5..afce46f5481fb13e647addb34d68e9958051c585 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerPreLoginEvent.java
 @@ -19,7 +19,7 @@ import org.bukkit.event.HandlerList;
@@ -1376,15 +1343,15 @@ index e8553f0f36b1b25bf44087f8d72fb81d8c8424e5..4686c71ee373cb63a1af994fc8a712c3
      }
  
      /**
-@@ -89,9 +89,41 @@ public class PlayerPreLoginEvent extends Event {
+@@ -89,6 +89,38 @@ public class PlayerPreLoginEvent extends Event {
       * @param message Kick message to display to the user
       */
      public void disallow(final Result result, final String message) {
++        // PandaSpigot start - Adventure
 +        this.result = result;
-+        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message); // PandaSpigot - Adventure
++        this.message = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(message);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * Gets the current kick message that will be used if getResult() !=
 +     * Result.ALLOWED
@@ -1411,18 +1378,15 @@ index e8553f0f36b1b25bf44087f8d72fb81d8c8424e5..4686c71ee373cb63a1af994fc8a712c3
 +     * @param message Kick message to display to the user
 +     */
 +    public void disallow(final Result result, final net.kyori.adventure.text.Component message) {
++    // PandaSpigot end
          this.result = result;
          this.message = message;
      }
-+    // PandaSpigot end
- 
-     /**
-      * Gets the player's name.
 diff --git a/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java b/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
-index 5c8dc1b91c297b40e05dcbabf48cc12d194b34eb..37cda58c37d075bf19dce548cf0341232af1d15e 100644
+index 5c8dc1b91c297b40e05dcbabf48cc12d194b34eb..84868a9144812ada41d7c69a2f291651eb9f684e 100644
 --- a/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
 +++ b/src/main/java/org/bukkit/event/player/PlayerQuitEvent.java
-@@ -8,12 +8,19 @@ import org.bukkit.event.HandlerList;
+@@ -8,9 +8,16 @@ import org.bukkit.event.HandlerList;
   */
  public class PlayerQuitEvent extends PlayerEvent {
      private static final HandlerList handlers = new HandlerList();
@@ -1430,19 +1394,16 @@ index 5c8dc1b91c297b40e05dcbabf48cc12d194b34eb..37cda58c37d075bf19dce548cf034123
 +    private net.kyori.adventure.text.Component quitMessage; // PandaSpigot - Adventure
  
      public PlayerQuitEvent(final Player who, final String quitMessage) {
++    // PandaSpigot start - Adventure
 +        super(who);
-+        this.quitMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(quitMessage); // PandaSpigot - Adventure
++        this.quitMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(quitMessage);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    public PlayerQuitEvent(final Player who, final net.kyori.adventure.text.Component quitMessage) {
++    // PandaSpigot end
          super(who);
          this.quitMessage = quitMessage;
      }
-+    // PandaSpigot end
- 
-     /**
-      * Gets the quit message to send to all online players
 @@ -21,7 +28,7 @@ public class PlayerQuitEvent extends PlayerEvent {
       * @return string quit message
       */
@@ -1452,14 +1413,14 @@ index 5c8dc1b91c297b40e05dcbabf48cc12d194b34eb..37cda58c37d075bf19dce548cf034123
      }
  
      /**
-@@ -30,8 +37,28 @@ public class PlayerQuitEvent extends PlayerEvent {
+@@ -30,6 +37,26 @@ public class PlayerQuitEvent extends PlayerEvent {
       * @param quitMessage quit message
       */
      public void setQuitMessage(String quitMessage) {
-+        this.quitMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(quitMessage); // PandaSpigot - Adventure
++    // PandaSpigot start - Adventure
++        this.quitMessage = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserializeOrNull(quitMessage);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * Gets the quit message to send to all online players
 +     *
@@ -1475,14 +1436,12 @@ index 5c8dc1b91c297b40e05dcbabf48cc12d194b34eb..37cda58c37d075bf19dce548cf034123
 +     * @param quitMessage quit message
 +     */
 +    public void quitMessage(net.kyori.adventure.text.Component quitMessage) {
++    // PandaSpigot end
          this.quitMessage = quitMessage;
      }
-+    // PandaSpigot end
  
-     @Override
-     public HandlerList getHandlers() {
 diff --git a/src/main/java/org/bukkit/event/server/ServerListPingEvent.java b/src/main/java/org/bukkit/event/server/ServerListPingEvent.java
-index 3c38d85735d37b401061feae686dea50adb5b650..bcf68ca2bea489e7d39e90e4157f8cca5a150eda 100644
+index 3c38d85735d37b401061feae686dea50adb5b650..252917a66e29070e84ed9d2fcaa46169d7ff929c 100644
 --- a/src/main/java/org/bukkit/event/server/ServerListPingEvent.java
 +++ b/src/main/java/org/bukkit/event/server/ServerListPingEvent.java
 @@ -16,7 +16,7 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
@@ -1503,15 +1462,15 @@ index 3c38d85735d37b401061feae686dea50adb5b650..bcf68ca2bea489e7d39e90e4157f8cca
          this.numPlayers = numPlayers;
          this.maxPlayers = maxPlayers;
      }
-@@ -42,9 +42,37 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
+@@ -42,6 +42,34 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
          super(); // Paper - Is this event being fired async?
          this.numPlayers = MAGIC_PLAYER_COUNT;
          this.address = address;
-+        this.motd = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(motd); // PandaSpigot - Adventure
++    // PandaSpigot start - Adventure
++        this.motd = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(motd);
 +        this.maxPlayers = maxPlayers;
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    public ServerListPingEvent(final InetAddress address, final net.kyori.adventure.text.Component motd, final int numPlayers, final int maxPlayers) {
 +        super();
 +        Validate.isTrue(numPlayers >= 0, "Cannot have negative number of players online", numPlayers);
@@ -1534,13 +1493,10 @@ index 3c38d85735d37b401061feae686dea50adb5b650..bcf68ca2bea489e7d39e90e4157f8cca
 +        super();
 +        this.numPlayers = MAGIC_PLAYER_COUNT;
 +        this.address = address;
++    // PandaSpigot end
          this.motd = motd;
          this.maxPlayers = maxPlayers;
      }
-+    // PandaSpigot end
- 
-     /**
-      * Get the address the ping is coming from.
 @@ -61,7 +89,7 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
       * @return the message of the day
       */
@@ -1550,14 +1506,14 @@ index 3c38d85735d37b401061feae686dea50adb5b650..bcf68ca2bea489e7d39e90e4157f8cca
      }
  
      /**
-@@ -70,8 +98,28 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
+@@ -70,6 +98,26 @@ public class ServerListPingEvent extends ServerEvent implements Iterable<Player>
       * @param motd the message of the day
       */
      public void setMotd(String motd) {
-+        this.motd = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(motd); // PandaSpigot - Adventure
++    // PandaSpigot start - Adventure
++        this.motd = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(motd);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    /**
 +     * Get the message of the day message.
 +     *
@@ -1573,12 +1529,10 @@ index 3c38d85735d37b401061feae686dea50adb5b650..bcf68ca2bea489e7d39e90e4157f8cca
 +     * @param motd the message of the day
 +     */
 +    public void motd(net.kyori.adventure.text.Component motd) {
++    // PandaSpigot end
          this.motd = motd;
      }
-+    // PandaSpigot end
  
-     /**
-      * Get the number of players sent.
 diff --git a/src/main/java/org/bukkit/inventory/Inventory.java b/src/main/java/org/bukkit/inventory/Inventory.java
 index da5d83e021d3dacd1032750432bb02658170260d..60155118eeda28f78379e3809b2c25851abae84e 100644
 --- a/src/main/java/org/bukkit/inventory/Inventory.java
@@ -1602,14 +1556,15 @@ index da5d83e021d3dacd1032750432bb02658170260d..60155118eeda28f78379e3809b2c2585
       * Returns what type of inventory this is.
       *
 diff --git a/src/main/java/org/bukkit/inventory/InventoryView.java b/src/main/java/org/bukkit/inventory/InventoryView.java
-index 46242f8a219c3c9a2cbfb71c71af32100723365e..0e7f7beec449d36b0cceb68d84d8a1cff9d636d6 100644
+index 46242f8a219c3c9a2cbfb71c71af32100723365e..c1235f11f9139898265eb39bc8dbed88b5c6e707 100644
 --- a/src/main/java/org/bukkit/inventory/InventoryView.java
 +++ b/src/main/java/org/bukkit/inventory/InventoryView.java
-@@ -229,4 +229,13 @@ public abstract class InventoryView {
+@@ -229,4 +229,15 @@ public abstract class InventoryView {
      public final String getTitle() {
          return getTopInventory().getTitle();
      }
 +
++    // PandaSpigot start - Adventure
 +    /**
 +     * Get the title of this inventory window.
 +     *
@@ -1618,6 +1573,7 @@ index 46242f8a219c3c9a2cbfb71c71af32100723365e..0e7f7beec449d36b0cceb68d84d8a1cf
 +    public final net.kyori.adventure.text.Component title() {
 +        return getTopInventory().title();
 +    }
++    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/inventory/meta/BookMeta.java b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
 index 00175963005cebabf758ed9b4aee6d77dd03e908..56d247be3b6a6f3e47dbc1bef6883c31b0a4adb9 100644
