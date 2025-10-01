@@ -392,20 +392,18 @@ index 20016b5c4f6c3aa8782555b3ffeeead0b7c46844..98080450b4fa91129d96022b1175b93f
              } else {
                  packetdataserializer.a(this.b);
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 303d145fedb3488df4686f83a63c04c0c24eacc9..676e597d2fcaf6956f0ede46b2623e2361117661 100644
+index 303d145fedb3488df4686f83a63c04c0c24eacc9..7e2229575f8688ba0298552ea904b67997a50f13 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
-@@ -167,11 +167,17 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
-         return this.networkManager;
+@@ -168,10 +168,15 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
      }
  
-+    // PandaSpigot start - Adventure
      public void disconnect(String s) {
++    // PandaSpigot start - Adventure
 +        disconnect(new ChatComponentText(s));
 +    }
++    public void disconnect(IChatBaseComponent ichatbasecomponent) {
 +    // PandaSpigot end
-+
-+    public void disconnect(IChatBaseComponent ichatbasecomponent) { // PandaSpigot - Adventure
          // CraftBukkit start - fire PlayerKickEvent
 -        String leaveMessage = EnumChatFormat.YELLOW + this.player.getName() + " left the game.";
 +        net.kyori.adventure.text.Component leaveMessage = net.kyori.adventure.text.Component.translatable("multiplayer.player.left").arguments(net.kyori.adventure.text.Component.text(this.getPlayer().getName())).color(net.kyori.adventure.text.format.NamedTextColor.YELLOW); // PandaSpigot - Adventure
@@ -415,7 +413,7 @@ index 303d145fedb3488df4686f83a63c04c0c24eacc9..676e597d2fcaf6956f0ede46b2623e23
  
          if (this.server.getServer().isRunning()) {
              this.server.getPluginManager().callEvent(event);
-@@ -182,16 +188,15 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -182,16 +187,15 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
              return;
          }
          // Send the possibly modified leave message
@@ -436,7 +434,7 @@ index 303d145fedb3488df4686f83a63c04c0c24eacc9..676e597d2fcaf6956f0ede46b2623e23
          this.networkManager.k();
          // CraftBukkit - Don't wait
          this.minecraftServer.postToMainThread(new Runnable() {
-@@ -896,10 +901,12 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -896,10 +900,12 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
          */
  
          this.player.q();
@@ -452,7 +450,7 @@ index 303d145fedb3488df4686f83a63c04c0c24eacc9..676e597d2fcaf6956f0ede46b2623e23
          // CraftBukkit end
          if (this.minecraftServer.T() && this.player.getName().equals(this.minecraftServer.S())) {
              PlayerConnection.c.info("Stopping singleplayer server as player logged out");
-@@ -1937,7 +1944,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+@@ -1937,7 +1943,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
              this.server.getPluginManager().callEvent(event);
  
              if (!event.isCancelled()) {
@@ -568,7 +566,7 @@ index 8b8b19c8afa32af136733bd7f77ed9417fab17fd..2eac381a825ed0edabd12816432f6d2d
      {
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java b/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
-index 43adfccd72c0629f5b93c735119fa4f84074d12b..f82bc7aa44e7299768aabf00fef7a995027ae1fe 100644
+index 43adfccd72c0629f5b93c735119fa4f84074d12b..5f39a8dff50d59cea70d6050f4e17101e38851e7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
 +++ b/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
 @@ -11,7 +11,7 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
@@ -580,7 +578,7 @@ index 43adfccd72c0629f5b93c735119fa4f84074d12b..f82bc7aa44e7299768aabf00fef7a995
  
      public CraftSign(final Block block) {
          super(block);
-@@ -20,40 +20,54 @@ public class CraftSign extends CraftBlockState implements Sign {
+@@ -20,30 +20,45 @@ public class CraftSign extends CraftBlockState implements Sign {
          sign = (TileEntitySign) world.getTileEntityAt(getX(), getY(), getZ());
          // Spigot start
          if (sign == null) {
@@ -613,10 +611,10 @@ index 43adfccd72c0629f5b93c735119fa4f84074d12b..f82bc7aa44e7299768aabf00fef7a995
      }
  
      public void setLine(int index, String line) throws IndexOutOfBoundsException {
-+        lines[index] = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(line); // PandaSpigot - Adventure
++    // PandaSpigot start - Adventure
++        lines[index] = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(line);
 +    }
 +
-+    // PandaSpigot start - Adventure
 +    @Override
 +    public java.util.List<net.kyori.adventure.text.Component> lines() {
 +        return java.util.Arrays.asList(lines);
@@ -629,12 +627,11 @@ index 43adfccd72c0629f5b93c735119fa4f84074d12b..f82bc7aa44e7299768aabf00fef7a995
 +
 +    @Override
 +    public void line(int index, net.kyori.adventure.text.Component line) throws IndexOutOfBoundsException {
++    // PandaSpigot end
          lines[index] = line;
      }
-+    // PandaSpigot end
  
-     @Override
-     public boolean update(boolean force, boolean applyPhysics) {
+@@ -52,8 +67,7 @@ public class CraftSign extends CraftBlockState implements Sign {
          boolean result = super.update(force, applyPhysics);
  
          if (result) {
