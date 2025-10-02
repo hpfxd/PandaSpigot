@@ -642,18 +642,10 @@ index 43adfccd72c0629f5b93c735119fa4f84074d12b..5f39a8dff50d59cea70d6050f4e17101
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 49477a0f4d237db75d869ed91dc5088f4b4385fe..6d2357123c716f5f43d7f0f08fc96addde2f5342 100644
+index 49477a0f4d237db75d869ed91dc5088f4b4385fe..a6c17a3fd08609eb427aaae8dcaced3f12e7837d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-@@ -80,6 +80,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
-     private double health = 20;
-     private boolean scaledHealth = false;
-     private double healthScale = 20;
-+    private net.kyori.adventure.text.Component playerListHeader, playerListFooter; // PandaSpigot - Adventure
- 
-     public CraftPlayer(CraftServer server, EntityPlayer entity) {
-         super(server, entity);
-@@ -194,6 +195,58 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -194,6 +194,41 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
                  footer == null ? null : new BaseComponent[]{footer});
      }
  
@@ -669,9 +661,6 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..6d2357123c716f5f43d7f0f08fc96add
 +
 +    @Override
 +    public void sendPlayerListHeaderAndFooter(final net.kyori.adventure.text.Component header, final net.kyori.adventure.text.Component footer) {
-+        playerListHeader = header;
-+        playerListFooter = footer;
-+
 +        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
 +        packet.adventure$header = header;
 +        packet.adventure$footer = footer;
@@ -681,8 +670,6 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..6d2357123c716f5f43d7f0f08fc96add
 +
 +    @Override
 +    public void sendPlayerListHeader(final net.kyori.adventure.text.Component header) {
-+        playerListHeader = header;
-+
 +        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
 +        packet.adventure$header = header;
 +
@@ -691,28 +678,16 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..6d2357123c716f5f43d7f0f08fc96add
 +
 +    @Override
 +    public void sendPlayerListFooter(final net.kyori.adventure.text.Component footer) {
-+        playerListFooter = footer;
-+
 +        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
 +        packet.adventure$footer = footer;
 +
 +        getHandle().playerConnection.sendPacket(packet);
 +    }
-+
-+    @Override
-+    public net.kyori.adventure.text.Component playerListHeader() {
-+        return playerListHeader;
-+    }
-+
-+    @Override
-+    public net.kyori.adventure.text.Component playerListFooter() {
-+        return playerListFooter;
-+    }
 +    // PandaSpigot end
  
      @Override
      public void setTitleTimes(int fadeInTicks, int stayTicks, int fadeOutTicks) {
-@@ -258,14 +311,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -258,14 +293,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      }
      // Paper end
  
@@ -749,7 +724,7 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..6d2357123c716f5f43d7f0f08fc96add
      }
  
      @Override
-@@ -286,6 +359,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -286,6 +341,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
      }
  
@@ -783,7 +758,7 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..6d2357123c716f5f43d7f0f08fc96add
      @Override
      public boolean equals(Object obj) {
          if (!(obj instanceof OfflinePlayer)) {
-@@ -314,6 +414,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -314,6 +396,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          getHandle().playerConnection.disconnect(message == null ? "" : message);
      }
  
