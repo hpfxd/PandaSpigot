@@ -26,8 +26,9 @@ You can download the latest pre-built server JAR by clicking the download button
 
 For support, please join our [Discord](https://discord.gg/m6vCCX6Hvr).
 
-## API
-See our API patches [here](./patches/api/).
+## API 
+See our API patches [here](./patches/api/).  
+[![Javadocs](https://repo.hpfxd.com/api/badge/latest/releases/com/hpfxd/pandaspigot/pandaspigot-api?name=Javadocs)](https://repo.hpfxd.com/javadoc/releases/com/hpfxd/pandaspigot/pandaspigot-api/1.8.8-R0.1-SNAPSHOT/raw/index.html)
 <details>
 <summary>Maven</summary>
 
