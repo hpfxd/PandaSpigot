@@ -1,0 +1,829 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <constant4337@molecularmail.com>
+Date: Sun, 7 Sep 2025 13:58:56 -0600
+Subject: [PATCH] Adventure API
+
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 83dcd2285e088f8620831e20893c44a122779daf..8c8aa2274fd97c9d3a2f24700f58e045e984f75d 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -4,6 +4,7 @@ plugins {
+ }
+ 
+ val minecraftVersion = "1_8_R3"
++val adventureVersion = "4.24.0" // PandaSpigot - Adventure
+ 
+ repositories {
+     maven(url = "https://libraries.minecraft.net")
+@@ -43,7 +44,7 @@ dependencies {
+     implementation("org.jline:jline-terminal-jni:3.30.3")
+     // PandaSpigot end
+ 
+-    implementation("net.kyori:adventure-key:4.21.0") // PandaSpigot - Add Channel initialization listeners
++    implementation("net.kyori:adventure-text-serializer-json:$adventureVersion") // PandaSpigot - Adventure
+ 
+     testImplementation("junit:junit:4.11")
+     testImplementation("org.hamcrest:hamcrest-library:1.3")
+diff --git a/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java b/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..858987bb7be1fa84e7ac35dde2a8d1a4cf817823
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
+@@ -0,0 +1,97 @@
++package com.hpfxd.pandaspigot.adventure;
++
++import com.google.common.base.CaseFormat;
++import net.kyori.adventure.key.Key;
++import net.kyori.adventure.nbt.api.BinaryTagHolder;
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.event.HoverEvent;
++import net.kyori.adventure.text.serializer.json.LegacyHoverEventSerializer;
++import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
++import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
++import net.kyori.adventure.util.Codec;
++import net.minecraft.server.MojangsonParseException;
++import net.minecraft.server.MojangsonParser;
++import net.minecraft.server.NBTBase;
++import net.minecraft.server.NBTTagCompound;
++
++import java.io.IOException;
++import java.util.UUID;
++
++public class NBTLegacyHoverEventSerializer implements LegacyHoverEventSerializer {
++
++    public static final Codec<NBTTagCompound, String, MojangsonParseException, RuntimeException> SNBT_CODEC = Codec.codec(MojangsonParser::parse, NBTBase::toString);
++
++    public static final String ITEM_TYPE = "id";
++    public static final String ITEM_COUNT = "Count";
++    public static final String ITEM_TAG = "tag";
++
++    public static final String ENTITY_NAME = "name";
++    public static final String ENTITY_TYPE = "type";
++    public static final String ENTITY_ID = "id";
++
++    @Override
++    public HoverEvent.ShowItem deserializeShowItem(Component input) throws IOException {
++        String raw = PlainTextComponentSerializer.plainText().serialize(input);
++
++        try {
++            NBTTagCompound contents = SNBT_CODEC.decode(raw);
++            NBTTagCompound tag = contents.getCompound(ITEM_TAG);
++
++            return HoverEvent.ShowItem.showItem(
++                Key.key(contents.getString(ITEM_TYPE)),
++                contents.hasKey(ITEM_COUNT) ? contents.getByte(ITEM_COUNT) : 1,
++                tag.isEmpty() ? null : BinaryTagHolder.encode(tag, SNBT_CODEC)
++            );
++        } catch (MojangsonParseException ex) {
++            throw new IOException(ex);
++        }
++    }
++
++    @Override
++    public HoverEvent.ShowEntity deserializeShowEntity(Component input, Codec.Decoder<Component, String, ? extends RuntimeException> componentDecoder) throws IOException {
++        String raw = PlainTextComponentSerializer.plainText().serialize(input);
++
++        try {
++            NBTTagCompound contents = SNBT_CODEC.decode(raw);
++
++            return HoverEvent.ShowEntity.showEntity(
++                Key.key("minecraft", CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, contents.getString(ENTITY_TYPE))),
++                UUID.fromString(contents.getString(ENTITY_ID)),
++                LegacyComponentSerializer.legacySection().deserialize(contents.getString(ENTITY_NAME))
++            );
++        } catch (MojangsonParseException ex) {
++            throw new IOException(ex);
++        }
++    }
++
++    @Override
++    public Component serializeShowItem(HoverEvent.ShowItem input) throws IOException {
++        NBTTagCompound tag = new NBTTagCompound();
++        tag.setString(ITEM_TYPE, input.item().asString());
++        tag.setByte(ITEM_COUNT, (byte) input.count());
++
++        if (input.nbt() != null) {
++            try {
++                tag.set(ITEM_TAG, input.nbt().get(SNBT_CODEC));
++            } catch (MojangsonParseException ex) {
++                throw new IOException(ex);
++            }
++        }
++
++        return Component.text(SNBT_CODEC.encode(tag));
++    }
++
++    @Override
++    public Component serializeShowEntity(HoverEvent.ShowEntity input, Codec.Encoder<Component, String, ? extends RuntimeException> componentEncoder) {
++        NBTTagCompound tag = new NBTTagCompound();
++        tag.setString(ENTITY_ID, input.id().toString());
++        tag.setString(ENTITY_TYPE, CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, input.type().value()));
++
++        if (input.name() != null) {
++            tag.setString(ENTITY_NAME, LegacyComponentSerializer.legacySection().serialize(input.name()));
++        }
++
++        return Component.text(SNBT_CODEC.encode(tag));
++    }
++
++}
+diff --git a/src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java b/src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..a09959c1cdced67149e0b3575fe6a087f224c149
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java
+@@ -0,0 +1,74 @@
++package com.hpfxd.pandaspigot.adventure;
++
++import net.kyori.adventure.text.Component;
++import net.kyori.adventure.text.serializer.json.JSONComponentSerializer;
++import net.kyori.adventure.text.serializer.json.JSONOptions;
++import net.md_5.bungee.api.chat.BaseComponent;
++import net.md_5.bungee.chat.ComponentSerializer;
++import net.minecraft.server.IChatBaseComponent;
++
++import java.util.ArrayList;
++import java.util.List;
++
++public final class PandaAdventure {
++
++    public static final JSONComponentSerializer SERIALIZER = JSONComponentSerializer.builder()
++        .options(JSONOptions.byDataVersion().at(0))
++        .legacyHoverEventSerializer(new NBTLegacyHoverEventSerializer())
++        .build();
++
++    private PandaAdventure() {}
++
++    public static Component asAdventure(IChatBaseComponent component) {
++        return SERIALIZER.deserialize(IChatBaseComponent.ChatSerializer.a(component));
++    }
++
++    public static Component asAdventure(BaseComponent[] components) {
++        return SERIALIZER.deserialize(ComponentSerializer.toString(components));
++    }
++
++    public static List<Component> asAdventure(List<IChatBaseComponent> components) {
++        List<Component> list = new ArrayList<>(components.size());
++
++        for (IChatBaseComponent component : components) {
++            list.add(asAdventure(component));
++        }
++
++        return list;
++    }
++
++    public static Component[] asAdventure(IChatBaseComponent[] components) {
++        Component[] array = new Component[components.length];
++
++        for (int i = 0; i < components.length; i++) {
++            array[i] = asAdventure(components[i]);
++        }
++
++        return array;
++    }
++
++    public static IChatBaseComponent asVanilla(Component component) {
++        return IChatBaseComponent.ChatSerializer.a(SERIALIZER.serialize(component));
++    }
++
++    public static List<IChatBaseComponent> asVanilla(List<Component> components) {
++        List<IChatBaseComponent> list = new ArrayList<>(components.size());
++
++        for (Component component : components) {
++            list.add(asVanilla(component));
++        }
++
++        return list;
++    }
++
++    public static IChatBaseComponent[] asVanilla(Component[] components) {
++        IChatBaseComponent[] array = new IChatBaseComponent[components.length];
++
++        for (int i = 0; i < components.length; i++) {
++            array[i] = asVanilla(components[i]);
++        }
++
++        return array;
++    }
++
++}
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..d981c89fd182bae75c928616edc5944f6ee860f8 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -52,7 +52,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+     public boolean viewingCredits;
+ 
+     // CraftBukkit start
+-    public String displayName;
++    public net.kyori.adventure.text.Component displayName; // PandaSpigot - Adventure
+     public IChatBaseComponent listName;
+     public org.bukkit.Location compassTarget;
+     public int newExp = 0;
+@@ -112,7 +112,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         }
+ 
+         // CraftBukkit start
+-        this.displayName = this.getName();
++        this.displayName = net.kyori.adventure.text.Component.text(this.getName()); // PandaSpigot - Adventure
+         // this.canPickUpLoot = true; TODO
+         this.maxHealthCache = this.getMaxHealth();
+         // CraftBukkit end
+@@ -429,18 +429,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+ 
+         IChatBaseComponent chatmessage = this.bs().b();
+ 
+-        String deathmessage = chatmessage.c();
+-        org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(this, loot, deathmessage, keepInventory);
++        // PandaSpigot start - Adventure
++        //String deathmessage = chatmessage.c();
++        org.bukkit.event.entity.PlayerDeathEvent event = CraftEventFactory.callPlayerDeathEvent(this, loot, com.hpfxd.pandaspigot.adventure.PandaAdventure.asAdventure(chatmessage), keepInventory);
+ 
+-        String deathMessage = event.getDeathMessage();
++        net.kyori.adventure.text.Component deathMessage = event.deathMessage();
+ 
+-        if (deathMessage != null && deathMessage.length() > 0 && this.world.getGameRules().getBoolean("showDeathMessages")) { // TODO: allow plugins to override?
+-            if (deathMessage.equals(deathmessage)) {
+-                this.server.getPlayerList().sendMessage(chatmessage);
+-            } else {
+-                this.server.getPlayerList().sendMessage(org.bukkit.craftbukkit.util.CraftChatMessage.fromString(deathMessage));
+-            }
++        if (deathMessage != null && !deathMessage.equals(net.kyori.adventure.text.Component.empty()) && this.world.getGameRules().getBoolean("showDeathMessages")) { // TODO: allow plugins to override?
++            this.server.getPlayerList().sendMessage(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(deathMessage));
+         }
++        // PandaSpigot end
+ 
+         // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
+         if (!event.getKeepInventory()) {
+diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
+index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..8d2a07782d370d3cdd8d26790a17c88498b8d258 100644
+--- a/src/main/java/net/minecraft/server/LoginListener.java
++++ b/src/main/java/net/minecraft/server/LoginListener.java
+@@ -75,12 +75,15 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+     }
+ 
+     public void disconnect(String s) {
++        // PandaSpigot start - Adventure
++        disconnect(new ChatComponentText(s));
++    }
++    public void disconnect(IChatBaseComponent ichatbasecomponent) {
+         try {
+-            LoginListener.c.info("Disconnecting " + this.d() + ": " + s);
+-            ChatComponentText chatcomponenttext = new ChatComponentText(s);
+-
+-            this.networkManager.handle(new PacketLoginOutDisconnect(chatcomponenttext));
+-            this.networkManager.close(chatcomponenttext);
++            LoginListener.c.info("Disconnecting {}: {}", this.d(), ichatbasecomponent.getText());
++            this.networkManager.handle(new PacketLoginOutDisconnect(ichatbasecomponent));
++            this.networkManager.close(ichatbasecomponent);
++        // PandaSpigot end
+         } catch (Exception exception) {
+             LoginListener.c.error("Error whilst disconnecting player", exception);
+         }
+@@ -267,7 +270,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+                             if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
+                                 final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address, uniqueId);
+                                 if (asyncEvent.getResult() != PlayerPreLoginEvent.Result.ALLOWED) {
+-                                    event.disallow(asyncEvent.getResult(), asyncEvent.getKickMessage());
++                                    event.disallow(asyncEvent.getResult(), event.kickMessage()); // PandaSpigot - Adventure
+                                 }
+                                 Waitable<PlayerPreLoginEvent.Result> waitable = new Waitable<PlayerPreLoginEvent.Result>() {
+                                     @Override
+@@ -278,12 +281,12 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+ 
+                                 LoginListener.this.server.processQueue.add(waitable);
+                                 if (waitable.get() != PlayerPreLoginEvent.Result.ALLOWED) {
+-                                    disconnect(event.getKickMessage());
++                                    disconnect(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(event.kickMessage())); // PandaSpigot - Adventure
+                                     return;
+                                 }
+                             } else {
+                                 if (asyncEvent.getLoginResult() != AsyncPlayerPreLoginEvent.Result.ALLOWED) {
+-                                    disconnect(asyncEvent.getKickMessage());
++                                    disconnect(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(asyncEvent.kickMessage())); // PandaSpigot - Adventure
+                                     return;
+                                 }
+                             }
+diff --git a/src/main/java/net/minecraft/server/PacketPlayOutChat.java b/src/main/java/net/minecraft/server/PacketPlayOutChat.java
+index 6cd5df2e8dfae1829d17c117b4a7422711a0db22..48fcdafeb56f5cae5361d3981170d58c0b5b717b 100644
+--- a/src/main/java/net/minecraft/server/PacketPlayOutChat.java
++++ b/src/main/java/net/minecraft/server/PacketPlayOutChat.java
+@@ -7,6 +7,7 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
+     private IChatBaseComponent a;
+     public net.md_5.bungee.api.chat.BaseComponent[] components; // Spigot
+     private byte b;
++    public net.kyori.adventure.text.Component adventure$message; // PandaSpigot - Adventure;
+ 
+     public PacketPlayOutChat() {}
+ 
+@@ -26,7 +27,11 @@ public class PacketPlayOutChat implements Packet<PacketListenerPlayOut> {
+ 
+     public void b(PacketDataSerializer packetdataserializer) throws IOException {
+         // Spigot start
+-        if (components != null) {
++        // PandaSpigot start - Adventure
++        if (adventure$message != null) {
++            packetdataserializer.a(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(adventure$message));
++        } else if (components != null) {
++        // PandaSpigot end
+             packetdataserializer.a(net.md_5.bungee.chat.ComponentSerializer.toString(components));
+         } else {
+             packetdataserializer.a(this.a);
+diff --git a/src/main/java/net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java b/src/main/java/net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java
+index 795e70aa7134065dad1841709afc1a2ad5bbf013..4d0bb38bae58eb994f1a46d4d4df16828298052b 100644
+--- a/src/main/java/net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java
++++ b/src/main/java/net/minecraft/server/PacketPlayOutPlayerListHeaderFooter.java
+@@ -8,6 +8,7 @@ public class PacketPlayOutPlayerListHeaderFooter implements Packet<PacketListene
+ 
+     private IChatBaseComponent a;
+     private IChatBaseComponent b;
++    public net.kyori.adventure.text.Component adventure$header, adventure$footer; // PandaSpigot - Adventure
+ 
+     public PacketPlayOutPlayerListHeaderFooter() {}
+ 
+@@ -22,13 +23,21 @@ public class PacketPlayOutPlayerListHeaderFooter implements Packet<PacketListene
+ 
+     public void b(PacketDataSerializer packetdataserializer) throws IOException {
+         // Paper start
+-        if (this.header != null) {
++        // PandaSpigot start - Adventure
++        if (this.adventure$header != null) {
++            packetdataserializer.a(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(adventure$header));
++        } else if (this.header != null) {
++        // PandaSpigot end
+             packetdataserializer.a(net.md_5.bungee.chat.ComponentSerializer.toString(this.header));
+         } else {
+             packetdataserializer.a(this.a);
+         }
+ 
+-        if (this.footer != null) {
++        // PandaSpigot start - Adventure
++        if (this.adventure$footer != null) {
++            packetdataserializer.a(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(adventure$footer));
++        } else if (this.footer != null) {
++        // PandaSpigot end
+             packetdataserializer.a(net.md_5.bungee.chat.ComponentSerializer.toString(this.footer));
+         } else {
+             packetdataserializer.a(this.b);
+diff --git a/src/main/java/net/minecraft/server/PacketPlayOutTitle.java b/src/main/java/net/minecraft/server/PacketPlayOutTitle.java
+index 20016b5c4f6c3aa8782555b3ffeeead0b7c46844..98080450b4fa91129d96022b1175b93fb54f1d23 100644
+--- a/src/main/java/net/minecraft/server/PacketPlayOutTitle.java
++++ b/src/main/java/net/minecraft/server/PacketPlayOutTitle.java
+@@ -12,6 +12,7 @@ public class PacketPlayOutTitle implements Packet<PacketListenerPlayOut> {
+ 
+     // Paper start
+     public net.md_5.bungee.api.chat.BaseComponent[] components;
++    public net.kyori.adventure.text.Component adventure$text; // PandaSpigot - Adventure
+ 
+     public PacketPlayOutTitle(EnumTitleAction action, net.md_5.bungee.api.chat.BaseComponent[] components, int fadeIn, int stay, int fadeOut) {
+         this.a = action;
+@@ -58,7 +59,11 @@ public class PacketPlayOutTitle implements Packet<PacketListenerPlayOut> {
+         packetdataserializer.a((Enum) this.a);
+         if (this.a == EnumTitleAction.TITLE || this.a == EnumTitleAction.SUBTITLE) {
+             // Paper start
+-            if (this.components != null) {
++            // PandaSpigot start - Adventure
++            if (this.adventure$text != null) {
++                packetdataserializer.a(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(adventure$text));
++            } else if (this.components != null) {
++            // PandaSpigot end
+                 packetdataserializer.a(net.md_5.bungee.chat.ComponentSerializer.toString(components));
+             } else {
+                 packetdataserializer.a(this.b);
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 303d145fedb3488df4686f83a63c04c0c24eacc9..7e2229575f8688ba0298552ea904b67997a50f13 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -168,10 +168,15 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+     }
+ 
+     public void disconnect(String s) {
++    // PandaSpigot start - Adventure
++        disconnect(new ChatComponentText(s));
++    }
++    public void disconnect(IChatBaseComponent ichatbasecomponent) {
++    // PandaSpigot end
+         // CraftBukkit start - fire PlayerKickEvent
+-        String leaveMessage = EnumChatFormat.YELLOW + this.player.getName() + " left the game.";
++        net.kyori.adventure.text.Component leaveMessage = net.kyori.adventure.text.Component.translatable("multiplayer.player.left").arguments(net.kyori.adventure.text.Component.text(this.getPlayer().getName())).color(net.kyori.adventure.text.format.NamedTextColor.YELLOW); // PandaSpigot - Adventure
+ 
+-        PlayerKickEvent event = new PlayerKickEvent(this.server.getPlayer(this.player), s, leaveMessage);
++        PlayerKickEvent event = new PlayerKickEvent(this.server.getPlayer(this.player), com.hpfxd.pandaspigot.adventure.PandaAdventure.asAdventure(ichatbasecomponent), leaveMessage); // PandaSpigot - Adventure
+ 
+         if (this.server.getServer().isRunning()) {
+             this.server.getPluginManager().callEvent(event);
+@@ -182,16 +187,15 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+             return;
+         }
+         // Send the possibly modified leave message
+-        s = event.getReason();
++        IChatBaseComponent kickReason = com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(event.reason()); // PandaSpigot - Adventure
+         // CraftBukkit end
+-        final ChatComponentText chatcomponenttext = new ChatComponentText(s);
+ 
+-        this.networkManager.a(new PacketPlayOutKickDisconnect(chatcomponenttext), new GenericFutureListener() {
++        this.networkManager.a(new PacketPlayOutKickDisconnect(kickReason), new GenericFutureListener() { // PandaSpigot - Adventure
+             public void operationComplete(Future future) throws Exception { // CraftBukkit - fix decompile error
+-                PlayerConnection.this.networkManager.close(chatcomponenttext);
++                PlayerConnection.this.networkManager.close(kickReason); // PandaSpigot - Adventure
+             }
+         }, new GenericFutureListener[0]);
+-        this.a(chatcomponenttext); // CraftBukkit - fire quit instantly
++        this.a(kickReason); // CraftBukkit - fire quit instantly // PandaSpigot - Adventure
+         this.networkManager.k();
+         // CraftBukkit - Don't wait
+         this.minecraftServer.postToMainThread(new Runnable() {
+@@ -896,10 +900,12 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+         */
+ 
+         this.player.q();
+-        String quitMessage = this.minecraftServer.getPlayerList().disconnect(this.player);
+-        if ((quitMessage != null) && (quitMessage.length() > 0)) {
+-            this.minecraftServer.getPlayerList().sendMessage(CraftChatMessage.fromString(quitMessage));
++        // PandaSpigot start - Adventure
++        net.kyori.adventure.text.Component quitMessage = this.minecraftServer.getPlayerList().disconnect(this.player);
++        if (quitMessage != null && !quitMessage.equals(net.kyori.adventure.text.Component.empty())) {
++            this.minecraftServer.getPlayerList().sendMessage(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(quitMessage));
+         }
++        // PandaSpigot end
+         // CraftBukkit end
+         if (this.minecraftServer.T() && this.player.getName().equals(this.minecraftServer.S())) {
+             PlayerConnection.c.info("Stopping singleplayer server as player logged out");
+@@ -1937,7 +1943,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+             this.server.getPluginManager().callEvent(event);
+ 
+             if (!event.isCancelled()) {
+-                System.arraycopy(org.bukkit.craftbukkit.block.CraftSign.sanitizeLines(event.getLines()), 0, tileentitysign.lines, 0, 4);
++                System.arraycopy(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(event.lines()).toArray(new IChatBaseComponent[0]), 0, tileentitysign.lines, 0, 4); // PandaSpigot - Adventure
+                 tileentitysign.isEditable = false;
+              }
+             // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 5cab6e68c85d794eb6e492c73f7d7694e20693a5..c4c5b16c42719c802c928c871858f2c99021c9db 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -158,15 +158,18 @@ public abstract class PlayerList {
+         // CraftBukkit start - login message is handled in the event
+         // ChatMessage chatmessage;
+ 
+-        String joinMessage;
++        // PandaSpigot start - Adventure
++        net.kyori.adventure.text.Component joinMessage;
+         if (!entityplayer.getName().equalsIgnoreCase(s)) {
+             // chatmessage = new ChatMessage("multiplayer.player.joined.renamed", new Object[] { entityplayer.getScoreboardDisplayName(), s});
+-            joinMessage = "\u00A7e" + LocaleI18n.a("multiplayer.player.joined.renamed", entityplayer.getName(), s);
++            joinMessage = net.kyori.adventure.text.Component.translatable("multiplayer.player.joined.renamed").arguments(net.kyori.adventure.text.Component.text(entityplayer.getName()), net.kyori.adventure.text.Component.text(s));
+         } else {
+             // chatmessage = new ChatMessage("multiplayer.player.joined", new Object[] { entityplayer.getScoreboardDisplayName()});
+-            joinMessage = "\u00A7e" + LocaleI18n.a("multiplayer.player.joined", entityplayer.getName());
++            joinMessage = net.kyori.adventure.text.Component.translatable("multiplayer.player.joined").arguments(net.kyori.adventure.text.Component.text(entityplayer.getName()));
+         }
+ 
++        joinMessage = joinMessage.color(net.kyori.adventure.text.format.NamedTextColor.YELLOW);
++        // PandaSpigot end
+         // chatmessage.getChatModifier().setColor(EnumChatFormat.YELLOW);
+         // this.sendMessage(chatmessage);
+         this.onPlayerJoin(entityplayer, joinMessage);
+@@ -301,7 +304,7 @@ public abstract class PlayerList {
+ 
+     }
+ 
+-    public void onPlayerJoin(EntityPlayer entityplayer, String joinMessage) { // CraftBukkit added param
++    public void onPlayerJoin(EntityPlayer entityplayer, net.kyori.adventure.text.Component joinMessage) { // CraftBukkit added param // PandaSpigot - Adventure
+         this.players.add(entityplayer);
+         this.playersByName.put(entityplayer.getName(), entityplayer); // Spigot
+         this.j.put(entityplayer.getUniqueID(), entityplayer);
+@@ -312,13 +315,13 @@ public abstract class PlayerList {
+         PlayerJoinEvent playerJoinEvent = new PlayerJoinEvent(cserver.getPlayer(entityplayer), joinMessage);
+         cserver.getPluginManager().callEvent(playerJoinEvent);
+ 
+-        joinMessage = playerJoinEvent.getJoinMessage();
++        // PandaSpigot start - Adventure
++        joinMessage = playerJoinEvent.joinMessage();
+ 
+-        if (joinMessage != null && joinMessage.length() > 0) {
+-            for (IChatBaseComponent line : org.bukkit.craftbukkit.util.CraftChatMessage.fromString(joinMessage)) {
+-                server.getPlayerList().sendAll(new PacketPlayOutChat(line));
+-            }
++        if (joinMessage != null && !joinMessage.equals(net.kyori.adventure.text.Component.empty())) {
++            server.getPlayerList().sendMessage(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(joinMessage));
+         }
++        // PandaSpigot end
+ 
+         ChunkIOExecutor.adjustPoolSize(getPlayerCount());
+         // CraftBukkit end
+@@ -359,13 +362,13 @@ public abstract class PlayerList {
+         entityplayer.u().getPlayerChunkMap().movePlayer(entityplayer);
+     }
+ 
+-    public String disconnect(EntityPlayer entityplayer) { // CraftBukkit - return string
++    public net.kyori.adventure.text.Component disconnect(EntityPlayer entityplayer) { // CraftBukkit - return string // PandaSpigot - Adventure
+         entityplayer.b(StatisticList.f);
+ 
+         // CraftBukkit start - Quitting must be before we do final save of data, in case plugins need to modify it
+         org.bukkit.craftbukkit.event.CraftEventFactory.handleInventoryCloseEvent(entityplayer);
+ 
+-        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(cserver.getPlayer(entityplayer), "\u00A7e" + entityplayer.getName() + " left the game.");
++        PlayerQuitEvent playerQuitEvent = new PlayerQuitEvent(cserver.getPlayer(entityplayer), net.kyori.adventure.text.Component.translatable("multiplayer.player.left").arguments(net.kyori.adventure.text.Component.text(entityplayer.getName())).color(net.kyori.adventure.text.format.NamedTextColor.YELLOW)); // PandaSpigot - Adventure
+         cserver.getPluginManager().callEvent(playerQuitEvent);
+         entityplayer.getBukkitEntity().disconnect(playerQuitEvent.getQuitMessage());
+         // CraftBukkit end
+@@ -408,7 +411,7 @@ public abstract class PlayerList {
+ 
+         ChunkIOExecutor.adjustPoolSize(this.getPlayerCount()); // CraftBukkit
+ 
+-        return playerQuitEvent.getQuitMessage(); // CraftBukkit
++        return playerQuitEvent.quitMessage(); // CraftBukkit // PandaSpigot - Adventure
+     }
+ 
+     // CraftBukkit start - Whole method, SocketAddress to LoginListener, added hostname to signature, return EntityPlayer
+@@ -476,7 +479,7 @@ public abstract class PlayerList {
+ 
+         cserver.getPluginManager().callEvent(event);
+         if (event.getResult() != PlayerLoginEvent.Result.ALLOWED) {
+-            loginlistener.disconnect(event.getKickMessage());
++            loginlistener.disconnect(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(event.kickMessage())); // PandaSpigot - Adventure
+             return null;
+         }
+         return entity;
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 8b8b19c8afa32af136733bd7f77ed9417fab17fd..2eac381a825ed0edabd12816432f6d2d655887ef 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -1832,6 +1832,13 @@ public final class CraftServer implements Server {
+     }
+     // PandaSpigot end
+ 
++    // PandaSpigot start - Adventure
++    @Override
++    public Iterable<? extends net.kyori.adventure.audience.Audience> audiences() {
++        return com.google.common.collect.Iterables.concat(Collections.singleton(getConsoleSender()), getOnlinePlayers());
++    }
++    // PandaSpigot end
++
+     private final Spigot spigot = new Spigot()
+     {
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java b/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
+index 43adfccd72c0629f5b93c735119fa4f84074d12b..5f39a8dff50d59cea70d6050f4e17101e38851e7 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftSign.java
+@@ -11,7 +11,7 @@ import org.bukkit.craftbukkit.util.CraftChatMessage;
+ 
+ public class CraftSign extends CraftBlockState implements Sign {
+     private final TileEntitySign sign;
+-    private final String[] lines;
++    private final net.kyori.adventure.text.Component[] lines = new net.kyori.adventure.text.Component[4]; // PandaSpigot - Adventure
+ 
+     public CraftSign(final Block block) {
+         super(block);
+@@ -20,30 +20,45 @@ public class CraftSign extends CraftBlockState implements Sign {
+         sign = (TileEntitySign) world.getTileEntityAt(getX(), getY(), getZ());
+         // Spigot start
+         if (sign == null) {
+-            lines = new String[]{"", "", "", ""};
++            java.util.Arrays.fill(lines, net.kyori.adventure.text.Component.empty()); // PandaSpigot - Adventure
+             return;
+         }
+         // Spigot end
+-        lines = new String[sign.lines.length];
+-        System.arraycopy(revertComponents(sign.lines), 0, lines, 0, lines.length);
++        System.arraycopy(com.hpfxd.pandaspigot.adventure.PandaAdventure.asAdventure(sign.lines), 0, lines, 0, lines.length); // PandaSpigot - Adventure
+     }
+ 
+     public CraftSign(final Material material, final TileEntitySign te) {
+         super(material);
+         sign = te;
+-        lines = new String[sign.lines.length];
+-        System.arraycopy(revertComponents(sign.lines), 0, lines, 0, lines.length);
++        System.arraycopy(com.hpfxd.pandaspigot.adventure.PandaAdventure.asAdventure(sign.lines), 0, lines, 0, lines.length); // PandaSpigot - Adventure
+     }
+ 
+     public String[] getLines() {
+-        return lines;
++        return java.util.Arrays.stream(lines).map(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()::serialize).toArray(String[]::new); // PandaSpigot - Adventure
+     }
+ 
+     public String getLine(int index) throws IndexOutOfBoundsException {
+-        return lines[index];
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(lines[index]); // PandaSpigot - Adventure
+     }
+ 
+     public void setLine(int index, String line) throws IndexOutOfBoundsException {
++    // PandaSpigot start - Adventure
++        lines[index] = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(line);
++    }
++
++    @Override
++    public java.util.List<net.kyori.adventure.text.Component> lines() {
++        return java.util.Arrays.asList(lines);
++    }
++
++    @Override
++    public net.kyori.adventure.text.Component line(int index) throws IndexOutOfBoundsException {
++        return lines[index];
++    }
++
++    @Override
++    public void line(int index, net.kyori.adventure.text.Component line) throws IndexOutOfBoundsException {
++    // PandaSpigot end
+         lines[index] = line;
+     }
+ 
+@@ -52,8 +67,7 @@ public class CraftSign extends CraftBlockState implements Sign {
+         boolean result = super.update(force, applyPhysics);
+ 
+         if (result) {
+-            IChatBaseComponent[] newLines = sanitizeLines(lines);
+-            System.arraycopy(newLines, 0, sign.lines, 0, 4);
++            System.arraycopy(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(lines), 0, sign.lines, 0, 4); // PandaSpigot - Adventure
+             sign.update();
+         }
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 49477a0f4d237db75d869ed91dc5088f4b4385fe..75da9ba8a6333097c34bc38e680975f2ffb86043 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -194,6 +194,25 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+                 footer == null ? null : new BaseComponent[]{footer});
+     }
+ 
++    // PandaSpigot start - Adventure
++    @Override
++    public void sendMessage(final net.kyori.adventure.identity.Identity identity, final net.kyori.adventure.text.Component component, final net.kyori.adventure.audience.MessageType type) {
++        if (getHandle().playerConnection == null) return;
++
++        PacketPlayOutChat packet = new PacketPlayOutChat(null, (byte) (type == net.kyori.adventure.audience.MessageType.CHAT ? 0 : 1));
++        packet.adventure$message = component;
++        getHandle().playerConnection.sendPacket(packet);
++    }
++
++    @Override
++    public void sendPlayerListHeaderAndFooter(final net.kyori.adventure.text.Component header, final net.kyori.adventure.text.Component footer) {
++        PacketPlayOutPlayerListHeaderFooter packet = new PacketPlayOutPlayerListHeaderFooter();
++        packet.adventure$header = header;
++        packet.adventure$footer = footer;
++
++        getHandle().playerConnection.sendPacket(packet);
++    }
++    // PandaSpigot end
+ 
+     @Override
+     public void setTitleTimes(int fadeInTicks, int stayTicks, int fadeOutTicks) {
+@@ -258,14 +277,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+     }
+     // Paper end
+ 
++    // PandaSpigot start - Adventure
++    @Override
++    public <T> void sendTitlePart(net.kyori.adventure.title.TitlePart<T> part, T value) {
++        if (part.equals(net.kyori.adventure.title.TitlePart.TITLE) || part.equals(net.kyori.adventure.title.TitlePart.SUBTITLE)) {
++            EnumTitleAction action = part == net.kyori.adventure.title.TitlePart.TITLE ? EnumTitleAction.TITLE : EnumTitleAction.SUBTITLE;
++            IChatBaseComponent ichatbasecomponent = com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla((net.kyori.adventure.text.Component) value);
++
++            getHandle().playerConnection.sendPacket(new PacketPlayOutTitle(action, ichatbasecomponent));
++        } else if (part.equals(net.kyori.adventure.title.TitlePart.TIMES)) {
++            net.kyori.adventure.title.Title.Times times = (net.kyori.adventure.title.Title.Times) value;
++            getHandle().playerConnection.sendPacket(new PacketPlayOutTitle(times.fadeIn().getNano(), times.stay().getNano(), times.fadeOut().getNano()));
++        }
++    }
++
++    @Override
++    public void clearTitle() {
++        getHandle().playerConnection.sendPacket(new PacketPlayOutTitle(EnumTitleAction.CLEAR, null));
++    }
++    // PandaSpigot end
++
+     @Override
+     public String getDisplayName() {
+-        return getHandle().displayName;
++        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(getHandle().displayName); // PandaSpigot - Adventure
+     }
+ 
+     @Override
+     public void setDisplayName(final String name) {
+-        getHandle().displayName = name == null ? getName() : name;
++        getHandle().displayName = name == null ? net.kyori.adventure.text.Component.text(getName()) : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(name); // PandaSpigot - Adventure
+     }
+ 
+     @Override
+@@ -286,6 +325,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         }
+     }
+ 
++    // PandaSpigot start - Adventure
++    @Override
++    public net.kyori.adventure.text.Component displayName() {
++        return getHandle().displayName;
++    }
++
++    @Override
++    public void displayName(net.kyori.adventure.text.Component displayName) {
++        getHandle().displayName = displayName == null ? net.kyori.adventure.text.Component.text(getName()) : displayName;
++    }
++
++    @Override
++    public net.kyori.adventure.text.Component playerListName() {
++        return getHandle().listName == null ? net.kyori.adventure.text.Component.text(getName()) : com.hpfxd.pandaspigot.adventure.PandaAdventure.asAdventure(getHandle().listName);
++    }
++
++    @Override
++    public void playerListName(net.kyori.adventure.text.Component playerListName) {
++        getHandle().listName = playerListName == null ? null : com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(playerListName);
++        for (EntityPlayer player : server.getHandle().players) {
++            if (player.getBukkitEntity().canSee(this)) {
++                player.playerConnection.sendPacket(new PacketPlayOutPlayerInfo(PacketPlayOutPlayerInfo.EnumPlayerInfoAction.UPDATE_DISPLAY_NAME, getHandle()));
++            }
++        }
++    }
++    // PandaSpigot end
++
+     @Override
+     public boolean equals(Object obj) {
+         if (!(obj instanceof OfflinePlayer)) {
+@@ -314,6 +380,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         getHandle().playerConnection.disconnect(message == null ? "" : message);
+     }
+ 
++    // PandaSpigot start - Adventure
++    @Override
++    public void kick(net.kyori.adventure.text.Component message) {
++        org.spigotmc.AsyncCatcher.catchOp( "player kick");
++        if (getHandle().playerConnection == null) return;
++
++        getHandle().playerConnection.disconnect(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(message));
++    }
++    // PandaSpigot end
++
+     @Override
+     public void setCompassTarget(Location loc) {
+         if (getHandle().playerConnection == null) return;
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 82ad58bc282f523548d3318c4e52fc1e3cbf7bcc..2b05648ba22a47f7579f64deabbf38132350c0fe 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -392,7 +392,7 @@ public class CraftEventFactory {
+         return event;
+     }
+ 
+-    public static PlayerDeathEvent callPlayerDeathEvent(EntityPlayer victim, List<org.bukkit.inventory.ItemStack> drops, String deathMessage, boolean keepInventory) {
++    public static PlayerDeathEvent callPlayerDeathEvent(EntityPlayer victim, List<org.bukkit.inventory.ItemStack> drops, net.kyori.adventure.text.Component deathMessage, boolean keepInventory) { // PandaSpigot - Adventure
+         CraftPlayer entity = victim.getBukkitEntity();
+         PlayerDeathEvent event = new PlayerDeathEvent(entity, drops, victim.getExpReward(), 0, deathMessage);
+         event.setKeepInventory(keepInventory);
+@@ -421,7 +421,7 @@ public class CraftEventFactory {
+     /**
+      * Server methods
+      */
+-    public static ServerListPingEvent callServerListPingEvent(Server craftServer, InetAddress address, String motd, int numPlayers, int maxPlayers) {
++    public static ServerListPingEvent callServerListPingEvent(Server craftServer, InetAddress address, net.kyori.adventure.text.Component motd, int numPlayers, int maxPlayers) { // PandaSpigot - Adventure
+         ServerListPingEvent event = new ServerListPingEvent(address, motd, numPlayers, maxPlayers);
+         craftServer.getPluginManager().callEvent(event);
+         return event;
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
+index 44b3c3ac151fecebd41b43b7bb6708cb8508dc50..7cc2423fe49c240d3c013023a70ba5c72a11e943 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
+@@ -271,6 +271,19 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+         }
+     }
+ 
++    // PandaSpigot start - Adventure
++    @Override
++    public List<net.kyori.adventure.text.Component> pages() {
++        return com.hpfxd.pandaspigot.adventure.PandaAdventure.asAdventure(pages);
++    }
++
++    @Override
++    public net.kyori.adventure.inventory.Book pages(List<net.kyori.adventure.text.Component> pages) {
++        this.pages = com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(pages);
++        return this;
++    }
++    // PandaSpigot end
++
+     private boolean isValidPage(int page) {
+         return page > 0 && page <= pages.size();
+     }
+@@ -319,7 +332,7 @@ public class CraftMetaBook extends CraftMetaItem implements BookMeta {
+     }
+ 
+     @Override
+-    Builder<String, Object> serialize(Builder<String, Object> builder) {
++    com.google.common.collect.ImmutableMap.Builder<String, Object> serialize(com.google.common.collect.ImmutableMap.Builder<String, Object> builder) { // PandaSpigot - Adventure
+         super.serialize(builder);
+ 
+         if (hasTitle()) {
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBookSigned.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBookSigned.java
+index ae3341c4e7f6239a32ed6c2edc254abcabc6e2a2..c19545bacfd9c8530ca1e383cfacd891a1e20c01 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBookSigned.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBookSigned.java
+@@ -129,7 +129,7 @@ class CraftMetaBookSigned extends CraftMetaBook implements BookMeta {
+     }
+ 
+     @Override
+-    Builder<String, Object> serialize(Builder<String, Object> builder) {
++    com.google.common.collect.ImmutableMap.Builder<String, Object> serialize(com.google.common.collect.ImmutableMap.Builder<String, Object> builder) { // PandaSpigot - Adventure
+         super.serialize(builder);
+         return builder;
+     }
