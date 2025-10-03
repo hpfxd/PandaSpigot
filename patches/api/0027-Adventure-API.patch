@@ -5,7 +5,7 @@ Subject: [PATCH] Adventure API
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 22d176d800428940cca731f3bfadae8cb7d6e718..5398fe8b99a7b4615098787e9ad1f032483d8b6e 100644
+index 87f742fe9cbb8ac2da760b5678db3b164c35fbcb..c86408752870aab2d2731cc8f7092ce35b19d096 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -8,6 +8,8 @@ java {
@@ -31,9 +31,9 @@ index 22d176d800428940cca731f3bfadae8cb7d6e718..5398fe8b99a7b4615098787e9ad1f032
      compileOnlyApi("net.sf.trove4j:trove4j:3.0.3") // provided by server
  
      // bundled with Minecraft, should be kept in sync
-@@ -61,6 +70,7 @@ tasks {
-                 "https://guava.dev/releases/17.0/api/docs/",
+@@ -62,6 +71,7 @@ tasks {
                  "https://javadoc.io/doc/org.yaml/snakeyaml/1.15/",
+                 "https://javadoc.io/doc/com.google.code.gson/gson/2.2.4/",
                  "https://repo.hpfxd.com/javadoc/releases/net/md-5/bungeecord-chat/1.8-SNAPSHOT/raw/",
 +                "https://javadoc.io/doc/net.kyori/adventure-api/$adventureVersion", // PandaSpigot - Adventure
              )
