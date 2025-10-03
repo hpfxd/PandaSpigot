@@ -5,7 +5,7 @@ Subject: [PATCH] Adventure API
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 462d7e12d9f38d32e4aa0c9e222d390ee49ebb39..5b438e8867a7a41c955700eae992ae08890f7757 100644
+index 22d176d800428940cca731f3bfadae8cb7d6e718..5398fe8b99a7b4615098787e9ad1f032483d8b6e 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -8,6 +8,8 @@ java {
@@ -34,7 +34,7 @@ index 462d7e12d9f38d32e4aa0c9e222d390ee49ebb39..5b438e8867a7a41c955700eae992ae08
 @@ -61,6 +70,7 @@ tasks {
                  "https://guava.dev/releases/17.0/api/docs/",
                  "https://javadoc.io/doc/org.yaml/snakeyaml/1.15/",
-                 "https://javadoc.io/doc/net.md-5/bungeecord-chat/1.16-R0.4/",
+                 "https://repo.hpfxd.com/javadoc/releases/net/md-5/bungeecord-chat/1.8-SNAPSHOT/raw/",
 +                "https://javadoc.io/doc/net.kyori/adventure-api/$adventureVersion", // PandaSpigot - Adventure
              )
          }
