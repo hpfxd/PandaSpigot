@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..6fa167e91414b40808a1219308c9887ba6946645
+index 0000000000000000000000000000000000000000..3a3000fc249634bc6540acdcf8347d298cc59f0d
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,124 @@
+@@ -0,0 +1,125 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    `maven-publish`
@@ -71,7 +71,8 @@ index 0000000000000000000000000000000000000000..6fa167e91414b40808a1219308c9887b
 +            it.links(
 +                "https://guava.dev/releases/17.0/api/docs/",
 +                "https://javadoc.io/doc/org.yaml/snakeyaml/1.15/",
-+                "https://javadoc.io/doc/net.md-5/bungeecord-chat/1.16-R0.4/",
++                "https://javadoc.io/doc/com.google.code.gson/gson/2.2.4/",
++                "https://repo.hpfxd.com/javadoc/releases/net/md-5/bungeecord-chat/1.8-SNAPSHOT/raw/",
 +            )
 +        }
 +    }
