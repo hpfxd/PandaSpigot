@@ -5,7 +5,7 @@ Subject: [PATCH] Adventure API
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 12d29cfc6cc7a6e17dccb2eaf5209711f917cefe..3802f6e3275dc62f39a1d17d1459d89902d1954b 100644
+index 6871c14347c77a917031639f01d7add3c29bfb92..f11e1158ccd867a0a073459a281d03e8aeaf482b 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -8,6 +8,8 @@ java {
@@ -33,7 +33,7 @@ index 12d29cfc6cc7a6e17dccb2eaf5209711f917cefe..3802f6e3275dc62f39a1d17d1459d899
      // bundled with Minecraft, should be kept in sync
 @@ -63,6 +72,13 @@ tasks {
                  "https://javadoc.io/doc/com.google.code.gson/gson/2.2.4/",
-                 "https://repo.hpfxd.com/javadoc/releases/net/md-5/bungeecord-chat/1.8-SNAPSHOT/raw/",
+                 "https://repo.hpfxd.com/javadoc/releases/net/md-5/bungeecord-chat/1.8-SNAPSHOT/",
                  "https://javadoc.io/doc/org.slf4j/slf4j-api/1.7.35/", // PandaSpigot - Add SLF4J Logger
 +                // PandaSpigot start - Adventure
 +                "https://jd.advntr.dev/api/$adventureVersion/",
