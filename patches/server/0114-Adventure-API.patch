@@ -130,10 +130,10 @@ index 0000000000000000000000000000000000000000..858987bb7be1fa84e7ac35dde2a8d1a4
 +}
 diff --git a/src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java b/src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..a09959c1cdced67149e0b3575fe6a087f224c149
+index 0000000000000000000000000000000000000000..efead5152dd3fd7a8915beded0b09d6a5fd1a4fd
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/adventure/PandaAdventure.java
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,75 @@
 +package com.hpfxd.pandaspigot.adventure;
 +
 +import net.kyori.adventure.text.Component;
@@ -141,6 +141,7 @@ index 0000000000000000000000000000000000000000..a09959c1cdced67149e0b3575fe6a087
 +import net.kyori.adventure.text.serializer.json.JSONOptions;
 +import net.md_5.bungee.api.chat.BaseComponent;
 +import net.md_5.bungee.chat.ComponentSerializer;
++import net.minecraft.server.ChatComponentText;
 +import net.minecraft.server.IChatBaseComponent;
 +
 +import java.util.ArrayList;
@@ -156,11 +157,11 @@ index 0000000000000000000000000000000000000000..a09959c1cdced67149e0b3575fe6a087
 +    private PandaAdventure() {}
 +
 +    public static Component asAdventure(IChatBaseComponent component) {
-+        return SERIALIZER.deserialize(IChatBaseComponent.ChatSerializer.a(component));
++        return component == null ? Component.empty() : SERIALIZER.deserialize(IChatBaseComponent.ChatSerializer.a(component));
 +    }
 +
 +    public static Component asAdventure(BaseComponent[] components) {
-+        return SERIALIZER.deserialize(ComponentSerializer.toString(components));
++        return components == null ? Component.empty() : SERIALIZER.deserialize(ComponentSerializer.toString(components));
 +    }
 +
 +    public static List<Component> asAdventure(List<IChatBaseComponent> components) {
@@ -184,7 +185,7 @@ index 0000000000000000000000000000000000000000..a09959c1cdced67149e0b3575fe6a087
 +    }
 +
 +    public static IChatBaseComponent asVanilla(Component component) {
-+        return IChatBaseComponent.ChatSerializer.a(SERIALIZER.serialize(component));
++        return component == null ? new ChatComponentText("") : IChatBaseComponent.ChatSerializer.a(SERIALIZER.serialize(component));
 +    }
 +
 +    public static List<IChatBaseComponent> asVanilla(List<Component> components) {
