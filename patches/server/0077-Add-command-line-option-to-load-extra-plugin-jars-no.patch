@@ -7,7 +7,7 @@ Subject: [PATCH] Add command line option to load extra plugin jars not in the
 ex: java -jar paperclip.jar nogui -add-plugin=/path/to/plugin.jar -add-plugin=/path/to/another/plugin_jar.jar
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 949100d67ab3cc6e06e82a0eb64d9e5cbb4acb34..0c6cdfed088a26380e6fe7052e747efeedda7b1e 100644
+index 81819bd334f06671f8091995350ea24450d2dfc7..8b8b19c8afa32af136733bd7f77ed9417fab17fd 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -136,7 +136,7 @@ public final class CraftServer implements Server {
@@ -75,7 +75,7 @@ index 949100d67ab3cc6e06e82a0eb64d9e5cbb4acb34..0c6cdfed088a26380e6fe7052e747efe
          if (type == PluginLoadOrder.STARTUP) {
              helpMap.clear();
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 909db77d157194cb23937d90c4b2733383eb8cda..916efe7e9a8c31973449dcede960dfbed6736d4b 100644
+index 493aa08c0d6d92ff5fda076f317db748b0912381..3a11ad950018293c04a7279ed65502d897310070 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -139,6 +139,11 @@ public class Main {

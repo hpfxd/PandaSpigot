@@ -393,7 +393,7 @@ index 20016b5c4f6c3aa8782555b3ffeeead0b7c46844..98080450b4fa91129d96022b1175b93f
              } else {
                  packetdataserializer.a(this.b);
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 303d145fedb3488df4686f83a63c04c0c24eacc9..7e2229575f8688ba0298552ea904b67997a50f13 100644
+index 9ad37543b8193dd1505d6c02eaa950022038960b..3df6d5bd628ddf45958677ff1f065addbdc4190c 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -168,10 +168,15 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
