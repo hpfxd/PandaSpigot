@@ -6,7 +6,7 @@ Subject: [PATCH] Fix some commands not sending feedback to the player
 TODO: message not red
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
-index db46eb055ff915525515068d53d58d68ad4009b6..feda5ca7a9481ab719e376404f959f53f529487e 100644
+index db46eb055ff915525515068d53d58d68ad4009b6..7a1d66541a5840dde1a1aa818ccf499f854b49ca 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
 @@ -29,10 +29,10 @@ public final class VanillaCommandWrapper extends VanillaCommand {
@@ -28,7 +28,7 @@ index db46eb055ff915525515068d53d58d68ad4009b6..feda5ca7a9481ab719e376404f959f53
                              icommandlistener.sendMessage(chatmessage);
                          } catch (CommandException commandexception) {
 -                            CommandAbstract.a(icommandlistener, vanillaCommand, 1, commandexception.getMessage(), commandexception.getArgs());
-+                            CommandAbstract.a(icommandlistener, vanillaCommand, 0, commandexception.getMessage(), commandexception.getArgs()); // PandaSpigot - Fix some commands not sending feedback to the player
++                            CommandAbstract.a(icommandlistener, vanillaCommand, commandexception.getMessage(), commandexception.getArgs()); // PandaSpigot - Fix some commands not sending feedback to the player
                          } finally {
                              lastSender = oldSender;
                          }
@@ -37,7 +37,7 @@ index db46eb055ff915525515068d53d58d68ad4009b6..feda5ca7a9481ab719e376404f959f53
              icommandlistener.sendMessage(chatmessage1);
          } catch (CommandException commandexception) {
 -            CommandAbstract.a(icommandlistener, vanillaCommand, 1, commandexception.getMessage(), commandexception.getArgs());
-+            CommandAbstract.a(icommandlistener, vanillaCommand, 0, commandexception.getMessage(), commandexception.getArgs()); // PandaSpigot - Fix some commands not sending feedback to the player
++            CommandAbstract.a(icommandlistener, vanillaCommand, commandexception.getMessage(), commandexception.getArgs()); // PandaSpigot - Fix some commands not sending feedback to the player
          } catch (Throwable throwable) {
              ChatMessage chatmessage3 = new ChatMessage("commands.generic.exception", new Object[0]);
              chatmessage3.getChatModifier().setColor(EnumChatFormat.RED);
