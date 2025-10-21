@@ -5,7 +5,7 @@ Subject: [PATCH] Fix some commands not sending feedback to the player
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
-index db46eb055ff915525515068d53d58d68ad4009b6..2644e822907e7221aead33636e2e0dd5c3453b62 100644
+index db46eb055ff915525515068d53d58d68ad4009b6..dc6229dba89f1a16bbf7d1b31878dd6bac447771 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
 +++ b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
 @@ -29,10 +29,10 @@ public final class VanillaCommandWrapper extends VanillaCommand {
@@ -48,3 +48,14 @@ index db46eb055ff915525515068d53d58d68ad4009b6..2644e822907e7221aead33636e2e0dd5
          } catch (Throwable throwable) {
              ChatMessage chatmessage3 = new ChatMessage("commands.generic.exception", new Object[0]);
              chatmessage3.getChatModifier().setColor(EnumChatFormat.RED);
+@@ -147,9 +155,9 @@ public final class VanillaCommandWrapper extends VanillaCommand {
+                 MinecraftServer.LOGGER.log(Level.WARN, String.format("Unknown CommandBlock failed to handle command"), throwable);
+             }
+         } finally {
++            icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.SUCCESS_COUNT, j); // PandaSpigot - Fix selectors in SuccessCount
+             MinecraftServer.getServer().worldServer = prev;
+         }
+-        icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.SUCCESS_COUNT, j);
+         return j;
+     }
+ 
