@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Tue, 21 Oct 2025 15:42:06 -0300
+Subject: [PATCH] Fix some commands not sending feedback to the player
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
+index db46eb055ff915525515068d53d58d68ad4009b6..a4d1b74a2e2f15ac1e0cfeb7be3a899f76c4ca16 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
+@@ -112,7 +112,7 @@ public final class VanillaCommandWrapper extends VanillaCommand {
+                             chatmessage.getChatModifier().setColor(EnumChatFormat.RED);
+                             icommandlistener.sendMessage(chatmessage);
+                         } catch (CommandException commandexception) {
+-                            CommandAbstract.a(icommandlistener, vanillaCommand, 1, commandexception.getMessage(), commandexception.getArgs());
++                            CommandAbstract.a(icommandlistener, vanillaCommand, 0, commandexception.getMessage(), commandexception.getArgs()); // PandaSpigot - Fix some commands not sending feedback to the player
+                         } finally {
+                             lastSender = oldSender;
+                         }
+@@ -133,7 +133,7 @@ public final class VanillaCommandWrapper extends VanillaCommand {
+             chatmessage1.getChatModifier().setColor(EnumChatFormat.RED);
+             icommandlistener.sendMessage(chatmessage1);
+         } catch (CommandException commandexception) {
+-            CommandAbstract.a(icommandlistener, vanillaCommand, 1, commandexception.getMessage(), commandexception.getArgs());
++            CommandAbstract.a(icommandlistener, vanillaCommand, 0, commandexception.getMessage(), commandexception.getArgs()); // PandaSpigot - Fix some commands not sending feedback to the player
+         } catch (Throwable throwable) {
+             ChatMessage chatmessage3 = new ChatMessage("commands.generic.exception", new Object[0]);
+             chatmessage3.getChatModifier().setColor(EnumChatFormat.RED);
