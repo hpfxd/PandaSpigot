@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Tue, 21 Oct 2025 15:42:06 -0300
+Subject: [PATCH] Fix various issues with commands
+
+Co-authored-by: md_5 <git@md-5.net>
+Co-authored-by: MasterDash5 <constant4337@molecularmail.com>
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
+index db46eb055ff915525515068d53d58d68ad4009b6..efd01acb237c9e40cecb7b70b47bddee57eb3cef 100644
+--- a/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
++++ b/src/main/java/org/bukkit/craftbukkit/command/VanillaCommandWrapper.java
+@@ -29,10 +29,10 @@ public final class VanillaCommandWrapper extends VanillaCommand {
+     }
+ 
+     public VanillaCommandWrapper(CommandAbstract vanillaCommand, String usage) {
+-        super(vanillaCommand.getCommand());
++        // PandaSpigot start - Fix some vanilla command aliases not being registered
++        super(vanillaCommand.getCommand(), "A Mojang provided command.", usage, vanillaCommand.b());
+         this.vanillaCommand = vanillaCommand;
+-        this.description = "A Mojang provided command.";
+-        this.usageMessage = usage;
++        // PandaSpigot end
+         this.setPermission("minecraft.command." + vanillaCommand.getCommand());
+     }
+ 
+@@ -112,7 +112,11 @@ public final class VanillaCommandWrapper extends VanillaCommand {
+                             chatmessage.getChatModifier().setColor(EnumChatFormat.RED);
+                             icommandlistener.sendMessage(chatmessage);
+                         } catch (CommandException commandexception) {
+-                            CommandAbstract.a(icommandlistener, vanillaCommand, 1, commandexception.getMessage(), commandexception.getArgs());
++                            // PandaSpigot start - Fix handling of command exception messages
++                            ChatMessage chatmessage = new ChatMessage(commandexception.getMessage(), commandexception.getArgs());
++                            chatmessage.getChatModifier().setColor(EnumChatFormat.RED);
++                            icommandlistener.sendMessage(chatmessage);
++                            // PandaSpigot end
+                         } finally {
+                             lastSender = oldSender;
+                         }
+@@ -133,7 +137,11 @@ public final class VanillaCommandWrapper extends VanillaCommand {
+             chatmessage1.getChatModifier().setColor(EnumChatFormat.RED);
+             icommandlistener.sendMessage(chatmessage1);
+         } catch (CommandException commandexception) {
+-            CommandAbstract.a(icommandlistener, vanillaCommand, 1, commandexception.getMessage(), commandexception.getArgs());
++            // PandaSpigot start - Fix handling of command exception messages
++            ChatMessage chatmessage = new ChatMessage(commandexception.getMessage(), commandexception.getArgs());
++            chatmessage.getChatModifier().setColor(EnumChatFormat.RED);
++            icommandlistener.sendMessage(chatmessage);
++            // PandaSpigot end
+         } catch (Throwable throwable) {
+             ChatMessage chatmessage3 = new ChatMessage("commands.generic.exception", new Object[0]);
+             chatmessage3.getChatModifier().setColor(EnumChatFormat.RED);
+@@ -147,9 +155,9 @@ public final class VanillaCommandWrapper extends VanillaCommand {
+                 MinecraftServer.LOGGER.log(Level.WARN, String.format("Unknown CommandBlock failed to handle command"), throwable);
+             }
+         } finally {
++            icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.SUCCESS_COUNT, j); // PandaSpigot - Fix selectors in SuccessCount
+             MinecraftServer.getServer().worldServer = prev;
+         }
+-        icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.SUCCESS_COUNT, j);
+         return j;
+     }
+ 
