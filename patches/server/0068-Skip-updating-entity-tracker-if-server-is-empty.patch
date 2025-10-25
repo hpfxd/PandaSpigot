@@ -5,7 +5,7 @@ Subject: [PATCH] Skip updating entity tracker if server is empty
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 7adf76a7374803f418110de772171f0d9d36317d..5f20f0c743438734be13d7d387aa8e71c01ab9d7 100644
+index f7f2d006aafadfedf61fcdf10af0f3485f94c53b..b06ee12275493513d57feba25b17e0ca785d6098 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -890,7 +890,9 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
