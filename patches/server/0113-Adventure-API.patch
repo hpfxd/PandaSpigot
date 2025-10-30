@@ -210,28 +210,26 @@ index 0000000000000000000000000000000000000000..efead5152dd3fd7a8915beded0b09d6a
 +
 +}
 diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
-index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..d981c89fd182bae75c928616edc5944f6ee860f8 100644
+index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..7933d3191b9f61b4880d85ba99126bf9221a3dff 100644
 --- a/src/main/java/net/minecraft/server/EntityPlayer.java
 +++ b/src/main/java/net/minecraft/server/EntityPlayer.java
-@@ -52,7 +52,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
-     public boolean viewingCredits;
+@@ -53,6 +53,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
      // CraftBukkit start
--    public String displayName;
-+    public net.kyori.adventure.text.Component displayName; // PandaSpigot - Adventure
+     public String displayName;
++    public net.kyori.adventure.text.Component adventure$displayName; // PandaSpigot - Adventure
      public IChatBaseComponent listName;
      public org.bukkit.Location compassTarget;
      public int newExp = 0;
-@@ -112,7 +112,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
-         }
+@@ -113,6 +114,7 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
          // CraftBukkit start
--        this.displayName = this.getName();
-+        this.displayName = net.kyori.adventure.text.Component.text(this.getName()); // PandaSpigot - Adventure
+         this.displayName = this.getName();
++        this.adventure$displayName = net.kyori.adventure.text.Component.text(this.getName()); // PandaSpigot - Adventure
          // this.canPickUpLoot = true; TODO
          this.maxHealthCache = this.getMaxHealth();
          // CraftBukkit end
-@@ -429,18 +429,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+@@ -429,18 +431,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
  
          IChatBaseComponent chatmessage = this.bs().b();
  
@@ -643,7 +641,7 @@ index 43adfccd72c0629f5b93c735119fa4f84074d12b..5f39a8dff50d59cea70d6050f4e17101
          }
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 49477a0f4d237db75d869ed91dc5088f4b4385fe..75da9ba8a6333097c34bc38e680975f2ffb86043 100644
+index 49477a0f4d237db75d869ed91dc5088f4b4385fe..09ec7de882201fe89323f8ff67e7e76128f8ae1e 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -194,6 +194,25 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
@@ -672,7 +670,7 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..75da9ba8a6333097c34bc38e680975f2
  
      @Override
      public void setTitleTimes(int fadeInTicks, int stayTicks, int fadeOutTicks) {
-@@ -258,14 +277,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -258,6 +277,26 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      }
      // Paper end
  
@@ -698,30 +696,29 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..75da9ba8a6333097c34bc38e680975f2
 +
      @Override
      public String getDisplayName() {
--        return getHandle().displayName;
-+        return net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(getHandle().displayName); // PandaSpigot - Adventure
-     }
- 
+         return getHandle().displayName;
+@@ -266,6 +305,7 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
      @Override
      public void setDisplayName(final String name) {
--        getHandle().displayName = name == null ? getName() : name;
-+        getHandle().displayName = name == null ? net.kyori.adventure.text.Component.text(getName()) : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(name); // PandaSpigot - Adventure
+         getHandle().displayName = name == null ? getName() : name;
++        getHandle().adventure$displayName = name == null ? net.kyori.adventure.text.Component.text(getName()) : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(name); // PandaSpigot - Adventure
      }
  
      @Override
-@@ -286,6 +325,33 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -286,6 +326,34 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          }
      }
  
 +    // PandaSpigot start - Adventure
 +    @Override
 +    public net.kyori.adventure.text.Component displayName() {
-+        return getHandle().displayName;
++        return getHandle().adventure$displayName;
 +    }
 +
 +    @Override
 +    public void displayName(net.kyori.adventure.text.Component displayName) {
-+        getHandle().displayName = displayName == null ? net.kyori.adventure.text.Component.text(getName()) : displayName;
++        getHandle().displayName = displayName == null ? getName() : net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().serialize(displayName);
++        getHandle().adventure$displayName = displayName == null ? net.kyori.adventure.text.Component.text(getName()) : displayName;
 +    }
 +
 +    @Override
@@ -743,7 +740,7 @@ index 49477a0f4d237db75d869ed91dc5088f4b4385fe..75da9ba8a6333097c34bc38e680975f2
      @Override
      public boolean equals(Object obj) {
          if (!(obj instanceof OfflinePlayer)) {
-@@ -314,6 +380,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+@@ -314,6 +382,16 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
          getHandle().playerConnection.disconnect(message == null ? "" : message);
      }
  
