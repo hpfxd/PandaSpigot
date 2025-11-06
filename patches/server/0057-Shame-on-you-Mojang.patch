@@ -12,7 +12,7 @@ This then triggers async chunk loads!
 What in the hell were you thinking?
 
 diff --git a/src/main/java/net/minecraft/server/BlockBeacon.java b/src/main/java/net/minecraft/server/BlockBeacon.java
-index a73d7b13a8dce788127c73ec1ae7a077d04777e2..4871c4ddf9477ee8c228de7346adbf07972f93df 100644
+index 71b536c0d3c3433fe124bf0f81795a11d3867560..b97e332f6a8de74d8fd6f23c5ac25b6764f767ab 100644
 --- a/src/main/java/net/minecraft/server/BlockBeacon.java
 +++ b/src/main/java/net/minecraft/server/BlockBeacon.java
 @@ -62,8 +62,10 @@ public class BlockBeacon extends BlockContainer {
@@ -34,11 +34,11 @@ index a73d7b13a8dce788127c73ec1ae7a077d04777e2..4871c4ddf9477ee8c228de7346adbf07
                          ((WorldServer) world).postToMainThread(new Runnable() {
                              public void run() {
 +                        */ // PandaSpigot end
-                                 TileEntity tileentity = world.getTileEntity(blockposition);
+                                 TileEntity tileentity = world.getTileEntity(blockposition1);
  
                                  if (tileentity instanceof TileEntityBeacon) {
 @@ -85,12 +89,16 @@ public class BlockBeacon extends BlockContainer {
-                                     world.playBlockAction(blockposition, Blocks.BEACON, 1, 0);
+                                     world.playBlockAction(blockposition1, Blocks.BEACON, 1, 0);
                                  }
  
 +                        /* // PandaSpigot start

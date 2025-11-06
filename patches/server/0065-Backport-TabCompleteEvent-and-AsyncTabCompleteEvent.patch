@@ -135,7 +135,7 @@ index e2499f5f9c4b289e41c0f8fb922ed085047c7099..977675f6155a1ccb1d9cdfdcb48a9f92
  
      public void a(PacketPlayInSettings packetplayinsettings) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index 8937cd1e727bd90302a66743ea78d905ad4e56d9..949100d67ab3cc6e06e82a0eb64d9e5cbb4acb34 100644
+index 815cbd156d0ab21e185d1f4af47d5edc52a58ebc..81819bd334f06671f8091995350ea24450d2dfc7 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1632,11 +1632,17 @@ public final class CraftServer implements Server {

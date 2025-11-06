@@ -5,10 +5,10 @@ Subject: [PATCH] Use LinkedHashMap for GameRules map
 
 
 diff --git a/src/main/java/net/minecraft/server/GameRules.java b/src/main/java/net/minecraft/server/GameRules.java
-index 1c89c90581cf6e703f84b2acc436a0585452da4e..19cc3b547d7d4913dca90a0077a64921d222ce90 100644
+index 8ff5b4bcb6a51fad99a09937b432f3366f913f05..ef8284c476dfd334b2b94ded3d5e02569872cce6 100644
 --- a/src/main/java/net/minecraft/server/GameRules.java
 +++ b/src/main/java/net/minecraft/server/GameRules.java
-@@ -6,7 +6,7 @@ import java.util.TreeMap;
+@@ -5,7 +5,7 @@ import java.util.TreeMap;
  
  public class GameRules {
  

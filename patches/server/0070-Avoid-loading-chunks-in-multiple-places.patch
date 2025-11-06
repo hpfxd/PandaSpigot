@@ -78,13 +78,13 @@ index 7bf9018bae77e97ce5d2991897edf186ef1ed741..399c2bddd4e0ed27a98ab07a20d981f3
                                  if (block != Blocks.LOG && block != Blocks.LOG2) {
                                      if (block.getMaterial() == Material.LEAVES) {
 diff --git a/src/main/java/net/minecraft/server/ChunkCache.java b/src/main/java/net/minecraft/server/ChunkCache.java
-index 45d385d31296eda75aa30500118c21406df5fe43..e953d6d80ef020f8e4540eae6881709fc8906b8f 100644
+index c7ff3ee8f151ad1537f1e1a95bc3d27c36bb2c0c..23a8233e2a9ed9858f7a721654c2b0eca5efef37 100644
 --- a/src/main/java/net/minecraft/server/ChunkCache.java
 +++ b/src/main/java/net/minecraft/server/ChunkCache.java
-@@ -23,7 +23,7 @@ public class ChunkCache implements IBlockAccess {
+@@ -20,7 +20,7 @@ public class ChunkCache implements IBlockAccess {
  
-         for (l = this.a; l <= j; ++l) {
-             for (i1 = this.b; i1 <= k; ++i1) {
+         for (int l = this.a; l <= j; ++l) {
+             for (int i1 = this.b; i1 <= k; ++i1) {
 -                this.c[l - this.a][i1 - this.b] = world.getChunkAt(l, i1);
 +                this.c[l - this.a][i1 - this.b] = world.getChunkIfLoaded(l, i1); // PandaSpigot - Don't load chunks for pathfinding
              }

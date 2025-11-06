@@ -7,7 +7,7 @@ Also removes redundant empty list check before putting a task on the
 main thread
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 5f20f0c743438734be13d7d387aa8e71c01ab9d7..59464fbb8c611208197d1a4949eed660270311f1 100644
+index b06ee12275493513d57feba25b17e0ca785d6098..251215c5beff5b58618a1a97a53fc3b3ab368af3 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs

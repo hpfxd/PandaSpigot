@@ -25,10 +25,10 @@ index 010d7c6d660cffc59a10c82925769f4375ab5b84..49400ae5d2e5e0f0ce5f979991ff12fb
      public boolean interact(World world, BlockPosition blockposition, IBlockData iblockdata, EntityHuman entityhuman, EnumDirection enumdirection, float f, float f1, float f2) {
          if (world.isClientSide) {
 diff --git a/src/main/java/net/minecraft/server/BlockFurnace.java b/src/main/java/net/minecraft/server/BlockFurnace.java
-index 233f30025190df849a8ca8b28f249d60fb171bac..21d868ca674475859ff0389d289dfde24c775347 100644
+index c992cb76c293ccb8b5aa4bcc11f80a52bc9bc925..236995a180dbeacbc225f5f913b1e027b803a9b1 100644
 --- a/src/main/java/net/minecraft/server/BlockFurnace.java
 +++ b/src/main/java/net/minecraft/server/BlockFurnace.java
-@@ -19,6 +19,7 @@ public class BlockFurnace extends BlockContainer {
+@@ -18,6 +18,7 @@ public class BlockFurnace extends BlockContainer {
          return Item.getItemOf(Blocks.FURNACE);
      }
  
@@ -36,7 +36,7 @@ index 233f30025190df849a8ca8b28f249d60fb171bac..21d868ca674475859ff0389d289dfde2
      public void onPlace(World world, BlockPosition blockposition, IBlockData iblockdata) {
          this.e(world, blockposition, iblockdata);
      }
-@@ -44,6 +45,7 @@ public class BlockFurnace extends BlockContainer {
+@@ -43,6 +44,7 @@ public class BlockFurnace extends BlockContainer {
              world.setTypeAndData(blockposition, iblockdata.set(BlockFurnace.FACING, enumdirection), 2);
          }
      }
