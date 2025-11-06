@@ -34,7 +34,7 @@ index b32c64263d6d996008d0aa3b25df1d8d54482aa1..9faa98501275cbd03a34dcc83f281d1e
  
      public void a(PacketLoginInStart packetlogininstart) {
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 55e6a1755b7db3411865f1d0ad3b4c38cb66d0a8..9882c599533d8ef52369efb6404a967e736548e0 100644
+index c8fb991f1a9c88d4f519ae812921085366e09b92..a72315b62d5731b74f077cc7a02d95660729832d 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -119,7 +119,7 @@ public abstract class PlayerList {

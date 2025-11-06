@@ -5,7 +5,7 @@ Subject: [PATCH] Remove duplicate null check for chunk in unloadChunks method
 
 
 diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
-index d53bfc4a2424564ee0239d9009e4b090510123cd..f6bf12c12e12cb652a36e8ed8108acaba77cb755 100644
+index 7085cb503db3e1e585417ce4300c6be075c7d2fe..041ede2857ddcc6fc8a4f52318ef4ba9d975782a 100644
 --- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
 +++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
 @@ -381,12 +381,14 @@ public class ChunkProviderServer implements IChunkProvider {

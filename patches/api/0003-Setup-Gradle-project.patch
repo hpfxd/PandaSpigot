@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..3a3000fc249634bc6540acdcf8347d298cc59f0d
+index 0000000000000000000000000000000000000000..260e26967f8b8b0d617345eea3ed9a728d1e43d8
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,125 @@
+@@ -0,0 +1,128 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    `maven-publish`
@@ -42,11 +42,14 @@ index 0000000000000000000000000000000000000000..3a3000fc249634bc6540acdcf8347d29
 +
 +tasks {
 +    val generateApiVersioningFile by registering {
-+        inputs.property("version", project.version)
++        val projectVersion = project.version
 +        val pomProps = layout.buildDirectory.file("pom.properties")
++
++        inputs.property("version", projectVersion)
 +        outputs.file(pomProps)
++
 +        doLast {
-+            pomProps.get().asFile.writeText("version=${project.version}")
++            pomProps.get().asFile.writeText("version=$projectVersion")
 +        }
 +    }
 +

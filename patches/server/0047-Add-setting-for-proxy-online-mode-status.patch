@@ -84,7 +84,7 @@ index 474f43eab7ceb63ab04e2ebbcdd9f73d7cb2f27d..d7dee8b3920b1803f751f3fa206fe035
              GameProfile gameprofile = new GameProfile(uuid, s);
  
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
-index e355f31d852fa15ff2c6bba55931f38be9e81d91..8937cd1e727bd90302a66743ea78d905ad4e56d9 100644
+index 73530a14e0bf737745520226ef53ab4fa3637302..815cbd156d0ab21e185d1f4af47d5edc52a58ebc 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
 @@ -1342,7 +1342,7 @@ public final class CraftServer implements Server {
