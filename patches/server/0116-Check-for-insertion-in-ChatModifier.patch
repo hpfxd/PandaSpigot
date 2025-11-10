@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <constant4337@molecularmail.com>
+Date: Mon, 10 Nov 2025 10:16:36 -0700
+Subject: [PATCH] Check for insertion in ChatModifier
+
+
+diff --git a/src/main/java/net/minecraft/server/ChatModifier.java b/src/main/java/net/minecraft/server/ChatModifier.java
+index 21f7e6ba239078ffd19898d32e6d0615df34f1e5..67bad2522f74e32baefd99e3c51167ad7b5511ca 100644
+--- a/src/main/java/net/minecraft/server/ChatModifier.java
++++ b/src/main/java/net/minecraft/server/ChatModifier.java
+@@ -135,7 +135,7 @@ public class ChatModifier {
+     }
+ 
+     public boolean g() {
+-        return this.c == null && this.d == null && this.f == null && this.e == null && this.g == null && this.b == null && this.h == null && this.i == null;
++        return this.c == null && this.d == null && this.f == null && this.e == null && this.g == null && this.b == null && this.h == null && this.i == null && this.j == null; // PandaSpigot - Check for insertion
+     }
+ 
+     public ChatClickable h() {
