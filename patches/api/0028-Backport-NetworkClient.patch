@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <constant4337@molecularmail.com>
+Date: Fri, 10 Oct 2025 16:29:15 -0600
+Subject: [PATCH] Backport NetworkClient
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/network/NetworkClient.java b/src/main/java/com/destroystokyo/paper/network/NetworkClient.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..2696a8af7720f364ee9b738f6388dac8817c7fc1
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/network/NetworkClient.java
+@@ -0,0 +1,33 @@
++package com.destroystokyo.paper.network;
++
++import java.net.InetSocketAddress;
++
++public interface NetworkClient {
++
++    /**
++     * Returns the socket address of the client.
++     *
++     * @return The client's socket address
++     */
++    InetSocketAddress getAddress();
++
++    /**
++     * Returns the protocol version of the client.
++     *
++     * @return The client's protocol version, or {@code -1} if unknown
++     * @see <a href="https://minecraft.wiki/w/Minecraft_Wiki:Projects/wiki.vg_merge/Protocol_version_numbers">List
++     * of protocol version numbers</a>
++     */
++    int getProtocolVersion();
++
++    /**
++     * Returns the virtual host the client is connected to.
++     *
++     * <p>The virtual host refers to the hostname/port the client used to
++     * connect to the server.</p>
++     *
++     * @return The client's virtual host, or {@code null} if unknown
++     */
++    InetSocketAddress getVirtualHost();
++
++}
+diff --git a/src/main/java/org/bukkit/entity/Player.java b/src/main/java/org/bukkit/entity/Player.java
+index 72b84b584a65b4a26d856ab48272cc711de098dd..7d39714b4a677cdef72d6dd263ca53c5e197c5fc 100644
+--- a/src/main/java/org/bukkit/entity/Player.java
++++ b/src/main/java/org/bukkit/entity/Player.java
+@@ -26,7 +26,7 @@ import org.github.paperspigot.Title;
+ /**
+  * Represents a player, connected or not
+  */
+-public interface Player extends HumanEntity, Conversable, CommandSender, OfflinePlayer, PluginMessageRecipient, net.kyori.adventure.identity.Identified { // PandaSpigot - Adventure
++public interface Player extends HumanEntity, Conversable, CommandSender, OfflinePlayer, PluginMessageRecipient, net.kyori.adventure.identity.Identified, com.destroystokyo.paper.network.NetworkClient { // PandaSpigot - Adventure // PandaSpigot - Backport NetworkClient
+ 
+     /**
+      * Gets the "friendly" name to display of this player. This may include
