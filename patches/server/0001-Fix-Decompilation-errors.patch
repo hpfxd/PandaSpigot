@@ -1291,6 +1291,48 @@ index 97091b5ea8e4e4687a81751f9e29180657ff814b..8db9c36e157d4f03a5cd777e51674a9d
                  return this.a();
              }
          });
+diff --git a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
+index 40291094e8aeff2a12b7b4ae721ef3e928a3b0b1..02213e3c5fee0a686654c563ae953f7f29a46d0e 100644
+--- a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
++++ b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
+@@ -338,7 +338,7 @@ public class NameReferencingFileConverter {
+                         if (uuid == null) {
+                             throw new NameReferencingFileConverter.FileConversionException("Missing UUID for user profile " + gameprofile.getName(), null);
+                         } else {
+-                            this.a(file, this.a(gameprofile), uuid.toString());
++                            this.a(file1, this.a(gameprofile), uuid.toString());
+                         }
+                     }
+ 
+@@ -347,15 +347,15 @@ public class NameReferencingFileConverter {
+                         if (exception instanceof ProfileNotFoundException) {
+                             String s = this.a(gameprofile);
+ 
+-                            this.a(file, s, s);
++                            this.a(file2, s, s);
+                         } else {
+                             throw new NameReferencingFileConverter.FileConversionException("Could not request user " + gameprofile.getName() + " from backend systems", exception, null);
+                         }
+                     }
+ 
+-                    private void a(File file, String s, String s1) {
+-                        File file1 = new File(file2, s + ".dat");
+-                        File file3 = new File(file, s1 + ".dat");
++                    private void a(File file4, String s, String s1) {
++                        File file1 = new File(file, s + ".dat");
++                        File file3 = new File(file4, s1 + ".dat");
+ 
+                         // CraftBukkit start - Use old file name to seed lastKnownName
+                         NBTTagCompound root = null;
+@@ -383,7 +383,7 @@ public class NameReferencingFileConverter {
+                         }
+                         // CraftBukkit end
+ 
+-                        NameReferencingFileConverter.b(file);
++                        NameReferencingFileConverter.b(file4);
+                         if (!file1.renameTo(file3)) {
+                             throw new NameReferencingFileConverter.FileConversionException("Could not convert file for " + s, null);
+                         }
 diff --git a/src/main/java/net/minecraft/server/OpList.java b/src/main/java/net/minecraft/server/OpList.java
 index 2fbad70eee266dd4d161451b3bddedcafbf58f18..9cdb509e6b5e4a97e1a11e01595a39f3665da9ea 100644
 --- a/src/main/java/net/minecraft/server/OpList.java
