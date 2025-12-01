@@ -27,10 +27,10 @@ index 83dcd2285e088f8620831e20893c44a122779daf..8c8aa2274fd97c9d3a2f24700f58e045
      testImplementation("org.hamcrest:hamcrest-library:1.3")
 diff --git a/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java b/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..858987bb7be1fa84e7ac35dde2a8d1a4cf817823
+index 0000000000000000000000000000000000000000..c1a2b4df5523a1943d52ddeaf55849b297549cc0
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/adventure/NBTLegacyHoverEventSerializer.java
-@@ -0,0 +1,97 @@
+@@ -0,0 +1,105 @@
 +package com.hpfxd.pandaspigot.adventure;
 +
 +import com.google.common.base.CaseFormat;
@@ -57,6 +57,7 @@ index 0000000000000000000000000000000000000000..858987bb7be1fa84e7ac35dde2a8d1a4
 +    public static final String ITEM_TYPE = "id";
 +    public static final String ITEM_COUNT = "Count";
 +    public static final String ITEM_TAG = "tag";
++    public static final String ITEM_DAMAGE = "Damage";
 +
 +    public static final String ENTITY_NAME = "name";
 +    public static final String ENTITY_TYPE = "type";
@@ -105,7 +106,14 @@ index 0000000000000000000000000000000000000000..858987bb7be1fa84e7ac35dde2a8d1a4
 +
 +        if (input.nbt() != null) {
 +            try {
-+                tag.set(ITEM_TAG, input.nbt().get(SNBT_CODEC));
++                NBTTagCompound nbt = input.nbt().get(SNBT_CODEC);
++
++                if (nbt.hasKey("PandaSpigot.Damage")) {
++                    tag.setShort(ITEM_DAMAGE, nbt.getShort("PandaSpigot.Damage"));
++                    tag.remove("PandaSpigot.Damage");
++                }
++
++                tag.set(ITEM_TAG, nbt);
 +            } catch (MojangsonParseException ex) {
 +                throw new IOException(ex);
 +            }
@@ -779,6 +787,37 @@ index 82ad58bc282f523548d3318c4e52fc1e3cbf7bcc..2b05648ba22a47f7579f64deabbf3813
          ServerListPingEvent event = new ServerListPingEvent(address, motd, numPlayers, maxPlayers);
          craftServer.getPluginManager().callEvent(event);
          return event;
+diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
+index 5404ee91a138497598c73dc849d9ddc3f024da11..4216d0dbd4a6edb75d5971ba2111b15c5c2a80bc 100644
+--- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/inventory/CraftItemFactory.java
+@@ -162,4 +162,26 @@ public final class CraftItemFactory implements ItemFactory {
+     public Color getDefaultLeatherColor() {
+         return DEFAULT_LEATHER_COLOR;
+     }
++
++    // PandaSpigot start - Adventure
++    @Override
++    public net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowItem> asHoverEvent(ItemStack item, java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowItem> op) {
++        Validate.isTrue(item.getAmount() > 0 && item.getAmount() <= 99, "ItemStack amount must be between 1 and 99 but was %s", item.getAmount());
++        net.minecraft.server.ItemStack nmsCopy = CraftItemStack.asNMSCopy(item);
++
++        if (!nmsCopy.hasTag()) {
++            nmsCopy.setTag(new net.minecraft.server.NBTTagCompound());
++        }
++
++        nmsCopy.getTag().setShort("PandaSpigot.Damage", item.getDurability());
++
++        return net.kyori.adventure.text.event.HoverEvent.showItem(op.apply(
++            net.kyori.adventure.text.event.HoverEvent.ShowItem.showItem(
++                net.kyori.adventure.key.Key.key("minecraft", net.minecraft.server.Item.REGISTRY.c(net.minecraft.server.Item.getById(item.getTypeId())).a()),
++                item.getAmount(),
++                net.kyori.adventure.nbt.api.BinaryTagHolder.binaryTagHolder(nmsCopy.getTag().toString())
++            )
++        ));
++    }
++    // PandaSpigot end
+ }
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 index 44b3c3ac151fecebd41b43b7bb6708cb8508dc50..7cc2423fe49c240d3c013023a70ba5c72a11e943 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java

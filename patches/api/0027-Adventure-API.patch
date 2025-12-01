@@ -1556,6 +1556,88 @@ index 46242f8a219c3c9a2cbfb71c71af32100723365e..c1235f11f9139898265eb39bc8dbed88
 +    }
 +    // PandaSpigot end
  }
+diff --git a/src/main/java/org/bukkit/inventory/ItemFactory.java b/src/main/java/org/bukkit/inventory/ItemFactory.java
+index 52a8d4d8e872bdc70924302a98145ccfcc80f0db..5de953c2ecc98a4de822e1dc03ca38eb868dbd10 100644
+--- a/src/main/java/org/bukkit/inventory/ItemFactory.java
++++ b/src/main/java/org/bukkit/inventory/ItemFactory.java
+@@ -121,4 +121,15 @@ public interface ItemFactory {
+      * @return the default color for leather armor
+      */
+     Color getDefaultLeatherColor();
++
++    // PandaSpigot start - Adventure
++    /**
++     * Creates a hover event for the given item
++     *
++     * @param item the Item
++     * @return A hover event
++     * @throws IllegalArgumentException if the {@link ItemStack#getAmount()} is not between 1 and 99
++     */
++    net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowItem> asHoverEvent(ItemStack item, java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowItem> op);
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/org/bukkit/inventory/ItemStack.java b/src/main/java/org/bukkit/inventory/ItemStack.java
+index caa7462433f7b4be59bab5dbcaa7000cf798b85f..bac0b09dc3f7bf14c585aa60f51b60437219a94a 100644
+--- a/src/main/java/org/bukkit/inventory/ItemStack.java
++++ b/src/main/java/org/bukkit/inventory/ItemStack.java
+@@ -16,7 +16,7 @@ import org.bukkit.material.MaterialData;
+ /**
+  * Represents a stack of items
+  */
+-public class ItemStack implements Cloneable, ConfigurationSerializable {
++public class ItemStack implements Cloneable, ConfigurationSerializable, net.kyori.adventure.text.event.HoverEventSource<net.kyori.adventure.text.event.HoverEvent.ShowItem> { // PandaSpigot - Adventure
+     private int type = 0;
+     private int amount = 0;
+     private MaterialData data = null;
+@@ -491,6 +491,21 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
+         return level;
+     }
+ 
++    // PandaSpigot start - Adventure
++
++    /**
++     * {@inheritDoc}
++     *
++     * @param op transformation on value
++     * @return a hover event
++     * @throws IllegalArgumentException if the {@link ItemStack#getAmount()} is not between 1 and 99
++     */
++    @Override
++    public net.kyori.adventure.text.event.HoverEvent<net.kyori.adventure.text.event.HoverEvent.ShowItem> asHoverEvent(java.util.function.UnaryOperator<net.kyori.adventure.text.event.HoverEvent.ShowItem> op) {
++        return Bukkit.getItemFactory().asHoverEvent(this, op);
++    }
++    // PandaSpigot end
++
+     @Utility
+     public Map<String, Object> serialize() {
+         Map<String, Object> result = new LinkedHashMap<String, Object>();
+@@ -559,26 +574,6 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
+         return result;
+     }
+ 
+-    // PandaSpigot start
+-    /**
+-     * Deserializes this ItemStack from raw NBT bytes.
+-     *
+-     * @param bytes bytes representing an item in NBT
+-     * @return Deserialized ItemStack.
+-     */
+-    public static ItemStack deserializeBytes(byte[] bytes) {
+-        return org.bukkit.Bukkit.getUnsafe().deserializeItem(bytes);
+-    }
+-
+-    /**
+-     * Serializes this ItemStack to raw bytes in NBT.
+-     * @return bytes representing this item in NBT.
+-     */
+-    public byte[] serializeAsBytes() {
+-        return org.bukkit.Bukkit.getUnsafe().serializeItem(this);
+-    }
+-    // PandaSpigot end
+-
+     /**
+      * Get a copy of this ItemStack's {@link ItemMeta}.
+      *
 diff --git a/src/main/java/org/bukkit/inventory/meta/BookMeta.java b/src/main/java/org/bukkit/inventory/meta/BookMeta.java
 index 00175963005cebabf758ed9b4aee6d77dd03e908..56d247be3b6a6f3e47dbc1bef6883c31b0a4adb9 100644
 --- a/src/main/java/org/bukkit/inventory/meta/BookMeta.java
