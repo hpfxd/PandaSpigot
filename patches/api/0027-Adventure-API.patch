@@ -1577,7 +1577,7 @@ index 52a8d4d8e872bdc70924302a98145ccfcc80f0db..5de953c2ecc98a4de822e1dc03ca38eb
 +    // PandaSpigot end
  }
 diff --git a/src/main/java/org/bukkit/inventory/ItemStack.java b/src/main/java/org/bukkit/inventory/ItemStack.java
-index caa7462433f7b4be59bab5dbcaa7000cf798b85f..e92f0c3fe1cff2bf73910cdcdcf65361c15eff54 100644
+index caa7462433f7b4be59bab5dbcaa7000cf798b85f..3a1e9b2e33152165d1baf04c376b15e0798154c7 100644
 --- a/src/main/java/org/bukkit/inventory/ItemStack.java
 +++ b/src/main/java/org/bukkit/inventory/ItemStack.java
 @@ -16,7 +16,7 @@ import org.bukkit.material.MaterialData;
@@ -1589,12 +1589,11 @@ index caa7462433f7b4be59bab5dbcaa7000cf798b85f..e92f0c3fe1cff2bf73910cdcdcf65361
      private int type = 0;
      private int amount = 0;
      private MaterialData data = null;
-@@ -491,6 +491,21 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
+@@ -491,6 +491,20 @@ public class ItemStack implements Cloneable, ConfigurationSerializable {
          return level;
      }
  
 +    // PandaSpigot start - Adventure
-+
 +    /**
 +     * {@inheritDoc}
 +     *
