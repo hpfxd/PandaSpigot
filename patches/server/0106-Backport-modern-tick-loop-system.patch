@@ -7,7 +7,7 @@ Also removes redundant empty list check before putting a task on the
 main thread
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index b06ee12275493513d57feba25b17e0ca785d6098..251215c5beff5b58618a1a97a53fc3b3ab368af3 100644
+index b06ee12275493513d57feba25b17e0ca785d6098..8d36a79ab6abbf6c0f0bcf8ed4f6e2c852dbd86a 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -512,6 +512,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
@@ -107,7 +107,7 @@ index b06ee12275493513d57feba25b17e0ca785d6098..251215c5beff5b58618a1a97a53fc3b3
 +                    if (i > 5000L && this.ab - this.R >= 30000L) { // CraftBukkit
 +                        long j = i / 50L;
 +                        if (server.getWarnOnOverload()) { // CraftBukkit
-+                            LOGGER.info("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", i, j);
++                            LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", i, j);
 +                        }
 +                        this.ab += j * 50L;
 +                        this.R = this.ab;
