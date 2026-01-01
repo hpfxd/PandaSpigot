@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Shane Freeder <theboyetronic@gmail.com>
+Date: Thu, 1 Jan 2026 14:56:54 -0300
+Subject: [PATCH] Break up and make tab spam limits configurable
+
+CraftBukkit has moved the chat spam limiter to also interact with tab completion requests. While this helps prevent abuse, it causes 1.13+ clients to be easily kicked from Bukkit servers. Completely removing the spam limiter could introduce other issues, but there is currently no safe way for server owners to control this behavior without blindly cancelling kick events, which leads to additional complications.
+
+This also creates a problem where tab completion and chat share the same tracking field despite having different limits, meaning a player who simply types a long command may be kicked from the server.
+
+Splitting this field and making the limits configurable would allow server owners to manage this behavior themselves, without relying on plugins that perform unsafe workarounds.
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+index 1d8e4d1050ebafef8784920481621965fd5c212f..f1769ecc8fe0725171b638b7d8b7bbbc9e5250d1 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+@@ -123,4 +123,8 @@ public class PandaSpigotConfig {
+     @Comment("Whether player IP addresses should be logged by the server. This does not impact\n" +
+         "the ability of plugins to log the IP addresses of players.")
+     public boolean logPlayerIpAddresses = true;
++
++    public int tabSpamIncrement = 10;
++
++    public int tabSpamLimit = 500;
+ }
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 3df6d5bd628ddf45958677ff1f065addbdc4190c..a4c9ee61ca31700b35250cb014f31ffc413cbf8c 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -88,6 +88,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+     // CraftBukkit start - multithreaded fields
+     private volatile int chatThrottle;
+     private static final AtomicIntegerFieldUpdater chatSpamField = AtomicIntegerFieldUpdater.newUpdater(PlayerConnection.class, "chatThrottle");
++    private final java.util.concurrent.atomic.AtomicInteger tabSpamLimiter = new java.util.concurrent.atomic.AtomicInteger(); // PandaSpigot - Configurable tab spam limits
+     // CraftBukkit end
+     private int m;
+     private IntHashMap<Short> n = new IntHashMap();
+@@ -145,6 +146,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+         this.minecraftServer.methodProfiler.b();
+         // CraftBukkit start
+         for (int spam; (spam = this.chatThrottle) > 0 && !chatSpamField.compareAndSet(this, spam, spam - 1); ) ;
++        if (tabSpamLimiter.get() > 0) tabSpamLimiter.getAndDecrement(); // PandaSpigot - Split variable
+         /* Use thread-safe field access instead
+         if (this.chatThrottle > 0) {
+             --this.chatThrottle;
+@@ -1985,7 +1987,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+     public void a(PacketPlayInTabComplete packetplayintabcomplete) {
+         // PandaSpigot start - Async Tab Completion
+         // CraftBukkit start
+-        if (chatSpamField.addAndGet(this, 10) > 500 && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) {
++        if (tabSpamLimiter.addAndGet(com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().tabSpamIncrement) > com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().tabSpamLimit && !this.minecraftServer.getPlayerList().isOp(this.player.getProfile())) { // PandaSpigot - Split and make configurable
+             minecraftServer.postToMainThread(() -> this.disconnect("disconnect.spam"));
+             return;
+         }
