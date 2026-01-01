@@ -8,7 +8,7 @@ See: https://github.com/VelocityPowered/Velocity
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/network/VarIntByteDecoder.java b/src/main/java/com/hpfxd/pandaspigot/network/VarIntByteDecoder.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..df2d56f9a0e38b165d03dbea9e02ecb4d14b1e78
+index 0000000000000000000000000000000000000000..34ad9d82e0cb6b10d572163e74a7d444d0d0a9ee
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/network/VarIntByteDecoder.java
 @@ -0,0 +1,50 @@
@@ -20,7 +20,7 @@ index 0000000000000000000000000000000000000000..df2d56f9a0e38b165d03dbea9e02ecb4
 +    private int readVarint;
 +    private int bytesRead;
 +    private DecodeResult result = DecodeResult.TOO_SHORT;
-+    
++
 +    @Override
 +    public boolean process(byte k) {
 +        if (k == 0 && bytesRead == 0) {
@@ -42,19 +42,19 @@ index 0000000000000000000000000000000000000000..df2d56f9a0e38b165d03dbea9e02ecb4
 +        }
 +        return true;
 +    }
-+    
++
 +    public int getReadVarint() {
 +        return readVarint;
 +    }
-+    
++
 +    public int getBytesRead() {
 +        return bytesRead;
 +    }
-+    
++
 +    public DecodeResult getResult() {
 +        return result;
 +    }
-+    
++
 +    public enum DecodeResult {
 +        SUCCESS,
 +        TOO_SHORT,
@@ -64,60 +64,24 @@ index 0000000000000000000000000000000000000000..df2d56f9a0e38b165d03dbea9e02ecb4
 +}
 diff --git a/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java b/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..c0040dd80559d30f963eb952f6ef3372d38f7208
+index 0000000000000000000000000000000000000000..7d196b657e600cbb11bbf39fec1830c8f7e22212
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java
-@@ -0,0 +1,114 @@
+@@ -0,0 +1,65 @@
 +package com.hpfxd.pandaspigot.network;
 +
 +import io.netty.buffer.ByteBuf;
-+import io.netty.handler.codec.CorruptedFrameException;
 +
 +public class VarIntUtil {
 +    private static final int[] VARINT_EXACT_BYTE_LENGTHS = new int[33];
-+    
++
 +    static {
 +        for (int i = 0; i <= 32; ++i) {
 +            VARINT_EXACT_BYTE_LENGTHS[i] = (int) Math.ceil((31d - (i - 1)) / 7d);
 +        }
 +        VARINT_EXACT_BYTE_LENGTHS[32] = 1; // Special case for the number 0.
 +    }
-+    
-+    /**
-+     * Reads a Minecraft-style VarInt from the specified {@code buf}.
-+     *
-+     * @param buf the buffer to read from
-+     * @return the decoded VarInt
-+     */
-+    public static int readVarInt(ByteBuf buf) {
-+        int read = readVarIntSafely(buf);
-+        if (read == Integer.MIN_VALUE) {
-+            throw new CorruptedFrameException("Bad VarInt decoded");
-+        }
-+        return read;
-+    }
-+    
-+    /**
-+     * Reads a Minecraft-style VarInt from the specified {@code buf}. The difference between this
-+     * method and {@link #readVarInt(ByteBuf)} is that this function returns a sentinel value if the
-+     * varint is invalid.
-+     *
-+     * @param buf the buffer to read from
-+     * @return the decoded VarInt, or {@code Integer.MIN_VALUE} if the varint is invalid
-+     */
-+    public static int readVarIntSafely(ByteBuf buf) {
-+        int i = 0;
-+        int maxRead = Math.min(5, buf.readableBytes());
-+        for (int j = 0; j < maxRead; j++) {
-+            int k = buf.readByte();
-+            i |= (k & 0x7F) << j * 7;
-+            if ((k & 0x80) != 128) {
-+                return i;
-+            }
-+        }
-+        return Integer.MIN_VALUE;
-+    }
-+    
++
 +    /**
 +     * Returns the exact byte size of {@code value} if it were encoded as a VarInt.
 +     *
@@ -127,7 +91,7 @@ index 0000000000000000000000000000000000000000..c0040dd80559d30f963eb952f6ef3372
 +    public static int varIntBytes(int value) {
 +        return VARINT_EXACT_BYTE_LENGTHS[Integer.numberOfLeadingZeros(value)];
 +    }
-+    
++
 +    /**
 +     * Writes a Minecraft-style VarInt to the specified {@code buf}.
 +     *
@@ -146,7 +110,7 @@ index 0000000000000000000000000000000000000000..c0040dd80559d30f963eb952f6ef3372
 +            writeVarIntFull(buf, value);
 +        }
 +    }
-+    
++
 +    private static void writeVarIntFull(ByteBuf buf, int value) {
 +        // See https://steinborn.me/posts/performance/how-fast-can-you-write-a-varint/
 +        if ((value & (0xFFFFFFFF << 7)) == 0) {
@@ -167,19 +131,6 @@ index 0000000000000000000000000000000000000000..c0040dd80559d30f963eb952f6ef3372
 +            buf.writeInt(w);
 +            buf.writeByte(value >>> 28);
 +        }
-+    }
-+    
-+    /**
-+     * Writes the specified {@code value} as a 21-bit Minecraft VarInt to the specified {@code buf}.
-+     * The upper 11 bits will be discarded.
-+     *
-+     * @param buf   the buffer to read from
-+     * @param value the integer to write
-+     */
-+    public static void write21BitVarInt(ByteBuf buf, int value) {
-+        // See https://steinborn.me/posts/performance/how-fast-can-you-write-a-varint/
-+        int w = (value & 0x7F | 0x80) << 16 | ((value >>> 7) & 0x7F | 0x80) << 8 | (value >>> 14);
-+        buf.writeMedium(w);
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/PacketPrepender.java b/src/main/java/net/minecraft/server/PacketPrepender.java
