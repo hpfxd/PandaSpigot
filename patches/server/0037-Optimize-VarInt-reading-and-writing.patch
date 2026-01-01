@@ -64,13 +64,14 @@ index 0000000000000000000000000000000000000000..34ad9d82e0cb6b10d572163e74a7d444
 +}
 diff --git a/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java b/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7d196b657e600cbb11bbf39fec1830c8f7e22212
+index 0000000000000000000000000000000000000000..cf940387edc0dbc4a114d29cf2b20d0766199613
 --- /dev/null
 +++ b/src/main/java/com/hpfxd/pandaspigot/network/VarIntUtil.java
-@@ -0,0 +1,65 @@
+@@ -0,0 +1,101 @@
 +package com.hpfxd.pandaspigot.network;
 +
 +import io.netty.buffer.ByteBuf;
++import io.netty.handler.codec.CorruptedFrameException;
 +
 +public class VarIntUtil {
 +    private static final int[] VARINT_EXACT_BYTE_LENGTHS = new int[33];
@@ -80,6 +81,41 @@ index 0000000000000000000000000000000000000000..7d196b657e600cbb11bbf39fec1830c8
 +            VARINT_EXACT_BYTE_LENGTHS[i] = (int) Math.ceil((31d - (i - 1)) / 7d);
 +        }
 +        VARINT_EXACT_BYTE_LENGTHS[32] = 1; // Special case for the number 0.
++    }
++
++    /**
++     * Reads a Minecraft-style VarInt from the specified {@code buf}.
++     *
++     * @param buf the buffer to read from
++     * @return the decoded VarInt
++     */
++    public static int readVarInt(ByteBuf buf) {
++        int read = readVarIntSafely(buf);
++        if (read == Integer.MIN_VALUE) {
++            throw new CorruptedFrameException("Bad VarInt decoded");
++        }
++        return read;
++    }
++
++    /**
++     * Reads a Minecraft-style VarInt from the specified {@code buf}. The difference between this
++     * method and {@link #readVarInt(ByteBuf)} is that this function returns a sentinel value if the
++     * varint is invalid.
++     *
++     * @param buf the buffer to read from
++     * @return the decoded VarInt, or {@code Integer.MIN_VALUE} if the varint is invalid
++     */
++    public static int readVarIntSafely(ByteBuf buf) {
++        int i = 0;
++        int maxRead = Math.min(5, buf.readableBytes());
++        for (int j = 0; j < maxRead; j++) {
++            int k = buf.readByte();
++            i |= (k & 0x7F) << j * 7;
++            if ((k & 0x80) != 128) {
++                return i;
++            }
++        }
++        return Integer.MIN_VALUE;
 +    }
 +
 +    /**
