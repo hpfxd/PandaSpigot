@@ -89,7 +89,7 @@ index af9e53ec1374776111b659aaaa0c4ae97deb5cbe..2e715a89d84798aa8ae4c6eaa60dd279
      // PandaSpigot start - Optimize Network
      public boolean isPending = true;
 diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
-index 75da9ba8a6333097c34bc38e680975f2ffb86043..e6da499d71a71b25d2c9b98d9b1ca45da2948cfd 100644
+index 09ec7de882201fe89323f8ff67e7e76128f8ae1e..371906750db087081309f7263de5dfa0c3b61090 100644
 --- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 +++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
 @@ -124,6 +124,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
