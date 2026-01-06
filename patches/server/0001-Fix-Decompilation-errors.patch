@@ -218,7 +218,7 @@ index 48dcbc9c073e92ed640706d9322f67c3255821cd..13a165f9af83a33ed7f547f9a5e4b92e
  
              if (this.b.containsKey(s1)) {
 diff --git a/src/main/java/net/minecraft/server/BlockStateList.java b/src/main/java/net/minecraft/server/BlockStateList.java
-index af665e7f924e57bfb1d3edeb7a9e3b3144f5bc3a..30585ea8f9f7b2c09f66df15880d7943f43044ae 100644
+index af665e7f924e57bfb1d3edeb7a9e3b3144f5bc3a..5539fbdcf02b0edb82d3d4c9488b6403e85887dd 100644
 --- a/src/main/java/net/minecraft/server/BlockStateList.java
 +++ b/src/main/java/net/minecraft/server/BlockStateList.java
 @@ -28,8 +28,8 @@ public class BlockStateList {
@@ -254,7 +254,7 @@ index af665e7f924e57bfb1d3edeb7a9e3b3144f5bc3a..30585ea8f9f7b2c09f66df15880d7943
                  HashBasedTable hashbasedtable = HashBasedTable.create();
  
 -                for (IBlockState iblockstate : this.b.keySet()) {
-+                for (IBlockState<?> iblockstate : this.b.keySet()) {
++                for (IBlockState<? extends Comparable> iblockstate : this.b.keySet()) {
                      for (Comparable comparable : iblockstate.c()) {
                          if (comparable != this.b.get(iblockstate)) {
                              hashbasedtable.put(iblockstate, comparable, map.get(this.b(iblockstate, comparable)));
@@ -496,9 +496,18 @@ index 8553b83a17e40cd554816252b1221b7b9a9519e0..dd23fa6e7837b86eed10fc42a58ad5b8
  
          for (ScoreboardObjective scoreboardobjective : collection) {
 diff --git a/src/main/java/net/minecraft/server/CrashReportSystemDetails.java b/src/main/java/net/minecraft/server/CrashReportSystemDetails.java
-index 72e906c0dff6aba8b4654a446b7df1e3c2438ad1..fadbe4835e4c6893c52dc23adf5b6b91bd26aad1 100644
+index 72e906c0dff6aba8b4654a446b7df1e3c2438ad1..47adde857204bc8bff28afc7a8e2c9b52c136083 100644
 --- a/src/main/java/net/minecraft/server/CrashReportSystemDetails.java
 +++ b/src/main/java/net/minecraft/server/CrashReportSystemDetails.java
+@@ -86,7 +86,7 @@ public class CrashReportSystemDetails {
+     }
+ 
+     public void a(String s, Throwable throwable) {
+-        this.a(s, throwable);
++        this.a(s, (Object) throwable);
+     }
+ 
+     public int a(int i) {
 @@ -167,7 +167,7 @@ public class CrashReportSystemDetails {
                  }
              }
