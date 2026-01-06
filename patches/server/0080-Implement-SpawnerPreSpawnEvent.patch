@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: mechoriet <kevinworm92@gmail.com>
+Date: Mon, 19 Dec 2022 23:48:44 +0100
+Subject: [PATCH] Implement SpawnerPreSpawnEvent
+
+Added registered listeners check to avoid alloc if no plugins are
+listening.
+
+diff --git a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
+index e54f7edbd1d834391f6760ea7b82cf6af4ddf994..c74bd1b944b6628d315a6f5b7b745ccc4133a6be 100644
+--- a/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
++++ b/src/main/java/net/minecraft/server/MobSpawnerAbstract.java
+@@ -91,6 +91,15 @@ public abstract class MobSpawnerAbstract {
+                 boolean flag = false;
+ 
+                 for (int i = 0; i < this.spawnCount; ++i) {
++                    // PandaSpigot start - SpawnerPreSpawnEvent
++                    if (net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent.getHandlerList().getRegisteredListeners().length > 0) {
++                        net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent event = new net.techcable.tacospigot.event.entity.SpawnerPreSpawnEvent(new org.bukkit.Location(this.a().getWorld(), blockposition.getX(), blockposition.getY(), blockposition.getZ()), org.bukkit.entity.EntityType.fromName(this.getMobName()));
++                        if (!event.callEvent()) {
++                            flag = true;
++                            break;
++                        }
++                    }
++                    // PandaSpigot end
+                     Entity entity = EntityTypes.createEntityByName(this.getMobName(), this.a());
+ 
+                     if (entity == null) {

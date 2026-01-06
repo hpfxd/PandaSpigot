@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Mechoriet <kevinworm92@gmail.com>
+Date: Sun, 4 Dec 2022 12:29:12 +0100
+Subject: [PATCH] Avoid Looking up same chunk twice in EAR
+
+
+diff --git a/src/main/java/org/spigotmc/ActivationRange.java b/src/main/java/org/spigotmc/ActivationRange.java
+index d3767d2a8963e72253fd05b4d177acd7415158bb..90b7238567952a7ee365f9c1fef3d9a5e10e7a80 100644
+--- a/src/main/java/org/spigotmc/ActivationRange.java
++++ b/src/main/java/org/spigotmc/ActivationRange.java
+@@ -128,9 +128,12 @@ public class ActivationRange
+             {
+                 for ( int j1 = k; j1 <= l; ++j1 )
+                 {
+-                    if ( world.getWorld().isChunkLoaded( i1, j1 ) )
++                    // PandaSpigot start - Avoid Looking up the same chunk twice in same method
++                    Chunk chunk = world.getChunkIfLoaded( i1, j1 );
++                    if ( chunk != null )
+                     {
+-                        activateChunkEntities( world.getChunkAt( i1, j1 ) );
++                        activateChunkEntities( chunk );
++                    // PandaSpigot end
+                     }
+                 }
+             }

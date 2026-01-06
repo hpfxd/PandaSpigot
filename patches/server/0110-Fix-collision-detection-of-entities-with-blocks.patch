@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Sat, 7 Jun 2025 19:53:49 -0300
+Subject: [PATCH] Fix collision detection of entities with blocks
+
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index b8f4a69a1cac37722077f0510c72b087255c892c..9d8bb72b469163db7def78f623d18dc4056b1f6b 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -451,6 +451,8 @@ public abstract class Entity implements ICommandListener {
+             this.a(this.getBoundingBox().c(d0, d1, d2));
+             this.recalcPosition();
+         } else {
++            // PandaSpigot start - Fix collision detection of entities with blocks, moved back to below
++            /*
+             // CraftBukkit start - Don't do anything if we aren't moving
+             // We need to do this regardless of whether or not we are moving thanks to portals
+             try {
+@@ -466,6 +468,8 @@ public abstract class Entity implements ICommandListener {
+             if (d0 == 0 && d1 == 0 && d2 == 0 && this.vehicle == null && this.passenger == null) {
+                 return;
+             }
++            */
++            // PandaSpigot end
+             // CraftBukkit end
+             this.world.methodProfiler.a("move");
+             double d3 = this.locX;
+@@ -753,7 +757,7 @@ public abstract class Entity implements ICommandListener {
+             }
+ 
+             // CraftBukkit start - Move to the top of the method
+-            /*
++            // PandaSpigot start - Fix collision detection of entities with blocks
+             try {
+                 this.checkBlockCollisions();
+             } catch (Throwable throwable) {
+@@ -763,7 +767,7 @@ public abstract class Entity implements ICommandListener {
+                 this.appendEntityCrashDetails(crashreportsystemdetails);
+                 throw new ReportedException(crashreport);
+             }
+-            */
++            // PandaSpigot end
+             // CraftBukkit end
+ 
+             boolean flag2 = this.U();

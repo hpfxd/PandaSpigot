@@ -10,7 +10,7 @@ gitcmd="git -c commit.gpgsign=false"
 
 workdir="$basedir/base"
 minecraftversion=$(cat "$workdir/Paper/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
-decompiledir="$workdir/mc-dev/spigot"
+decompiledir="$workdir/mc-dev/panda"
 
 find "$decompiledir/$nms" -type f -name "*.java" | while read file; do
     filename="$(basename "$file")"

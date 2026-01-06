@@ -9,6 +9,7 @@ minecraftversion=$(cat "$workdir/Paper/BuildData/info.json"  | grep minecraftVer
 windows="$([[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]] && echo "true" || echo "false")"
 decompiledir="$workdir/mc-dev"
 spigotdecompiledir="$decompiledir/spigot"
+pandadecompiledir="$decompiledir/panda"
 classdir="$decompiledir/classes"
 versionjson="$workdir/mc-dev/$minecraftversion.json"
 
@@ -55,6 +56,7 @@ function downloadLibraries {
 
 # prep folders
 mkdir -p "$spigotdecompiledir"
+mkdir -p "$pandadecompiledir"
 
 if [ ! -d "$classdir" ]; then
     echo "Extracting NMS classes..."
@@ -70,13 +72,33 @@ if [ ! -d "$classdir" ]; then
     set -e
 fi
 
+# Updated FernFlower (for Panda mc-dev imports)
+
+if [ ! -d "$pandadecompiledir/net/minecraft/server" ]; then
+    echo "Decompiling classes (Stage 1)..."
+    cd "$basedir"
+    set +e
+    java -jar "$basedir/bin/fernflower.jar" -dgs=1 -hdc=0 -asc=1 -udv=0 "$classdir" "$pandadecompiledir"
+    # TODO 1 (In the future): Add the -aoa option which automatically adds @Override. I tried adding it now, but that requires redoing the decompilation patch again, which I don't want to do right now.
+    # TODO 2 (In the future): Adding the guava library to Fernflower should fix the problem of some lists not having parameters, but it doesn't solve the problem and adding the library causes NPEs (NullPointerExceptions). I'll look into this further soon and report back. If they ever fix it, we can add libraries for better decompilation output.
+    # TODO 3 (In the future): Add the -rsy option which automatically removes synthetic methods.
+    if [ "$?" != "0" ]; then
+        rm -rf "$pandadecompiledir/net"
+        echo "Failed to decompile classes."
+        exit 1
+    fi
+    set -e
+fi
+
+# Spigot (for CraftBukkit patches)
+
 # if we see the old net folder, copy it to spigot to avoid redecompiling
 if [ -d "$decompiledir/net/minecraft/server" ]; then
     cp -r "$decompiledir/net/minecraft/server" "$spigotdecompiledir/"
 fi
 
 if [ ! -d "$spigotdecompiledir/net/minecraft/server" ]; then
-    echo "Decompiling classes..."
+    echo "Decompiling classes (Stage 2)..."
     cd "$basedir"
     set +e
     java -jar "$workdir/Paper/BuildData/bin/fernflower.jar" -dgs=1 -hdc=0 -rbr=0 -asc=1 -udv=0 "$classdir" "$spigotdecompiledir"

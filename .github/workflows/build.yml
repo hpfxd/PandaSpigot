@@ -9,13 +9,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Setup JDK 8
-        uses: actions/setup-java@v4
+      - name: Setup JDK 17
+        uses: actions/setup-java@v5
         with:
-          java-version: 8
+          java-version: 17
           distribution: temurin
+          cache: gradle
 
       - name: Set Git identity
         run: |
@@ -30,17 +31,14 @@ jobs:
         run: ./panda patch
 
       - name: Build
-        uses: burrunan/gradle-cache-action@v3
-        with:
-          arguments: build paperclipJar
-          read-only: false
+        run: ./gradlew build paperclipJar
 
       - name: Copy Paperclip jar
         run: |
           cp -v "./paperclip/build/libs/paperclip-1.8.8-R0.1-SNAPSHOT.jar" "./pandaspigot-$GITHUB_RUN_NUMBER.jar"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: Server JAR
           path: pandaspigot-${{ github.run_number }}.jar

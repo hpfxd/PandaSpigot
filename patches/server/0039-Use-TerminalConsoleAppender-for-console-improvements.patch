@@ -22,12 +22,12 @@ This patch contains heavy inspiration from:
 https://github.com/PaperMC/Paper/blob/master/patches/server/0137-Use-TerminalConsoleAppender-for-console-improvements.patch
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index a2d75d9056aed5c021799ea178832fe71187330d..bef52833107eaae110379eeb67484646dbf85cea 100644
+index 2d7fb97266bbb84f63816937ad66faac8f0d9051..c00a948f3e9bc92f7086261c236c831d6b147653 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -21,8 +21,10 @@ dependencies {
      // Minecraft libraries:
-     implementation("io.netty:netty-all:4.1.121.Final") // PandaSpigot - Update Netty to 4.1.x
+     implementation("io.netty:netty-all:4.1.130.Final") // PandaSpigot - Update Netty to 4.1.x
      implementation("com.mojang:authlib:1.5.21")
 -    implementation("org.apache.logging.log4j:log4j-api:2.17.0")
 -    implementation("org.apache.logging.log4j:log4j-core:2.17.0")
@@ -242,7 +242,7 @@ index 97699e7f86cef3ab8c4560066f0ef93c18a8f5ad..9bcfa3d9f26f88e704903d90695ab88b
          System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
          System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 88e49a137c34485464546d4c509e39e42fa59831..19b6a9951f642a22d49378eb63330ee959de7fcb 100644
+index e613c8afd3b02b91f224dcdeab28277227fa2a84..020a8d88fd49f53145c0091223a7d43105355ea4 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;

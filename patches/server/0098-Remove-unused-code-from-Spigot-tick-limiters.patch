@@ -1,0 +1,134 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Wed, 7 Aug 2024 22:16:50 -0300
+Subject: [PATCH] Remove unused code from Spigot tick limiters
+
+Paper removed this feature from Spigot, but forgot to remove some parts of the code/config
+
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 326c881f76b6ba6414563ccb5bcfda7c06e1f798..fe9b4ea7584587c4a4d198e01fc21838ec59f471 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -135,8 +135,12 @@ public abstract class World implements IBlockAccess {
+     private final byte chunkTickRadius;
+     public static boolean haveWeSilencedAPhysicsCrash;
+     public static String blockLocation;
++    // PandaSpigot start - Remove unused code
++    /*
+     private org.spigotmc.TickLimiter entityLimiter;
+     private org.spigotmc.TickLimiter tileLimiter;
++    */
++    // PandaSpigot end
+     private int tileTickPosition;
+     public ExecutorService lightingExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("PaperSpigot - Lighting Thread").build()); // PaperSpigot - Asynchronous lighting updates
+     public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
+@@ -241,8 +245,12 @@ public abstract class World implements IBlockAccess {
+         // CraftBukkit end
+         this.keepSpawnInMemory = this.paperSpigotConfig.keepSpawnInMemory; // PaperSpigot
+         timings = new co.aikar.timings.WorldTimingsHandler(this); // Spigot - code below can generate new world and access timings
++        // PandaSpigot start - Remove unused code
++        /*
+         this.entityLimiter = new org.spigotmc.TickLimiter(spigotConfig.entityMaxTickTime);
+         this.tileLimiter = new org.spigotmc.TickLimiter(spigotConfig.tileMaxTickTime);
++        */
++        // PandaSpigot end
+     }
+ 
+     public World b() {
+@@ -1549,12 +1557,12 @@ public abstract class World implements IBlockAccess {
+         guardEntityList = true; // Spigot
+         // CraftBukkit start - Use field for loop variable
+         co.aikar.timings.TimingHistory.entityTicks += this.entityList.size(); // Spigot
+-        int entitiesThisCycle = 0;
++        // int entitiesThisCycle = 0; // PandaSpigot - Remove unused code
+         // PaperSpigot start - Disable tick limiters
+         //if (tickPosition < 0) tickPosition = 0;
+         for (tickPosition = 0; tickPosition < entityList.size(); tickPosition++) {
+             // PaperSpigot end
+-            tickPosition = (tickPosition < entityList.size()) ? tickPosition : 0;
++            // tickPosition = (tickPosition < entityList.size()) ? tickPosition : 0; // PandaSpigot - Remove redundant code
+             entity = (Entity) this.entityList.get(this.tickPosition);
+             // CraftBukkit end
+             if (entity.vehicle != null) {
+@@ -1621,14 +1629,14 @@ public abstract class World implements IBlockAccess {
+         // CraftBukkit end
+ 
+         // Spigot start
+-        int tilesThisCycle = 0;
++        // int tilesThisCycle = 0; // PandaSpigot - Remove unused code
+         for (tileTickPosition = 0; tileTickPosition < tileEntityList.size(); tileTickPosition++) { // PaperSpigot - Disable tick limiters
+-            tileTickPosition = (tileTickPosition < tileEntityList.size()) ? tileTickPosition : 0;
++            // tileTickPosition = (tileTickPosition < tileEntityList.size()) ? tileTickPosition : 0; // PandaSpigot - Remove redundant code
+             TileEntity tileentity = (TileEntity) this.tileEntityList.get(tileTickPosition);
+             // Spigot start
+             if (tileentity == null) {
+                 getServer().getLogger().severe("Spigot has detected a null entity and has removed it, preventing a crash");
+-                tilesThisCycle--;
++                // tilesThisCycle--; // PandaSpigot - Remove unused code
+                 this.tileEntityList.remove(tileTickPosition--);
+                 continue;
+             }
+@@ -1648,7 +1656,7 @@ public abstract class World implements IBlockAccess {
+                         System.err.println(msg);
+                         throwable2.printStackTrace();
+                         getServer().getPluginManager().callEvent(new ServerExceptionEvent(new ServerInternalException(msg, throwable2)));
+-                        tilesThisCycle--;
++                        // tilesThisCycle--; // PandaSpigot - Remove unused code
+                         this.tileEntityList.remove(tileTickPosition--);
+                         continue;
+                         // PaperSpigot end
+@@ -1662,7 +1670,7 @@ public abstract class World implements IBlockAccess {
+             }
+ 
+             if (tileentity.x()) {
+-                tilesThisCycle--;
++                // tilesThisCycle--; // PandaSpigot - Remove unused code
+                 this.tileEntityList.remove(tileTickPosition--);
+                 //this.h.remove(tileentity); // PaperSpigot - Remove unused list
+                 if (this.isLoaded(tileentity.getPosition())) {
+diff --git a/src/main/java/org/spigotmc/SpigotWorldConfig.java b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+index 8e86212aa5deae00c55cacc7207525df67a1868e..c028e9ff37e37f08f7c764a59cf77f5b447b0655 100644
+--- a/src/main/java/org/spigotmc/SpigotWorldConfig.java
++++ b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+@@ -333,6 +333,8 @@ public class SpigotWorldConfig
+         hangingTickFrequency = getInt( "hanging-tick-frequency", 100 );
+     }
+ 
++    // PandaSpigot start - Remove unused config
++    /*
+     public int tileMaxTickTime;
+     public int entityMaxTickTime;
+     private void maxTickTimes()
+@@ -341,4 +343,6 @@ public class SpigotWorldConfig
+         entityMaxTickTime = getInt("max-tick-time.entity", 50);
+         log("Tile Max Tick Time: " + tileMaxTickTime + "ms Entity max Tick Time: " + entityMaxTickTime + "ms");
+     }
++    */
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/org/spigotmc/TickLimiter.java b/src/main/java/org/spigotmc/TickLimiter.java
+deleted file mode 100644
+index 23a39382be1541d31713a587a60079d0754c908b..0000000000000000000000000000000000000000
+--- a/src/main/java/org/spigotmc/TickLimiter.java
++++ /dev/null
+@@ -1,20 +0,0 @@
+-package org.spigotmc;
+-
+-public class TickLimiter {
+-
+-    private final int maxTime;
+-    private long startTime;
+-
+-    public TickLimiter(int maxtime) {
+-        this.maxTime = maxtime;
+-    }
+-
+-    public void initTick() {
+-        startTime = System.currentTimeMillis();
+-    }
+-
+-    public boolean shouldContinue() {
+-        long remaining = System.currentTimeMillis() - startTime;
+-        return remaining < maxTime;
+-    }
+-}
