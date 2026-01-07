@@ -344,7 +344,7 @@ index 0000000000000000000000000000000000000000..62792619f62237720086b75698166ae6
 +
 +}
 diff --git a/src/main/java/org/bukkit/util/CachedServerIcon.java b/src/main/java/org/bukkit/util/CachedServerIcon.java
-index 0480470678af31f9543b778e460a63fc0a30b2d8..089b10e4c2dad4ddd46366f42a98936a1d804192 100644
+index 0480470678af31f9543b778e460a63fc0a30b2d8..e04cc1b1aefa226310fa4dd79956bedd53932d0e 100644
 --- a/src/main/java/org/bukkit/util/CachedServerIcon.java
 +++ b/src/main/java/org/bukkit/util/CachedServerIcon.java
 @@ -14,4 +14,10 @@ import org.bukkit.event.server.ServerListPingEvent;
@@ -352,9 +352,9 @@ index 0480470678af31f9543b778e460a63fc0a30b2d8..089b10e4c2dad4ddd46366f42a98936a
  public interface CachedServerIcon {
      public String getData(); // Spigot
 +
-+    // DashSpigot start - Backport PaperServerListPingEvent
++    // PandaSpigot start - Backport PaperServerListPingEvent
 +    default boolean isEmpty() {
 +        return getData() == null;
 +    }
-+    // DashSpigot end
++    // PandaSpigot end
  }
