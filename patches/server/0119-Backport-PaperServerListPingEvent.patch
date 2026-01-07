@@ -133,16 +133,17 @@ index 0000000000000000000000000000000000000000..521fbc1f9210b87778cbbf9a943432c1
 +}
 diff --git a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..f3c0d8698ffea46fb36b7aaca45888731d826574
+index 0000000000000000000000000000000000000000..8b3ae95c34ac46d6d356fc33579f818be7d5174b
 --- /dev/null
 +++ b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
-@@ -0,0 +1,108 @@
+@@ -0,0 +1,109 @@
 +package com.destroystokyo.paper.network;
 +
 +import com.destroystokyo.paper.profile.CraftPlayerProfile;
 +import com.destroystokyo.paper.profile.PlayerProfile;
 +import com.google.common.base.MoreObjects;
 +import com.google.common.base.Strings;
++import com.hpfxd.pandaspigot.adventure.PandaAdventure;
 +import com.mojang.authlib.GameProfile;
 +import net.minecraft.server.MinecraftServer;
 +import net.minecraft.server.NetworkManager;
@@ -224,7 +225,7 @@ index 0000000000000000000000000000000000000000..f3c0d8698ffea46fb36b7aaca4588873
 +        ServerPing ping = new ServerPing();
 +
 +        // Description
-+        ping.setMOTD(com.hpfxd.pandaspigot.adventure.PandaAdventure.asVanilla(event.motd()));
++        ping.setMOTD(PandaAdventure.asVanilla(event.motd()));
 +
 +        // Players
 +        if (!event.shouldHidePlayers()) {
