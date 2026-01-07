@@ -1,0 +1,360 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <constant4337@molecularmail.com>
+Date: Thu, 16 Oct 2025 14:10:51 -0600
+Subject: [PATCH] Backport PaperServerListPingEvent
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/event/server/PaperServerListPingEvent.java b/src/main/java/com/destroystokyo/paper/event/server/PaperServerListPingEvent.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..161840cfe0669eeeec0e4d6517407486abceddb5
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/event/server/PaperServerListPingEvent.java
+@@ -0,0 +1,310 @@
++package com.destroystokyo.paper.event.server;
++
++import com.destroystokyo.paper.network.StatusClient;
++import com.destroystokyo.paper.profile.PlayerProfile;
++import net.kyori.adventure.text.Component;
++import org.bukkit.Bukkit;
++import org.bukkit.entity.Player;
++import org.bukkit.event.Cancellable;
++import org.bukkit.event.server.ServerListPingEvent;
++import org.bukkit.util.CachedServerIcon;
++
++import java.util.*;
++
++public class PaperServerListPingEvent extends ServerListPingEvent implements Cancellable {
++
++    private final StatusClient client;
++
++    private int numPlayers;
++    private boolean hidePlayers;
++    private final List<PlayerProfile> playerSample = new ArrayList<>();
++
++    private String version;
++    private int protocolVersion;
++
++    private CachedServerIcon favicon;
++
++    private boolean cancelled;
++
++    private boolean originalPlayerCount = true;
++    private Object[] players;
++
++    public PaperServerListPingEvent(StatusClient client, String motd, int numPlayers, int maxPlayers,
++                                    String version, int protocolVersion, CachedServerIcon favicon) {
++        super(client.getAddress().getAddress(), motd, numPlayers, maxPlayers);
++        this.client = client;
++        this.numPlayers = numPlayers;
++        this.version = version;
++        this.protocolVersion = protocolVersion;
++        setServerIcon(favicon);
++    }
++
++    public PaperServerListPingEvent(StatusClient client, Component motd, int numPlayers, int maxPlayers,
++                                    String version, int protocolVersion, CachedServerIcon favicon) {
++        super(client.getAddress().getAddress(), motd, numPlayers, maxPlayers);
++        this.client = client;
++        this.numPlayers = numPlayers;
++        this.version = version;
++        this.protocolVersion = protocolVersion;
++        setServerIcon(favicon);
++    }
++
++    /**
++     * Returns the {@link StatusClient} pinging the server.
++     *
++     * @return The client
++     */
++    public StatusClient getClient() {
++        return client;
++    }
++
++    /**
++     * {@inheritDoc}
++     *
++     * <p>Returns {@code -1} if players are hidden using
++     * {@link #shouldHidePlayers()}.</p>
++     */
++    @Override
++    public int getNumPlayers() {
++        if (this.hidePlayers) {
++            return -1;
++        }
++
++        return this.numPlayers;
++    }
++
++    /**
++     * Sets the number of players displayed in the server list.
++     *
++     * <p>Note that this won't have any effect if {@link #shouldHidePlayers()}
++     * is enabled.</p>
++     *
++     * @param numPlayers The number of online players
++     */
++    public void setNumPlayers(int numPlayers) {
++        if (this.numPlayers != numPlayers) {
++            this.numPlayers = numPlayers;
++            this.originalPlayerCount = false;
++        }
++    }
++
++    /**
++     * {@inheritDoc}
++     *
++     * <p>Returns {@code -1} if players are hidden using
++     * {@link #shouldHidePlayers()}.</p>
++     */
++    @Override
++    public int getMaxPlayers() {
++        if (this.hidePlayers) {
++            return -1;
++        }
++
++        return super.getMaxPlayers();
++    }
++
++    /**
++     * Returns whether all player related information is hidden in the server
++     * list. This will cause {@link #getNumPlayers()}, {@link #getMaxPlayers()}
++     * and {@link #getPlayerSample()} to be skipped in the response.
++     *
++     * <p>The Vanilla Minecraft client will display the player count as {@code ???}
++     * when this option is enabled.</p>
++     *
++     * @return {@code true} if the player count is hidden
++     */
++    public boolean shouldHidePlayers() {
++        return this.hidePlayers;
++    }
++
++    /**
++     * Sets whether all player related information is hidden in the server
++     * list. This will cause {@link #getNumPlayers()}, {@link #getMaxPlayers()}
++     * and {@link #getPlayerSample()} to be skipped in the response.
++     *
++     * <p>The Vanilla Minecraft client will display the player count as {@code ???}
++     * when this option is enabled.</p>
++     *
++     * @param hidePlayers {@code true} if the player count should be hidden
++     */
++    public void setHidePlayers(boolean hidePlayers) {
++        this.hidePlayers = hidePlayers;
++    }
++
++    /**
++     * Returns a mutable list of {@link PlayerProfile} that will be displayed
++     * as online players on the client.
++     *
++     * <p>The Vanilla Minecraft client will display them when hovering the
++     * player count with the mouse.</p>
++     *
++     * @return The mutable player sample list
++     */
++    public List<PlayerProfile> getPlayerSample() {
++        return this.playerSample;
++    }
++
++    /**
++     * Returns the version that will be sent as server version on the client.
++     *
++     * @return The server version
++     */
++    public String getVersion() {
++        return version;
++    }
++
++    /**
++     * Sets the version that will be sent as server version to the client.
++     *
++     * @param version The server version
++     */
++    public void setVersion(String version) {
++        this.version = Objects.requireNonNull(version, "version must not be null");
++    }
++
++    /**
++     * Returns the protocol version that will be sent as the protocol version
++     * of the server to the client.
++     *
++     * @return The protocol version of the server
++     */
++    public int getProtocolVersion() {
++        return this.protocolVersion;
++    }
++
++    /**
++     * Sets the protocol version that will be sent as the protocol version
++     * of the server to the client.
++     *
++     * @param protocolVersion The protocol version of the server
++     */
++    public void setProtocolVersion(int protocolVersion) {
++        this.protocolVersion = protocolVersion;
++    }
++
++    /**
++     * Gets the server icon sent to the client.
++     *
++     * @return The icon to send to the client, or {@code null} for none
++     */
++    public CachedServerIcon getServerIcon() {
++        return this.favicon;
++    }
++
++    /**
++     * Sets the server icon sent to the client.
++     *
++     * @param icon The icon to send to the client, or {@code null} for none
++     */
++    @Override
++    public void setServerIcon(CachedServerIcon icon) {
++        if (icon != null && icon.isEmpty()) {
++            icon = null;
++        }
++
++        this.favicon = icon;
++    }
++
++    /**
++     * {@inheritDoc}
++     *
++     * <p>Cancelling this event will cause the connection to be closed immediately,
++     * without sending a response to the client.</p>
++     */
++    @Override
++    public boolean isCancelled() {
++        return this.cancelled;
++    }
++
++    /**
++     * {@inheritDoc}
++     *
++     * <p>Cancelling this event will cause the connection to be closed immediately,
++     * without sending a response to the client.</p>
++     */
++    @Override
++    public void setCancelled(boolean cancel) {
++        this.cancelled = cancel;
++    }
++
++    /**
++     * {@inheritDoc}
++     *
++     * <p><b>Note:</b> For compatibility reasons, this method will return all
++     * online players, not just the ones referenced in {@link #getPlayerSample()}.
++     * Removing a player will:</p>
++     *
++     * <ul>
++     *     <li>Decrement the online player count (if and only if) the player
++     *     count wasn't changed by another plugin before.</li>
++     *     <li>Remove all entries from {@link #getPlayerSample()} that refer to
++     *     the removed player (based on their {@link UUID}).</li>
++     * </ul>
++     */
++    @Override
++    public Iterator<Player> iterator() {
++        if (this.players == null) {
++            this.players = getOnlinePlayers();
++        }
++
++        return new PlayerIterator();
++    }
++
++    protected Object[] getOnlinePlayers() {
++        return Bukkit.getOnlinePlayers().toArray();
++    }
++
++    protected Player getBukkitPlayer(Object player) {
++        return (Player) player;
++    }
++
++    private final class PlayerIterator implements Iterator<Player> {
++
++        private int next, current;
++        private Player player;
++
++        @Override
++        public boolean hasNext() {
++            for (; this.next < players.length; this.next++) {
++                if (players[this.next] != null) {
++                    return true;
++                }
++            }
++
++            return false;
++        }
++
++        @Override
++        public Player next() {
++            if (!hasNext()) {
++                this.player = null;
++                throw new NoSuchElementException();
++            }
++
++            this.current = this.next++;
++            return this.player = getBukkitPlayer(players[this.current]);
++        }
++
++        @Override
++        public void remove() {
++            if (this.player == null) {
++                throw new IllegalStateException();
++            }
++
++            UUID uniqueId = this.player.getUniqueId();
++            this.player = null;
++
++            // Remove player from iterator
++            players[this.current] = null;
++
++            // Remove player from sample
++            getPlayerSample().removeIf(p -> uniqueId.equals(p.getId()));
++
++            // Decrement player count
++            if (originalPlayerCount) {
++                numPlayers--;
++            }
++        }
++    }
++
++}
+diff --git a/src/main/java/com/destroystokyo/paper/network/StatusClient.java b/src/main/java/com/destroystokyo/paper/network/StatusClient.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..62792619f62237720086b75698166ae66421fd22
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/network/StatusClient.java
+@@ -0,0 +1,17 @@
++package com.destroystokyo.paper.network;
++
++import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
++
++/**
++ * Represents a client requesting the current status from the server (e.g. from
++ * the server list).
++ *
++ * @see PaperServerListPingEvent
++ */
++public interface StatusClient extends NetworkClient {
++
++    default boolean isLegacy() {
++        return false;
++    }
++
++}
+diff --git a/src/main/java/org/bukkit/util/CachedServerIcon.java b/src/main/java/org/bukkit/util/CachedServerIcon.java
+index 0480470678af31f9543b778e460a63fc0a30b2d8..089b10e4c2dad4ddd46366f42a98936a1d804192 100644
+--- a/src/main/java/org/bukkit/util/CachedServerIcon.java
++++ b/src/main/java/org/bukkit/util/CachedServerIcon.java
+@@ -14,4 +14,10 @@ import org.bukkit.event.server.ServerListPingEvent;
+  */
+ public interface CachedServerIcon {
+     public String getData(); // Spigot
++
++    // DashSpigot start - Backport PaperServerListPingEvent
++    default boolean isEmpty() {
++        return getData() == null;
++    }
++    // DashSpigot end
+ }
