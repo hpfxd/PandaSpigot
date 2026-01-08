@@ -332,7 +332,7 @@ index 22381439f5e2e043a5bfc18ef39553d572078180..b07e5cb71e5f5aa1fa486909a7bc0d7a
  
                          try {
 diff --git a/src/main/java/net/minecraft/server/PacketStatusListener.java b/src/main/java/net/minecraft/server/PacketStatusListener.java
-index e4bff04ac4b817f92a6a2ab6ab4e7afa6e9576bd..e5d47299bee535c586169f766b84a03fcf64d239 100644
+index e4bff04ac4b817f92a6a2ab6ab4e7afa6e9576bd..c348744ed6ccda981bb811fe9180426946d6e3b5 100644
 --- a/src/main/java/net/minecraft/server/PacketStatusListener.java
 +++ b/src/main/java/net/minecraft/server/PacketStatusListener.java
 @@ -32,6 +32,8 @@ public class PacketStatusListener implements PacketStatusInListener {
@@ -348,7 +348,7 @@ index e4bff04ac4b817f92a6a2ab6ab4e7afa6e9576bd..e5d47299bee535c586169f766b84a03f
  
          this.networkManager.handle(new PacketStatusOutServerInfo(ping));
          // CraftBukkit end
-+         */
++        */
 +        com.destroystokyo.paper.network.StandardPaperServerListPingEventImpl.processRequest(this.minecraftServer, this.networkManager);
 +        // PandaSpigot end
      }
