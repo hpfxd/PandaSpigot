@@ -1,0 +1,115 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <constant4337@molecularmail.com>
+Date: Fri, 10 Oct 2025 16:29:30 -0600
+Subject: [PATCH] Backport NetworkClient
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/network/PaperNetworkClient.java b/src/main/java/com/destroystokyo/paper/network/PaperNetworkClient.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..0a011330225fe5ae7b34b48fa9c5c79238ff06d1
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/network/PaperNetworkClient.java
+@@ -0,0 +1,48 @@
++package com.destroystokyo.paper.network;
++
++import net.minecraft.server.NetworkManager;
++
++import java.net.InetSocketAddress;
++
++public class PaperNetworkClient implements NetworkClient {
++
++    private final NetworkManager networkManager;
++
++    PaperNetworkClient(NetworkManager networkManager) {
++        this.networkManager = networkManager;
++    }
++
++    @Override
++    public InetSocketAddress getAddress() {
++        return (InetSocketAddress) this.networkManager.getSocketAddress();
++    }
++
++    @Override
++    public int getProtocolVersion() {
++        return this.networkManager.protocolVersion;
++    }
++
++    @Override
++    public InetSocketAddress getVirtualHost() {
++        return this.networkManager.virtualHost;
++    }
++
++    public static InetSocketAddress prepareVirtualHost(String host, int port) {
++        int len = host.length();
++
++        // FML appends a marker to the host to recognize FML clients (\0FML\0)
++        int pos = host.indexOf('\0');
++
++        if (pos >= 0) {
++            len = pos;
++        }
++
++        // When clients connect with an SRV record, their host contains a trailing '.'
++        if (len > 0 && host.charAt(len -  1) == '.') {
++            len--;
++        }
++
++        return InetSocketAddress.createUnresolved(host.substring(0, len), port);
++    }
++
++}
+diff --git a/src/main/java/net/minecraft/server/HandshakeListener.java b/src/main/java/net/minecraft/server/HandshakeListener.java
+index 10a8c440f08535d90d8d1204a23c859ba296aa39..68041c3e97e9292c7f27dc21ae1c8c2dc744cd4b 100644
+--- a/src/main/java/net/minecraft/server/HandshakeListener.java
++++ b/src/main/java/net/minecraft/server/HandshakeListener.java
+@@ -137,6 +137,10 @@ public class HandshakeListener implements PacketHandshakingInListener {
+             throw new UnsupportedOperationException("Invalid intention " + packethandshakinginsetprotocol.a());
+         }
+ 
++        // PandaSpigot start - Backport NetworkClient
++        this.b.protocolVersion = packethandshakinginsetprotocol.b();
++        this.b.virtualHost = com.destroystokyo.paper.network.PaperNetworkClient.prepareVirtualHost(packethandshakinginsetprotocol.hostname, packethandshakinginsetprotocol.port);
++        // PandaSpigot end
+     }
+ 
+     public void a(IChatBaseComponent ichatbasecomponent) {}
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index af9e53ec1374776111b659aaaa0c4ae97deb5cbe..2e715a89d84798aa8ae4c6eaa60dd27922c64d91 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -74,6 +74,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     private IChatBaseComponent n;
+     private boolean o;
+     private boolean p;
++    // PandaSpigot start - Backport NetworkClient
++    public int protocolVersion;
++    public java.net.InetSocketAddress virtualHost;
++    // PandaSpigot end
+     private static final boolean enableExplicitFlush = Boolean.getBoolean("paper.explicit-flush"); // PandaSpigot
+     // PandaSpigot start - Optimize Network
+     public boolean isPending = true;
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+index 09ec7de882201fe89323f8ff67e7e76128f8ae1e..371906750db087081309f7263de5dfa0c3b61090 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftPlayer.java
+@@ -124,6 +124,20 @@ public class CraftPlayer extends CraftHumanEntity implements Player {
+         }
+     }
+ 
++    // PandaSpigot start - Backport NetworkClient
++    @Override
++    public int getProtocolVersion() {
++        if (getHandle().playerConnection == null) return -1;
++        return getHandle().playerConnection.networkManager.protocolVersion;
++    }
++
++    @Override
++    public InetSocketAddress getVirtualHost() {
++        if (getHandle().playerConnection == null) return null;
++        return getHandle().playerConnection.networkManager.virtualHost;
++    }
++    // PandaSpigot end
++
+     @Override
+     public double getEyeHeight() {
+         return getEyeHeight(false);
