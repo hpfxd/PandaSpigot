@@ -1,0 +1,356 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <constant4337@molecularmail.com>
+Date: Sun, 26 Oct 2025 18:40:27 -0600
+Subject: [PATCH] Backport PaperServerListPingEvent
+
+
+diff --git a/src/main/java/com/destroystokyo/paper/network/PaperLegacyStatusClient.java b/src/main/java/com/destroystokyo/paper/network/PaperLegacyStatusClient.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..e5bd328e60a8f6a94bfef4eae903a7b25d8d1f58
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/network/PaperLegacyStatusClient.java
+@@ -0,0 +1,69 @@
++package com.destroystokyo.paper.network;
++
++import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
++import net.minecraft.server.MinecraftServer;
++import org.apache.commons.lang3.StringUtils;
++import org.bukkit.ChatColor;
++
++import java.net.InetSocketAddress;
++
++public class PaperLegacyStatusClient implements StatusClient {
++
++    private final InetSocketAddress address;
++    private int protocolVersion;
++    private final InetSocketAddress virtualHost;
++
++    private PaperLegacyStatusClient(InetSocketAddress address, int protocolVersion, InetSocketAddress virtualHost) {
++        this.address = address;
++        this.protocolVersion = protocolVersion;
++        this.virtualHost = virtualHost;
++    }
++
++    @Override
++    public InetSocketAddress getAddress() {
++        return this.address;
++    }
++
++    @Override
++    public int getProtocolVersion() {
++        return this.protocolVersion;
++    }
++
++    @Override
++    public InetSocketAddress getVirtualHost() {
++        return this.virtualHost;
++    }
++
++    @Override
++    public boolean isLegacy() {
++        return true;
++    }
++
++    public static PaperServerListPingEvent processRequest(MinecraftServer server, InetSocketAddress address,
++                                                          int protocolVersion, InetSocketAddress virtualHost) {
++        PaperServerListPingEvent event = new PaperServerListPingEventImpl(server,
++            new PaperLegacyStatusClient(address, protocolVersion, virtualHost), Byte.MAX_VALUE, null);
++        server.server.getPluginManager().callEvent(event);
++
++        if (event.isCancelled()) {
++            return null;
++        }
++
++        return event;
++    }
++
++    public static String getMotd(PaperServerListPingEvent event) {
++        return getFirstLine(event.getMotd());
++    }
++
++    public static String getUnformattedMotd(PaperServerListPingEvent event) {
++        // Strip color codes and all other occurrences of the color char (because it's used as delimiter)
++        return getFirstLine(StringUtils.remove(ChatColor.stripColor(event.getMotd()), ChatColor.COLOR_CHAR));
++    }
++
++    private static String getFirstLine(String s) {
++        int pos = s.indexOf("\n");
++        return pos >= 0 ? s.substring(0, pos) : s;
++    }
++
++}
+diff --git a/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..63f430a003caea80f8ef4dc38e2796d4d0b3d818
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/network/PaperServerListPingEventImpl.java
+@@ -0,0 +1,29 @@
++package com.destroystokyo.paper.network;
++
++import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
++import net.minecraft.server.EntityPlayer;
++import net.minecraft.server.MinecraftServer;
++import org.bukkit.entity.Player;
++import org.bukkit.util.CachedServerIcon;
++
++public class PaperServerListPingEventImpl extends PaperServerListPingEvent {
++
++    private final MinecraftServer server;
++
++    PaperServerListPingEventImpl(MinecraftServer server, StatusClient client, int protocolVersion, CachedServerIcon icon) {
++        super(client, server.getMotd(), server.getPlayerList().getPlayerCount(), server.getPlayerList().getMaxPlayers(),
++            server.getServerModName() + ' ' + server.getVersion(), protocolVersion, icon);
++        this.server = server;
++    }
++
++    @Override
++    protected final Object[] getOnlinePlayers() {
++        return this.server.getPlayerList().players.toArray();
++    }
++
++    @Override
++    protected final Player getBukkitPlayer(Object player) {
++        return ((EntityPlayer) player).getBukkitEntity();
++    }
++
++}
+diff --git a/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java b/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..521fbc1f9210b87778cbbf9a943432c1bde1fb8d
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/network/PaperStatusClient.java
+@@ -0,0 +1,11 @@
++package com.destroystokyo.paper.network;
++
++import net.minecraft.server.NetworkManager;
++
++public class PaperStatusClient extends PaperNetworkClient implements StatusClient {
++
++    PaperStatusClient(NetworkManager networkManager) {
++        super(networkManager);
++    }
++
++}
+diff --git a/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..8b3ae95c34ac46d6d356fc33579f818be7d5174b
+--- /dev/null
++++ b/src/main/java/com/destroystokyo/paper/network/StandardPaperServerListPingEventImpl.java
+@@ -0,0 +1,109 @@
++package com.destroystokyo.paper.network;
++
++import com.destroystokyo.paper.profile.CraftPlayerProfile;
++import com.destroystokyo.paper.profile.PlayerProfile;
++import com.google.common.base.MoreObjects;
++import com.google.common.base.Strings;
++import com.hpfxd.pandaspigot.adventure.PandaAdventure;
++import com.mojang.authlib.GameProfile;
++import net.minecraft.server.MinecraftServer;
++import net.minecraft.server.NetworkManager;
++import net.minecraft.server.PacketStatusOutServerInfo;
++import net.minecraft.server.ServerPing;
++
++import java.util.List;
++import java.util.UUID;
++
++public class StandardPaperServerListPingEventImpl extends PaperServerListPingEventImpl {
++
++    private static final GameProfile[] EMPTY_PROFILES = new GameProfile[0];
++    private static final UUID FAKE_UUID = new UUID(0, 0);
++
++    private GameProfile[] originalSample;
++
++    private StandardPaperServerListPingEventImpl(MinecraftServer server, NetworkManager networkManager, ServerPing ping) {
++        super(server, new PaperStatusClient(networkManager), ping.c() != null ? ping.c().b() : -1, server.server.getServerIcon());
++        this.originalSample = ping.b() == null ? null : ping.b().c();
++    }
++
++    @Override
++    public List<PlayerProfile> getPlayerSample() {
++        List<PlayerProfile> sample = super.getPlayerSample();
++
++        if (this.originalSample != null) {
++            for (GameProfile profile : this.originalSample) {
++                sample.add(CraftPlayerProfile.asBukkitCopy(profile));
++            }
++            this.originalSample = null;
++        }
++
++        return sample;
++    }
++
++    private GameProfile[] getPlayerSampleHandle() {
++        if (this.originalSample != null) {
++            return this.originalSample;
++        }
++
++        List<PlayerProfile> entries = super.getPlayerSample();
++
++        if (entries.isEmpty()) {
++            return EMPTY_PROFILES;
++        }
++
++        GameProfile[] profiles = new GameProfile[entries.size()];
++        for (int i = 0; i < profiles.length; i++) {
++            /*
++             * Avoid null UUIDs/names since that will make the response invalid
++             * on the client.
++             * Instead, fall back to a fake/empty UUID and an empty string as name.
++             * This can be used to create custom lines in the player list that do not
++             * refer to a specific player.
++             */
++
++            PlayerProfile profile = entries.get(i);
++            if (profile.getId() != null && profile.getName() != null) {
++                profiles[i] = CraftPlayerProfile.asAuthlib(profile);
++            } else {
++                profiles[i] = new GameProfile(MoreObjects.firstNonNull(profile.getId(), FAKE_UUID), Strings.nullToEmpty(profile.getName()));
++            }
++        }
++
++        return profiles;
++    }
++
++    public static void processRequest(MinecraftServer server, NetworkManager networkManager) {
++        StandardPaperServerListPingEventImpl event = new StandardPaperServerListPingEventImpl(server, networkManager, server.aG());
++        server.server.getPluginManager().callEvent(event);
++
++        // Close connection immediately if event is cancelled
++        if (event.isCancelled()) {
++            networkManager.close(null);
++            return;
++        }
++
++        // Setup response
++        ServerPing ping = new ServerPing();
++
++        // Description
++        ping.setMOTD(PandaAdventure.asVanilla(event.motd()));
++
++        // Players
++        if (!event.shouldHidePlayers()) {
++            ping.setPlayerSample(new ServerPing.ServerPingPlayerSample(event.getMaxPlayers(), event.getNumPlayers()));
++            ping.b().a(event.getPlayerSampleHandle());
++        }
++
++        // Version
++        ping.setServerInfo(new ServerPing.ServerData(event.getVersion(), event.getProtocolVersion()));
++
++        // Favicon
++        if (event.getServerIcon() != null) {
++            ping.setFavicon(event.getServerIcon().getData());
++        }
++
++        // Send response
++        networkManager.handle(new PacketStatusOutServerInfo(ping));
++    }
++
++}
+diff --git a/src/main/java/net/minecraft/server/LegacyPingHandler.java b/src/main/java/net/minecraft/server/LegacyPingHandler.java
+index 22381439f5e2e043a5bfc18ef39553d572078180..b07e5cb71e5f5aa1fa486909a7bc0d7aec104b50 100644
+--- a/src/main/java/net/minecraft/server/LegacyPingHandler.java
++++ b/src/main/java/net/minecraft/server/LegacyPingHandler.java
+@@ -30,11 +30,21 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+                 InetSocketAddress inetsocketaddress = (InetSocketAddress) channelhandlercontext.channel().remoteAddress();
+                 MinecraftServer minecraftserver = this.b.d();
+                 int i = bytebuf.readableBytes();
++                com.destroystokyo.paper.event.server.PaperServerListPingEvent event; // PandaSpigot - Backport PaperServerListPingEvent
+ 
+                 switch (i) {
+                     case 0:
+                         LegacyPingHandler.a.debug("Ping: (<1.3.x) from {}:{}", new Object[]{inetsocketaddress.getAddress(), inetsocketaddress.getPort()});
+-                        String s = String.format("%s\u00a7%d\u00a7%d", minecraftserver.getMotd(), minecraftserver.I(), minecraftserver.J());
++                        // PandaSpigot start - Backport PaperServerListPingEvent
++                        event = com.destroystokyo.paper.network.PaperLegacyStatusClient.processRequest(minecraftserver, inetsocketaddress, 39, null);
++
++                        if (event == null) {
++                            channelhandlercontext.close();
++                            break;
++                        }
++
++                        String s = String.format("%s\u00a7%d\u00a7%d", com.destroystokyo.paper.network.PaperLegacyStatusClient.getUnformattedMotd(event), event.getNumPlayers(), event.getMaxPlayers());
++                        // PandaSpigot end
+ 
+                         this.a(channelhandlercontext, this.a(s));
+                         break;
+@@ -44,7 +54,17 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+                         }
+ 
+                         LegacyPingHandler.a.debug("Ping: (1.4-1.5.x) from {}:{}", new Object[]{inetsocketaddress.getAddress(), inetsocketaddress.getPort()});
+-                        String s1 = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, minecraftserver.getVersion(), minecraftserver.getMotd(), minecraftserver.I(), minecraftserver.J());
++                        // PandaSpigot start - Backport PaperServerListPingEvent
++                        event = com.destroystokyo.paper.network.PaperLegacyStatusClient.processRequest(minecraftserver, inetsocketaddress, 61, null);
++
++                        if (event == null) {
++                            channelhandlercontext.close();
++                            break;
++                        }
++
++                        String s1 = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", event.getProtocolVersion(), event.getVersion(),
++                            com.destroystokyo.paper.network.PaperLegacyStatusClient.getMotd(event), event.getNumPlayers(), event.getMaxPlayers());
++                        // PandaSpigot end
+ 
+                         this.a(channelhandlercontext, this.a(s1));
+                         break;
+@@ -55,16 +75,34 @@ public class LegacyPingHandler extends ChannelInboundHandlerAdapter {
+                         flag1 &= "MC|PingHost".equals(new String(bytebuf.readBytes(bytebuf.readShort() * 2).array(), Charsets.UTF_16BE));
+                         int j = bytebuf.readUnsignedShort();
+ 
+-                        flag1 &= bytebuf.readUnsignedByte() >= 73;
+-                        flag1 &= 3 + bytebuf.readBytes(bytebuf.readShort() * 2).array().length + 4 == j;
+-                        flag1 &= bytebuf.readInt() <= 65535;
++                        // PandaSpigot start - Backport PaperServerListPingEvent
++                        int protocolVersion = bytebuf.readUnsignedByte();
++                        byte[] host = bytebuf.readBytes(bytebuf.readShort() * 2).array();
++                        int port = bytebuf.readInt();
++
++                        flag1 &= protocolVersion >= 73;
++                        flag1 &= 3 + host.length + 4 == j;
++                        flag1 &= port <= 65535;
++                        // PandaSpigot end
+                         flag1 &= bytebuf.readableBytes() == 0;
+                         if (!flag1) {
+                             return;
+                         }
+ 
+                         LegacyPingHandler.a.debug("Ping: (1.6) from {}:{}", new Object[]{inetsocketaddress.getAddress(), inetsocketaddress.getPort()});
+-                        String s2 = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", 127, minecraftserver.getVersion(), minecraftserver.getMotd(), minecraftserver.I(), minecraftserver.J());
++                        // PandaSpigot start - Backport PaperServerListPingEvent
++                        InetSocketAddress virtualHost = com.destroystokyo.paper.network.PaperNetworkClient.prepareVirtualHost(new String(host, Charsets.UTF_16BE), port);
++                        event = com.destroystokyo.paper.network.PaperLegacyStatusClient.processRequest(
++                            minecraftserver, (InetSocketAddress) channelhandlercontext.channel().remoteAddress(), protocolVersion, virtualHost);
++
++                        if (event == null) {
++                            channelhandlercontext.close();
++                            return;
++                        }
++
++                        String s2 = String.format("\u00a71\u0000%d\u0000%s\u0000%s\u0000%d\u0000%d", event.getProtocolVersion(), event.getVersion(),
++                            com.destroystokyo.paper.network.PaperLegacyStatusClient.getMotd(event), event.getNumPlayers(), event.getMaxPlayers());
++                        // PandaSpigot end
+                         ByteBuf bytebuf1 = this.a(s2);
+ 
+                         try {
+diff --git a/src/main/java/net/minecraft/server/PacketStatusListener.java b/src/main/java/net/minecraft/server/PacketStatusListener.java
+index e4bff04ac4b817f92a6a2ab6ab4e7afa6e9576bd..c348744ed6ccda981bb811fe9180426946d6e3b5 100644
+--- a/src/main/java/net/minecraft/server/PacketStatusListener.java
++++ b/src/main/java/net/minecraft/server/PacketStatusListener.java
+@@ -32,6 +32,8 @@ public class PacketStatusListener implements PacketStatusInListener {
+             return;
+         }
+         this.d = true;
++        // PandaSpigot start - Backport PaperServerListPingEvent
++        /*
+         // this.networkManager.handle(new PacketStatusOutServerInfo(this.minecraftServer.aG()));
+         final Object[] players = minecraftServer.getPlayerList().players.toArray();
+         class ServerListPingEvent extends org.bukkit.event.server.ServerListPingEvent {
+@@ -125,6 +127,9 @@ public class PacketStatusListener implements PacketStatusInListener {
+ 
+         this.networkManager.handle(new PacketStatusOutServerInfo(ping));
+         // CraftBukkit end
++        */
++        com.destroystokyo.paper.network.StandardPaperServerListPingEventImpl.processRequest(this.minecraftServer, this.networkManager);
++        // PandaSpigot end
+     }
+ 
+     public void a(PacketStatusInPing packetstatusinping) {
