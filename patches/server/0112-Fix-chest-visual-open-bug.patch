@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: FabrisNick <niccolofabris05@gmail.com>
+Date: Tue, 27 May 2025 10:02:30 +0200
+Subject: [PATCH] Fix chest visual open bug
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+index 1d8e4d1050ebafef8784920481621965fd5c212f..0343ae961ef5de8c0b1ba1f17c92b1d16349f814 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+@@ -123,4 +123,9 @@ public class PandaSpigotConfig {
+     @Comment("Whether player IP addresses should be logged by the server. This does not impact\n" +
+         "the ability of plugins to log the IP addresses of players.")
+     public boolean logPlayerIpAddresses = true;
++
++    @Comment("Prevents sending interact packets while an inventory is open. This fixes the bug\n" +
++        "of chests showing as open when the aren't. This is not the vanilla behaviour and enabling\n" +
++        "this option may break some plugins.")
++    public boolean dropInteractPacketsInInventory = false;
+ }
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index 303d145fedb3488df4686f83a63c04c0c24eacc9..9e38444f37a9ff368bbf4ba897b642cf61c70105 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -701,6 +701,13 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+         // CraftBukkit start
+         if (this.player.dead) return;
+ 
++        // PandaSpigot start - Fix chest visual open bug
++        // Even if inventory is not open, active container will equal player inventory, same with defaultContainer.
++        if (com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().dropInteractPacketsInInventory && player.activeContainer != player.defaultContainer) {
++            return;
++        }
++        // PandaSpigot end
++
+         // CraftBukkit - if rightclick decremented the item, always send the update packet. */
+         // this is not here for CraftBukkit's own functionality; rather it is to fix
+         // a notch bug where the item doesn't update correctly.
