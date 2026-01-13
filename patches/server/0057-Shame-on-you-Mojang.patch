@@ -12,10 +12,10 @@ This then triggers async chunk loads!
 What in the hell were you thinking?
 
 diff --git a/src/main/java/net/minecraft/server/BlockBeacon.java b/src/main/java/net/minecraft/server/BlockBeacon.java
-index 71b536c0d3c3433fe124bf0f81795a11d3867560..b97e332f6a8de74d8fd6f23c5ac25b6764f767ab 100644
+index bda0a35c3d3e78fb3e65cf144c7e506fee7029e0..42328701e1ad9a5a864e3654338993f4eae17aad 100644
 --- a/src/main/java/net/minecraft/server/BlockBeacon.java
 +++ b/src/main/java/net/minecraft/server/BlockBeacon.java
-@@ -62,8 +62,10 @@ public class BlockBeacon extends BlockContainer {
+@@ -69,8 +69,10 @@ public class BlockBeacon extends BlockContainer {
      }
  
      public static void f(final World world, final BlockPosition blockposition) {
@@ -26,7 +26,7 @@ index 71b536c0d3c3433fe124bf0f81795a11d3867560..b97e332f6a8de74d8fd6f23c5ac25b67
                  Chunk chunk = world.getChunkAtWorldCoords(blockposition);
  
                  for (int i = blockposition.getY() - 1; i >= 0; --i) {
-@@ -76,8 +78,10 @@ public class BlockBeacon extends BlockContainer {
+@@ -83,8 +85,10 @@ public class BlockBeacon extends BlockContainer {
                      IBlockData iblockdata = world.getType(blockposition1);
  
                      if (iblockdata.getBlock() == Blocks.BEACON) {
@@ -37,7 +37,7 @@ index 71b536c0d3c3433fe124bf0f81795a11d3867560..b97e332f6a8de74d8fd6f23c5ac25b67
                                  TileEntity tileentity = world.getTileEntity(blockposition1);
  
                                  if (tileentity instanceof TileEntityBeacon) {
-@@ -85,12 +89,16 @@ public class BlockBeacon extends BlockContainer {
+@@ -92,12 +96,16 @@ public class BlockBeacon extends BlockContainer {
                                      world.playBlockAction(blockposition1, Blocks.BEACON, 1, 0);
                                  }
  
