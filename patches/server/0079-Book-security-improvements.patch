@@ -21,7 +21,7 @@ index 6c46349fb24856bb2b0f94d84536f64d96daeece..09b8fa11efa326345b3b4eaf952676f4
      }
  
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
-index 977675f6155a1ccb1d9cdfdcb48a9f922805df9a..331dc93e624692029c76eea7ebd32587a428f6cc 100644
+index 977675f6155a1ccb1d9cdfdcb48a9f922805df9a..8e47d23be2e54c7c5b11f3e5f68cb4afca0aae57 100644
 --- a/src/main/java/net/minecraft/server/PlayerConnection.java
 +++ b/src/main/java/net/minecraft/server/PlayerConnection.java
 @@ -111,6 +111,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
@@ -60,21 +60,6 @@ index 977675f6155a1ccb1d9cdfdcb48a9f922805df9a..331dc93e624692029c76eea7ebd32587
              packetdataserializer = new PacketDataSerializer(Unpooled.wrappedBuffer(packetplayincustompayload.b()));
  
              try {
-@@ -2111,7 +2126,13 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
-                         itemstack1 = new ItemStack(Items.WRITTEN_BOOK);
-                         itemstack1.a("author", (NBTBase) (new NBTTagString(this.player.getName())));
-                         itemstack1.a("title", (NBTBase) (new NBTTagString(itemstack.getTag().getString("title"))));
--                        itemstack1.a("pages", (NBTBase) itemstack.getTag().getList("pages", 8));
-+                        // PandaSpigot start - Strip JSON from pages
-+                        NBTTagList pages = itemstack.getTag().getList("pages", 8);
-+                        for (int i = 0; i < pages.size(); i++) {
-+                            pages.a(i, new NBTTagString(IChatBaseComponent.ChatSerializer.a(pages.getString(i)).getText()));
-+                        }
-+                        itemstack1.a("pages", pages);
-+                        // PandaSpigot end
-                         itemstack1.setItem(Items.WRITTEN_BOOK);
-                         CraftEventFactory.handleEditBookEvent(player, itemstack1);
-                         // CraftBukkit end
 diff --git a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java b/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
 index 0b5ada0118f521eaca65b0fd67ebf232fa183b1a..44b3c3ac151fecebd41b43b7bb6708cb8508dc50 100644
 --- a/src/main/java/org/bukkit/craftbukkit/inventory/CraftMetaBook.java
