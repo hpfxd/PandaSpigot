@@ -5,7 +5,7 @@ Subject: [PATCH] Fix Decompilation errors
 
 
 diff --git a/src/main/java/net/minecraft/server/Achievement.java b/src/main/java/net/minecraft/server/Achievement.java
-index a110a484f5e696b1443e2a78a7ac6972a3e74720..f1d2bd2ffcd172fe58785574096801d297a5270b 100644
+index 32f42698d71b69e8410c89606bea90986aeea894..fb00a32157f432031338d9930b1ed7a99660f313 100644
 --- a/src/main/java/net/minecraft/server/Achievement.java
 +++ b/src/main/java/net/minecraft/server/Achievement.java
 @@ -24,11 +24,11 @@ public class Achievement extends Statistic {
@@ -23,10 +23,10 @@ index a110a484f5e696b1443e2a78a7ac6972a3e74720..f1d2bd2ffcd172fe58785574096801d2
  
          if (i > AchievementList.c) {
 diff --git a/src/main/java/net/minecraft/server/AttributeModifiable.java b/src/main/java/net/minecraft/server/AttributeModifiable.java
-index c9297fa2481a93ae24bfd4171c93bd88b85354f6..037e0a13a7efb4723f513fed25729d976da3931f 100644
+index e5098f4419b940217d2cd5ff75c2316aa6165c74..5def6e505a01eefdf7c348938dc4c84a05430be2 100644
 --- a/src/main/java/net/minecraft/server/AttributeModifiable.java
 +++ b/src/main/java/net/minecraft/server/AttributeModifiable.java
-@@ -71,15 +71,10 @@ public class AttributeModifiable implements AttributeInstance {
+@@ -79,15 +79,10 @@ public class AttributeModifiable implements AttributeInstance {
          if (this.a(attributemodifier.a()) != null) {
              throw new IllegalArgumentException("Modifier is already applied on this attribute!");
          } else {
@@ -46,10 +46,10 @@ index c9297fa2481a93ae24bfd4171c93bd88b85354f6..037e0a13a7efb4723f513fed25729d97
              this.f();
          }
 diff --git a/src/main/java/net/minecraft/server/BlockDataAbstract.java b/src/main/java/net/minecraft/server/BlockDataAbstract.java
-index aa1d985659bf56ac668985c6a823e3f746ab9caa..974088687f2bb3f4b587058fe2f3d11c21363bc8 100644
+index 7adc304302d11679e5277003f34b5017376d8e92..0bb21d50bd924959f9d3d43f35ad86038a81aa49 100644
 --- a/src/main/java/net/minecraft/server/BlockDataAbstract.java
 +++ b/src/main/java/net/minecraft/server/BlockDataAbstract.java
-@@ -16,21 +16,21 @@ public abstract class BlockDataAbstract implements IBlockData {
+@@ -16,14 +16,14 @@ public abstract class BlockDataAbstract implements IBlockData {
              if (map_entry == null) {
                  return "<NULL>";
              } else {
@@ -68,8 +68,9 @@ index aa1d985659bf56ac668985c6a823e3f746ab9caa..974088687f2bb3f4b587058fe2f3d11c
          }
      };
  
-     public BlockDataAbstract() {}
+@@ -31,7 +31,7 @@ public abstract class BlockDataAbstract implements IBlockData {
  
+     @Override
      public <T extends Comparable<T>> IBlockData a(IBlockState<T> iblockstate) {
 -        return this.set(iblockstate, (Comparable) a(iblockstate.c(), this.get(iblockstate)));
 +        return this.set(iblockstate, a(iblockstate.c(), this.get(iblockstate)));
@@ -77,10 +78,10 @@ index aa1d985659bf56ac668985c6a823e3f746ab9caa..974088687f2bb3f4b587058fe2f3d11c
  
      protected static <T> T a(Collection<T> collection, T t0) {
 diff --git a/src/main/java/net/minecraft/server/BlockFlowers.java b/src/main/java/net/minecraft/server/BlockFlowers.java
-index 23c8b1ba54b2f0821d16cd82939f245bd2d8faf0..809c4658d80c9c7fb30192b195564e901361e6cf 100644
+index 1be5469bc49a25a94a5058df8ab18c0f78ef8abf..42bef0649685ff491fc8859ddd6fdc9f62664885 100644
 --- a/src/main/java/net/minecraft/server/BlockFlowers.java
 +++ b/src/main/java/net/minecraft/server/BlockFlowers.java
-@@ -30,8 +30,8 @@ public abstract class BlockFlowers extends BlockPlant {
+@@ -32,8 +32,8 @@ public abstract class BlockFlowers extends BlockPlant {
                      return blockflowers_enumflowervarient.a() == BlockFlowers.this.l();
                  }
  
@@ -91,7 +92,7 @@ index 23c8b1ba54b2f0821d16cd82939f245bd2d8faf0..809c4658d80c9c7fb30192b195564e90
                  }
              });
          }
-@@ -116,8 +116,8 @@ public abstract class BlockFlowers extends BlockPlant {
+@@ -121,8 +121,8 @@ public abstract class BlockFlowers extends BlockPlant {
                          return blockflowers_enumflowervarient.a() == blockflowers_enumflowertype;
                      }
  
@@ -103,7 +104,7 @@ index 23c8b1ba54b2f0821d16cd82939f245bd2d8faf0..809c4658d80c9c7fb30192b195564e90
                  });
  
 diff --git a/src/main/java/net/minecraft/server/BlockLeaves1.java b/src/main/java/net/minecraft/server/BlockLeaves1.java
-index 7cc0aa94798dc373ba0b090ed9ec35ac240ee31d..2b57681bd997e57f5f6b8d059e6ca173bf91d6fd 100644
+index a75fe31376ec13ae0460d569f7a11db07fdddbc1..a16064e4c59a79f7b8a66e62ff6572dc575bcf4a 100644
 --- a/src/main/java/net/minecraft/server/BlockLeaves1.java
 +++ b/src/main/java/net/minecraft/server/BlockLeaves1.java
 @@ -9,8 +9,8 @@ public class BlockLeaves1 extends BlockLeaves {
@@ -118,7 +119,7 @@ index 7cc0aa94798dc373ba0b090ed9ec35ac240ee31d..2b57681bd997e57f5f6b8d059e6ca173
      });
  
 diff --git a/src/main/java/net/minecraft/server/BlockLeaves2.java b/src/main/java/net/minecraft/server/BlockLeaves2.java
-index 6cc8b12add9c6fa677abb2acd438b2b4a41b083a..8a2caa9e986d5c3adbeca5c975ad007dfa623ed9 100644
+index b158250aeef0355e796b9bec84565db1cd3a88cf..14f448e62423ca8a1750f64555ff996cf7f93743 100644
 --- a/src/main/java/net/minecraft/server/BlockLeaves2.java
 +++ b/src/main/java/net/minecraft/server/BlockLeaves2.java
 @@ -9,8 +9,8 @@ public class BlockLeaves2 extends BlockLeaves {
@@ -133,7 +134,7 @@ index 6cc8b12add9c6fa677abb2acd438b2b4a41b083a..8a2caa9e986d5c3adbeca5c975ad007d
      });
  
 diff --git a/src/main/java/net/minecraft/server/BlockLog1.java b/src/main/java/net/minecraft/server/BlockLog1.java
-index 5419cf2013e4a9a764fc44fb287ba5ae2f2215d3..fd89241cf3b43d98a16744149609f860c6acf756 100644
+index 0b81c54dcee8a20d49add211a87d0a71a40a0156..4961704759631750c53ded7e345512f6015c0280 100644
 --- a/src/main/java/net/minecraft/server/BlockLog1.java
 +++ b/src/main/java/net/minecraft/server/BlockLog1.java
 @@ -9,8 +9,8 @@ public class BlockLog1 extends BlockLogAbstract {
@@ -148,7 +149,7 @@ index 5419cf2013e4a9a764fc44fb287ba5ae2f2215d3..fd89241cf3b43d98a16744149609f860
      });
  
 diff --git a/src/main/java/net/minecraft/server/BlockLog2.java b/src/main/java/net/minecraft/server/BlockLog2.java
-index 88b674ff4a2a997300a57bf5c92b67bde495f8d8..b244e8f0b90ca4fc51e694acb072baf362cadd8f 100644
+index b030c5a327d8e323bb341a095f7fa3ba0040d9f9..90becb0a9d1b7201bee80e7f44e4082eeca2acaa 100644
 --- a/src/main/java/net/minecraft/server/BlockLog2.java
 +++ b/src/main/java/net/minecraft/server/BlockLog2.java
 @@ -9,8 +9,8 @@ public class BlockLog2 extends BlockLogAbstract {
@@ -177,10 +178,10 @@ index 3408e4e06e1ab6b25c55112cfeeece27ce464fca..28af027e1336cb636f1c8bc985b515ef
      }
  }
 diff --git a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
-index 61777eff48e7a16763c41593e0e6f4001e547a77..00731721eecbc9afcd866b032d9f2c6255c45e23 100644
+index bf22dbc2420b6ff189295baeb8741b8acedc8fbf..6f5e45d5c9a42cc64a8eca28e237f9727746ec93 100644
 --- a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
 +++ b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
-@@ -102,8 +102,8 @@ public class BlockRedstoneComparator extends BlockDiodeAbstract implements ICont
+@@ -111,8 +111,8 @@ public class BlockRedstoneComparator extends BlockDiodeAbstract implements ICont
                  return entity != null && entity.getDirection() == enumdirection;
              }
  
@@ -192,10 +193,10 @@ index 61777eff48e7a16763c41593e0e6f4001e547a77..00731721eecbc9afcd866b032d9f2c62
          });
  
 diff --git a/src/main/java/net/minecraft/server/BlockSponge.java b/src/main/java/net/minecraft/server/BlockSponge.java
-index b46e7c8bf3f0c1cdbc87623ddabea370c11a679a..f5c86be2e06e3fd233ec6853bf70ecad664f11d2 100644
+index 0a937d1d794393e85eb0085467db321f6735a84f..b690e0710ebd46a6d3abab8859bb947476ce35dc 100644
 --- a/src/main/java/net/minecraft/server/BlockSponge.java
 +++ b/src/main/java/net/minecraft/server/BlockSponge.java
-@@ -41,7 +41,7 @@ public class BlockSponge extends Block {
+@@ -45,7 +45,7 @@ public class BlockSponge extends Block {
  
      private boolean e(World world, BlockPosition blockposition) {
          LinkedList linkedlist = Lists.newLinkedList();
@@ -205,7 +206,7 @@ index b46e7c8bf3f0c1cdbc87623ddabea370c11a679a..f5c86be2e06e3fd233ec6853bf70ecad
          linkedlist.add(new Tuple(blockposition, 0));
          int i = 0;
 diff --git a/src/main/java/net/minecraft/server/BlockStateEnum.java b/src/main/java/net/minecraft/server/BlockStateEnum.java
-index 48dcbc9c073e92ed640706d9322f67c3255821cd..13a165f9af83a33ed7f547f9a5e4b92e54e5d353 100644
+index 9489fa0618fe128c74502daeb5e700b7896e9d40..7369e07b1d02a68e7d5bdd5bbac071e44a530eb9 100644
 --- a/src/main/java/net/minecraft/server/BlockStateEnum.java
 +++ b/src/main/java/net/minecraft/server/BlockStateEnum.java
 @@ -18,7 +18,7 @@ public class BlockStateEnum<T extends Enum<T> & INamable> extends BlockState<T>
@@ -218,7 +219,7 @@ index 48dcbc9c073e92ed640706d9322f67c3255821cd..13a165f9af83a33ed7f547f9a5e4b92e
  
              if (this.b.containsKey(s1)) {
 diff --git a/src/main/java/net/minecraft/server/BlockStateList.java b/src/main/java/net/minecraft/server/BlockStateList.java
-index af665e7f924e57bfb1d3edeb7a9e3b3144f5bc3a..5539fbdcf02b0edb82d3d4c9488b6403e85887dd 100644
+index f0abb7dc1839bb8453fe38612de6694c0c357d57..6a7398aa10fee9553ba245029cb72671f0f26226 100644
 --- a/src/main/java/net/minecraft/server/BlockStateList.java
 +++ b/src/main/java/net/minecraft/server/BlockStateList.java
 @@ -28,8 +28,8 @@ public class BlockStateList {
@@ -249,7 +250,7 @@ index af665e7f924e57bfb1d3edeb7a9e3b3144f5bc3a..5539fbdcf02b0edb82d3d4c9488b6403
  
          for (List list : IteratorUtils.a(this.e())) {
              Map map = MapGeneratorUtils.b(this.d, list);
-@@ -151,7 +151,7 @@ public class BlockStateList {
+@@ -156,7 +156,7 @@ public class BlockStateList {
              } else {
                  HashBasedTable hashbasedtable = HashBasedTable.create();
  
@@ -273,7 +274,7 @@ index ce887c93dbd6f5092fdf1c3f6cc1a2a7341b3f84..dc064a7fe9a5a9493fe52751021e7652
      }
  }
 diff --git a/src/main/java/net/minecraft/server/BlockTorch.java b/src/main/java/net/minecraft/server/BlockTorch.java
-index 56fdb748d2ce9f6b28589ecf625c8aef228360ab..c9d37168843cd066a4dbd701e4f919ff22bb0223 100644
+index 61246ff1fb9de585054702b2e752c403b5eba973..534b5bf48e8191deb722122114f679fad8df5d8b 100644
 --- a/src/main/java/net/minecraft/server/BlockTorch.java
 +++ b/src/main/java/net/minecraft/server/BlockTorch.java
 @@ -9,8 +9,8 @@ public class BlockTorch extends Block {
@@ -288,10 +289,10 @@ index 56fdb748d2ce9f6b28589ecf625c8aef228360ab..c9d37168843cd066a4dbd701e4f919ff
      });
  
 diff --git a/src/main/java/net/minecraft/server/CommandAbstract.java b/src/main/java/net/minecraft/server/CommandAbstract.java
-index d2d8ffd89fcaf8e2b33a5eba54605d5ba2c7de53..37bf12eb56ffbf9155eebbb0817b1195fdc918c5 100644
+index f6b2e14f98c2ab0a0be6be539b42a6ac209e099f..e016f5d7a8a450dd5c916b4fe3f78a0c168fcd2b 100644
 --- a/src/main/java/net/minecraft/server/CommandAbstract.java
 +++ b/src/main/java/net/minecraft/server/CommandAbstract.java
-@@ -512,8 +512,8 @@ public abstract class CommandAbstract implements ICommand {
+@@ -516,8 +516,8 @@ public abstract class CommandAbstract implements ICommand {
          return this.getCommand().compareTo(icommand.getCommand());
      }
  
@@ -303,10 +304,10 @@ index d2d8ffd89fcaf8e2b33a5eba54605d5ba2c7de53..37bf12eb56ffbf9155eebbb0817b1195
  
      public static class CommandNumber {
 diff --git a/src/main/java/net/minecraft/server/CommandAchievement.java b/src/main/java/net/minecraft/server/CommandAchievement.java
-index 6280c714c240794e710d351dc1a608b71639a03d..052a9f05675d95c49bea1585285a7fd369bf418b 100644
+index ec68ddf96b20de7c62a3f8d9d4527fbcd7bec381..f3e80dbe60ece878df42d8049e4f96409e9ae1f9 100644
 --- a/src/main/java/net/minecraft/server/CommandAchievement.java
 +++ b/src/main/java/net/minecraft/server/CommandAchievement.java
-@@ -61,7 +61,7 @@ public class CommandAchievement extends CommandAbstract {
+@@ -65,7 +65,7 @@ public class CommandAchievement extends CommandAbstract {
                                      throw new CommandException("commands.achievement.alreadyHave", new Object[]{entityplayer.getName(), statistic.j()});
                                  }
  
@@ -315,7 +316,7 @@ index 6280c714c240794e710d351dc1a608b71639a03d..052a9f05675d95c49bea1585285a7fd3
  
                                  for (arraylist = Lists.newArrayList(); achievement2.c != null && !entityplayer.getStatisticManager().hasAchievement(achievement2.c); achievement2 = achievement2.c) {
                                      arraylist.add(achievement2.c);
-@@ -75,16 +75,16 @@ public class CommandAchievement extends CommandAbstract {
+@@ -79,16 +79,16 @@ public class CommandAchievement extends CommandAbstract {
                                      throw new CommandException("commands.achievement.dontHave", new Object[]{entityplayer.getName(), statistic.j()});
                                  }
  
@@ -337,10 +338,10 @@ index 6280c714c240794e710d351dc1a608b71639a03d..052a9f05675d95c49bea1585285a7fd3
                                  for (Achievement achievement4 : arraylist1) {
                                      Achievement achievement5 = achievement4;
 diff --git a/src/main/java/net/minecraft/server/CommandBanIp.java b/src/main/java/net/minecraft/server/CommandBanIp.java
-index 937ceca32d18090ceb1199396f3e3eb8287e9b68..62ae1774856bfef6356e1055cf0c0b2cbf53c9e3 100644
+index 46716c70df728844453c3a1873b0b5741c6ec448..c717c768ff3f62c77ccd4760da09eb6f40999c90 100644
 --- a/src/main/java/net/minecraft/server/CommandBanIp.java
 +++ b/src/main/java/net/minecraft/server/CommandBanIp.java
-@@ -57,7 +57,7 @@ public class CommandBanIp extends CommandAbstract {
+@@ -63,7 +63,7 @@ public class CommandBanIp extends CommandAbstract {
          IpBanEntry ipbanentry = new IpBanEntry(s, (Date) null, icommandlistener.getName(), (Date) null, s1);
  
          MinecraftServer.getServer().getPlayerList().getIPBans().add(ipbanentry);
@@ -350,10 +351,10 @@ index 937ceca32d18090ceb1199396f3e3eb8287e9b68..62ae1774856bfef6356e1055cf0c0b2c
          int i = 0;
  
 diff --git a/src/main/java/net/minecraft/server/CommandClone.java b/src/main/java/net/minecraft/server/CommandClone.java
-index cb8f67b67b752ee9afb12412fc577fc4762ccf88..71307fe1c90dd2896414f37c511b37db451240c4 100644
+index 8311cf1b39101307c82643d7667dde0763c96ab8..df481b6757804c26b0d35f82c55919382a76ac80 100644
 --- a/src/main/java/net/minecraft/server/CommandClone.java
 +++ b/src/main/java/net/minecraft/server/CommandClone.java
-@@ -70,9 +70,9 @@ public class CommandClone extends CommandAbstract {
+@@ -74,9 +74,9 @@ public class CommandClone extends CommandAbstract {
                              }
  
                              ArrayList arraylist = Lists.newArrayList();
@@ -365,7 +366,7 @@ index cb8f67b67b752ee9afb12412fc577fc4762ccf88..71307fe1c90dd2896414f37c511b37db
                              BlockPosition blockposition3 = new BlockPosition(structureboundingbox1.a - structureboundingbox.a, structureboundingbox1.b - structureboundingbox.b, structureboundingbox1.c - structureboundingbox.c);
  
                              for (int k = structureboundingbox.c; k <= structureboundingbox.f; ++k) {
-@@ -119,12 +119,12 @@ public class CommandClone extends CommandAbstract {
+@@ -123,12 +123,12 @@ public class CommandClone extends CommandAbstract {
                                  }
                              }
  
@@ -380,7 +381,7 @@ index cb8f67b67b752ee9afb12412fc577fc4762ccf88..71307fe1c90dd2896414f37c511b37db
  
                              for (CommandClone.CommandCloneStoredTileEntity commandclone_commandclonestoredtileentity : list) {
                                  TileEntity tileentity2 = world.getTileEntity(commandclone_commandclonestoredtileentity.a);
-@@ -162,7 +162,7 @@ public class CommandClone extends CommandAbstract {
+@@ -166,7 +166,7 @@ public class CommandClone extends CommandAbstract {
                                  world.update(commandclone_commandclonestoredtileentity3.a, commandclone_commandclonestoredtileentity3.b.getBlock());
                              }
  
@@ -390,10 +391,10 @@ index cb8f67b67b752ee9afb12412fc577fc4762ccf88..71307fe1c90dd2896414f37c511b37db
                              if (list1 != null) {
                                  for (NextTickListEntry nextticklistentry : list1) {
 diff --git a/src/main/java/net/minecraft/server/CommandFill.java b/src/main/java/net/minecraft/server/CommandFill.java
-index 13b6c9eda3c09853cd6c6fa3d218805984983b9e..9e88546a8e49d557de9ba22befa5c9fcd32ec84b 100644
+index bf3df3a748dd0fb56a25d76fff198508439afdd7..976e2e6e501a44abd4ca6d81a4dc594f65f36f4c 100644
 --- a/src/main/java/net/minecraft/server/CommandFill.java
 +++ b/src/main/java/net/minecraft/server/CommandFill.java
-@@ -66,7 +66,7 @@ public class CommandFill extends CommandAbstract {
+@@ -70,7 +70,7 @@ public class CommandFill extends CommandAbstract {
                      }
                  }
  
@@ -403,10 +404,10 @@ index 13b6c9eda3c09853cd6c6fa3d218805984983b9e..9e88546a8e49d557de9ba22befa5c9fc
                  j = 0;
  
 diff --git a/src/main/java/net/minecraft/server/CommandHandler.java b/src/main/java/net/minecraft/server/CommandHandler.java
-index 66c345ff73f7120ac80d615032fc4d66a93b130f..41db5caf58df18b99acc0e3ecfd1686598deaea0 100644
+index f2d6e5ae8740aae98a1e2ea0cdb576d049df040c..ffd908bb81dafa236d9855cade57134975e6f397 100644
 --- a/src/main/java/net/minecraft/server/CommandHandler.java
 +++ b/src/main/java/net/minecraft/server/CommandHandler.java
-@@ -40,7 +40,7 @@ public class CommandHandler implements ICommandHandler {
+@@ -41,7 +41,7 @@ public class CommandHandler implements ICommandHandler {
              icommandlistener.sendMessage(chatmessage);
          } else if (icommand.canUse(icommandlistener)) {
              if (i > -1) {
@@ -416,10 +417,10 @@ index 66c345ff73f7120ac80d615032fc4d66a93b130f..41db5caf58df18b99acc0e3ecfd16865
  
                  icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.AFFECTED_ENTITIES, list.size());
 diff --git a/src/main/java/net/minecraft/server/CommandScoreboard.java b/src/main/java/net/minecraft/server/CommandScoreboard.java
-index ed31f1e4f09818a59d01e84009a58a8df099cac8..4f55efa747b73f9bcd88ccfa828eaa9fc5315dd3 100644
+index 57bc1c01b4cf716a349d3e4927720b7ff65dfa73..d0ebada7cb78834aa276c1cb494eb2fd27721a15 100644
 --- a/src/main/java/net/minecraft/server/CommandScoreboard.java
 +++ b/src/main/java/net/minecraft/server/CommandScoreboard.java
-@@ -197,7 +197,7 @@ public class CommandScoreboard extends CommandAbstract {
+@@ -201,7 +201,7 @@ public class CommandScoreboard extends CommandAbstract {
          if (i < 0) {
              return false;
          } else {
@@ -428,7 +429,7 @@ index ed31f1e4f09818a59d01e84009a58a8df099cac8..4f55efa747b73f9bcd88ccfa828eaa9f
              String s = astring[i];
              ArrayList arraylist1 = Lists.newArrayList();
  
-@@ -420,7 +420,7 @@ public class CommandScoreboard extends CommandAbstract {
+@@ -424,7 +424,7 @@ public class CommandScoreboard extends CommandAbstract {
              icommandlistener.sendMessage(chatmessage);
              icommandlistener.sendMessage(new ChatComponentText(a(collection.toArray())));
          } else {
@@ -437,7 +438,7 @@ index ed31f1e4f09818a59d01e84009a58a8df099cac8..4f55efa747b73f9bcd88ccfa828eaa9f
  
              icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.QUERY_RESULT, collection1.size());
              if (collection1.size() <= 0) {
-@@ -543,7 +543,7 @@ public class CommandScoreboard extends CommandAbstract {
+@@ -547,7 +547,7 @@ public class CommandScoreboard extends CommandAbstract {
          ScoreboardTeam scoreboardteam = this.e(astring[i]);
  
          if (scoreboardteam != null) {
@@ -446,7 +447,7 @@ index ed31f1e4f09818a59d01e84009a58a8df099cac8..4f55efa747b73f9bcd88ccfa828eaa9f
  
              icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.AFFECTED_ENTITIES, arraylist.size());
              if (arraylist.isEmpty()) {
-@@ -568,7 +568,7 @@ public class CommandScoreboard extends CommandAbstract {
+@@ -572,7 +572,7 @@ public class CommandScoreboard extends CommandAbstract {
  
      protected void d(ICommandListener icommandlistener) throws CommandException {
          Scoreboard scoreboard = this.d();
@@ -455,7 +456,7 @@ index ed31f1e4f09818a59d01e84009a58a8df099cac8..4f55efa747b73f9bcd88ccfa828eaa9f
  
          if (collection.size() <= 0) {
              throw new CommandException("commands.scoreboard.objectives.list.empty", new Object[0]);
-@@ -613,7 +613,7 @@ public class CommandScoreboard extends CommandAbstract {
+@@ -617,7 +617,7 @@ public class CommandScoreboard extends CommandAbstract {
  
          if (astring.length > i) {
              String s = e(icommandlistener, astring[i]);
@@ -464,7 +465,7 @@ index ed31f1e4f09818a59d01e84009a58a8df099cac8..4f55efa747b73f9bcd88ccfa828eaa9f
  
              icommandlistener.a(CommandObjectiveExecutor.EnumCommandResult.QUERY_RESULT, map.size());
              if (map.size() <= 0) {
-@@ -941,7 +941,7 @@ public class CommandScoreboard extends CommandAbstract {
+@@ -946,7 +946,7 @@ public class CommandScoreboard extends CommandAbstract {
      }
  
      protected List<String> a(boolean flag) {
@@ -473,7 +474,7 @@ index ed31f1e4f09818a59d01e84009a58a8df099cac8..4f55efa747b73f9bcd88ccfa828eaa9f
          ArrayList arraylist = Lists.newArrayList();
  
          for (ScoreboardObjective scoreboardobjective : collection) {
-@@ -954,7 +954,7 @@ public class CommandScoreboard extends CommandAbstract {
+@@ -959,7 +959,7 @@ public class CommandScoreboard extends CommandAbstract {
      }
  
      protected List<String> e() {
@@ -483,10 +484,10 @@ index ed31f1e4f09818a59d01e84009a58a8df099cac8..4f55efa747b73f9bcd88ccfa828eaa9f
  
          for (ScoreboardObjective scoreboardobjective : collection) {
 diff --git a/src/main/java/net/minecraft/server/CommandStats.java b/src/main/java/net/minecraft/server/CommandStats.java
-index 8553b83a17e40cd554816252b1221b7b9a9519e0..dd23fa6e7837b86eed10fc42a58ad5b8b7d05902 100644
+index bdf1425e0ceecc0412fdc7d28e00b488342c03cc..f59eba7f625c0f0a3d3a6bbf9117daf3b3b02471 100644
 --- a/src/main/java/net/minecraft/server/CommandStats.java
 +++ b/src/main/java/net/minecraft/server/CommandStats.java
-@@ -143,7 +143,7 @@ public class CommandStats extends CommandAbstract {
+@@ -148,7 +148,7 @@ public class CommandStats extends CommandAbstract {
      }
  
      protected List<String> e() {
@@ -574,14 +575,15 @@ index bb5b14e619c640c8f4efa8a0cfa1a5297afbe8e2..9d90c1de32592e07334d017b10f2557e
      }
  }
 diff --git a/src/main/java/net/minecraft/server/DedicatedPlayerList.java b/src/main/java/net/minecraft/server/DedicatedPlayerList.java
-index c2bd5919e0c98a16082045f0c1a53d5da09c38cb..ca310d0e8880e782bd92aafcf08d383373fd2554 100644
+index 948b996573276466794fd267aec66fd99bf4a73f..6ddc58d1d182b8e9efd74a1419a438bd66e42e08 100644
 --- a/src/main/java/net/minecraft/server/DedicatedPlayerList.java
 +++ b/src/main/java/net/minecraft/server/DedicatedPlayerList.java
-@@ -145,8 +145,4 @@ public class DedicatedPlayerList extends PlayerList {
+@@ -154,9 +154,4 @@ public class DedicatedPlayerList extends PlayerList {
      public boolean f(GameProfile gameprofile) {
          return this.getOPs().b(gameprofile);
      }
 -
+-    @Override
 -    public MinecraftServer getServer() {
 -        return this.getServer();
 -    }
@@ -602,10 +604,10 @@ index bef6f8c2a5fa6303d4181437a9f1444347f42afe..de19f10022a84714db0c23fe3ca40ed3
      }
  }
 diff --git a/src/main/java/net/minecraft/server/EntityGuardian.java b/src/main/java/net/minecraft/server/EntityGuardian.java
-index 7ccb8bf775d3412ebd4c51db6208ae18bf1f1475..e63c226342bc1e92960c67ef6ace9daf7e14532e 100644
+index 41978c6bf9b9f8514d1d57f601d63ac1d467a44c..d845062c2fda4ec8ce474155f31bd0cbc86a9e91 100644
 --- a/src/main/java/net/minecraft/server/EntityGuardian.java
 +++ b/src/main/java/net/minecraft/server/EntityGuardian.java
-@@ -280,8 +280,8 @@ public class EntityGuardian extends EntityMonster {
+@@ -295,8 +295,8 @@ public class EntityGuardian extends EntityMonster {
                          return EntityGuardian.this.h(entityplayer1) < 2500.0D && entityplayer1.playerInteractManager.c();
                      }
  
@@ -616,7 +618,7 @@ index 7ccb8bf775d3412ebd4c51db6208ae18bf1f1475..e63c226342bc1e92960c67ef6ace9daf
                      }
                  })) {
                      if (!entityplayer.hasEffect(mobeffectlist) || entityplayer.getEffect(mobeffectlist).getAmplifier() < 2 || entityplayer.getEffect(mobeffectlist).getDuration() < 1200) {
-@@ -385,8 +385,8 @@ public class EntityGuardian extends EntityMonster {
+@@ -408,8 +408,8 @@ public class EntityGuardian extends EntityMonster {
              return (entityliving instanceof EntityHuman || entityliving instanceof EntitySquid) && entityliving.h(this.a) > 9.0D;
          }
  
@@ -628,14 +630,15 @@ index 7ccb8bf775d3412ebd4c51db6208ae18bf1f1475..e63c226342bc1e92960c67ef6ace9daf
      }
  
 diff --git a/src/main/java/net/minecraft/server/EntityTameableAnimal.java b/src/main/java/net/minecraft/server/EntityTameableAnimal.java
-index a8a9d8746f582c2c52f224e1048034442eb15f4f..4953ee93136527cb91370a2fc7d46b358a0c19ef 100644
+index 62a0e1d47596630d39671a0008a06f1e6f93e912..fa3eb05f17ed4a57225041cf90f11179afe62ff3 100644
 --- a/src/main/java/net/minecraft/server/EntityTameableAnimal.java
 +++ b/src/main/java/net/minecraft/server/EntityTameableAnimal.java
-@@ -164,8 +164,4 @@ public abstract class EntityTameableAnimal extends EntityAnimal implements Entit
+@@ -172,9 +172,4 @@ public abstract class EntityTameableAnimal extends EntityAnimal implements Entit
  
          super.die(damagesource);
      }
 -
+-    @Override
 -    public Entity getOwner() {
 -        return this.getOwner();
 -    }
@@ -654,10 +657,10 @@ index afe00cb9ad704db62a2eb29afa94577390f89e61..7d1d3a4f371a2b8b923b542b3390e2d4
  
          for (String s : set) {
 diff --git a/src/main/java/net/minecraft/server/EntityWitch.java b/src/main/java/net/minecraft/server/EntityWitch.java
-index 189ff9d30343d7d5d82e44ddf5152d8dbfefc17c..8dcef3414597112a3b2fecca336f4a0b67ffc7a3 100644
+index 51c1bdf553ecb900a34fdfe7a68ff2fec2eb66f3..7f19c7c6319b6045de24206414e0e4e0ee6ccf90 100644
 --- a/src/main/java/net/minecraft/server/EntityWitch.java
 +++ b/src/main/java/net/minecraft/server/EntityWitch.java
-@@ -62,7 +62,7 @@ public class EntityWitch extends EntityMonster implements IRangedEntity {
+@@ -68,7 +68,7 @@ public class EntityWitch extends EntityMonster implements IRangedEntity {
  
                      this.setEquipment(0, (ItemStack) null);
                      if (itemstack != null && itemstack.getItem() == Items.POTION) {
@@ -667,10 +670,10 @@ index 189ff9d30343d7d5d82e44ddf5152d8dbfefc17c..8dcef3414597112a3b2fecca336f4a0b
                          if (list != null) {
                              for (MobEffect mobeffect : list) {
 diff --git a/src/main/java/net/minecraft/server/EnumDirection.java b/src/main/java/net/minecraft/server/EnumDirection.java
-index 33f374ac46f01ab795bf35331ae0a5392b3563ac..2dc60547aa5c9b325e49d668f32eeac3491a7aa3 100644
+index ece8516e3b74083b45a3a1a7f742eec61da98eb1..5d72e89f79dca286fcfc9f7376e822c2f92ad70b 100644
 --- a/src/main/java/net/minecraft/server/EnumDirection.java
 +++ b/src/main/java/net/minecraft/server/EnumDirection.java
-@@ -185,8 +185,8 @@ public enum EnumDirection implements INamable {
+@@ -187,8 +187,8 @@ public enum EnumDirection implements INamable {
              return this.e;
          }
  
@@ -681,7 +684,7 @@ index 33f374ac46f01ab795bf35331ae0a5392b3563ac..2dc60547aa5c9b325e49d668f32eeac3
          }
  
          static {
-@@ -249,8 +249,8 @@ public enum EnumDirection implements INamable {
+@@ -251,8 +251,8 @@ public enum EnumDirection implements INamable {
              return Iterators.forArray(this.a());
          }
  
@@ -731,13 +734,13 @@ index 6bbbf7c824ea03e8fd68d35812781cddfb568ed8..4c6f31e25c65c639b085d071af384442
                          throw new Error("Packet " + oclass + " is already assigned to protocol " + EnumProtocol.h.get(oclass) + " - can't reassign to " + enumprotocol);
                      }
 diff --git a/src/main/java/net/minecraft/server/GameProfileBanList.java b/src/main/java/net/minecraft/server/GameProfileBanList.java
-index f74d6d719d5abb5ee4c3c5b11503f66121f3f3b4..cd25d253269f4466bbac1118251a2280c2f8feb6 100644
+index b04dadf0352a76b1e2b2e0432d1861e2e2c2d481..683e86c5f92e515ca65471c8a00c271cb1a73543 100644
 --- a/src/main/java/net/minecraft/server/GameProfileBanList.java
 +++ b/src/main/java/net/minecraft/server/GameProfileBanList.java
-@@ -43,7 +43,7 @@ public class GameProfileBanList extends JsonList<GameProfile, GameProfileBanEntr
-         return null;
+@@ -46,7 +46,7 @@ public class GameProfileBanList extends JsonList<GameProfile, GameProfileBanEntr
      }
  
+     @Override
 -    protected String a(Object object) {
 -        return this.b((GameProfile) object);
 +    protected String a(GameProfile object) {
@@ -943,10 +946,10 @@ index 8348bfc560037f02a7acce590be084954261a43e..6cf9641c15190c3c6eb96b3ac0693853
                  return inthashmap_inthashmapentry.b;
              }
 diff --git a/src/main/java/net/minecraft/server/IpBanList.java b/src/main/java/net/minecraft/server/IpBanList.java
-index 617d326f04ee49de6231cead2e2042ae5d844ac8..e91b9648e420257e490ac3721f4caf4014459ccb 100644
+index ce0b50b7c202ded4178e6246a790bbcaa69e4236..d33df7d4c07071c5ce435720b9b90a83fddc154f 100644
 --- a/src/main/java/net/minecraft/server/IpBanList.java
 +++ b/src/main/java/net/minecraft/server/IpBanList.java
-@@ -23,7 +23,7 @@ public class IpBanList extends JsonList<String, IpBanEntry> {
+@@ -24,7 +24,7 @@ public class IpBanList extends JsonList<String, IpBanEntry> {
      public IpBanEntry get(SocketAddress socketaddress) {
          String s = this.c(socketaddress);
  
@@ -1147,7 +1150,7 @@ index d9a067d909054091642a7cd5f36030b42a1986ab..e20e2296884d2dd333659768bf03fdf5
          })).b("redSandStone"));
          c(Blocks.RED_SANDSTONE_STAIRS);
 diff --git a/src/main/java/net/minecraft/server/ItemMultiTexture.java b/src/main/java/net/minecraft/server/ItemMultiTexture.java
-index 57d4999bea8adf1f626fb8dd4e39f8c4391f75fc..54cab527f3d25b39ac7290d7058994a6c1e71817 100644
+index 1b25f47f8c1ce8d7d555ddc007f4f1c4c6e37d11..d8a0b4ac9b8006c5bea5ae6c1ec324f4e159c75f 100644
 --- a/src/main/java/net/minecraft/server/ItemMultiTexture.java
 +++ b/src/main/java/net/minecraft/server/ItemMultiTexture.java
 @@ -27,8 +27,8 @@ public class ItemMultiTexture extends ItemBlock {
@@ -1162,10 +1165,10 @@ index 57d4999bea8adf1f626fb8dd4e39f8c4391f75fc..54cab527f3d25b39ac7290d7058994a6
          });
      }
 diff --git a/src/main/java/net/minecraft/server/ItemPotion.java b/src/main/java/net/minecraft/server/ItemPotion.java
-index 78c01c30f6d5c807cf63291ae96815e4ba566451..444c36833bd9db16b2b4b2b03e04448794660b12 100644
+index 76eccd53f437d95f19665b300749ccf68552c8fd..7d6df1685928eac546bf07ce905c484888197bdf 100644
 --- a/src/main/java/net/minecraft/server/ItemPotion.java
 +++ b/src/main/java/net/minecraft/server/ItemPotion.java
-@@ -62,7 +62,7 @@ public class ItemPotion extends Item {
+@@ -63,7 +63,7 @@ public class ItemPotion extends Item {
          }
  
          if (!world.isClientSide) {
@@ -1175,10 +1178,10 @@ index 78c01c30f6d5c807cf63291ae96815e4ba566451..444c36833bd9db16b2b4b2b03e044487
              if (list != null) {
                  for (MobEffect mobeffect : list) {
 diff --git a/src/main/java/net/minecraft/server/ItemStep.java b/src/main/java/net/minecraft/server/ItemStep.java
-index 7eedbbd02f13f6796b6a8db2983a9934bc58c48c..de53d53cb63faec3ef372ef81822e675b05f45e1 100644
+index 4be4df0ce667bf3f1d76d689c429a89e63a8f35b..2cf155eec3aa1a7058bb73ec4cccf473070f9836 100644
 --- a/src/main/java/net/minecraft/server/ItemStep.java
 +++ b/src/main/java/net/minecraft/server/ItemStep.java
-@@ -58,7 +58,8 @@ public class ItemStep extends ItemBlock {
+@@ -61,7 +61,8 @@ public class ItemStep extends ItemBlock {
              Comparable comparable = iblockdata.get(this.b.n());
  
              if (comparable == object) {
@@ -1279,10 +1282,10 @@ index 0c84a9c7cf99a7523edc56fe0f78825cf05b5df3..c9e1b5cb3b7c10fffd408a6c11d4f712
  
          for (String s : list) {
 diff --git a/src/main/java/net/minecraft/server/NBTTagCompound.java b/src/main/java/net/minecraft/server/NBTTagCompound.java
-index 97091b5ea8e4e4687a81751f9e29180657ff814b..8db9c36e157d4f03a5cd777e51674a9d458430c9 100644
+index 6884da3dc7721c26e94611cdc4c14fb61c784f29..1baf396f1c1bc369f778e1b3aa83e3eecaad4bd3 100644
 --- a/src/main/java/net/minecraft/server/NBTTagCompound.java
 +++ b/src/main/java/net/minecraft/server/NBTTagCompound.java
-@@ -259,7 +259,7 @@ public class NBTTagCompound extends NBTBase {
+@@ -264,7 +264,7 @@ public class NBTTagCompound extends NBTBase {
                  return NBTBase.a[((NBTBase) NBTTagCompound.this.map.get(s)).getTypeId()];
              }
  
@@ -1291,7 +1294,7 @@ index 97091b5ea8e4e4687a81751f9e29180657ff814b..8db9c36e157d4f03a5cd777e51674a9d
                  return this.a();
              }
          });
-@@ -268,7 +268,7 @@ public class NBTTagCompound extends NBTBase {
+@@ -273,7 +273,7 @@ public class NBTTagCompound extends NBTBase {
                  return NBTBase.a[i];
              }
  
@@ -1343,13 +1346,13 @@ index 40291094e8aeff2a12b7b4ae721ef3e928a3b0b1..02213e3c5fee0a686654c563ae953f7f
                              throw new NameReferencingFileConverter.FileConversionException("Could not convert file for " + s, null);
                          }
 diff --git a/src/main/java/net/minecraft/server/OpList.java b/src/main/java/net/minecraft/server/OpList.java
-index 2fbad70eee266dd4d161451b3bddedcafbf58f18..9cdb509e6b5e4a97e1a11e01595a39f3665da9ea 100644
+index 451d2ceb64c255171c35969460f516f401eed473..1897720a233c292c9ece2ce60cf2af689b0bbd15 100644
 --- a/src/main/java/net/minecraft/server/OpList.java
 +++ b/src/main/java/net/minecraft/server/OpList.java
-@@ -45,7 +45,7 @@ public class OpList extends JsonList<GameProfile, OpListEntry> {
-         return null;
+@@ -48,7 +48,7 @@ public class OpList extends JsonList<GameProfile, OpListEntry> {
      }
  
+     @Override
 -    protected String a(Object object) {
 -        return this.c((GameProfile) object);
 +    protected String a(GameProfile object) {
@@ -1427,7 +1430,7 @@ index e09ede5bfff8c71b82fdcbeb50e84ec7d617f3f1..70cb2632a7de8023facb56e218384cee
      }
  }
 diff --git a/src/main/java/net/minecraft/server/PathfinderGoalAvoidTarget.java b/src/main/java/net/minecraft/server/PathfinderGoalAvoidTarget.java
-index a879c494f7774e9910999579539b2674bfd513fe..4039be6eedb2e51c9d5152b3fb38f75fe7442cc6 100644
+index 0546c9ce190de106345a5af166585a57ec2c6a97..ae6de275589c04136a205bb247436451a7d3239c 100644
 --- a/src/main/java/net/minecraft/server/PathfinderGoalAvoidTarget.java
 +++ b/src/main/java/net/minecraft/server/PathfinderGoalAvoidTarget.java
 @@ -27,8 +27,8 @@ public class PathfinderGoalAvoidTarget<T extends Entity> extends PathfinderGoal
@@ -1442,10 +1445,10 @@ index a879c494f7774e9910999579539b2674bfd513fe..4039be6eedb2e51c9d5152b3fb38f75f
          };
          this.a = entitycreature;
 diff --git a/src/main/java/net/minecraft/server/PathfinderGoalFollowParent.java b/src/main/java/net/minecraft/server/PathfinderGoalFollowParent.java
-index 4a6afe5c55280ed1f2494b7500efa26d6b61ae7f..b9bc704988f236451df2089fd20065a676b4c35d 100644
+index 8a98de12b4878aa59c4b5b52d08941e1f0a21530..7b319e923606e75dec290252a00fff1bd01529a1 100644
 --- a/src/main/java/net/minecraft/server/PathfinderGoalFollowParent.java
 +++ b/src/main/java/net/minecraft/server/PathfinderGoalFollowParent.java
-@@ -18,7 +18,7 @@ public class PathfinderGoalFollowParent extends PathfinderGoal {
+@@ -19,7 +19,7 @@ public class PathfinderGoalFollowParent extends PathfinderGoal {
          if (this.a.getAge() >= 0) {
              return false;
          } else {
@@ -1455,10 +1458,10 @@ index 4a6afe5c55280ed1f2494b7500efa26d6b61ae7f..b9bc704988f236451df2089fd20065a6
              double d0 = Double.MAX_VALUE;
  
 diff --git a/src/main/java/net/minecraft/server/PathfinderGoalPlay.java b/src/main/java/net/minecraft/server/PathfinderGoalPlay.java
-index ada67d493c3af85601349d3b9783da9eb2b6b8a5..4db298c755259795cdf4b3ac33747ed2d84988bb 100644
+index d44d2047bed8c6cda962598b647a51a4ae76210d..38980b8e0c8f3af57cd0ea98a7a243842e357c56 100644
 --- a/src/main/java/net/minecraft/server/PathfinderGoalPlay.java
 +++ b/src/main/java/net/minecraft/server/PathfinderGoalPlay.java
-@@ -21,7 +21,7 @@ public class PathfinderGoalPlay extends PathfinderGoal {
+@@ -22,7 +22,7 @@ public class PathfinderGoalPlay extends PathfinderGoal {
          } else if (this.a.bc().nextInt(400) != 0) {
              return false;
          } else {
@@ -1468,10 +1471,10 @@ index ada67d493c3af85601349d3b9783da9eb2b6b8a5..4db298c755259795cdf4b3ac33747ed2
  
              for (EntityVillager entityvillager : list) {
 diff --git a/src/main/java/net/minecraft/server/PathfinderGoalTakeFlower.java b/src/main/java/net/minecraft/server/PathfinderGoalTakeFlower.java
-index 1f3a004895eee602861c31f3d2125b11c9ee95bf..702054a203857e8870b3f8dbfa712b87bc6d996b 100644
+index bfd76168cb8db618d6f39814cee3ecc7d0c71f2c..010d64c72b80f9b063de9f110ab075d27d7e5d8c 100644
 --- a/src/main/java/net/minecraft/server/PathfinderGoalTakeFlower.java
 +++ b/src/main/java/net/minecraft/server/PathfinderGoalTakeFlower.java
-@@ -20,7 +20,7 @@ public class PathfinderGoalTakeFlower extends PathfinderGoal {
+@@ -21,7 +21,7 @@ public class PathfinderGoalTakeFlower extends PathfinderGoal {
          } else if (!this.a.world.w()) {
              return false;
          } else {
@@ -1904,13 +1907,13 @@ index c42975142f99549e02bd34a2f021afe241aa7e18..4f1bafef7e26f530c3bff6a0dd88f1f1
          for (IRecipe irecipe : CraftingManager.getInstance().getRecipes()) {
              if (irecipe.b() != null) {
 diff --git a/src/main/java/net/minecraft/server/WhiteList.java b/src/main/java/net/minecraft/server/WhiteList.java
-index c45092db6e05f5dfd02dd299c20a7b4b27a18e25..694d2be521a0123aa30e73f556b8001a66eadd25 100644
+index 7b634e34c20f0258f5ce43247746d9ea7869af01..63eaa8f67a24745eec345c99d259b2fd21cfacd7 100644
 --- a/src/main/java/net/minecraft/server/WhiteList.java
 +++ b/src/main/java/net/minecraft/server/WhiteList.java
-@@ -43,7 +43,7 @@ public class WhiteList extends JsonList<GameProfile, WhiteListEntry> {
-         return null;
+@@ -46,7 +46,7 @@ public class WhiteList extends JsonList<GameProfile, WhiteListEntry> {
      }
  
+     @Override
 -    protected String a(Object object) {
 -        return this.b((GameProfile) object);
 +    protected String a(GameProfile object) {
@@ -1940,10 +1943,10 @@ index 67dcf86f83ac604ee52715ce4e5a8dd3fdb06335..c12ba917f00b33bf5789637ded05de69
          try {
              String s1 = astring[astring.length - 1];
 diff --git a/src/main/java/net/minecraft/server/WorldGenMonumentPieces.java b/src/main/java/net/minecraft/server/WorldGenMonumentPieces.java
-index 7105bfea53736607e8e67b082e2f0de268e901e7..332d7f2a23c1a3331c95412cfd4bda9d86c6f220 100644
+index 8cd2209a723e50212b05e212514ea4bf50c538fa..c4536a96c3cc5d983ccbc3581f998b633547e1d3 100644
 --- a/src/main/java/net/minecraft/server/WorldGenMonumentPieces.java
 +++ b/src/main/java/net/minecraft/server/WorldGenMonumentPieces.java
-@@ -184,12 +184,12 @@ public class WorldGenMonumentPieces {
+@@ -186,12 +186,12 @@ public class WorldGenMonumentPieces {
                      this.l = new StructureBoundingBox(i, 39, j, i + 58 - 1, 61, j + 58 - 1);
              }
  
@@ -1958,7 +1961,7 @@ index 7105bfea53736607e8e67b082e2f0de268e901e7..332d7f2a23c1a3331c95412cfd4bda9d
  
              arraylist.add(new WorldGenMonumentPieces.WorldGenMonumentPieceSelector6());
              arraylist.add(new WorldGenMonumentPieces.WorldGenMonumentPieceSelector4());
-@@ -310,7 +310,7 @@ public class WorldGenMonumentPieces {
+@@ -312,7 +312,7 @@ public class WorldGenMonumentPieces {
              this.p.b[EnumDirection.EAST.a()].b[EnumDirection.UP.a()].d = true;
              this.p.b[EnumDirection.NORTH.a()].b[EnumDirection.UP.a()].d = true;
              this.p.b[EnumDirection.EAST.a()].b[EnumDirection.NORTH.a()].b[EnumDirection.UP.a()].d = true;
