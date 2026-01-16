@@ -5,7 +5,7 @@ Subject: [PATCH] Fix Decompilation errors
 
 
 diff --git a/src/main/java/net/minecraft/server/Achievement.java b/src/main/java/net/minecraft/server/Achievement.java
-index 32f42698d71b69e8410c89606bea90986aeea894..fb00a32157f432031338d9930b1ed7a99660f313 100644
+index 6c4845476b210cc390b1f15db77628d5e2e09fbc..cc16b81073e51f19e0768e1ddfdab86f09e84f9d 100644
 --- a/src/main/java/net/minecraft/server/Achievement.java
 +++ b/src/main/java/net/minecraft/server/Achievement.java
 @@ -24,11 +24,11 @@ public class Achievement extends Statistic {
@@ -46,10 +46,10 @@ index e5098f4419b940217d2cd5ff75c2316aa6165c74..5def6e505a01eefdf7c348938dc4c84a
              this.f();
          }
 diff --git a/src/main/java/net/minecraft/server/BlockDataAbstract.java b/src/main/java/net/minecraft/server/BlockDataAbstract.java
-index 7adc304302d11679e5277003f34b5017376d8e92..0bb21d50bd924959f9d3d43f35ad86038a81aa49 100644
+index aefb8f5a4c65785998af57821299600a73af719d..f8f60ecb6ab7aeb4971a271c1911c535b9d3d78a 100644
 --- a/src/main/java/net/minecraft/server/BlockDataAbstract.java
 +++ b/src/main/java/net/minecraft/server/BlockDataAbstract.java
-@@ -16,14 +16,14 @@ public abstract class BlockDataAbstract implements IBlockData {
+@@ -15,18 +15,22 @@ public abstract class BlockDataAbstract implements IBlockData {
              if (map_entry == null) {
                  return "<NULL>";
              } else {
@@ -60,15 +60,13 @@ index 7adc304302d11679e5277003f34b5017376d8e92..0bb21d50bd924959f9d3d43f35ad8603
 +                return iblockstate.a() + "=" + iblockstate.a(map_entry.getValue());
              }
          }
- 
--        public Object apply(Object object) {
--            return this.a((Entry) object);
++
 +        public String apply(Map.Entry<IBlockState, Comparable> object) {
 +            return this.a(object);
-         }
++        }
      };
  
-@@ -31,7 +31,7 @@ public abstract class BlockDataAbstract implements IBlockData {
+     public BlockDataAbstract() {}
  
      @Override
      public <T extends Comparable<T>> IBlockData a(IBlockState<T> iblockstate) {
@@ -78,120 +76,119 @@ index 7adc304302d11679e5277003f34b5017376d8e92..0bb21d50bd924959f9d3d43f35ad8603
  
      protected static <T> T a(Collection<T> collection, T t0) {
 diff --git a/src/main/java/net/minecraft/server/BlockFlowers.java b/src/main/java/net/minecraft/server/BlockFlowers.java
-index 1be5469bc49a25a94a5058df8ab18c0f78ef8abf..42bef0649685ff491fc8859ddd6fdc9f62664885 100644
+index 83894368c5481bf81d6feb6b41f5b4159f176941..42bef0649685ff491fc8859ddd6fdc9f62664885 100644
 --- a/src/main/java/net/minecraft/server/BlockFlowers.java
 +++ b/src/main/java/net/minecraft/server/BlockFlowers.java
-@@ -32,8 +32,8 @@ public abstract class BlockFlowers extends BlockPlant {
+@@ -31,6 +31,10 @@ public abstract class BlockFlowers extends BlockPlant {
+                 public boolean a(BlockFlowers.EnumFlowerVarient blockflowers_enumflowervarient) {
                      return blockflowers_enumflowervarient.a() == BlockFlowers.this.l();
                  }
- 
--                public boolean apply(Object object) {
--                    return this.a((BlockFlowers.EnumFlowerVarient) object);
++
 +                public boolean apply(BlockFlowers.EnumFlowerVarient object) {
 +                    return this.a(object);
-                 }
++                }
              });
          }
-@@ -121,8 +121,8 @@ public abstract class BlockFlowers extends BlockPlant {
+ 
+@@ -116,6 +120,10 @@ public abstract class BlockFlowers extends BlockPlant {
+                     public boolean a(BlockFlowers.EnumFlowerVarient blockflowers_enumflowervarient) {
                          return blockflowers_enumflowervarient.a() == blockflowers_enumflowertype;
                      }
- 
--                    public boolean apply(Object object) {
--                        return this.a((BlockFlowers.EnumFlowerVarient) object);
++
 +                    public boolean apply(BlockFlowers.EnumFlowerVarient object) {
 +                        return this.a(object);
-                     }
++                    }
                  });
  
+                 BlockFlowers.EnumFlowerVarient.k[blockflowers_enumflowertype.ordinal()] = (BlockFlowers.EnumFlowerVarient[]) collection.toArray(new BlockFlowers.EnumFlowerVarient[collection.size()]);
 diff --git a/src/main/java/net/minecraft/server/BlockLeaves1.java b/src/main/java/net/minecraft/server/BlockLeaves1.java
-index a75fe31376ec13ae0460d569f7a11db07fdddbc1..a16064e4c59a79f7b8a66e62ff6572dc575bcf4a 100644
+index 10ab4aaac9fd0fb3b126ee01284ec2d5e388ef77..a16064e4c59a79f7b8a66e62ff6572dc575bcf4a 100644
 --- a/src/main/java/net/minecraft/server/BlockLeaves1.java
 +++ b/src/main/java/net/minecraft/server/BlockLeaves1.java
-@@ -9,8 +9,8 @@ public class BlockLeaves1 extends BlockLeaves {
+@@ -8,6 +8,10 @@ public class BlockLeaves1 extends BlockLeaves {
+         public boolean a(BlockWood.EnumLogVariant blockwood_enumlogvariant) {
              return blockwood_enumlogvariant.a() < 4;
          }
- 
--        public boolean apply(Object object) {
--            return this.a((BlockWood.EnumLogVariant) object);
++
 +        public boolean apply(BlockWood.EnumLogVariant object) {
 +            return this.a(object);
-         }
++        }
      });
  
+     public BlockLeaves1() {
 diff --git a/src/main/java/net/minecraft/server/BlockLeaves2.java b/src/main/java/net/minecraft/server/BlockLeaves2.java
-index b158250aeef0355e796b9bec84565db1cd3a88cf..14f448e62423ca8a1750f64555ff996cf7f93743 100644
+index ce88f63c1758dcce305845a46c0d827066781481..14f448e62423ca8a1750f64555ff996cf7f93743 100644
 --- a/src/main/java/net/minecraft/server/BlockLeaves2.java
 +++ b/src/main/java/net/minecraft/server/BlockLeaves2.java
-@@ -9,8 +9,8 @@ public class BlockLeaves2 extends BlockLeaves {
+@@ -8,6 +8,10 @@ public class BlockLeaves2 extends BlockLeaves {
+         public boolean a(BlockWood.EnumLogVariant blockwood_enumlogvariant) {
              return blockwood_enumlogvariant.a() >= 4;
          }
- 
--        public boolean apply(Object object) {
--            return this.a((BlockWood.EnumLogVariant) object);
++
 +        public boolean apply(BlockWood.EnumLogVariant object) {
 +            return this.a(object);
-         }
++        }
      });
  
+     public BlockLeaves2() {
 diff --git a/src/main/java/net/minecraft/server/BlockLog1.java b/src/main/java/net/minecraft/server/BlockLog1.java
-index 0b81c54dcee8a20d49add211a87d0a71a40a0156..4961704759631750c53ded7e345512f6015c0280 100644
+index bc47bab2c34bd174767cd170d6e4bc20e85a6105..4961704759631750c53ded7e345512f6015c0280 100644
 --- a/src/main/java/net/minecraft/server/BlockLog1.java
 +++ b/src/main/java/net/minecraft/server/BlockLog1.java
-@@ -9,8 +9,8 @@ public class BlockLog1 extends BlockLogAbstract {
+@@ -8,6 +8,10 @@ public class BlockLog1 extends BlockLogAbstract {
+         public boolean a(BlockWood.EnumLogVariant blockwood_enumlogvariant) {
              return blockwood_enumlogvariant.a() < 4;
          }
- 
--        public boolean apply(Object object) {
--            return this.a((BlockWood.EnumLogVariant) object);
++
 +        public boolean apply(BlockWood.EnumLogVariant object) {
 +            return this.a(object);
-         }
++        }
      });
  
+     public BlockLog1() {
 diff --git a/src/main/java/net/minecraft/server/BlockLog2.java b/src/main/java/net/minecraft/server/BlockLog2.java
-index b030c5a327d8e323bb341a095f7fa3ba0040d9f9..90becb0a9d1b7201bee80e7f44e4082eeca2acaa 100644
+index e5e8d821770a5875def8ef6118ff061c6dd86a80..90becb0a9d1b7201bee80e7f44e4082eeca2acaa 100644
 --- a/src/main/java/net/minecraft/server/BlockLog2.java
 +++ b/src/main/java/net/minecraft/server/BlockLog2.java
-@@ -9,8 +9,8 @@ public class BlockLog2 extends BlockLogAbstract {
+@@ -8,6 +8,10 @@ public class BlockLog2 extends BlockLogAbstract {
+         public boolean a(BlockWood.EnumLogVariant blockwood_enumlogvariant) {
              return blockwood_enumlogvariant.a() >= 4;
          }
- 
--        public boolean apply(Object object) {
--            return this.a((BlockWood.EnumLogVariant) object);
++
 +        public boolean apply(BlockWood.EnumLogVariant object) {
 +            return this.a(object);
-         }
++        }
      });
  
+     public BlockLog2() {
 diff --git a/src/main/java/net/minecraft/server/BlockPredicate.java b/src/main/java/net/minecraft/server/BlockPredicate.java
-index 3408e4e06e1ab6b25c55112cfeeece27ce464fca..28af027e1336cb636f1c8bc985b515ef52b0ef62 100644
+index fe4b6bdec7a008dc721fd4f2652c7c71c3fe7b9d..28af027e1336cb636f1c8bc985b515ef52b0ef62 100644
 --- a/src/main/java/net/minecraft/server/BlockPredicate.java
 +++ b/src/main/java/net/minecraft/server/BlockPredicate.java
-@@ -18,7 +18,7 @@ public class BlockPredicate implements Predicate<IBlockData> {
+@@ -17,4 +17,8 @@ public class BlockPredicate implements Predicate<IBlockData> {
+     public boolean a(IBlockData iblockdata) {
          return iblockdata != null && iblockdata.getBlock() == this.a;
      }
- 
--    public boolean apply(Object object) {
--        return this.a((IBlockData) object);
++
 +    public boolean apply(IBlockData object) {
 +        return this.a(object);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
-index bf22dbc2420b6ff189295baeb8741b8acedc8fbf..6f5e45d5c9a42cc64a8eca28e237f9727746ec93 100644
+index c5842433069758820f1e6ce8f9fc11fe9ab2b0e1..6f5e45d5c9a42cc64a8eca28e237f9727746ec93 100644
 --- a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
 +++ b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
-@@ -111,8 +111,8 @@ public class BlockRedstoneComparator extends BlockDiodeAbstract implements ICont
+@@ -110,6 +110,10 @@ public class BlockRedstoneComparator extends BlockDiodeAbstract implements ICont
+             public boolean a(Entity entity) {
                  return entity != null && entity.getDirection() == enumdirection;
              }
- 
--            public boolean apply(Object object) {
--                return this.a((Entity) object);
++
 +            public boolean apply(Entity object) {
 +                return this.a(object);
-             }
++            }
          });
  
+         return list.size() == 1 ? (EntityItemFrame) list.get(0) : null;
 diff --git a/src/main/java/net/minecraft/server/BlockSponge.java b/src/main/java/net/minecraft/server/BlockSponge.java
 index 0a937d1d794393e85eb0085467db321f6735a84f..b690e0710ebd46a6d3abab8859bb947476ce35dc 100644
 --- a/src/main/java/net/minecraft/server/BlockSponge.java
@@ -219,29 +216,28 @@ index 9489fa0618fe128c74502daeb5e700b7896e9d40..7369e07b1d02a68e7d5bdd5bbac071e4
  
              if (this.b.containsKey(s1)) {
 diff --git a/src/main/java/net/minecraft/server/BlockStateList.java b/src/main/java/net/minecraft/server/BlockStateList.java
-index f0abb7dc1839bb8453fe38612de6694c0c357d57..6a7398aa10fee9553ba245029cb72671f0f26226 100644
+index f4242e7485c2431c39ea0baadccb047cfb450e31..6a7398aa10fee9553ba245029cb72671f0f26226 100644
 --- a/src/main/java/net/minecraft/server/BlockStateList.java
 +++ b/src/main/java/net/minecraft/server/BlockStateList.java
-@@ -28,8 +28,8 @@ public class BlockStateList {
+@@ -27,6 +27,10 @@ public class BlockStateList {
+         public String a(IBlockState iblockstate) {
              return iblockstate == null ? "<NULL>" : iblockstate.a();
          }
- 
--        public Object apply(Object object) {
--            return this.a((IBlockState) object);
++
 +        public String apply(IBlockState object) {
 +            return this.a(object);
-         }
++        }
      };
      private final Block c;
-@@ -43,13 +43,13 @@ public class BlockStateList {
+     private final ImmutableList<IBlockState> d;
+@@ -38,10 +42,14 @@ public class BlockStateList {
+             public int a(IBlockState iblockstate, IBlockState iblockstate1) {
                  return iblockstate.a().compareTo(iblockstate1.a());
              }
- 
--            public int compare(Object object, Object object1) {
--                return this.a((IBlockState) object, (IBlockState) object1);
++
 +            public int compare(IBlockState object, IBlockState object1) {
 +                return this.a(object, object1);
-             }
++            }
          });
          this.d = ImmutableList.copyOf(aiblockstate);
          LinkedHashMap linkedhashmap = Maps.newLinkedHashMap();
@@ -250,7 +246,7 @@ index f0abb7dc1839bb8453fe38612de6694c0c357d57..6a7398aa10fee9553ba245029cb72671
  
          for (List list : IteratorUtils.a(this.e())) {
              Map map = MapGeneratorUtils.b(this.d, list);
-@@ -156,7 +156,7 @@ public class BlockStateList {
+@@ -148,7 +156,7 @@ public class BlockStateList {
              } else {
                  HashBasedTable hashbasedtable = HashBasedTable.create();
  
@@ -260,51 +256,50 @@ index f0abb7dc1839bb8453fe38612de6694c0c357d57..6a7398aa10fee9553ba245029cb72671
                          if (comparable != this.b.get(iblockstate)) {
                              hashbasedtable.put(iblockstate, comparable, map.get(this.b(iblockstate, comparable)));
 diff --git a/src/main/java/net/minecraft/server/BlockStatePredicate.java b/src/main/java/net/minecraft/server/BlockStatePredicate.java
-index ce887c93dbd6f5092fdf1c3f6cc1a2a7341b3f84..dc064a7fe9a5a9493fe52751021e7652d310a3fc 100644
+index a87f68c38dd15a99c51f19d69dbd7c40c6d58d71..dc064a7fe9a5a9493fe52751021e7652d310a3fc 100644
 --- a/src/main/java/net/minecraft/server/BlockStatePredicate.java
 +++ b/src/main/java/net/minecraft/server/BlockStatePredicate.java
-@@ -43,7 +43,7 @@ public class BlockStatePredicate implements Predicate<IBlockData> {
+@@ -42,4 +42,8 @@ public class BlockStatePredicate implements Predicate<IBlockData> {
+             return this;
          }
      }
- 
--    public boolean apply(Object object) {
--        return this.a((IBlockData) object);
++
 +    public boolean apply(IBlockData object) {
 +        return this.a(object);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/BlockTorch.java b/src/main/java/net/minecraft/server/BlockTorch.java
-index 61246ff1fb9de585054702b2e752c403b5eba973..534b5bf48e8191deb722122114f679fad8df5d8b 100644
+index 44e9a28f3c4f5ee2fae1110c492c815dde63189c..534b5bf48e8191deb722122114f679fad8df5d8b 100644
 --- a/src/main/java/net/minecraft/server/BlockTorch.java
 +++ b/src/main/java/net/minecraft/server/BlockTorch.java
-@@ -9,8 +9,8 @@ public class BlockTorch extends Block {
+@@ -8,6 +8,10 @@ public class BlockTorch extends Block {
+         public boolean a(EnumDirection enumdirection) {
              return enumdirection != EnumDirection.DOWN;
          }
- 
--        public boolean apply(Object object) {
--            return this.a((EnumDirection) object);
++
 +        public boolean apply(EnumDirection object) {
 +            return this.a(object);
-         }
++        }
      });
  
+     protected BlockTorch() {
 diff --git a/src/main/java/net/minecraft/server/CommandAbstract.java b/src/main/java/net/minecraft/server/CommandAbstract.java
-index f6b2e14f98c2ab0a0be6be539b42a6ac209e099f..e016f5d7a8a450dd5c916b4fe3f78a0c168fcd2b 100644
+index 050fc29b244d2de1eb02914945a99b908f7207f5..e016f5d7a8a450dd5c916b4fe3f78a0c168fcd2b 100644
 --- a/src/main/java/net/minecraft/server/CommandAbstract.java
 +++ b/src/main/java/net/minecraft/server/CommandAbstract.java
-@@ -516,8 +516,8 @@ public abstract class CommandAbstract implements ICommand {
+@@ -516,6 +516,10 @@ public abstract class CommandAbstract implements ICommand {
          return this.getCommand().compareTo(icommand.getCommand());
      }
  
--    public int compareTo(Object object) {
--        return this.a((ICommand) object);
 +    public int compareTo(ICommand object) {
 +        return this.a(object);
-     }
- 
++    }
++
      public static class CommandNumber {
+ 
+         private final double a;
 diff --git a/src/main/java/net/minecraft/server/CommandAchievement.java b/src/main/java/net/minecraft/server/CommandAchievement.java
-index ec68ddf96b20de7c62a3f8d9d4527fbcd7bec381..f3e80dbe60ece878df42d8049e4f96409e9ae1f9 100644
+index 6a79c0f5b19b3119e6feecced138b8446628ec72..f3e80dbe60ece878df42d8049e4f96409e9ae1f9 100644
 --- a/src/main/java/net/minecraft/server/CommandAchievement.java
 +++ b/src/main/java/net/minecraft/server/CommandAchievement.java
 @@ -65,7 +65,7 @@ public class CommandAchievement extends CommandAbstract {
@@ -316,7 +311,7 @@ index ec68ddf96b20de7c62a3f8d9d4527fbcd7bec381..f3e80dbe60ece878df42d8049e4f9640
  
                                  for (arraylist = Lists.newArrayList(); achievement2.c != null && !entityplayer.getStatisticManager().hasAchievement(achievement2.c); achievement2 = achievement2.c) {
                                      arraylist.add(achievement2.c);
-@@ -79,16 +79,16 @@ public class CommandAchievement extends CommandAbstract {
+@@ -79,12 +79,16 @@ public class CommandAchievement extends CommandAbstract {
                                      throw new CommandException("commands.achievement.dontHave", new Object[]{entityplayer.getName(), statistic.j()});
                                  }
  
@@ -325,12 +320,10 @@ index ec68ddf96b20de7c62a3f8d9d4527fbcd7bec381..f3e80dbe60ece878df42d8049e4f9640
                                      public boolean a(Achievement achievement4) {
                                          return entityplayer.getStatisticManager().hasAchievement(achievement4) && achievement4 != statistic;
                                      }
- 
--                                    public boolean apply(Object object) {
--                                        return this.a((Achievement) object);
++
 +                                    public boolean apply(Achievement object) {
 +                                        return this.a(object);
-                                     }
++                                    }
                                  }));
 -                                ArrayList arraylist2 = Lists.newArrayList(arraylist1);
 +                                ArrayList<Achievement> arraylist2 = Lists.newArrayList(arraylist1);
@@ -497,7 +490,7 @@ index bdf1425e0ceecc0412fdc7d28e00b488342c03cc..f59eba7f625c0f0a3d3a6bbf9117daf3
  
          for (ScoreboardObjective scoreboardobjective : collection) {
 diff --git a/src/main/java/net/minecraft/server/CrashReportSystemDetails.java b/src/main/java/net/minecraft/server/CrashReportSystemDetails.java
-index 72e906c0dff6aba8b4654a446b7df1e3c2438ad1..47adde857204bc8bff28afc7a8e2c9b52c136083 100644
+index ea7ee9b8946d35ac38cc40737fcc7d08dbdffb17..47adde857204bc8bff28afc7a8e2c9b52c136083 100644
 --- a/src/main/java/net/minecraft/server/CrashReportSystemDetails.java
 +++ b/src/main/java/net/minecraft/server/CrashReportSystemDetails.java
 @@ -86,7 +86,7 @@ public class CrashReportSystemDetails {
@@ -509,84 +502,74 @@ index 72e906c0dff6aba8b4654a446b7df1e3c2438ad1..47adde857204bc8bff28afc7a8e2c9b5
      }
  
      public int a(int i) {
-@@ -167,7 +167,7 @@ public class CrashReportSystemDetails {
+@@ -166,6 +166,10 @@ public class CrashReportSystemDetails {
+                     return "ID #" + j;
                  }
              }
- 
--            public Object call() throws Exception {
++
 +            public String call() throws Exception {
-                 return this.a();
-             }
++                return this.a();
++            }
          });
-@@ -182,7 +182,7 @@ public class CrashReportSystemDetails {
+         crashreportsystemdetails.a("Block data value", new Callable<String>() {
+             public String a() throws Exception {
+@@ -177,11 +181,19 @@ public class CrashReportSystemDetails {
+                     return String.format("%1$d / 0x%1$X / 0b%2$s", i, s);
                  }
              }
- 
--            public Object call() throws Exception {
++
 +            public String call() throws Exception {
-                 return this.a();
-             }
++                return this.a();
++            }
          });
-@@ -191,7 +191,7 @@ public class CrashReportSystemDetails {
+         crashreportsystemdetails.a("Block location", new Callable<String>() {
+             public String a() throws Exception {
                  return CrashReportSystemDetails.a(blockposition);
              }
- 
--            public Object call() throws Exception {
++
 +            public String call() throws Exception {
-                 return this.a();
-             }
++                return this.a();
++            }
          });
-@@ -203,7 +203,7 @@ public class CrashReportSystemDetails {
+     }
+ 
+@@ -190,11 +202,19 @@ public class CrashReportSystemDetails {
+             public String a() throws Exception {
                  return iblockdata.toString();
              }
- 
--            public Object call() throws Exception {
++
 +            public String call() throws Exception {
-                 return this.a();
-             }
++                return this.a();
++            }
          });
-@@ -212,7 +212,7 @@ public class CrashReportSystemDetails {
+         crashreportsystemdetails.a("Block location", new Callable<String>() {
+             public String a() throws Exception {
                  return CrashReportSystemDetails.a(blockposition);
              }
- 
--            public Object call() throws Exception {
++
 +            public String call() throws Exception {
-                 return this.a();
-             }
++                return this.a();
++            }
          });
+     }
+ 
 diff --git a/src/main/java/net/minecraft/server/CustomWorldSettingsFinal.java b/src/main/java/net/minecraft/server/CustomWorldSettingsFinal.java
-index bb5b14e619c640c8f4efa8a0cfa1a5297afbe8e2..9d90c1de32592e07334d017b10f2557e9367c9dd 100644
+index fba625926ef9c29d63e3fa207322ff7da0735354..9d90c1de32592e07334d017b10f2557e9367c9dd 100644
 --- a/src/main/java/net/minecraft/server/CustomWorldSettingsFinal.java
 +++ b/src/main/java/net/minecraft/server/CustomWorldSettingsFinal.java
-@@ -642,12 +642,12 @@ public class CustomWorldSettingsFinal {
+@@ -641,5 +641,13 @@ public class CustomWorldSettingsFinal {
+             jsonobject.addProperty("lapisSpread", customworldsettingsfinal_customworldsettings.aA);
              return jsonobject;
          }
- 
--        public Object deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
++
 +        public CustomWorldSettingsFinal.CustomWorldSettings deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
-             return this.a(jsonelement, type, jsondeserializationcontext);
-         }
- 
--        public JsonElement serialize(Object object, Type type, JsonSerializationContext jsonserializationcontext) {
--            return this.a((CustomWorldSettingsFinal.CustomWorldSettings) object, type, jsonserializationcontext);
++            return this.a(jsonelement, type, jsondeserializationcontext);
++        }
++
 +        public JsonElement serialize(CustomWorldSettingsFinal.CustomWorldSettings object, Type type, JsonSerializationContext jsonserializationcontext) {
 +            return this.a(object, type, jsonserializationcontext);
-         }
++        }
      }
- }
-diff --git a/src/main/java/net/minecraft/server/DedicatedPlayerList.java b/src/main/java/net/minecraft/server/DedicatedPlayerList.java
-index 948b996573276466794fd267aec66fd99bf4a73f..6ddc58d1d182b8e9efd74a1419a438bd66e42e08 100644
---- a/src/main/java/net/minecraft/server/DedicatedPlayerList.java
-+++ b/src/main/java/net/minecraft/server/DedicatedPlayerList.java
-@@ -154,9 +154,4 @@ public class DedicatedPlayerList extends PlayerList {
-     public boolean f(GameProfile gameprofile) {
-         return this.getOPs().b(gameprofile);
-     }
--
--    @Override
--    public MinecraftServer getServer() {
--        return this.getServer();
--    }
  }
 diff --git a/src/main/java/net/minecraft/server/DemoWorldServer.java b/src/main/java/net/minecraft/server/DemoWorldServer.java
 index bef6f8c2a5fa6303d4181437a9f1444347f42afe..de19f10022a84714db0c23fe3ca40ed3b7582590 100644
@@ -604,45 +587,31 @@ index bef6f8c2a5fa6303d4181437a9f1444347f42afe..de19f10022a84714db0c23fe3ca40ed3
      }
  }
 diff --git a/src/main/java/net/minecraft/server/EntityGuardian.java b/src/main/java/net/minecraft/server/EntityGuardian.java
-index 41978c6bf9b9f8514d1d57f601d63ac1d467a44c..d845062c2fda4ec8ce474155f31bd0cbc86a9e91 100644
+index 2d972d8cb85a7b9d88adbfa04ae5a9851ca72cd3..d845062c2fda4ec8ce474155f31bd0cbc86a9e91 100644
 --- a/src/main/java/net/minecraft/server/EntityGuardian.java
 +++ b/src/main/java/net/minecraft/server/EntityGuardian.java
-@@ -295,8 +295,8 @@ public class EntityGuardian extends EntityMonster {
+@@ -294,6 +294,10 @@ public class EntityGuardian extends EntityMonster {
+                     public boolean a(EntityPlayer entityplayer1) {
                          return EntityGuardian.this.h(entityplayer1) < 2500.0D && entityplayer1.playerInteractManager.c();
                      }
- 
--                    public boolean apply(Object object) {
--                        return this.a((EntityPlayer) object);
++
 +                    public boolean apply(EntityPlayer object) {
 +                        return this.a(object);
-                     }
++                    }
                  })) {
                      if (!entityplayer.hasEffect(mobeffectlist) || entityplayer.getEffect(mobeffectlist).getAmplifier() < 2 || entityplayer.getEffect(mobeffectlist).getDuration() < 1200) {
-@@ -408,8 +408,8 @@ public class EntityGuardian extends EntityMonster {
+                         entityplayer.playerConnection.sendPacket(new PacketPlayOutGameStateChange(10, 0.0F));
+@@ -403,6 +407,10 @@ public class EntityGuardian extends EntityMonster {
+         public boolean a(EntityLiving entityliving) {
              return (entityliving instanceof EntityHuman || entityliving instanceof EntitySquid) && entityliving.h(this.a) > 9.0D;
          }
- 
--        public boolean apply(Object object) {
--            return this.a((EntityLiving) object);
++
 +        public boolean apply(EntityLiving object) {
 +            return this.a(object);
-         }
++        }
      }
  
-diff --git a/src/main/java/net/minecraft/server/EntityTameableAnimal.java b/src/main/java/net/minecraft/server/EntityTameableAnimal.java
-index 62a0e1d47596630d39671a0008a06f1e6f93e912..fa3eb05f17ed4a57225041cf90f11179afe62ff3 100644
---- a/src/main/java/net/minecraft/server/EntityTameableAnimal.java
-+++ b/src/main/java/net/minecraft/server/EntityTameableAnimal.java
-@@ -172,9 +172,4 @@ public abstract class EntityTameableAnimal extends EntityAnimal implements Entit
- 
-         super.die(damagesource);
-     }
--
--    @Override
--    public Entity getOwner() {
--        return this.getOwner();
--    }
- }
+     static class PathfinderGoalGuardianAttack extends PathfinderGoal {
 diff --git a/src/main/java/net/minecraft/server/EntityTypes.java b/src/main/java/net/minecraft/server/EntityTypes.java
 index afe00cb9ad704db62a2eb29afa94577390f89e61..7d1d3a4f371a2b8b923b542b3390e2d4f77c4fe8 100644
 --- a/src/main/java/net/minecraft/server/EntityTypes.java
@@ -670,29 +639,28 @@ index 51c1bdf553ecb900a34fdfe7a68ff2fec2eb66f3..7f19c7c6319b6045de24206414e0e4e0
                          if (list != null) {
                              for (MobEffect mobeffect : list) {
 diff --git a/src/main/java/net/minecraft/server/EnumDirection.java b/src/main/java/net/minecraft/server/EnumDirection.java
-index ece8516e3b74083b45a3a1a7f742eec61da98eb1..5d72e89f79dca286fcfc9f7376e822c2f92ad70b 100644
+index 078baeebf74d7a6b00587ee9ae72f44ad6f253ce..5d72e89f79dca286fcfc9f7376e822c2f92ad70b 100644
 --- a/src/main/java/net/minecraft/server/EnumDirection.java
 +++ b/src/main/java/net/minecraft/server/EnumDirection.java
-@@ -187,8 +187,8 @@ public enum EnumDirection implements INamable {
+@@ -187,6 +187,10 @@ public enum EnumDirection implements INamable {
              return this.e;
          }
  
--        public boolean apply(Object object) {
--            return this.a((EnumDirection) object);
 +        public boolean apply(EnumDirection object) {
 +            return this.a(object);
-         }
- 
++        }
++
          static {
-@@ -251,8 +251,8 @@ public enum EnumDirection implements INamable {
+             for (EnumDirection.EnumAxis enumdirection_enumaxis : values()) {
+                 EnumDirection.EnumAxis.d.put(enumdirection_enumaxis.a().toLowerCase(), enumdirection_enumaxis);
+@@ -246,5 +250,9 @@ public enum EnumDirection implements INamable {
+         public Iterator<EnumDirection> iterator() {
              return Iterators.forArray(this.a());
          }
- 
--        public boolean apply(Object object) {
--            return this.a((EnumDirection) object);
++
 +        public boolean apply(EnumDirection object) {
 +            return this.a(object);
-         }
++        }
      }
  }
 diff --git a/src/main/java/net/minecraft/server/EnumProtocol.java b/src/main/java/net/minecraft/server/EnumProtocol.java
@@ -734,21 +702,20 @@ index 6bbbf7c824ea03e8fd68d35812781cddfb568ed8..4c6f31e25c65c639b085d071af384442
                          throw new Error("Packet " + oclass + " is already assigned to protocol " + EnumProtocol.h.get(oclass) + " - can't reassign to " + enumprotocol);
                      }
 diff --git a/src/main/java/net/minecraft/server/GameProfileBanList.java b/src/main/java/net/minecraft/server/GameProfileBanList.java
-index b04dadf0352a76b1e2b2e0432d1861e2e2c2d481..683e86c5f92e515ca65471c8a00c271cb1a73543 100644
+index 3beefd147d1c305d67676f97423f67e6b18fd80b..8fd93b5abd90269a914f01717ec056d532154119 100644
 --- a/src/main/java/net/minecraft/server/GameProfileBanList.java
 +++ b/src/main/java/net/minecraft/server/GameProfileBanList.java
-@@ -46,7 +46,7 @@ public class GameProfileBanList extends JsonList<GameProfile, GameProfileBanEntr
-     }
+@@ -44,4 +44,8 @@ public class GameProfileBanList extends JsonList<GameProfile, GameProfileBanEntr
  
-     @Override
--    protected String a(Object object) {
--        return this.b((GameProfile) object);
+         return null;
+     }
++
 +    protected String a(GameProfile object) {
 +        return this.b(object);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/GenLayer.java b/src/main/java/net/minecraft/server/GenLayer.java
-index 47d120bf5e70a79f5604be48d3459740004fea83..be00abc9a7f828c3a0d88341c59a2f2de9153cd0 100644
+index 7d83443ab7b4ce0438ea41a2c076e632c9056792..be00abc9a7f828c3a0d88341c59a2f2de9153cd0 100644
 --- a/src/main/java/net/minecraft/server/GenLayer.java
 +++ b/src/main/java/net/minecraft/server/GenLayer.java
 @@ -30,7 +30,7 @@ public abstract class GenLayer {
@@ -777,25 +744,27 @@ index 47d120bf5e70a79f5604be48d3459740004fea83..be00abc9a7f828c3a0d88341c59a2f2d
  
          genlayercleaner = GenLayerZoom.b(1000L, genlayercleaner, 2);
          genlayercleaner = GenLayerZoom.b(1000L, genlayercleaner, k);
-@@ -153,7 +153,7 @@ public abstract class GenLayer {
+@@ -152,11 +152,19 @@ public abstract class GenLayer {
+                     public String a() throws Exception {
                          return String.valueOf(biomebase);
                      }
- 
--                    public Object call() throws Exception {
++
 +                    public String call() throws Exception {
-                         return this.a();
-                     }
++                        return this.a();
++                    }
                  });
-@@ -162,7 +162,7 @@ public abstract class GenLayer {
+                 crashreportsystemdetails.a("Biome B", new Callable<String>() {
+                     public String a() throws Exception {
                          return String.valueOf(biomebase1);
                      }
- 
--                    public Object call() throws Exception {
++
 +                    public String call() throws Exception {
-                         return this.a();
-                     }
++                        return this.a();
++                    }
                  });
-@@ -182,6 +182,6 @@ public abstract class GenLayer {
+                 throw new ReportedException(crashreport);
+             }
+@@ -174,6 +182,6 @@ public abstract class GenLayer {
      }
  
      protected int b(int i, int j, int k, int l) {
@@ -804,111 +773,101 @@ index 47d120bf5e70a79f5604be48d3459740004fea83..be00abc9a7f828c3a0d88341c59a2f2d
      }
  }
 diff --git a/src/main/java/net/minecraft/server/IChatBaseComponent.java b/src/main/java/net/minecraft/server/IChatBaseComponent.java
-index e2764c3e1a71af0c47a73b6b9211c03630c0a4af..9854326f726e10751370d6f06b849f496a0f5da1 100644
+index e8cf91d287dc96ad769b525c4d103f7e30858584..9854326f726e10751370d6f06b849f496a0f5da1 100644
 --- a/src/main/java/net/minecraft/server/IChatBaseComponent.java
 +++ b/src/main/java/net/minecraft/server/IChatBaseComponent.java
-@@ -207,11 +207,11 @@ public interface IChatBaseComponent extends Iterable<IChatBaseComponent> {
+@@ -207,6 +207,14 @@ public interface IChatBaseComponent extends Iterable<IChatBaseComponent> {
              return (IChatBaseComponent) IChatBaseComponent.ChatSerializer.a.fromJson(s, IChatBaseComponent.class);
          }
  
--        public JsonElement serialize(Object object, Type type, JsonSerializationContext jsonserializationcontext) {
--            return this.a((IChatBaseComponent) object, type, jsonserializationcontext);
 +        public JsonElement serialize(IChatBaseComponent object, Type type, JsonSerializationContext jsonserializationcontext) {
 +            return this.a(object, type, jsonserializationcontext);
-         }
- 
--        public Object deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
++        }
++
 +        public IChatBaseComponent deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
-             return this.a(jsonelement, type, jsondeserializationcontext);
-         }
++            return this.a(jsonelement, type, jsondeserializationcontext);
++        }
++
+         static {
+             GsonBuilder gsonbuilder = new GsonBuilder();
  
 diff --git a/src/main/java/net/minecraft/server/IEntitySelector.java b/src/main/java/net/minecraft/server/IEntitySelector.java
-index dad4744aaefe995aa98f461f4a1a459e0dd56ba7..dcf4b0d50bbea7c565e72f72a6b3c16a4cceabb9 100644
+index 6fb9b52c67277e49b37db0f8da6c86d562eab26e..dcf4b0d50bbea7c565e72f72a6b3c16a4cceabb9 100644
 --- a/src/main/java/net/minecraft/server/IEntitySelector.java
 +++ b/src/main/java/net/minecraft/server/IEntitySelector.java
-@@ -9,8 +9,8 @@ public final class IEntitySelector {
+@@ -8,21 +8,37 @@ public final class IEntitySelector {
+         public boolean a(Entity entity) {
              return entity.isAlive();
          }
- 
--        public boolean apply(Object object) {
--            return this.a((Entity) object);
++
 +        public boolean apply(Entity object) {
 +            return this.a(object);
-         }
++        }
      };
      public static final Predicate<Entity> b = new Predicate<Entity>() {
-@@ -18,8 +18,8 @@ public final class IEntitySelector {
+         public boolean a(Entity entity) {
              return entity.isAlive() && entity.passenger == null && entity.vehicle == null;
          }
- 
--        public boolean apply(Object object) {
--            return this.a((Entity) object);
++
 +        public boolean apply(Entity object) {
 +            return this.a(object);
-         }
++        }
      };
      public static final Predicate<Entity> c = new Predicate<Entity>() {
-@@ -27,8 +27,8 @@ public final class IEntitySelector {
+         public boolean a(Entity entity) {
              return entity instanceof IInventory && entity.isAlive();
          }
- 
--        public boolean apply(Object object) {
--            return this.a((Entity) object);
++
 +        public boolean apply(Entity object) {
 +            return this.a(object);
-         }
++        }
      };
      public static final Predicate<Entity> d = new Predicate<Entity>() {
-@@ -36,8 +36,8 @@ public final class IEntitySelector {
+         public boolean a(Entity entity) {
              return !(entity instanceof EntityHuman) || !((EntityHuman) entity).isSpectator();
          }
- 
--        public boolean apply(Object object) {
--            return this.a((Entity) object);
++
 +        public boolean apply(Entity object) {
 +            return this.a(object);
-         }
++        }
      };
  
-@@ -61,8 +61,8 @@ public final class IEntitySelector {
+     public static class EntitySelectorEquipable implements Predicate<Entity> {
+@@ -44,5 +60,9 @@ public final class IEntitySelector {
+                 return entityliving.getEquipment(EntityInsentient.c(this.a)) != null ? false : (entityliving instanceof EntityInsentient ? ((EntityInsentient) entityliving).bY() : (entityliving instanceof EntityArmorStand ? true : entityliving instanceof EntityHuman));
              }
          }
- 
--        public boolean apply(Object object) {
--            return this.a((Entity) object);
++
 +        public boolean apply(Entity object) {
 +            return this.a(object);
-         }
++        }
      }
  }
 diff --git a/src/main/java/net/minecraft/server/IMonster.java b/src/main/java/net/minecraft/server/IMonster.java
-index 669b56ca39f0c169350fecd7ce5500d4b703a747..81d9380d697d1d8c003efa7841e2814debccec76 100644
+index 8b6a2fb43d0f196a61b3cb14f72848eb49352feb..81d9380d697d1d8c003efa7841e2814debccec76 100644
 --- a/src/main/java/net/minecraft/server/IMonster.java
 +++ b/src/main/java/net/minecraft/server/IMonster.java
-@@ -9,8 +9,8 @@ public interface IMonster extends IAnimal {
+@@ -8,10 +8,18 @@ public interface IMonster extends IAnimal {
+         public boolean a(Entity entity) {
              return entity instanceof IMonster;
          }
- 
--        public boolean apply(Object object) {
--            return this.a((Entity) object);
++
 +        public boolean apply(Entity object) {
 +            return this.a(object);
-         }
++        }
      };
      Predicate<Entity> e = new Predicate<Entity>() {
-@@ -18,8 +18,8 @@ public interface IMonster extends IAnimal {
+         public boolean a(Entity entity) {
              return entity instanceof IMonster && !entity.isInvisible();
          }
- 
--        public boolean apply(Object object) {
--            return this.a((Entity) object);
++
 +        public boolean apply(Entity object) {
 +            return this.a(object);
-         }
++        }
      };
  }
 diff --git a/src/main/java/net/minecraft/server/InsensitiveStringMap.java b/src/main/java/net/minecraft/server/InsensitiveStringMap.java
-index 813219c4f980aec7ad987820eb2fa36717c1fe42..0ec714e16daf76d2552fccb22ce990d6a02bb30c 100644
+index b55957b81e942f0a2656ae3fa23107c3d5e81804..0ec714e16daf76d2552fccb22ce990d6a02bb30c 100644
 --- a/src/main/java/net/minecraft/server/InsensitiveStringMap.java
 +++ b/src/main/java/net/minecraft/server/InsensitiveStringMap.java
 @@ -41,8 +41,8 @@ public class InsensitiveStringMap<V> implements Map<String, V> {
@@ -922,15 +881,14 @@ index 813219c4f980aec7ad987820eb2fa36717c1fe42..0ec714e16daf76d2552fccb22ce990d6
          }
  
      }
-@@ -63,7 +63,7 @@ public class InsensitiveStringMap<V> implements Map<String, V> {
+@@ -62,4 +62,8 @@ public class InsensitiveStringMap<V> implements Map<String, V> {
+     public Set<Map.Entry<String, V>> entrySet() {
          return this.a.entrySet();
      }
- 
--    public Object put(Object object, Object object1) {
--        return this.a((String) object, object1);
++
 +    public V put(String object, V object1) {
 +        return this.a(object, object1);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/IntHashMap.java b/src/main/java/net/minecraft/server/IntHashMap.java
 index 8348bfc560037f02a7acce590be084954261a43e..6cf9641c15190c3c6eb96b3ac06938533f4553ae 100644
@@ -959,211 +917,199 @@ index ce0b50b7c202ded4178e6246a790bbcaa69e4236..d33df7d4c07071c5ce435720b9b90a83
  
      private String c(SocketAddress socketaddress) {
 diff --git a/src/main/java/net/minecraft/server/Item.java b/src/main/java/net/minecraft/server/Item.java
-index d9a067d909054091642a7cd5f36030b42a1986ab..e20e2296884d2dd333659768bf03fdf5e3b3e430 100644
+index df2df8e8f8b83fe58cfa3029d1d0030087698644..e20e2296884d2dd333659768bf03fdf5e3b3e430 100644
 --- a/src/main/java/net/minecraft/server/Item.java
 +++ b/src/main/java/net/minecraft/server/Item.java
-@@ -252,8 +252,8 @@ public class Item {
+@@ -251,29 +251,49 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockStone.EnumStoneVariant.a(itemstack.getData()).d();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("stone"));
          a((Block) Blocks.GRASS, (Item) (new ItemWithAuxData(Blocks.GRASS, false)));
-@@ -262,8 +262,8 @@ public class Item {
+         a(Blocks.DIRT, (Item) (new ItemMultiTexture(Blocks.DIRT, Blocks.DIRT, new Function<ItemStack, String>() {
+             public String a(ItemStack itemstack) {
                  return BlockDirt.EnumDirtVariant.a(itemstack.getData()).c();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("dirt"));
          c(Blocks.COBBLESTONE);
-@@ -272,8 +272,8 @@ public class Item {
+         a(Blocks.PLANKS, (Item) (new ItemMultiTexture(Blocks.PLANKS, Blocks.PLANKS, new Function<ItemStack, String>() {
+             public String a(ItemStack itemstack) {
                  return BlockWood.EnumLogVariant.a(itemstack.getData()).d();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("wood"));
          a(Blocks.SAPLING, (Item) (new ItemMultiTexture(Blocks.SAPLING, Blocks.SAPLING, new Function<ItemStack, String>() {
-@@ -281,8 +281,8 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockWood.EnumLogVariant.a(itemstack.getData()).d();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("sapling"));
          c(Blocks.BEDROCK);
-@@ -291,8 +291,8 @@ public class Item {
+         a((Block) Blocks.SAND, (Item) (new ItemMultiTexture(Blocks.SAND, Blocks.SAND, new Function<ItemStack, String>() {
+             public String a(ItemStack itemstack) {
                  return BlockSand.EnumSandVariant.a(itemstack.getData()).d();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("sand"));
          c(Blocks.GRAVEL);
-@@ -304,8 +304,8 @@ public class Item {
+         c(Blocks.GOLD_ORE);
+@@ -283,11 +303,19 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockWood.EnumLogVariant.a(itemstack.getData()).d();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("log"));
          a(Blocks.LOG2, (Item) (new ItemMultiTexture(Blocks.LOG2, Blocks.LOG2, new Function<ItemStack, String>() {
-@@ -313,8 +313,8 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockWood.EnumLogVariant.a(itemstack.getData() + 4).d();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("log"));
          a((Block) Blocks.LEAVES, (Item) (new ItemLeaves(Blocks.LEAVES)).b("leaves"));
-@@ -324,8 +324,8 @@ public class Item {
+         a((Block) Blocks.LEAVES2, (Item) (new ItemLeaves(Blocks.LEAVES2)).b("leaves"));
+@@ -295,6 +323,10 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return (itemstack.getData() & 1) == 1 ? "wet" : "dry";
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("sponge"));
          c(Blocks.GLASS);
-@@ -337,8 +337,8 @@ public class Item {
+         c(Blocks.LAPIS_ORE);
+@@ -304,6 +336,10 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockSandStone.EnumSandstoneVariant.a(itemstack.getData()).c();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("sandStone"));
          c(Blocks.NOTEBLOCK);
-@@ -355,8 +355,8 @@ public class Item {
+         c(Blocks.GOLDEN_RAIL);
+@@ -318,11 +354,19 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockFlowers.EnumFlowerVarient.a(BlockFlowers.EnumFlowerType.YELLOW, itemstack.getData()).d();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("flower"));
          a((Block) Blocks.RED_FLOWER, (Item) (new ItemMultiTexture(Blocks.RED_FLOWER, Blocks.RED_FLOWER, new Function<ItemStack, String>() {
-@@ -364,8 +364,8 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockFlowers.EnumFlowerVarient.a(BlockFlowers.EnumFlowerType.RED, itemstack.getData()).d();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("rose"));
          c((Block) Blocks.BROWN_MUSHROOM);
-@@ -420,8 +420,8 @@ public class Item {
+         c((Block) Blocks.RED_MUSHROOM);
+@@ -375,11 +419,19 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockMonsterEggs.EnumMonsterEggVarient.a(itemstack.getData()).c();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("monsterStoneEgg"));
          a(Blocks.STONEBRICK, (Item) (new ItemMultiTexture(Blocks.STONEBRICK, Blocks.STONEBRICK, new Function<ItemStack, String>() {
-@@ -429,8 +429,8 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockSmoothBrick.EnumStonebrickType.a(itemstack.getData()).c();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("stonebricksmooth"));
          c(Blocks.BROWN_MUSHROOM_BLOCK);
-@@ -473,8 +473,8 @@ public class Item {
+         c(Blocks.RED_MUSHROOM_BLOCK);
+@@ -420,6 +472,10 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockCobbleWall.EnumCobbleVariant.a(itemstack.getData()).c();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("cobbleWall"));
          c(Blocks.WOODEN_BUTTON);
-@@ -506,8 +506,8 @@ public class Item {
+         a(Blocks.ANVIL, (Item) (new ItemAnvil(Blocks.ANVIL)).b("anvil"));
+@@ -449,6 +505,10 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockTallPlant.EnumTallFlowerVariants.a(itemstack.getData()).c();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("doublePlant"));
          a((Block) Blocks.STAINED_GLASS, (Item) (new ItemCloth(Blocks.STAINED_GLASS)).b("stainedGlass"));
-@@ -517,8 +517,8 @@ public class Item {
+         a((Block) Blocks.STAINED_GLASS_PANE, (Item) (new ItemCloth(Blocks.STAINED_GLASS_PANE)).b("stainedGlassPane"));
+@@ -456,12 +516,20 @@ public class Item {
+             public String a(ItemStack itemstack) {
                  return BlockPrismarine.EnumPrismarineVariant.a(itemstack.getData()).c();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("prismarine"));
          c(Blocks.SEA_LANTERN);
-@@ -527,8 +527,8 @@ public class Item {
+         a(Blocks.RED_SANDSTONE, (Item) (new ItemMultiTexture(Blocks.RED_SANDSTONE, Blocks.RED_SANDSTONE, new Function<ItemStack, String>() {
+             public String a(ItemStack itemstack) {
                  return BlockRedSandstone.EnumRedSandstoneVariant.a(itemstack.getData()).c();
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          })).b("redSandStone"));
          c(Blocks.RED_SANDSTONE_STAIRS);
+         a((Block) Blocks.STONE_SLAB2, (Item) (new ItemStep(Blocks.STONE_SLAB2, Blocks.STONE_SLAB2, Blocks.DOUBLE_STONE_SLAB2)).b("stoneSlab2"));
 diff --git a/src/main/java/net/minecraft/server/ItemMultiTexture.java b/src/main/java/net/minecraft/server/ItemMultiTexture.java
-index 1b25f47f8c1ce8d7d555ddc007f4f1c4c6e37d11..d8a0b4ac9b8006c5bea5ae6c1ec324f4e159c75f 100644
+index 8a9692b943c0f1dcdc3b6361bf75c63121dc5ac6..d8a0b4ac9b8006c5bea5ae6c1ec324f4e159c75f 100644
 --- a/src/main/java/net/minecraft/server/ItemMultiTexture.java
 +++ b/src/main/java/net/minecraft/server/ItemMultiTexture.java
-@@ -27,8 +27,8 @@ public class ItemMultiTexture extends ItemBlock {
+@@ -26,6 +26,10 @@ public class ItemMultiTexture extends ItemBlock {
+ 
                  return astring[i];
              }
- 
--            public Object apply(Object object) {
--                return this.a((ItemStack) object);
++
 +            public String apply(ItemStack object) {
 +                return this.a(object);
-             }
++            }
          });
      }
+ 
 diff --git a/src/main/java/net/minecraft/server/ItemPotion.java b/src/main/java/net/minecraft/server/ItemPotion.java
 index 76eccd53f437d95f19665b300749ccf68552c8fd..7d6df1685928eac546bf07ce905c484888197bdf 100644
 --- a/src/main/java/net/minecraft/server/ItemPotion.java
@@ -1192,7 +1138,7 @@ index 4be4df0ce667bf3f1d76d689c429a89e63a8f35b..2cf155eec3aa1a7058bb73ec4cccf473
                  if (world.b(this.c.a(world, blockposition, iblockdata1)) && world.setTypeAndData(blockposition, iblockdata1, 3)) {
                      world.makeSound((double) ((float) blockposition.getX() + 0.5F), (double) ((float) blockposition.getY() + 0.5F), (double) ((float) blockposition.getZ() + 0.5F), this.c.stepSound.getPlaceSound(), (this.c.stepSound.getVolume1() + 1.0F) / 2.0F, this.c.stepSound.getVolume2() * 0.8F);
 diff --git a/src/main/java/net/minecraft/server/IteratorUtils.java b/src/main/java/net/minecraft/server/IteratorUtils.java
-index df0da0eb7b431cd0315781f9f3246584bbd483eb..7da534c38170a469954cf2ef3db9dc203735f3d3 100644
+index dee921f2d3cbe95961e68eeff3726d5af89656b2..7da534c38170a469954cf2ef3db9dc203735f3d3 100644
 --- a/src/main/java/net/minecraft/server/IteratorUtils.java
 +++ b/src/main/java/net/minecraft/server/IteratorUtils.java
 @@ -15,7 +15,7 @@ import java.util.NoSuchElementException;
@@ -1204,28 +1150,30 @@ index df0da0eb7b431cd0315781f9f3246584bbd483eb..7da534c38170a469954cf2ef3db9dc20
      }
  
      public static <T> Iterable<List<T>> a(Iterable<? extends Iterable<? extends T>> iterable) {
-@@ -45,10 +45,10 @@ public class IteratorUtils {
+@@ -45,7 +45,11 @@ public class IteratorUtils {
          private ArrayToList() {}
  
          public List<T> a(Object[] aobject) {
 -            return Arrays.asList(aobject);
 +            return Arrays.asList((T[]) aobject);
-         }
- 
--        public Object apply(Object object) {
++        }
++
 +        public List<T> apply(Object[] object) {
-             return this.a(object);
++            return this.a(object);
          }
      }
-@@ -144,7 +144,7 @@ public class IteratorUtils {
+ 
+@@ -139,6 +143,10 @@ public class IteratorUtils {
+                     return (T[]) ((Object[]) this.d.clone());
                  }
              }
- 
--            public Object next() {
++
 +            public T[] next() {
-                 return this.a();
-             }
++                return this.a();
++            }
          }
+     }
+ }
 diff --git a/src/main/java/net/minecraft/server/LongHashMap.java b/src/main/java/net/minecraft/server/LongHashMap.java
 index 2f48577aeae812317cd76ceade62979e580429e2..686a07181ebddef15d6c6a2a16b6ff61d47abbb6 100644
 --- a/src/main/java/net/minecraft/server/LongHashMap.java
@@ -1282,27 +1230,29 @@ index 0c84a9c7cf99a7523edc56fe0f78825cf05b5df3..c9e1b5cb3b7c10fffd408a6c11d4f712
  
          for (String s : list) {
 diff --git a/src/main/java/net/minecraft/server/NBTTagCompound.java b/src/main/java/net/minecraft/server/NBTTagCompound.java
-index 6884da3dc7721c26e94611cdc4c14fb61c784f29..1baf396f1c1bc369f778e1b3aa83e3eecaad4bd3 100644
+index fb5c4764ca867235e0add787df100ab0f51acef3..1baf396f1c1bc369f778e1b3aa83e3eecaad4bd3 100644
 --- a/src/main/java/net/minecraft/server/NBTTagCompound.java
 +++ b/src/main/java/net/minecraft/server/NBTTagCompound.java
-@@ -264,7 +264,7 @@ public class NBTTagCompound extends NBTBase {
+@@ -263,11 +263,19 @@ public class NBTTagCompound extends NBTBase {
+             public String a() throws Exception {
                  return NBTBase.a[((NBTBase) NBTTagCompound.this.map.get(s)).getTypeId()];
              }
- 
--            public Object call() throws Exception {
++
 +            public String call() throws Exception {
-                 return this.a();
-             }
++                return this.a();
++            }
          });
-@@ -273,7 +273,7 @@ public class NBTTagCompound extends NBTBase {
+         crashreportsystemdetails.a("Tag type expected", new Callable<String>() {
+             public String a() throws Exception {
                  return NBTBase.a[i];
              }
- 
--            public Object call() throws Exception {
++
 +            public String call() throws Exception {
-                 return this.a();
-             }
++                return this.a();
++            }
          });
+         crashreportsystemdetails.a("Tag name", s);
+         return crashreport;
 diff --git a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
 index 40291094e8aeff2a12b7b4ae721ef3e928a3b0b1..02213e3c5fee0a686654c563ae953f7f29a46d0e 100644
 --- a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
@@ -1346,104 +1296,98 @@ index 40291094e8aeff2a12b7b4ae721ef3e928a3b0b1..02213e3c5fee0a686654c563ae953f7f
                              throw new NameReferencingFileConverter.FileConversionException("Could not convert file for " + s, null);
                          }
 diff --git a/src/main/java/net/minecraft/server/OpList.java b/src/main/java/net/minecraft/server/OpList.java
-index 451d2ceb64c255171c35969460f516f401eed473..1897720a233c292c9ece2ce60cf2af689b0bbd15 100644
+index a5db39ce57a95288582838b22f8ea03e58c862a8..7cfd186b3af7b49b197be67bb9f37f52e10b7b02 100644
 --- a/src/main/java/net/minecraft/server/OpList.java
 +++ b/src/main/java/net/minecraft/server/OpList.java
-@@ -48,7 +48,7 @@ public class OpList extends JsonList<GameProfile, OpListEntry> {
-     }
+@@ -46,4 +46,8 @@ public class OpList extends JsonList<GameProfile, OpListEntry> {
  
-     @Override
--    protected String a(Object object) {
--        return this.c((GameProfile) object);
+         return null;
+     }
++
 +    protected String a(GameProfile object) {
 +        return this.c(object);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketCompressor.java b/src/main/java/net/minecraft/server/PacketCompressor.java
-index 639ae31a91085a6fb96a735d5860fe8b137eaf67..8107890ffbc205f5ce7e22c04d62fb8b16d087c2 100644
+index c85532d3abf7971c462d34baa4de508a1313f41c..8107890ffbc205f5ce7e22c04d62fb8b16d087c2 100644
 --- a/src/main/java/net/minecraft/server/PacketCompressor.java
 +++ b/src/main/java/net/minecraft/server/PacketCompressor.java
-@@ -46,7 +46,7 @@ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+@@ -45,4 +45,8 @@ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+     public void a(int i) {
          this.c = i;
      }
- 
--    protected void encode(ChannelHandlerContext channelhandlercontext, Object object, ByteBuf bytebuf) throws Exception {
--        this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
++
 +    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
 +        this.a(channelhandlercontext, object, bytebuf);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketDecrypter.java b/src/main/java/net/minecraft/server/PacketDecrypter.java
-index aca9356119b88b2b3b3d0e2ccf036a29bf876992..fded40d40c8cf5d21adca9a630612ec58f4100e7 100644
+index 1951c41d4855861803b4056368308d383431e4bd..fded40d40c8cf5d21adca9a630612ec58f4100e7 100644
 --- a/src/main/java/net/minecraft/server/PacketDecrypter.java
 +++ b/src/main/java/net/minecraft/server/PacketDecrypter.java
-@@ -18,7 +18,7 @@ public class PacketDecrypter extends MessageToMessageDecoder<ByteBuf> {
+@@ -17,4 +17,8 @@ public class PacketDecrypter extends MessageToMessageDecoder<ByteBuf> {
+     protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
          list.add(this.a.a(channelhandlercontext, bytebuf));
      }
- 
--    protected void decode(ChannelHandlerContext channelhandlercontext, Object object, List list) throws Exception {
--        this.a(channelhandlercontext, (ByteBuf) object, list);
++
 +    protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf object, List<Object> list) throws Exception {
 +        this.a(channelhandlercontext, object, list);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketEncoder.java b/src/main/java/net/minecraft/server/PacketEncoder.java
-index 045a9f17142a536dd32b98921585e93857352e0e..9ebae0b5a96c0f4e5f6475e41251b4d4d519c86a 100644
+index 387a374deb7368e9804732393efdb644ebb5e9cd..9ebae0b5a96c0f4e5f6475e41251b4d4d519c86a 100644
 --- a/src/main/java/net/minecraft/server/PacketEncoder.java
 +++ b/src/main/java/net/minecraft/server/PacketEncoder.java
-@@ -46,7 +46,7 @@ public class PacketEncoder extends MessageToByteEncoder<Packet> {
+@@ -45,4 +45,8 @@ public class PacketEncoder extends MessageToByteEncoder<Packet> {
+ 
          }
      }
- 
--    protected void encode(ChannelHandlerContext channelhandlercontext, Object object, ByteBuf bytebuf) throws Exception {
--        this.a(channelhandlercontext, (Packet) object, bytebuf);
++
 +    protected void encode(ChannelHandlerContext channelhandlercontext, Packet object, ByteBuf bytebuf) throws Exception {
 +        this.a(channelhandlercontext, object, bytebuf);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketEncrypter.java b/src/main/java/net/minecraft/server/PacketEncrypter.java
-index bd972ebebe43e82b0eae56882ad21fc4feae84b1..e8ef4725c4d21c49fcc0219578391e15d0164a67 100644
+index f9a8ce4d71c9415e0b73d73ff77257085f71d6a6..e8ef4725c4d21c49fcc0219578391e15d0164a67 100644
 --- a/src/main/java/net/minecraft/server/PacketEncrypter.java
 +++ b/src/main/java/net/minecraft/server/PacketEncrypter.java
-@@ -17,7 +17,7 @@ public class PacketEncrypter extends MessageToByteEncoder<ByteBuf> {
+@@ -16,4 +16,8 @@ public class PacketEncrypter extends MessageToByteEncoder<ByteBuf> {
+     protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
          this.a.a(bytebuf, bytebuf1);
      }
- 
--    protected void encode(ChannelHandlerContext channelhandlercontext, Object object, ByteBuf bytebuf) throws Exception {
--        this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
++
 +    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
 +        this.a(channelhandlercontext, object, bytebuf);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/PacketPrepender.java b/src/main/java/net/minecraft/server/PacketPrepender.java
-index e09ede5bfff8c71b82fdcbeb50e84ec7d617f3f1..70cb2632a7de8023facb56e218384cee9a15e889 100644
+index 5e2a43431858062c81480b7aa5b883936ebc67da..70cb2632a7de8023facb56e218384cee9a15e889 100644
 --- a/src/main/java/net/minecraft/server/PacketPrepender.java
 +++ b/src/main/java/net/minecraft/server/PacketPrepender.java
-@@ -23,7 +23,7 @@ public class PacketPrepender extends MessageToByteEncoder<ByteBuf> {
+@@ -22,4 +22,8 @@ public class PacketPrepender extends MessageToByteEncoder<ByteBuf> {
+             packetdataserializer.writeBytes(bytebuf, bytebuf.readerIndex(), i);
          }
      }
- 
--    protected void encode(ChannelHandlerContext channelhandlercontext, Object object, ByteBuf bytebuf) throws Exception {
--        this.a(channelhandlercontext, (ByteBuf) object, bytebuf);
++
 +    protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
 +        this.a(channelhandlercontext, object, bytebuf);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/PathfinderGoalAvoidTarget.java b/src/main/java/net/minecraft/server/PathfinderGoalAvoidTarget.java
-index 0546c9ce190de106345a5af166585a57ec2c6a97..ae6de275589c04136a205bb247436451a7d3239c 100644
+index 46941d2ec13174aadcdd91e9c75e0bb49ca8c038..ae6de275589c04136a205bb247436451a7d3239c 100644
 --- a/src/main/java/net/minecraft/server/PathfinderGoalAvoidTarget.java
 +++ b/src/main/java/net/minecraft/server/PathfinderGoalAvoidTarget.java
-@@ -27,8 +27,8 @@ public class PathfinderGoalAvoidTarget<T extends Entity> extends PathfinderGoal
+@@ -26,6 +26,10 @@ public class PathfinderGoalAvoidTarget<T extends Entity> extends PathfinderGoal
+             public boolean a(Entity entity) {
                  return entity.isAlive() && PathfinderGoalAvoidTarget.this.a.getEntitySenses().a(entity);
              }
- 
--            public boolean apply(Object object) {
--                return this.a((Entity) object);
++
 +            public boolean apply(Entity object) {
 +                return this.a(object);
-             }
++            }
          };
          this.a = entitycreature;
+         this.i = oclass;
 diff --git a/src/main/java/net/minecraft/server/PathfinderGoalFollowParent.java b/src/main/java/net/minecraft/server/PathfinderGoalFollowParent.java
 index 8a98de12b4878aa59c4b5b52d08941e1f0a21530..7b319e923606e75dec290252a00fff1bd01529a1 100644
 --- a/src/main/java/net/minecraft/server/PathfinderGoalFollowParent.java
@@ -1484,7 +1428,7 @@ index bfd76168cb8db618d6f39814cee3ecc7d0c71f2c..010d64c72b80f9b063de9f110ab075d2
              if (list.isEmpty()) {
                  return false;
 diff --git a/src/main/java/net/minecraft/server/PlayerSelector.java b/src/main/java/net/minecraft/server/PlayerSelector.java
-index b5ba44da1be4e0bfd90e48c60f07762c0f10b408..0e030f904832fd75f13096f32f9085d32c4eb2dd 100644
+index 86930769215bf5b36ef50568e67fdf94897f1c7c..0e030f904832fd75f13096f32f9085d32c4eb2dd 100644
 --- a/src/main/java/net/minecraft/server/PlayerSelector.java
 +++ b/src/main/java/net/minecraft/server/PlayerSelector.java
 @@ -35,18 +35,18 @@ public class PlayerSelector {
@@ -1527,15 +1471,14 @@ index b5ba44da1be4e0bfd90e48c60f07762c0f10b408..0e030f904832fd75f13096f32f9085d3
          final boolean flag = s1 != null && s1.startsWith("!");
  
          if (flag) {
-@@ -133,19 +133,20 @@ public class PlayerSelector {
+@@ -132,12 +132,21 @@ public class PlayerSelector {
+                     public boolean a(Entity entity) {
                          return entity instanceof EntityHuman;
                      }
- 
--                    public boolean apply(Object object) {
--                        return this.a((Entity) object);
++
 +                    public boolean apply(Entity object) {
 +                        return this.a(object);
-                     }
++                    }
                  });
              }
          } else {
@@ -1544,38 +1487,36 @@ index b5ba44da1be4e0bfd90e48c60f07762c0f10b408..0e030f904832fd75f13096f32f9085d3
                  public boolean a(Entity entity) {
 -                    return EntityTypes.a(entity, s1) != flag;
 +                    return EntityTypes.a(entity, s1Final) != flag;
-                 }
- 
--                public boolean apply(Object object) {
--                    return this.a((Entity) object);
++                }
++
 +                public boolean apply(Entity object) {
 +                    return this.a(object);
                  }
              });
          }
-@@ -170,8 +171,8 @@ public class PlayerSelector {
+@@ -161,6 +170,10 @@ public class PlayerSelector {
+                         return (i <= -1 || entityplayer.expLevel >= i) && (j <= -1 || entityplayer.expLevel <= j);
                      }
                  }
- 
--                public boolean apply(Object object) {
--                    return this.a((Entity) object);
++
 +                public boolean apply(Entity object) {
 +                    return this.a(object);
-                 }
++                }
              });
          }
-@@ -195,8 +196,8 @@ public class PlayerSelector {
+ 
+@@ -182,6 +195,10 @@ public class PlayerSelector {
+                         return entityplayer.playerInteractManager.getGameMode().getId() == i;
                      }
                  }
- 
--                public boolean apply(Object object) {
--                    return this.a((Entity) object);
++
 +                public boolean apply(Entity object) {
 +                    return this.a(object);
-                 }
++                }
              });
          }
-@@ -206,7 +207,7 @@ public class PlayerSelector {
+ 
+@@ -190,7 +207,7 @@ public class PlayerSelector {
  
      private static List<Predicate<Entity>> d(Map<String, String> map) {
          ArrayList arraylist = Lists.newArrayList();
@@ -1584,7 +1525,7 @@ index b5ba44da1be4e0bfd90e48c60f07762c0f10b408..0e030f904832fd75f13096f32f9085d3
          final boolean flag = s != null && s.startsWith("!");
  
          if (flag) {
-@@ -214,6 +215,7 @@ public class PlayerSelector {
+@@ -198,6 +215,7 @@ public class PlayerSelector {
          }
  
          if (s != null) {
@@ -1592,7 +1533,7 @@ index b5ba44da1be4e0bfd90e48c60f07762c0f10b408..0e030f904832fd75f13096f32f9085d3
              arraylist.add(new Predicate<Entity>() {
                  public boolean a(Entity entity) {
                      if (!(entity instanceof EntityLiving)) {
-@@ -223,12 +225,12 @@ public class PlayerSelector {
+@@ -207,9 +225,13 @@ public class PlayerSelector {
                          ScoreboardTeamBase scoreboardteambase = entityliving.getScoreboardTeam();
                          String s1 = scoreboardteambase == null ? "" : scoreboardteambase.getName();
  
@@ -1600,15 +1541,14 @@ index b5ba44da1be4e0bfd90e48c60f07762c0f10b408..0e030f904832fd75f13096f32f9085d3
 +                        return s1.equals(sFinal) != flag;
                      }
                  }
- 
--                public boolean apply(Object object) {
--                    return this.a((Entity) object);
++
 +                public boolean apply(Entity object) {
 +                    return this.a(object);
-                 }
++                }
              });
          }
-@@ -238,7 +240,7 @@ public class PlayerSelector {
+ 
+@@ -218,7 +240,7 @@ public class PlayerSelector {
  
      private static List<Predicate<Entity>> e(Map<String, String> map) {
          ArrayList arraylist = Lists.newArrayList();
@@ -1617,18 +1557,18 @@ index b5ba44da1be4e0bfd90e48c60f07762c0f10b408..0e030f904832fd75f13096f32f9085d3
  
          if (map1 != null && map1.size() > 0) {
              arraylist.add(new Predicate<Entity>() {
-@@ -281,8 +283,8 @@ public class PlayerSelector {
+@@ -260,6 +282,10 @@ public class PlayerSelector {
+ 
                      return true;
                  }
- 
--                public boolean apply(Object object) {
--                    return this.a((Entity) object);
++
 +                public boolean apply(Entity object) {
 +                    return this.a(object);
-                 }
++                }
              });
          }
-@@ -292,7 +294,7 @@ public class PlayerSelector {
+ 
+@@ -268,7 +294,7 @@ public class PlayerSelector {
  
      private static List<Predicate<Entity>> f(Map<String, String> map) {
          ArrayList arraylist = Lists.newArrayList();
@@ -1637,7 +1577,7 @@ index b5ba44da1be4e0bfd90e48c60f07762c0f10b408..0e030f904832fd75f13096f32f9085d3
          final boolean flag = s != null && s.startsWith("!");
  
          if (flag) {
-@@ -300,13 +302,14 @@ public class PlayerSelector {
+@@ -276,9 +302,14 @@ public class PlayerSelector {
          }
  
          if (s != null) {
@@ -1646,71 +1586,68 @@ index b5ba44da1be4e0bfd90e48c60f07762c0f10b408..0e030f904832fd75f13096f32f9085d3
                  public boolean a(Entity entity) {
 -                    return entity.getName().equals(s) != flag;
 +                    return entity.getName().equals(sFinal) != flag;
-                 }
- 
--                public boolean apply(Object object) {
--                    return this.a((Entity) object);
++                }
++
 +                public boolean apply(Entity object) {
 +                    return this.a(object);
                  }
              });
          }
-@@ -330,8 +333,8 @@ public class PlayerSelector {
+@@ -301,6 +332,10 @@ public class PlayerSelector {
+ 
                      return (i < 0 || i1 >= k) && (j < 0 || i1 <= l);
                  }
- 
--                public boolean apply(Object object) {
--                    return this.a((Entity) object);
++
 +                public boolean apply(Entity object) {
 +                    return this.a(object);
-                 }
++                }
              });
          }
-@@ -353,8 +356,8 @@ public class PlayerSelector {
+ 
+@@ -320,6 +355,10 @@ public class PlayerSelector {
+ 
                      return i > j ? k >= i || k <= j : k >= i && k <= j;
                  }
- 
--                public boolean apply(Object object) {
--                    return this.a((Entity) object);
++
 +                public boolean apply(Entity object) {
 +                    return this.a(object);
-                 }
++                }
              });
          }
-@@ -370,8 +373,8 @@ public class PlayerSelector {
+ 
+@@ -333,6 +372,10 @@ public class PlayerSelector {
+ 
                      return k > l ? i1 >= k || i1 <= l : i1 >= k && i1 <= l;
                  }
- 
--                public boolean apply(Object object) {
--                    return this.a((Entity) object);
++
 +                public boolean apply(Entity object) {
 +                    return this.a(object);
-                 }
++                }
              });
          }
-@@ -423,8 +426,8 @@ public class PlayerSelector {
+ 
+@@ -382,6 +425,10 @@ public class PlayerSelector {
+                         public boolean a(Entity entity) {
                              return entity.locX >= axisalignedbb1.a && entity.locY >= axisalignedbb1.b && entity.locZ >= axisalignedbb1.c ? entity.locX < axisalignedbb1.d && entity.locY < axisalignedbb1.e && entity.locZ < axisalignedbb1.f : false;
                          }
- 
--                        public boolean apply(Object object) {
--                            return this.a((Entity) object);
++
 +                        public boolean apply(Entity object) {
 +                            return this.a(object);
-                         }
++                        }
                      };
  
-@@ -457,8 +460,8 @@ public class PlayerSelector {
+                     arraylist.addAll(world.b(oclass, Predicates.and(predicate1, predicate2)));
+@@ -412,13 +459,17 @@ public class PlayerSelector {
+                 public int a(Entity entity, Entity entity1) {
                      return ComparisonChain.start().compare(entity.b(blockposition), entity1.b(blockposition)).result();
                  }
- 
--                public int compare(Object object, Object object1) {
--                    return this.a((Entity) object, (Entity) object1);
++
 +                public int compare(Entity object, Entity object1) {
 +                    return this.a(object, object1);
-                 }
++                }
              });
          }
-@@ -466,7 +469,7 @@ public class PlayerSelector {
+ 
          Entity entity = icommandlistener.f();
  
          if (entity != null && oclass.isAssignableFrom(entity.getClass()) && i == 1 && list.contains(entity) && !"r".equals(s)) {
@@ -1787,99 +1724,98 @@ index 2b142f101cd7cfb9780eef5c8e13bc96dc6e12e9..3602e3470c90cfe2de30db33e466d8e9
  
          for (Map map : collection) {
 diff --git a/src/main/java/net/minecraft/server/ScoreboardScore.java b/src/main/java/net/minecraft/server/ScoreboardScore.java
-index 707d9c0377823a23f3bb3a8eb11f9399d2a13537..f1bf033f220760d469b35d0625298718148490e9 100644
+index a163c9c5fc7551d17ced10c9a0b2472bb6ea542e..f1bf033f220760d469b35d0625298718148490e9 100644
 --- a/src/main/java/net/minecraft/server/ScoreboardScore.java
 +++ b/src/main/java/net/minecraft/server/ScoreboardScore.java
-@@ -10,8 +10,8 @@ public class ScoreboardScore {
+@@ -9,6 +9,10 @@ public class ScoreboardScore {
+         public int a(ScoreboardScore scoreboardscore, ScoreboardScore scoreboardscore1) {
              return scoreboardscore.getScore() > scoreboardscore1.getScore() ? 1 : (scoreboardscore.getScore() < scoreboardscore1.getScore() ? -1 : scoreboardscore1.getPlayerName().compareToIgnoreCase(scoreboardscore.getPlayerName()));
          }
- 
--        public int compare(Object object, Object object1) {
--            return this.a((ScoreboardScore) object, (ScoreboardScore) object1);
++
 +        public int compare(ScoreboardScore object, ScoreboardScore object1) {
 +            return this.a(object, object1);
-         }
++        }
      };
      private final Scoreboard b;
+     private final ScoreboardObjective c;
 diff --git a/src/main/java/net/minecraft/server/ServerPing.java b/src/main/java/net/minecraft/server/ServerPing.java
-index b4963e9663810a4c5d7c59a0663ee1bbea129b2f..0205f779b067771798d152ddd7edb37451b624c5 100644
+index 2076d45357007ff482cb4b0f20d66884327c5bc9..0205f779b067771798d152ddd7edb37451b624c5 100644
 --- a/src/main/java/net/minecraft/server/ServerPing.java
 +++ b/src/main/java/net/minecraft/server/ServerPing.java
-@@ -131,11 +131,11 @@ public class ServerPing {
+@@ -130,6 +130,14 @@ public class ServerPing {
+ 
                  return jsonobject;
              }
- 
--            public JsonElement serialize(Object object, Type type, JsonSerializationContext jsonserializationcontext) {
--                return this.a((ServerPing.ServerPingPlayerSample) object, type, jsonserializationcontext);
++
 +            public JsonElement serialize(ServerPing.ServerPingPlayerSample object, Type type, JsonSerializationContext jsonserializationcontext) {
 +                return this.a(object, type, jsonserializationcontext);
-             }
- 
--            public Object deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
++            }
++
 +            public ServerPing.ServerPingPlayerSample deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
-                 return this.a(jsonelement, type, jsondeserializationcontext);
-             }
++                return this.a(jsonelement, type, jsondeserializationcontext);
++            }
          }
-@@ -177,11 +177,11 @@ public class ServerPing {
+     }
+ 
+@@ -168,6 +176,14 @@ public class ServerPing {
+                 jsonobject.addProperty("protocol", serverping_serverdata.b());
                  return jsonobject;
              }
- 
--            public JsonElement serialize(Object object, Type type, JsonSerializationContext jsonserializationcontext) {
--                return this.a((ServerPing.ServerData) object, type, jsonserializationcontext);
++
 +            public JsonElement serialize(ServerPing.ServerData object, Type type, JsonSerializationContext jsonserializationcontext) {
 +                return this.a(object, type, jsonserializationcontext);
-             }
- 
--            public Object deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
++            }
++
 +            public ServerPing.ServerData deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
-                 return this.a(jsonelement, type, jsondeserializationcontext);
-             }
++                return this.a(jsonelement, type, jsondeserializationcontext);
++            }
          }
-@@ -236,11 +236,11 @@ public class ServerPing {
+     }
+ 
+@@ -219,5 +235,13 @@ public class ServerPing {
+ 
              return jsonobject;
          }
- 
--        public JsonElement serialize(Object object, Type type, JsonSerializationContext jsonserializationcontext) {
--            return this.a((ServerPing) object, type, jsonserializationcontext);
++
 +        public JsonElement serialize(ServerPing object, Type type, JsonSerializationContext jsonserializationcontext) {
 +            return this.a(object, type, jsonserializationcontext);
-         }
- 
--        public Object deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
++        }
++
 +        public ServerPing deserialize(JsonElement jsonelement, Type type, JsonDeserializationContext jsondeserializationcontext) throws JsonParseException {
-             return this.a(jsonelement, type, jsondeserializationcontext);
-         }
++            return this.a(jsonelement, type, jsondeserializationcontext);
++        }
      }
+ }
 diff --git a/src/main/java/net/minecraft/server/ShapeDetector.java b/src/main/java/net/minecraft/server/ShapeDetector.java
-index 1409355db2f4f55ee19c89a40c531a5bbb4f355d..e5f1083d857d25ef8a65e6ccd96d714a8838430a 100644
+index 3d14db7afe303768367851d004437f0535120e73..e5f1083d857d25ef8a65e6ccd96d714a8838430a 100644
 --- a/src/main/java/net/minecraft/server/ShapeDetector.java
 +++ b/src/main/java/net/minecraft/server/ShapeDetector.java
-@@ -103,8 +103,8 @@ public class ShapeDetector {
+@@ -102,6 +102,10 @@ public class ShapeDetector {
+         public ShapeDetectorBlock a(BlockPosition blockposition) throws Exception {
              return new ShapeDetectorBlock(this.a, blockposition, this.b);
          }
- 
--        public Object load(Object object) throws Exception {
--            return this.a((BlockPosition) object);
++
 +        public ShapeDetectorBlock load(BlockPosition object) throws Exception {
 +            return this.a(object);
-         }
++        }
      }
  
+     public static class ShapeDetectorCollection {
 diff --git a/src/main/java/net/minecraft/server/ShapeDetectorBlock.java b/src/main/java/net/minecraft/server/ShapeDetectorBlock.java
-index 06535925388d1f3a13352f554421f220e5927203..e14873f09dd5565848abba4b1ecdc16d13fa04c3 100644
+index 70e6df87bc68ea011e7945b4ede65ae4c46fdb6f..e14873f09dd5565848abba4b1ecdc16d13fa04c3 100644
 --- a/src/main/java/net/minecraft/server/ShapeDetectorBlock.java
 +++ b/src/main/java/net/minecraft/server/ShapeDetectorBlock.java
-@@ -44,8 +44,8 @@ public class ShapeDetectorBlock {
+@@ -43,6 +43,10 @@ public class ShapeDetectorBlock {
+             public boolean a(ShapeDetectorBlock shapedetectorblock) {
                  return shapedetectorblock != null && predicate.apply(shapedetectorblock.a());
              }
- 
--            public boolean apply(Object object) {
--                return this.a((ShapeDetectorBlock) object);
++
 +            public boolean apply(ShapeDetectorBlock object) {
 +                return this.a(object);
-             }
++            }
          };
      }
+ }
 diff --git a/src/main/java/net/minecraft/server/ShapeDetectorBuilder.java b/src/main/java/net/minecraft/server/ShapeDetectorBuilder.java
 index dadbe7f2fe2e54ca9b1600a4f176d82228aaae69..a21b873afc962b63d128d7e3e00501084a912628 100644
 --- a/src/main/java/net/minecraft/server/ShapeDetectorBuilder.java
@@ -1907,18 +1843,17 @@ index c42975142f99549e02bd34a2f021afe241aa7e18..4f1bafef7e26f530c3bff6a0dd88f1f1
          for (IRecipe irecipe : CraftingManager.getInstance().getRecipes()) {
              if (irecipe.b() != null) {
 diff --git a/src/main/java/net/minecraft/server/WhiteList.java b/src/main/java/net/minecraft/server/WhiteList.java
-index 7b634e34c20f0258f5ce43247746d9ea7869af01..63eaa8f67a24745eec345c99d259b2fd21cfacd7 100644
+index 88d424d2e5cc6fec1a4189336c4d2ffe26865f7e..f7f8bf93bca1fe1fda89051af733c9103791e98a 100644
 --- a/src/main/java/net/minecraft/server/WhiteList.java
 +++ b/src/main/java/net/minecraft/server/WhiteList.java
-@@ -46,7 +46,7 @@ public class WhiteList extends JsonList<GameProfile, WhiteListEntry> {
-     }
+@@ -44,4 +44,8 @@ public class WhiteList extends JsonList<GameProfile, WhiteListEntry> {
  
-     @Override
--    protected String a(Object object) {
--        return this.b((GameProfile) object);
+         return null;
+     }
++
 +    protected String a(GameProfile object) {
 +        return this.b(object);
-     }
++    }
  }
 diff --git a/src/main/java/net/minecraft/server/WorldGenFlatInfo.java b/src/main/java/net/minecraft/server/WorldGenFlatInfo.java
 index 67dcf86f83ac604ee52715ce4e5a8dd3fdb06335..c12ba917f00b33bf5789637ded05de691fdd6e8c 100644
