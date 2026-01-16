@@ -283,6 +283,62 @@ index 44e9a28f3c4f5ee2fae1110c492c815dde63189c..534b5bf48e8191deb722122114f679fa
      });
  
      protected BlockTorch() {
+diff --git a/src/main/java/net/minecraft/server/ChatComponentScore.java b/src/main/java/net/minecraft/server/ChatComponentScore.java
+index 51d186baba6a418ab996b367f5c9894f03937c25..50897a91c8e9982adf3a3505936ef6c4e71c6822 100644
+--- a/src/main/java/net/minecraft/server/ChatComponentScore.java
++++ b/src/main/java/net/minecraft/server/ChatComponentScore.java
+@@ -73,4 +73,9 @@ public class ChatComponentScore extends ChatBaseComponent {
+     public String toString() {
+         return "ScoreComponent{name='" + this.b + '\'' + "objective='" + this.c + '\'' + ", siblings=" + this.a + ", style=" + this.getChatModifier() + '}';
+     }
++
++    @Override
++    public IChatBaseComponent f() {
++        return this.i();
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/ChatComponentSelector.java b/src/main/java/net/minecraft/server/ChatComponentSelector.java
+index c24054a557b810ce453b3369ac2873b018112b8a..f81d31a2c83d76c14aae681e044d1af40e03f831 100644
+--- a/src/main/java/net/minecraft/server/ChatComponentSelector.java
++++ b/src/main/java/net/minecraft/server/ChatComponentSelector.java
+@@ -46,4 +46,9 @@ public class ChatComponentSelector extends ChatBaseComponent {
+     public String toString() {
+         return "SelectorComponent{pattern='" + this.b + '\'' + ", siblings=" + this.a + ", style=" + this.getChatModifier() + '}';
+     }
++
++    @Override
++    public IChatBaseComponent f() {
++        return this.h();
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/ChatComponentText.java b/src/main/java/net/minecraft/server/ChatComponentText.java
+index 23c0de868fbbc9edfbd39408fecc2831a7a25f74..ebba5b1aa196579be88469b0e0bef504366ad1ed 100644
+--- a/src/main/java/net/minecraft/server/ChatComponentText.java
++++ b/src/main/java/net/minecraft/server/ChatComponentText.java
+@@ -46,4 +46,9 @@ public class ChatComponentText extends ChatBaseComponent {
+     public String toString() {
+         return "TextComponent{text='" + this.b + '\'' + ", siblings=" + this.a + ", style=" + this.getChatModifier() + '}';
+     }
++
++    @Override
++    public IChatBaseComponent f() {
++        return this.h();
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/ChatMessage.java b/src/main/java/net/minecraft/server/ChatMessage.java
+index e6bb21e523d75fd21c6260fe63fadce08b91b0f2..da42c8f0f254960adc076e2ec9f2bee326e41022 100644
+--- a/src/main/java/net/minecraft/server/ChatMessage.java
++++ b/src/main/java/net/minecraft/server/ChatMessage.java
+@@ -221,4 +221,9 @@ public class ChatMessage extends ChatBaseComponent {
+     public Object[] j() {
+         return this.e;
+     }
++
++    @Override
++    public IChatBaseComponent f() {
++        return this.h();
++    }
+ }
 diff --git a/src/main/java/net/minecraft/server/CommandAbstract.java b/src/main/java/net/minecraft/server/CommandAbstract.java
 index 050fc29b244d2de1eb02914945a99b908f7207f5..e016f5d7a8a450dd5c916b4fe3f78a0c168fcd2b 100644
 --- a/src/main/java/net/minecraft/server/CommandAbstract.java
@@ -1842,6 +1898,31 @@ index c42975142f99549e02bd34a2f021afe241aa7e18..4f1bafef7e26f530c3bff6a0dd88f1f1
  
          for (IRecipe irecipe : CraftingManager.getInstance().getRecipes()) {
              if (irecipe.b() != null) {
+diff --git a/src/main/java/net/minecraft/server/TileEntityMobSpawnerData.java b/src/main/java/net/minecraft/server/TileEntityMobSpawnerData.java
+index 458dcc71c572d8b9d5337a43a02af88a5b95f5eb..b8c8ae7eca4903c9beb07653404736d28fee7c99 100644
+--- a/src/main/java/net/minecraft/server/TileEntityMobSpawnerData.java
++++ b/src/main/java/net/minecraft/server/TileEntityMobSpawnerData.java
+@@ -4,6 +4,7 @@ public class TileEntityMobSpawnerData extends WeightedRandom.WeightedRandomChoic
+ 
+     private final NBTTagCompound c;
+     private final String d;
++    final MobSpawnerAbstract b;
+ 
+     public TileEntityMobSpawnerData(MobSpawnerAbstract mobspawnerabstract, NBTTagCompound nbttagcompound) {
+         this(mobspawnerabstract, nbttagcompound.getCompound("Properties"), nbttagcompound.getString("Type"), nbttagcompound.getInt("Weight"));
+@@ -36,4 +37,12 @@ public class TileEntityMobSpawnerData extends WeightedRandom.WeightedRandomChoic
+         nbttagcompound.setInt("Weight", this.a);
+         return nbttagcompound;
+     }
++
++    static String a(TileEntityMobSpawnerData tileentitymobspawnerdata) {
++        return tileentitymobspawnerdata.d;
++    }
++
++    static NBTTagCompound b(TileEntityMobSpawnerData tileentitymobspawnerdata) {
++        return tileentitymobspawnerdata.c;
++    }
+ }
 diff --git a/src/main/java/net/minecraft/server/WhiteList.java b/src/main/java/net/minecraft/server/WhiteList.java
 index 88d424d2e5cc6fec1a4189336c4d2ffe26865f7e..f7f8bf93bca1fe1fda89051af733c9103791e98a 100644
 --- a/src/main/java/net/minecraft/server/WhiteList.java
