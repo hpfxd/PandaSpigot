@@ -79,8 +79,6 @@ if [ ! -d "$pandadecompiledir/net/minecraft/server" ]; then
     cd "$basedir"
     set +e
     java -jar "$basedir/bin/fernflower.jar" -dgs=1 -hdc=0 -asc=1 -udv=0 -aoa=1 "$classdir" "$pandadecompiledir"
-    # TODO 2 (In the future): Adding the guava library to Fernflower should fix the problem of some lists not having parameters, but it doesn't solve the problem and adding the library causes NPEs (NullPointerExceptions). I'll look into this further soon and report back. If they ever fix it, we can add libraries for better decompilation output.
-    # TODO 3 (In the future): Add the -rsy option which automatically removes synthetic methods.
     if [ "$?" != "0" ]; then
         rm -rf "$pandadecompiledir/net"
         echo "Failed to decompile classes."

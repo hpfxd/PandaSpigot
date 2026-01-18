@@ -748,36 +748,129 @@ index b04dadf0352a76b1e2b2e0432d1861e2e2c2d481..683e86c5f92e515ca65471c8a00c271c
      }
  }
 diff --git a/src/main/java/net/minecraft/server/GenLayer.java b/src/main/java/net/minecraft/server/GenLayer.java
-index 47d120bf5e70a79f5604be48d3459740004fea83..be00abc9a7f828c3a0d88341c59a2f2de9153cd0 100644
+index 47d120bf5e70a79f5604be48d3459740004fea83..d31285f14494e08e3c10974eec7b583ae2cd44bd 100644
 --- a/src/main/java/net/minecraft/server/GenLayer.java
 +++ b/src/main/java/net/minecraft/server/GenLayer.java
-@@ -30,7 +30,7 @@ public abstract class GenLayer {
-         genlayerzoom1 = new GenLayerZoom(2003L, genlayerzoom1);
-         GenLayerIsland genlayerisland3 = new GenLayerIsland(4L, genlayerzoom1);
-         GenLayerMushroomIsland genlayermushroomisland = new GenLayerMushroomIsland(5L, genlayerisland3);
--        GenLayerDeepOcean genlayerdeepocean = new GenLayerDeepOcean(4L, genlayermushroomisland);
-+        GenLayer genlayerdeepocean = new GenLayerDeepOcean(4L, genlayermushroomisland);
+@@ -10,29 +10,27 @@ public abstract class GenLayer {
+     protected long b;
  
-         genlayerdeepocean = GenLayerZoom.b(1000L, genlayerdeepocean, 0);
+     public static GenLayer[] a(long i, WorldType worldtype, String s) {
+-        LayerIsland layerisland = new LayerIsland(1L);
+-        GenLayerZoomFuzzy genlayerzoomfuzzy = new GenLayerZoomFuzzy(2000L, layerisland);
+-        GenLayerIsland genlayerisland = new GenLayerIsland(1L, genlayerzoomfuzzy);
+-        GenLayerZoom genlayerzoom = new GenLayerZoom(2001L, genlayerisland);
+-        GenLayerIsland genlayerisland1 = new GenLayerIsland(2L, genlayerzoom);
+-
+-        genlayerisland1 = new GenLayerIsland(50L, genlayerisland1);
+-        genlayerisland1 = new GenLayerIsland(70L, genlayerisland1);
+-        GenLayerIcePlains genlayericeplains = new GenLayerIcePlains(2L, genlayerisland1);
+-        GenLayerTopSoil genlayertopsoil = new GenLayerTopSoil(2L, genlayericeplains);
+-        GenLayerIsland genlayerisland2 = new GenLayerIsland(3L, genlayertopsoil);
+-        GenLayerSpecial genlayerspecial = new GenLayerSpecial(2L, genlayerisland2, GenLayerSpecial.EnumGenLayerSpecial.COOL_WARM);
+-
+-        genlayerspecial = new GenLayerSpecial(2L, genlayerspecial, GenLayerSpecial.EnumGenLayerSpecial.HEAT_ICE);
+-        genlayerspecial = new GenLayerSpecial(3L, genlayerspecial, GenLayerSpecial.EnumGenLayerSpecial.SPECIAL);
+-        GenLayerZoom genlayerzoom1 = new GenLayerZoom(2002L, genlayerspecial);
+-
+-        genlayerzoom1 = new GenLayerZoom(2003L, genlayerzoom1);
+-        GenLayerIsland genlayerisland3 = new GenLayerIsland(4L, genlayerzoom1);
+-        GenLayerMushroomIsland genlayermushroomisland = new GenLayerMushroomIsland(5L, genlayerisland3);
+-        GenLayerDeepOcean genlayerdeepocean = new GenLayerDeepOcean(4L, genlayermushroomisland);
+-
+-        genlayerdeepocean = GenLayerZoom.b(1000L, genlayerdeepocean, 0);
++        GenLayer genlayer = new LayerIsland(1L);
++        genlayer = new GenLayerZoomFuzzy(2000L, genlayer);
++        genlayer = new GenLayerIsland(1L, genlayer);
++        genlayer = new GenLayerZoom(2001L, genlayer);
++        genlayer = new GenLayerIsland(2L, genlayer);
++        genlayer = new GenLayerIsland(50L, genlayer);
++        genlayer = new GenLayerIsland(70L, genlayer);
++        genlayer = new GenLayerIcePlains(2L, genlayer);
++        genlayer = new GenLayerTopSoil(2L, genlayer);
++        genlayer = new GenLayerIsland(3L, genlayer);
++        genlayer = new GenLayerSpecial(2L, genlayer, GenLayerSpecial.EnumGenLayerSpecial.COOL_WARM);
++        genlayer = new GenLayerSpecial(2L, genlayer, GenLayerSpecial.EnumGenLayerSpecial.HEAT_ICE);
++        genlayer = new GenLayerSpecial(3L, genlayer, GenLayerSpecial.EnumGenLayerSpecial.SPECIAL);
++        genlayer = new GenLayerZoom(2002L, genlayer);
++        genlayer = new GenLayerZoom(2003L, genlayer);
++        genlayer = new GenLayerIsland(4L, genlayer);
++        genlayer = new GenLayerMushroomIsland(5L, genlayer);
++        genlayer = new GenLayerDeepOcean(4L, genlayer);
++
++        genlayer = GenLayerZoom.b(1000L, genlayer, 0);
++
          CustomWorldSettingsFinal customworldsettingsfinal = null;
-@@ -48,13 +48,13 @@ public abstract class GenLayer {
+         int j = 4;
+         int k = j;
+@@ -47,40 +45,46 @@ public abstract class GenLayer {
+             j = 6;
          }
  
-         GenLayer genlayer = GenLayerZoom.b(1000L, genlayerdeepocean, 0);
+-        GenLayer genlayer = GenLayerZoom.b(1000L, genlayerdeepocean, 0);
 -        GenLayerCleaner genlayercleaner = new GenLayerCleaner(100L, genlayer);
 -        GenLayerBiome genlayerbiome = new GenLayerBiome(200L, genlayerdeepocean, worldtype, s);
-+        GenLayer genlayercleaner = new GenLayerCleaner(100L, genlayer);
-+        GenLayer genlayerbiome = new GenLayerBiome(200L, genlayerdeepocean, worldtype, s);
++        GenLayer genlayer1 = genlayer;
++        genlayer1 = GenLayerZoom.b(1000L, genlayer1, 0);
++        genlayer1 = new GenLayerCleaner(100L, genlayer1);
++
++        GenLayer genlayer2 = new GenLayerBiome(200L, genlayer, worldtype, s);
++        genlayer2 = GenLayerZoom.b(1000L, genlayer2, 2);
++        genlayer2 = new GenLayerDesert(1000L, genlayer2);
  
-         genlayerbiome = GenLayerZoom.b(1000L, genlayerbiome, 2);
-         GenLayerDesert genlayerdesert = new GenLayerDesert(1000L, genlayerbiome);
-         GenLayer genlayer1 = GenLayerZoom.b(1000L, genlayercleaner, 2);
+-        genlayerbiome = GenLayerZoom.b(1000L, genlayerbiome, 2);
+-        GenLayerDesert genlayerdesert = new GenLayerDesert(1000L, genlayerbiome);
+-        GenLayer genlayer1 = GenLayerZoom.b(1000L, genlayercleaner, 2);
 -        GenLayerRegionHills genlayerregionhills = new GenLayerRegionHills(1000L, genlayerdesert, genlayer1);
-+        GenLayer genlayerregionhills = new GenLayerRegionHills(1000L, genlayerdesert, genlayer1);
++        GenLayer genlayer3 = GenLayerZoom.b(1000L, genlayer1, 2);
++        genlayer2 = new GenLayerRegionHills(1000L, genlayer2, genlayer3);
  
-         genlayercleaner = GenLayerZoom.b(1000L, genlayercleaner, 2);
-         genlayercleaner = GenLayerZoom.b(1000L, genlayercleaner, k);
-@@ -153,7 +153,7 @@ public abstract class GenLayer {
+-        genlayercleaner = GenLayerZoom.b(1000L, genlayercleaner, 2);
+-        genlayercleaner = GenLayerZoom.b(1000L, genlayercleaner, k);
+-        GenLayerRiver genlayerriver = new GenLayerRiver(1L, genlayercleaner);
+-        GenLayerSmooth genlayersmooth = new GenLayerSmooth(1000L, genlayerriver);
++        genlayer1 = GenLayerZoom.b(1000L, genlayer1, 2);
++        genlayer1 = GenLayerZoom.b(1000L, genlayer1, k);
++        genlayer1 = new GenLayerRiver(1L, genlayer1);
++        genlayer1 = new GenLayerSmooth(1000L, genlayer1);
+ 
+-        genlayerregionhills = new GenLayerPlains(1001L, genlayerregionhills);
++        genlayer2 = new GenLayerPlains(1001L, genlayer2);
+ 
+         for (int l = 0; l < j; ++l) {
+-            genlayerregionhills = new GenLayerZoom((long) (1000 + l), genlayerregionhills);
++            genlayer2 = new GenLayerZoom(1000L + l, genlayer2);
++
+             if (l == 0) {
+-                genlayerregionhills = new GenLayerIsland(3L, genlayerregionhills);
++                genlayer2 = new GenLayerIsland(3L, genlayer2);
+             }
+ 
+             if (l == 1 || j == 1) {
+-                genlayerregionhills = new GenLayerMushroomShore(1000L, genlayerregionhills);
++                genlayer2 = new GenLayerMushroomShore(1000L, genlayer2);
+             }
+         }
+ 
+-        GenLayerSmooth genlayersmooth1 = new GenLayerSmooth(1000L, genlayerregionhills);
+-        GenLayerRiverMix genlayerrivermix = new GenLayerRiverMix(100L, genlayersmooth1, genlayersmooth);
+-        GenLayerZoomVoronoi genlayerzoomvoronoi = new GenLayerZoomVoronoi(10L, genlayerrivermix);
++        genlayer2 = new GenLayerSmooth(1000L, genlayer2);
++        genlayer2 = new GenLayerRiverMix(100L, genlayer2, genlayer1);
++
++        GenLayer genlayer4 = genlayer2;
++        GenLayer genlayer5 = new GenLayerZoomVoronoi(10L, genlayer2);
++
++        genlayer4.a(i);
++        genlayer5.a(i);
+ 
+-        ((GenLayer) genlayerrivermix).a(i);
+-        ((GenLayer) genlayerzoomvoronoi).a(i);
+-        return new GenLayer[]{genlayerrivermix, genlayerzoomvoronoi, genlayerrivermix};
++        return new GenLayer[]{genlayer4, genlayer5, genlayer4};
+     }
+ 
+     public GenLayer(long i) {
+@@ -153,7 +157,7 @@ public abstract class GenLayer {
                          return String.valueOf(biomebase);
                      }
  
@@ -786,7 +879,7 @@ index 47d120bf5e70a79f5604be48d3459740004fea83..be00abc9a7f828c3a0d88341c59a2f2d
                          return this.a();
                      }
                  });
-@@ -162,7 +162,7 @@ public abstract class GenLayer {
+@@ -162,7 +166,7 @@ public abstract class GenLayer {
                          return String.valueOf(biomebase1);
                      }
  
@@ -795,7 +888,7 @@ index 47d120bf5e70a79f5604be48d3459740004fea83..be00abc9a7f828c3a0d88341c59a2f2d
                          return this.a();
                      }
                  });
-@@ -182,6 +182,6 @@ public abstract class GenLayer {
+@@ -182,6 +186,6 @@ public abstract class GenLayer {
      }
  
      protected int b(int i, int j, int k, int l) {
