@@ -79,7 +79,7 @@ Building, patching, and compiling are all done through the main `panda` script.
 PandaSpigot can be built by running `./panda jar`, and you will find the final Paperclip jar in `paperclip.jar`
 
 ## Contributing
-You can mostly follow [Paper's contributing guide](https://github.com/PaperMC/Paper/blob/ver/1.16.5/CONTRIBUTING.md), just remember:
+You can mostly follow [Paper's contributing guide](https://github.com/PaperMC/Paper-archive/blob/ver/1.16.5/CONTRIBUTING.md), just remember:
 - Multi-line changes start with `// PandaSpigot start` and end with `// PandaSpigot end`
 - If the change isn't obvious, add a small explanation like this: `// PandaSpigot start - reason`
 - One-line changes should have `// PandaSpigot` at the end of the line.
