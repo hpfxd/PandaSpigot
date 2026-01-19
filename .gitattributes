@@ -2,7 +2,8 @@
 
 panda text eol=lf
 *.sh text eol=lf
-gradlew text eol=lf
+gradlew text eol=lf linguist-generated
+gradlew.bat text eol=crlf linguist-generated
 *.bat text eol=crlf
 
 *.jar binary

@@ -1,7 +1,7 @@
 plugins {
     id("pandaspigot.conventions")
     id("paperclip")
-    id("com.gradleup.shadow") version "9.0.0-beta7"
+    id("com.gradleup.shadow") version "9.3.1"
 }
 
 dependencies {
