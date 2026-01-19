@@ -5,7 +5,7 @@ Subject: [PATCH] PandaSpigot Configuration
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index cc6d4cb8976256b8129fb00f52dee50a00a34404..2d7fb97266bbb84f63816937ad66faac8f0d9051 100644
+index c98bd1126fb701db156529f00de5f2bdf7c064bc..acae72c9b42d3c01fe569866bc6905f55f6961eb 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -12,6 +12,12 @@ repositories {
@@ -21,8 +21,8 @@ index cc6d4cb8976256b8129fb00f52dee50a00a34404..2d7fb97266bbb84f63816937ad66faac
      // Minecraft libraries:
      implementation("io.netty:netty-all:4.1.130.Final") // PandaSpigot - Update Netty to 4.1.x
      implementation("com.mojang:authlib:1.5.21")
-@@ -53,6 +59,13 @@ tasks {
-         mergeServiceFiles()
+@@ -52,6 +58,13 @@ tasks {
+     shadowJar {
          archiveClassifier.set("unmapped")
          append("META-INF/io.netty.versions.properties")
 +        // PandaSpigot start - Configuration
@@ -33,8 +33,8 @@ index cc6d4cb8976256b8129fb00f52dee50a00a34404..2d7fb97266bbb84f63816937ad66faac
 +        ).forEach { relocate(it, "com.hpfxd.pandaspigot.libs.$it") }
 +        // PandaSpigot end
  
-         val cbLibsPkg = "org.bukkit.craftbukkit.libs"
- 
+         relocate("org.bukkit.craftbukkit", "org.bukkit.craftbukkit.v${minecraftVersion}") {
+             exclude("org.bukkit.craftbukkit.Main*") // don't relocate main class
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..f021fd0c7622a788b809ecbf896162912ab4b0d0

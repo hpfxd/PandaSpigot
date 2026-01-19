@@ -5,7 +5,7 @@ Subject: [PATCH] Adventure API
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 83dcd2285e088f8620831e20893c44a122779daf..8c8aa2274fd97c9d3a2f24700f58e045e984f75d 100644
+index db5e7e22b4856412e9db0787ba6edd88192006c1..6d4fa7beafda08917d66655955da42fea16b286f 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -4,6 +4,7 @@ plugins {
