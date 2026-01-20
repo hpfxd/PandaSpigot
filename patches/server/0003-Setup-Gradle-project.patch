@@ -6,7 +6,7 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..c3959538271a889b657496d195218defd8e3e2c8
+index 0000000000000000000000000000000000000000..3723769acc78fe26284145a0fcb36515022c618a
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,131 @@
@@ -69,12 +69,12 @@ index 0000000000000000000000000000000000000000..c3959538271a889b657496d195218def
 +            exclude("org.bukkit.craftbukkit.Main*") // don't relocate main class
 +        }
 +
-+        val cbLibsPkg = "org.bukkit.craftbukkit.libs"
-+
-+        relocate("joptsimple", "$cbLibsPkg.joptsimple")
-+        relocate("jline", "$cbLibsPkg.jline")
-+        relocate("org.ibex", "$cbLibsPkg.org.ibex")
-+        relocate("org.gjt", "$cbLibsPkg.org.gjt")
++        arrayOf(
++            "joptsimple",
++            "jline",
++            "org.ibex",
++            "org.gjt",
++        ).forEach { relocate(it, "org.bukkit.craftbukkit.libs.$it") }
 +
 +        relocate("net.minecraft.server", "net.minecraft.server.v${minecraftVersion}")
 +
