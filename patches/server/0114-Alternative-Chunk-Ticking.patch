@@ -1,0 +1,253 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Tue, 23 Sep 2025 15:34:43 -0300
+Subject: [PATCH] Alternative Chunk Ticking
+
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index 3cb8d99311e2fa9a4a1173f6ef9e8dee957b20fa..cf5cd60a49d3b7f08a5aff8d8a2d1c1e30546d83 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -1209,6 +1209,10 @@ public class Chunk {
+         // Spigot End
+     }
+ 
++    public boolean r() {
++        return this.p;
++    }
++
+     public ChunkCoordIntPair j() {
+         return this.chunkCoords; // PandaSpigot
+     }
+diff --git a/src/main/java/net/minecraft/server/ChunkCoordIntPair.java b/src/main/java/net/minecraft/server/ChunkCoordIntPair.java
+index 652c07975c7b3a3c5e3dc68cb60ca5fc52e1848c..5d1933b8f8d6df2ea8296ac4511c940886b37a2b 100644
+--- a/src/main/java/net/minecraft/server/ChunkCoordIntPair.java
++++ b/src/main/java/net/minecraft/server/ChunkCoordIntPair.java
+@@ -33,6 +33,15 @@ public class ChunkCoordIntPair {
+         }
+     }
+ 
++    public double distanceToSq(Entity entity) {
++        double centerX = this.x * 16 + 8;
++        double centerZ = this.z * 16 + 8;
++        double dx = centerX - entity.locX;
++        double dz = centerZ - entity.locZ;
++
++        return dx * dx + dz * dz;
++    }
++
+     public int a() {
+         return (this.x << 4) + 8;
+     }
+diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+index 1c9dbe212cfbeb571f1e09f224fb7ed905dd475b..ec0bc88bc49707930567aada903570017b2208de 100644
+--- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+@@ -1,5 +1,6 @@
+ package net.minecraft.server;
+ 
++import com.google.common.collect.AbstractIterator;
+ import com.google.common.collect.Lists;
+ import java.util.ArrayList;
+ import java.util.Iterator;
+@@ -17,6 +18,8 @@ import java.util.HashMap;
+ 
+ public class PlayerChunkMap {
+ 
++    private static final java.util.function.Predicate<EntityPlayer> NON_SPECTATOR = player ->
++        player != null && !player.isSpectator();
+     private static final Logger a = LogManager.getLogger();
+     private final WorldServer world;
+     private final List<EntityPlayer> managedPlayers = Lists.newArrayList();
+@@ -37,6 +40,39 @@ public class PlayerChunkMap {
+         return this.world;
+     }
+ 
++    public Iterator<Chunk> getActiveChunks() {
++        final Iterator<PlayerChunk> iterator = this.f.iterator();
++
++        return new AbstractIterator<Chunk>() {
++            @Override
++            protected Chunk computeNext() {
++                while (iterator.hasNext()) {
++                    PlayerChunk playerChunk = iterator.next();
++                    Chunk chunk = playerChunk.getChunk();
++
++                    if (chunk == null) {
++                        continue;
++                    }
++
++                    if (!chunk.u() && chunk.isDone()) { // Já tem luz e está pronto
++                        return chunk;
++                    }
++
++                    if (!chunk.r()) {
++                        return chunk;
++                    }
++
++                    if (!playerChunk.hasPlayersNearby(128.0D, NON_SPECTATOR)) {
++                        continue;
++                    }
++
++                    return chunk;
++                }
++                return endOfData();
++            }
++        };
++    }
++
+     public void flush() {
+         long i = this.world.getTime();
+         int j;
+@@ -553,6 +589,20 @@ public class PlayerChunkMap {
+             }
+ 
+         }
++
++        public Chunk getChunk() {
++            return world.getChunkAt(location.x, location.z);
++        }
++
++        public boolean hasPlayersNearby(double distance, java.util.function.Predicate<EntityPlayer> predicate) {
++            for (EntityPlayer player : this.b) {
++                if (predicate.test(player) && this.location.distanceToSq(player) < distance * distance) {
++                    return true;
++                }
++            }
++
++            return false;
++        }
+     }
+ 
+     // CraftBukkit start - Sorter to load nearby chunks first
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index fe9b4ea7584587c4a4d198e01fc21838ec59f471..ac0372f52534cd58362b98e50e33d0a4e1b12d06 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -129,10 +129,10 @@ public abstract class World implements IBlockAccess {
+ 
+     // Spigot start
+     private boolean guardEntityList;
+-    protected final gnu.trove.map.hash.TLongShortHashMap chunkTickList;
++    //protected final gnu.trove.map.hash.TLongShortHashMap chunkTickList;
+     protected float growthOdds = 100;
+-    protected float modifiedOdds = 100;
+-    private final byte chunkTickRadius;
++    // protected float modifiedOdds = 100;
++    // private final byte chunkTickRadius;
+     public static boolean haveWeSilencedAPhysicsCrash;
+     public static String blockLocation;
+     // PandaSpigot start - Remove unused code
+@@ -145,6 +145,7 @@ public abstract class World implements IBlockAccess {
+     public ExecutorService lightingExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("PaperSpigot - Lighting Thread").build()); // PaperSpigot - Asynchronous lighting updates
+     public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
+ 
++    /*
+     public static long chunkToKey(int x, int z)
+     {
+         long k = ( ( ( (long) x ) & 0xFFFF0000L ) << 16 ) | ( ( ( (long) x ) & 0x0000FFFFL ) << 0 );
+@@ -162,6 +163,7 @@ public abstract class World implements IBlockAccess {
+         return (int) ( ( ( k >> 32 ) & 0xFFFF0000L ) | ( ( k >> 16 ) & 0x0000FFFF ) );
+     }
+     // Spigot end
++    */
+ 
+     public final org.spigotmc.SpigotWorldConfig spigotConfig; // Spigot
+ 
+@@ -198,11 +200,13 @@ public abstract class World implements IBlockAccess {
+         this.ticksPerAnimalSpawns = this.getServer().getTicksPerAnimalSpawns(); // CraftBukkit
+         this.ticksPerMonsterSpawns = this.getServer().getTicksPerMonsterSpawns(); // CraftBukkit
+         // CraftBukkit end
++        /*
+         // Spigot start
+         this.chunkTickRadius = (byte) ( ( this.getServer().getViewDistance() < 7 ) ? this.getServer().getViewDistance() : 7 );
+         this.chunkTickList = new gnu.trove.map.hash.TLongShortHashMap( spigotConfig.chunksPerTick * 5, 0.7f, Long.MIN_VALUE, Short.MIN_VALUE );
+         this.chunkTickList.setAutoCompactionFactor( 0 );
+         // Spigot end
++        */
+ 
+         this.L = this.random.nextInt(12000);
+         this.allowMonsters = true;
+@@ -2339,6 +2343,7 @@ public abstract class World implements IBlockAccess {
+         int k;
+         int l;
+ 
++        /*
+         // Spigot start
+         int optimalChunks = spigotConfig.chunksPerTick;
+         // Quick conditions to allow us to exist early
+@@ -2376,6 +2381,7 @@ public abstract class World implements IBlockAccess {
+         }
+             // Spigot End
+         }
++        */
+ 
+         this.methodProfiler.b();
+         if (this.L > 0) {
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 99eb33eef6e11f76385afd536a921e5cffa21cb8..61a556a07831c6be6ae06199a4a9f56655644433 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -379,13 +379,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+         super.h();
+         if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
+             // Spigot start
+-           gnu.trove.iterator.TLongShortIterator iterator = this.chunkTickList.iterator();
++            Iterator<Chunk> iterator = manager.getActiveChunks();
+ 
+             while (iterator.hasNext()) {
+-                iterator.advance();
+-                long chunkCoord = iterator.key();
+-
+-                this.getChunkAt(World.keyToX( chunkCoord ), World.keyToZ( chunkCoord )).b(false);
++                Chunk chunk = iterator.next();
++                chunk.b(false);
+                 // Spigot end
+             }
+ 
+@@ -399,26 +397,12 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+             //    int k = chunkcoordintpair1.x * 16;
+             //    int l = chunkcoordintpair1.z * 16;
+             // Spigot start
+-            for (gnu.trove.iterator.TLongShortIterator iter = chunkTickList.iterator(); iter.hasNext(); )
++            for (Iterator<Chunk> iterator1 = manager.getActiveChunks(); iterator1.hasNext();)
+             {
+-                iter.advance();
+-                long chunkCoord = iter.key();
+-                int chunkX = World.keyToX( chunkCoord );
+-                int chunkZ = World.keyToZ( chunkCoord );
+-                // If unloaded, or in procedd of being unloaded, drop it
+-                if ( ( !this.chunkProvider.isChunkLoaded( chunkX, chunkZ ) ) || ( this.chunkProviderServer.unloadQueue.contains( chunkX, chunkZ ) ) )
+-                {
+-                    iter.remove();
+-                    continue;
+-                }
+-                // Spigot end
+-                // ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator.next();
+-                int k = chunkX * 16;
+-                int l = chunkZ * 16;
+-
+                 this.methodProfiler.a("getChunk");
+-                Chunk chunk = this.getChunkAt(chunkX, chunkZ);
+-                // CraftBukkit end
++                Chunk chunk = iterator1.next();
++                int k = chunk.locX * 16;
++                int l = chunk.locZ * 16;
+ 
+                 this.a(k, l, chunk);
+                 this.methodProfiler.c("tickChunk");
+@@ -508,12 +492,14 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+             }
+ 
+         }
++        /*
+         // Spigot Start
+         if ( spigotConfig.clearChunksOnTick )
+         {
+             chunkTickList.clear();
+         }
+         // Spigot End
++        */
+     }
+ 
+     protected BlockPosition a(BlockPosition blockposition) {
