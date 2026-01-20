@@ -22,7 +22,7 @@ This patch contains heavy inspiration from:
 https://github.com/PaperMC/Paper/blob/master/patches/server/0137-Use-TerminalConsoleAppender-for-console-improvements.patch
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 2d7fb97266bbb84f63816937ad66faac8f0d9051..c00a948f3e9bc92f7086261c236c831d6b147653 100644
+index 8aabc66e6b45174d78db36af355804fc8fd3db48..7b16c9ea097206ecc296a9fec921a9e0dfee89f4 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -21,8 +21,10 @@ dependencies {
@@ -55,22 +55,31 @@ index 2d7fb97266bbb84f63816937ad66faac8f0d9051..c00a948f3e9bc92f7086261c236c831d
      testImplementation("junit:junit:4.11")
      testImplementation("org.hamcrest:hamcrest-library:1.3")
  }
-@@ -59,6 +65,7 @@ tasks {
-         mergeServiceFiles()
+@@ -58,6 +64,8 @@ tasks {
+     shadowJar {
          archiveClassifier.set("unmapped")
-         append("META-INF/io.netty.versions.properties")
-+        transform(com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer()) // PandaSpigot - Use TerminalConsoleAppender
+ 
++        duplicatesStrategy = DuplicatesStrategy.INCLUDE // Required for Log4j2PluginsCacheFileTransformer to function properly
++
          // PandaSpigot start - Configuration
          arrayOf(
              "com.amihaiemil.eoyaml",
-@@ -70,7 +77,6 @@ tasks {
-         val cbLibsPkg = "org.bukkit.craftbukkit.libs"
+@@ -72,7 +80,6 @@ tasks {
  
-         relocate("joptsimple", "$cbLibsPkg.joptsimple")
--        relocate("jline", "$cbLibsPkg.jline")
-         relocate("org.ibex", "$cbLibsPkg.org.ibex")
-         relocate("org.gjt", "$cbLibsPkg.org.gjt")
+         arrayOf(
+             "joptsimple",
+-            "jline",
+             "org.ibex",
+             "org.gjt",
+         ).forEach { relocate(it, "org.bukkit.craftbukkit.libs.$it") }
+@@ -81,6 +88,7 @@ tasks {
  
+         mergeServiceFiles()
+         append("META-INF/io.netty.versions.properties")
++        transform<com.github.jengelman.gradle.plugins.shadow.transformers.Log4j2PluginsCacheFileTransformer>() // PandaSpigot - Use TerminalConsoleAppender
+     }
+ 
+     named("build") {
 diff --git a/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java b/src/main/java/com/hpfxd/pandaspigot/console/PandaConsole.java
 new file mode 100644
 index 0000000000000000000000000000000000000000..25a515b681bbbb70946f2ec73647a6f184f81b3c
