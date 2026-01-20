@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..3723769acc78fe26284145a0fcb36515022c618a
+index 0000000000000000000000000000000000000000..2754c5ad659820b1416c222fcabe03756145422d
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,132 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    id("com.gradleup.shadow") version "9.3.1"
@@ -109,6 +109,7 @@ index 0000000000000000000000000000000000000000..3723769acc78fe26284145a0fcb36515
 +                "Git-Branch" to gitBranch,
 +                "Git-Commit" to gitHash,
 +            )
++            attributes("Name" to "org/bukkit/", "Sealed" to "true")
 +        }
 +    }
 +
