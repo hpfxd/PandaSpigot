@@ -1,2 +1,0 @@
-bukkit depends
-verificar tudo
