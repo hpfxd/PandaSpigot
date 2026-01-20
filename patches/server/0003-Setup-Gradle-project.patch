@@ -6,10 +6,10 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..4ecbf789542fc32ac9816febb62afcd69cd77cff
+index 0000000000000000000000000000000000000000..2754c5ad659820b1416c222fcabe03756145422d
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,129 @@
+@@ -0,0 +1,132 @@
 +plugins {
 +    id("pandaspigot.conventions")
 +    id("com.gradleup.shadow") version "9.3.1"
@@ -63,20 +63,22 @@ index 0000000000000000000000000000000000000000..4ecbf789542fc32ac9816febb62afcd6
 +
 +tasks {
 +    shadowJar {
-+        mergeServiceFiles()
 +        archiveClassifier.set("unmapped")
-+
-+        val cbLibsPkg = "org.bukkit.craftbukkit.libs"
-+
-+        relocate("joptsimple", "$cbLibsPkg.joptsimple")
-+        relocate("jline", "$cbLibsPkg.jline")
-+        relocate("org.ibex", "$cbLibsPkg.org.ibex")
-+        relocate("org.gjt", "$cbLibsPkg.org.gjt")
 +
 +        relocate("org.bukkit.craftbukkit", "org.bukkit.craftbukkit.v${minecraftVersion}") {
 +            exclude("org.bukkit.craftbukkit.Main*") // don't relocate main class
 +        }
++
++        arrayOf(
++            "joptsimple",
++            "jline",
++            "org.ibex",
++            "org.gjt",
++        ).forEach { relocate(it, "org.bukkit.craftbukkit.libs.$it") }
++
 +        relocate("net.minecraft.server", "net.minecraft.server.v${minecraftVersion}")
++
++        mergeServiceFiles()
 +    }
 +
 +    named("build") {
@@ -107,6 +109,7 @@ index 0000000000000000000000000000000000000000..4ecbf789542fc32ac9816febb62afcd6
 +                "Git-Branch" to gitBranch,
 +                "Git-Commit" to gitHash,
 +            )
++            attributes("Name" to "org/bukkit/", "Sealed" to "true")
 +        }
 +    }
 +
