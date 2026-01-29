@@ -12,14 +12,14 @@ results in a separate line, even though it should not result in
 a line break. Log4j's implementation handles it correctly.
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index e3f1b191e44585b28a556f11d0a1024412ada964..db5e7e22b4856412e9db0787ba6edd88192006c1 100644
+index 123d10b4f7beb3f936d29d8c2aae80a3828fa54c..ac69f9e7f7bfe30a3b776075ccd336efc0ffe99c 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -25,6 +25,7 @@ dependencies {
-     implementation("org.apache.logging.log4j:log4j-api:2.24.3")
-     implementation("org.apache.logging.log4j:log4j-core:2.24.3")
-     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.24.3") // PandaSpigot - Add SLF4J logger
-+    implementation("org.apache.logging.log4j:log4j-iostreams:2.24.3") // PandaSpigot - Add Log4j IOStreams
+     implementation("org.apache.logging.log4j:log4j-api:2.25.3")
+     implementation("org.apache.logging.log4j:log4j-core:2.25.3")
+     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.25.3") // PandaSpigot - Add SLF4J logger
++    implementation("org.apache.logging.log4j:log4j-iostreams:2.25.3") // PandaSpigot - Add Log4j IOStreams
      // PandaSpigot end
      implementation("org.apache.commons:commons-lang3:3.3.2")
      implementation("commons-io:commons-io:2.4")
