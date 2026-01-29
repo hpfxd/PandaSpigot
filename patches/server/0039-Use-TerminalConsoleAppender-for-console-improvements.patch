@@ -22,7 +22,7 @@ This patch contains heavy inspiration from:
 https://github.com/PaperMC/Paper/blob/master/patches/server/0137-Use-TerminalConsoleAppender-for-console-improvements.patch
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 8aabc66e6b45174d78db36af355804fc8fd3db48..628a29c695e6841ef11c73e7bcefb38b3442442b 100644
+index 8aabc66e6b45174d78db36af355804fc8fd3db48..e2f1d779de4a8f610c88b1984d03f974f587fddb 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -21,8 +21,10 @@ dependencies {
@@ -49,7 +49,7 @@ index 8aabc66e6b45174d78db36af355804fc8fd3db48..628a29c695e6841ef11c73e7bcefb38b
  
 +    // PandaSpigot start - Use TerminalConsoleAppender
 +    implementation("net.minecrell:terminalconsoleappender:1.3.0")
-+    implementation("org.jline:jline-terminal-jni:3.30.3")
++    implementation("org.jline:jline-terminal-jni:3.30.6")
 +    // PandaSpigot end
 +
      testImplementation("junit:junit:4.11")
