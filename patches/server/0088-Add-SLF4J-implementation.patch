@@ -5,7 +5,7 @@ Subject: [PATCH] Add SLF4J implementation
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 7a7333ca767104092cea5ae6588dbdf37a0e9292..123d10b4f7beb3f936d29d8c2aae80a3828fa54c 100644
+index a4e94d3a91a747a562c91160201cb6075444c7f3..fb1f7c780b4897701e4a8e7d8fe1a61652830d85 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -24,6 +24,7 @@ dependencies {

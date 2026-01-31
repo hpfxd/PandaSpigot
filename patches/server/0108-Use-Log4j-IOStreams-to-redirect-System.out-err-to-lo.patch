@@ -12,7 +12,7 @@ results in a separate line, even though it should not result in
 a line break. Log4j's implementation handles it correctly.
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 123d10b4f7beb3f936d29d8c2aae80a3828fa54c..ac69f9e7f7bfe30a3b776075ccd336efc0ffe99c 100644
+index fb1f7c780b4897701e4a8e7d8fe1a61652830d85..acb2eea3ec39a2505c90a526d2978daa695f19f9 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -25,6 +25,7 @@ dependencies {

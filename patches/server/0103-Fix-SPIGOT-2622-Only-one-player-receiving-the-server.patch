@@ -6,7 +6,7 @@ Subject: [PATCH] Fix SPIGOT-2622: Only one player receiving the server
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index 80bf1d11e9e12babde14e8515e40afc37d123d0f..5cab6e68c85d794eb6e492c73f7d7694e20693a5 100644
+index 042b8d80d4ece1217727be43198fa0b5e79eaf6f..d418aef65d821d3c1a446423604d5786c0b041dc 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -1194,8 +1194,10 @@ public abstract class PlayerList {

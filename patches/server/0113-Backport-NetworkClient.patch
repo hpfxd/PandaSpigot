@@ -74,7 +74,7 @@ index 10a8c440f08535d90d8d1204a23c859ba296aa39..68041c3e97e9292c7f27dc21ae1c8c2d
  
      public void a(IChatBaseComponent ichatbasecomponent) {}
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index af9e53ec1374776111b659aaaa0c4ae97deb5cbe..2e715a89d84798aa8ae4c6eaa60dd27922c64d91 100644
+index fe75bce92a1fc17e1243b01f0b59906e44edad44..fb7a81cd39219ba1c94f0777686c74d3d7b94d29 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -74,6 +74,10 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
