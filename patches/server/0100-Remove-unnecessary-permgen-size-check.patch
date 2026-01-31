@@ -5,7 +5,7 @@ Subject: [PATCH] Remove unnecessary permgen size check
 
 
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index 3a11ad950018293c04a7279ed65502d897310070..d8d19207e4db256befa886bc9638759ed7c926dc 100644
+index 335727493ab37e8aa235936b12af0cce51967805..8c5ceb0a1539269969cd6a75df3dc1fa549b3883 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -207,6 +207,8 @@ public class Main {
@@ -23,6 +23,6 @@ index 3a11ad950018293c04a7279ed65502d897310070..d8d19207e4db256befa886bc9638759e
                  // Spigot End
 +                */
 +                // PandaSpigot end
+                 System.setProperty("jdk.console", "java.base"); // PandaSpigot - Revert default console provider back to java.base so we can have our own jline
                  System.out.println("Loading libraries, please wait...");
                  MinecraftServer.main(options);
-             } catch (Throwable t) {

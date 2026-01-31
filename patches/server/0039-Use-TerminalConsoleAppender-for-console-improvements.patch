@@ -346,7 +346,7 @@ index e218b127c6dcdce2c4f8154684f58d4295c6c247..73530a14e0bf737745520226ef53ab4f
      @Override
      public PluginCommand getPluginCommand(String name) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/Main.java b/src/main/java/org/bukkit/craftbukkit/Main.java
-index b2a99effdf3ee503f94c39239f01e462c810e4c0..493aa08c0d6d92ff5fda076f317db748b0912381 100644
+index b2a99effdf3ee503f94c39239f01e462c810e4c0..f842cb9505fcb93ad36ae925a65c245cfb674d1d 100644
 --- a/src/main/java/org/bukkit/craftbukkit/Main.java
 +++ b/src/main/java/org/bukkit/craftbukkit/Main.java
 @@ -10,7 +10,7 @@ import java.util.logging.Logger;
@@ -387,6 +387,14 @@ index b2a99effdf3ee503f94c39239f01e462c810e4c0..493aa08c0d6d92ff5fda076f317db748
                  }
  
                  // Spigot Start
+@@ -207,6 +218,7 @@ public class Main {
+                     System.out.println( "Please see http://www.spigotmc.org/wiki/changing-permgen-size/ for more details and more in-depth instructions." );
+                 }
+                 // Spigot End
++                System.setProperty("jdk.console", "java.base"); // PandaSpigot - Revert default console provider back to java.base so we can have our own jline
+                 System.out.println("Loading libraries, please wait...");
+                 MinecraftServer.main(options);
+             } catch (Throwable t) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/command/ColouredConsoleSender.java b/src/main/java/org/bukkit/craftbukkit/command/ColouredConsoleSender.java
 index 26a2fb89425677d94a1d8a375337b70a00e4c5eb..8c91dd946a2c528d380cecdb5c67f76a6932c715 100644
 --- a/src/main/java/org/bukkit/craftbukkit/command/ColouredConsoleSender.java
