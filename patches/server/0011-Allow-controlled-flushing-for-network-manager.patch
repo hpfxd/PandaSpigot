@@ -9,7 +9,7 @@ This patch will be used to optimise out flush calls in later
 patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index baf4cb424e801dd8ae72080c089bea44de863981..6a9ab79afe45fc63c6d2be7b4d8c09ae95ae51d6 100644
+index baf4cb424e801dd8ae72080c089bea44de863981..a9e86cdaeb6924adf2886a4804d51a32cd99f13c 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -80,6 +80,39 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -23,14 +23,14 @@ index baf4cb424e801dd8ae72080c089bea44de863981..6a9ab79afe45fc63c6d2be7b4d8c09ae
 +    private final Object flushLock = new Object();
 +
 +    public void disableAutomaticFlush() {
-+        synchronized (flushLock) {
++        synchronized (this.flushLock) {
 +            this.flushPacketsStart = this.packetWrites.get(); // must be volatile and before canFlush = false
 +            this.canFlush = false;
 +        }
 +    }
 +
 +    public void enableAutomaticFlush() {
-+        synchronized (flushLock) {
++        synchronized (this.flushLock) {
 +            this.canFlush = true;
 +            if (this.packetWrites.get() != this.flushPacketsStart) { // must be after canFlush = true
 +                this.flush(); // only make the flush call if we need to
@@ -57,7 +57,7 @@ index baf4cb424e801dd8ae72080c089bea44de863981..6a9ab79afe45fc63c6d2be7b4d8c09ae
                  (packet.getExtraPackets() == null || packet.getExtraPackets().isEmpty())
          ))) {
 -            dispatchPacket(packet, listeners);
-+            writePacket(packet, listeners, null);
++            this.writePacket(packet, listeners, null); // PandaSpigot - Allow controlled flushing
              return;
          }
          // write the packets to the queue, then flush - antixray hooks there already
@@ -66,7 +66,7 @@ index baf4cb424e801dd8ae72080c089bea44de863981..6a9ab79afe45fc63c6d2be7b4d8c09ae
      private void dispatchPacket(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) { this.a(packet, agenericfuturelistener); } // PandaSpigot - OBFHELPER
      private void a(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener) {
 +        // PandaSpigot start - Add flush parameter
-+        writePacket(packet, agenericfuturelistener, Boolean.TRUE);
++        this.writePacket(packet, agenericfuturelistener, Boolean.TRUE);
 +    }
 +    private void writePacket(final Packet packet, final GenericFutureListener<? extends Future<? super Void>>[] agenericfuturelistener, Boolean flushConditional) {
 +        this.packetWrites.getAndIncrement(); // must be before using canFlush
@@ -125,7 +125,7 @@ index baf4cb424e801dd8ae72080c089bea44de863981..6a9ab79afe45fc63c6d2be7b4d8c09ae
                  iterator.remove();
 -                dispatchPacket(packet, queued.getGenericFutureListener());
 +                // PandaSpigot start - Make only one flush call per sendPacketQueue() call
-+                writePacket(packet, queued.getGenericFutureListener(), (!iterator.hasNext() && (needsFlush || this.canFlush)) ? Boolean.TRUE : Boolean.FALSE);
++                this.writePacket(packet, queued.getGenericFutureListener(), (!iterator.hasNext() && (needsFlush || this.canFlush)) ? Boolean.TRUE : Boolean.FALSE);
 +                hasWrotePacket = true;
 +                // PandaSpigot end
              }
