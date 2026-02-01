@@ -5,7 +5,7 @@ Subject: [PATCH] PandaSpigot Configuration
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index a7e26e9852d5b067c73cc1b9a773d6586aae32d0..30a686c0e39c4411490578273e2ba2df5e83971d 100644
+index 4f39560e0f0ad29edf3418421d6c258d7aec736e..8aabc66e6b45174d78db36af355804fc8fd3db48 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -12,6 +12,12 @@ repositories {

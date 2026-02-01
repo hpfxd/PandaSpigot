@@ -31,7 +31,7 @@ index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..1353a791235ae3b820072fa80ef60c3c
  
      protected void doTick() {}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index e11940e754e2e49c04ab3718940e1f49b46ed1ad..4557576fb2a930b3ac2f73c356eecb026f7bc358 100644
+index 918863f601bb2199f5b46ca85f54152c138bbe7e..00429aa61ca5dbfc8ebc29557d20b5b40e4ea6b3 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -823,6 +823,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs

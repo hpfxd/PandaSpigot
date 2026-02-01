@@ -78,7 +78,7 @@ index 7bf9018bae77e97ce5d2991897edf186ef1ed741..399c2bddd4e0ed27a98ab07a20d981f3
                                  if (block != Blocks.LOG && block != Blocks.LOG2) {
                                      if (block.getMaterial() == Material.LEAVES) {
 diff --git a/src/main/java/net/minecraft/server/ChunkCache.java b/src/main/java/net/minecraft/server/ChunkCache.java
-index c7ff3ee8f151ad1537f1e1a95bc3d27c36bb2c0c..23a8233e2a9ed9858f7a721654c2b0eca5efef37 100644
+index c0fb3b5da569bf03da2433758b3dbc14721a1b5f..97acfc07ead11e4f692603ee1dca4465b1c44427 100644
 --- a/src/main/java/net/minecraft/server/ChunkCache.java
 +++ b/src/main/java/net/minecraft/server/ChunkCache.java
 @@ -20,7 +20,7 @@ public class ChunkCache implements IBlockAccess {
