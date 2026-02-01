@@ -53,7 +53,7 @@ index 4a3b170542d6266cb5868a925c6d3d081fc9598f..99367c42858cf97190a3b090f258b18e
 +    }
  }
 diff --git a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
-index 40291094e8aeff2a12b7b4ae721ef3e928a3b0b1..7479552cfde04fc0d1857a535206458444a1ab76 100644
+index 02213e3c5fee0a686654c563ae953f7f29a46d0e..210b9ad51d2aed44ef5e81667a5f68b764fa3c85 100644
 --- a/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
 +++ b/src/main/java/net/minecraft/server/NameReferencingFileConverter.java
 @@ -66,7 +66,7 @@ public class NameReferencingFileConverter {

@@ -7,7 +7,7 @@ Cleanups a bytebuffer which was allocated during the encoding of the
 favicon to be sent to the client.
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 4557576fb2a930b3ac2f73c356eecb026f7bc358..e89e801f6aac5c91cc3fbe993392b5b130f453cd 100644
+index 00429aa61ca5dbfc8ebc29557d20b5b40e4ea6b3..bed9076fc52dc7a4f2ee3fe28c2a3f72fb6b0293 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -671,6 +671,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs

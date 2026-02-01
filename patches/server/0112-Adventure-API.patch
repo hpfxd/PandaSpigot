@@ -5,7 +5,7 @@ Subject: [PATCH] Adventure API
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index db5e7e22b4856412e9db0787ba6edd88192006c1..6d4fa7beafda08917d66655955da42fea16b286f 100644
+index acb2eea3ec39a2505c90a526d2978daa695f19f9..c0fd3ececd9e5299e7dad7a37a2659083f554c70 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -4,6 +4,7 @@ plugins {
@@ -17,7 +17,7 @@ index db5e7e22b4856412e9db0787ba6edd88192006c1..6d4fa7beafda08917d66655955da42fe
  repositories {
      maven(url = "https://libraries.minecraft.net")
 @@ -43,7 +44,7 @@ dependencies {
-     implementation("org.jline:jline-terminal-jni:3.30.3")
+     implementation("org.jline:jline-terminal-jni:3.30.6")
      // PandaSpigot end
  
 -    implementation("net.kyori:adventure-key:4.21.0") // PandaSpigot - Add Channel initialization listeners
