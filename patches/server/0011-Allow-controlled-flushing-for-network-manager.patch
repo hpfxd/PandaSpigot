@@ -3,10 +3,9 @@ From: Spottedleaf <spottedleaf@spottedleaf.dev>
 Date: Sat, 31 Jan 2026 21:39:40 -0300
 Subject: [PATCH] Allow controlled flushing for network manager
 
-Only make one flush call when emptying the packet queue too
+Only make one flush call when emptying the packet queue too.
 
-This patch will be used to optimise out flush calls in later
-patches.
+This patch will be used to optimise out flush calls in later patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
 index baf4cb424e801dd8ae72080c089bea44de863981..a9e86cdaeb6924adf2886a4804d51a32cd99f13c 100644
