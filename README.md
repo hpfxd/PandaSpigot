@@ -12,7 +12,6 @@ Fork of Paper for 1.8.8 focused on improved performance and stability.
     - **Updating to Netty 4.1** offers the ability to use newer Java versions with epoll on Linux.
     - **Improved flush handling** to massively improve entity tracker performance.
     - **Support for Unix domain sockets** to avoid the overhead of TCP when using a proxy on the same machine.
-    - **Using LazyRunnables** to avoid expensive thread wakeup calls when sending non-flushed packets.
 
 - **More configuration options**, such as:
     - Customizable knockback
