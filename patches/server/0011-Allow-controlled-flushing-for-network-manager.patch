@@ -9,7 +9,7 @@ This patch will be used to optimise out flush calls in later
 patches.
 
 diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
-index 6cd355416e5e0be11202ea910d6efce1dbb7be2b..705e3924b533ba5be4eb9b701d62fcefd1745377 100644
+index baf4cb424e801dd8ae72080c089bea44de863981..6a9ab79afe45fc63c6d2be7b4d8c09ae95ae51d6 100644
 --- a/src/main/java/net/minecraft/server/NetworkManager.java
 +++ b/src/main/java/net/minecraft/server/NetworkManager.java
 @@ -80,6 +80,39 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
@@ -17,10 +17,10 @@ index 6cd355416e5e0be11202ea910d6efce1dbb7be2b..705e3924b533ba5be4eb9b701d62fcef
      // PandaSpigot end
  
 +    // PandaSpigot start - Allow controlled flushing
-+    private final java.util.concurrent.atomic.AtomicInteger packetWrites = new java.util.concurrent.atomic.AtomicInteger();
-+    private final Object flushLock = new Object();
 +    volatile boolean canFlush = true;
++    private final java.util.concurrent.atomic.AtomicInteger packetWrites = new java.util.concurrent.atomic.AtomicInteger();
 +    private int flushPacketsStart;
++    private final Object flushLock = new Object();
 +
 +    public void disableAutomaticFlush() {
 +        synchronized (flushLock) {
