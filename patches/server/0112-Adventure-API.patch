@@ -264,7 +264,7 @@ index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..7933d3191b9f61b4880d85ba99126bf9
          // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
          if (!event.getKeepInventory()) {
 diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index b32c64263d6d996008d0aa3b25df1d8d54482aa1..60dccacc0e70a3e47127717873e55ee6634a0a34 100644
+index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..8d2a07782d370d3cdd8d26790a17c88498b8d258 100644
 --- a/src/main/java/net/minecraft/server/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/LoginListener.java
 @@ -75,12 +75,15 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
@@ -288,7 +288,7 @@ index b32c64263d6d996008d0aa3b25df1d8d54482aa1..60dccacc0e70a3e47127717873e55ee6
          } catch (Exception exception) {
              LoginListener.c.error("Error whilst disconnecting player", exception);
          }
-@@ -264,7 +267,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+@@ -267,7 +270,7 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
                              if (PlayerPreLoginEvent.getHandlerList().getRegisteredListeners().length != 0) {
                                  final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address, uniqueId);
                                  if (asyncEvent.getResult() != PlayerPreLoginEvent.Result.ALLOWED) {
@@ -297,7 +297,7 @@ index b32c64263d6d996008d0aa3b25df1d8d54482aa1..60dccacc0e70a3e47127717873e55ee6
                                  }
                                  Waitable<PlayerPreLoginEvent.Result> waitable = new Waitable<PlayerPreLoginEvent.Result>() {
                                      @Override
-@@ -275,12 +278,12 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
+@@ -278,12 +281,12 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
  
                                  LoginListener.this.server.processQueue.add(waitable);
                                  if (waitable.get() != PlayerPreLoginEvent.Result.ALLOWED) {
@@ -467,7 +467,7 @@ index 9ad37543b8193dd1505d6c02eaa950022038960b..3df6d5bd628ddf45958677ff1f065add
               }
              // CraftBukkit end
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index d418aef65d821d3c1a446423604d5786c0b041dc..9484f2c2fb4e9c697016f90113b6e19e697aa8b8 100644
+index 5cab6e68c85d794eb6e492c73f7d7694e20693a5..c4c5b16c42719c802c928c871858f2c99021c9db 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -158,15 +158,18 @@ public abstract class PlayerList {

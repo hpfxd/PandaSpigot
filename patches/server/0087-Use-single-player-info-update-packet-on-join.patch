@@ -5,7 +5,7 @@ Subject: [PATCH] Use single player info update packet on join
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index c8fb991f1a9c88d4f519ae812921085366e09b92..042b8d80d4ece1217727be43198fa0b5e79eaf6f 100644
+index a72315b62d5731b74f077cc7a02d95660729832d..80bf1d11e9e12babde14e8515e40afc37d123d0f 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -326,6 +326,7 @@ public abstract class PlayerList {
