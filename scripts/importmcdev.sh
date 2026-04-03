@@ -22,7 +22,6 @@ find "$decompiledir/$nms" -type f -name "*.java" | while read file; do
 done
 
 cp -r "$decompiledir/assets" "$workdir/Paper/PaperSpigot-Server/src/main/resources"
-cp "$decompiledir/yggdrasil_session_pubkey.der" "$workdir/Paper/PaperSpigot-Server/src/main/resources"
 
 (
     cd "$workdir/Paper/PaperSpigot-Server/"
