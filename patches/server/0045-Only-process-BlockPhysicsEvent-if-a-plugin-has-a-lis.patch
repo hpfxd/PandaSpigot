@@ -26,10 +26,10 @@ index c1110242136e8fd98661886920b765bb5367c37d..558ab56e5f2e670dc17e8ffd39d8f09d
              this.b(world, blockposition, iblockdata, 0);
              world.setTypeAndData(blockposition, Blocks.AIR.getBlockData(), 3);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 020a8d88fd49f53145c0091223a7d43105355ea4..f7f2d006aafadfedf61fcdf10af0f3485f94c53b 100644
+index 0833bedc4efd3382e69bfe5fe371a81882ce8d1c..afe357bef417fa542af2d022278d2b21c47fce4e 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -828,6 +828,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -831,6 +831,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
              // if (i == 0 || this.getAllowNether()) {
                  WorldServer worldserver = this.worlds.get(i);
                  worldserver.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // PandaSpigot

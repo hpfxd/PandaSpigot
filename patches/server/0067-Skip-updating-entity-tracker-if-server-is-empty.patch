@@ -5,10 +5,10 @@ Subject: [PATCH] Skip updating entity tracker if server is empty
 
 
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index f7f2d006aafadfedf61fcdf10af0f3485f94c53b..b06ee12275493513d57feba25b17e0ca785d6098 100644
+index afe357bef417fa542af2d022278d2b21c47fce4e..603ed21ed96261537de5c027715567f0a6e9bebc 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -890,7 +890,9 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -893,7 +893,9 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                  }
                  try {
                  // PandaSpigot end

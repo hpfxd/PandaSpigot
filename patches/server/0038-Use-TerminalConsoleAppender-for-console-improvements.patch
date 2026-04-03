@@ -251,7 +251,7 @@ index 97699e7f86cef3ab8c4560066f0ef93c18a8f5ad..9bcfa3d9f26f88e704903d90695ab88b
          System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
          System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index e613c8afd3b02b91f224dcdeab28277227fa2a84..020a8d88fd49f53145c0091223a7d43105355ea4 100644
+index e613c8afd3b02b91f224dcdeab28277227fa2a84..0833bedc4efd3382e69bfe5fe371a81882ce8d1c 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;
@@ -288,16 +288,19 @@ index e613c8afd3b02b91f224dcdeab28277227fa2a84..020a8d88fd49f53145c0091223a7d431
          Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
  
          this.serverThread = primaryThread = new Thread(this, "Server thread"); // Moved from main
-@@ -655,7 +657,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -655,7 +657,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
              } finally {
                  // CraftBukkit start - Restore terminal to original settings
                  try {
 -                    reader.getTerminal().restore();
-+                    net.minecrell.terminalconsole.TerminalConsoleAppender.close(); // PandaSpigot - Use TerminalConsoleAppender
++                    // PandaSpigot start - Use TerminalConsoleAppender
++                    org.apache.logging.log4j.LogManager.shutdown();
++                    net.minecrell.terminalconsole.TerminalConsoleAppender.close();
++                    // PandaSpigot end
                  } catch (Exception ignored) {
                  }
                  // CraftBukkit end
-@@ -1204,7 +1206,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -1204,7 +1209,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      }
  
      public void sendMessage(IChatBaseComponent ichatbasecomponent) {
@@ -436,15 +439,18 @@ index 7ef577271902f858f5b59953049511a481dde8b8..e99eab8aa6bb070df0973e0c0ba107b3
  
      public ConsoleCommandCompleter(CraftServer server) {
 diff --git a/src/main/java/org/bukkit/craftbukkit/util/ServerShutdownThread.java b/src/main/java/org/bukkit/craftbukkit/util/ServerShutdownThread.java
-index ae3481ba88253081851d465900e5b98e7874eabc..0f8e49997ae6a65a26150414385beed0c70070a5 100644
+index ae3481ba88253081851d465900e5b98e7874eabc..19ed0f287c4def5d36f162ead9add22693774115 100644
 --- a/src/main/java/org/bukkit/craftbukkit/util/ServerShutdownThread.java
 +++ b/src/main/java/org/bukkit/craftbukkit/util/ServerShutdownThread.java
-@@ -18,7 +18,7 @@ public class ServerShutdownThread extends Thread {
+@@ -18,7 +18,10 @@ public class ServerShutdownThread extends Thread {
              ex.printStackTrace();
          } finally {
              try {
 -                server.reader.getTerminal().restore();
-+                net.minecrell.terminalconsole.TerminalConsoleAppender.close(); // PandaSpigot - Use TerminalConsoleAppender
++                // PandaSpigot start - Use TerminalConsoleAppender
++                org.apache.logging.log4j.LogManager.shutdown();
++                net.minecrell.terminalconsole.TerminalConsoleAppender.close();
++                // PandaSpigot end
              } catch (Exception e) {
              }
          }
