@@ -6,13 +6,13 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..2754c5ad659820b1416c222fcabe03756145422d
+index 0000000000000000000000000000000000000000..d05f6cfa9d47a9990911377002a546a0e029f8f6
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,132 @@
 +plugins {
 +    id("pandaspigot.conventions")
-+    id("com.gradleup.shadow") version "9.3.1"
++    id("com.gradleup.shadow") version "9.4.1"
 +}
 +
 +val minecraftVersion = "1_8_R3"

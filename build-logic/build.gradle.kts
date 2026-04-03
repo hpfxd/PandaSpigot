@@ -9,5 +9,5 @@ repositories {
 
 dependencies {
     implementation("io.sigpipe:jbsdiff:1.0")
-    implementation("net.md-5:SpecialSource:1.11.3")
+    implementation("net.md-5:SpecialSource:1.11.6")
 }
