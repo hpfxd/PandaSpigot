@@ -5,7 +5,7 @@ Subject: [PATCH] Update to Netty 4.1.x
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 3723769acc78fe26284145a0fcb36515022c618a..a7e26e9852d5b067c73cc1b9a773d6586aae32d0 100644
+index d05f6cfa9d47a9990911377002a546a0e029f8f6..9c0fdf00d36a48f4f905db9bd760db898fac7f3f 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -13,7 +13,7 @@ dependencies {
@@ -13,7 +13,7 @@ index 3723769acc78fe26284145a0fcb36515022c618a..a7e26e9852d5b067c73cc1b9a773d658
  
      // Minecraft libraries:
 -    implementation("com.mojang:netty:1.7.7")
-+    implementation("io.netty:netty-all:4.1.130.Final") // PandaSpigot - Update Netty to 4.1.x
++    implementation("io.netty:netty-all:4.1.132.Final") // PandaSpigot - Update Netty to 4.1.x
      implementation("com.mojang:authlib:1.5.21")
      implementation("org.apache.logging.log4j:log4j-api:2.17.0")
      implementation("org.apache.logging.log4j:log4j-core:2.17.0")
