@@ -1,0 +1,76 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: md_5 <git@md-5.net>
+Date: Tue, 14 Apr 2026 18:26:28 -0300
+Subject: [PATCH] Fix spawn point radius on respawn
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index 7933d3191b9f61b4880d85ba99126bf9221a3dff..e9b9b66e25e747634f82cdfbc0306d33335db6f6 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -86,6 +86,27 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         this.viewDistance = world.spigotConfig.viewDistance; // PaperSpigot - Player view distance API
+         playerinteractmanager.player = this;
+         this.playerInteractManager = playerinteractmanager;
++        BlockPosition blockposition = getSpawnPoint(minecraftserver, worldserver); // PandaSpigot - Split spawn point logic
++
++        this.server = minecraftserver;
++        this.bK = minecraftserver.getPlayerList().a((EntityHuman) this);
++        this.S = 0.0F;
++        this.setPositionRotation(blockposition, 0.0F, 0.0F);
++
++        while (!worldserver.getCubes(this, this.getBoundingBox()).isEmpty() && this.locY < 255.0D) {
++            this.setPosition(this.locX, this.locY + 1.0D, this.locZ);
++        }
++
++        // CraftBukkit start
++        this.displayName = this.getName();
++        this.adventure$displayName = net.kyori.adventure.text.Component.text(this.getName()); // PandaSpigot - Adventure
++        // this.canPickUpLoot = true; TODO
++        this.maxHealthCache = this.getMaxHealth();
++        // CraftBukkit end
++    }
++
++    // PandaSpigot start - Split spawn point logic
++    public final BlockPosition getSpawnPoint(MinecraftServer minecraftserver, WorldServer worldserver) {
+         BlockPosition blockposition = worldserver.getSpawn();
+ 
+         if (!worldserver.worldProvider.o() && worldserver.getWorldData().getGameType() != WorldSettings.EnumGamemode.ADVENTURE) {
+@@ -103,22 +124,9 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+             blockposition = worldserver.r(blockposition.a(this.random.nextInt(i * 2) - i, 0, this.random.nextInt(i * 2) - i));
+         }
+ 
+-        this.server = minecraftserver;
+-        this.bK = minecraftserver.getPlayerList().a((EntityHuman) this);
+-        this.S = 0.0F;
+-        this.setPositionRotation(blockposition, 0.0F, 0.0F);
+-
+-        while (!worldserver.getCubes(this, this.getBoundingBox()).isEmpty() && this.locY < 255.0D) {
+-            this.setPosition(this.locX, this.locY + 1.0D, this.locZ);
+-        }
+-
+-        // CraftBukkit start
+-        this.displayName = this.getName();
+-        this.adventure$displayName = net.kyori.adventure.text.Component.text(this.getName()); // PandaSpigot - Adventure
+-        // this.canPickUpLoot = true; TODO
+-        this.maxHealthCache = this.getMaxHealth();
+-        // CraftBukkit end
++        return blockposition;
+     }
++    // PandaSpigot end
+ 
+     public void a(NBTTagCompound nbttagcompound) {
+         super.a(nbttagcompound);
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index c4c5b16c42719c802c928c871858f2c99021c9db..f61dce199e2d30d425e0d8af312406cc09baf018 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -583,7 +583,7 @@ public abstract class PlayerList {
+ 
+             if (location == null) {
+                 cworld = (CraftWorld) this.server.server.getWorlds().get(0);
+-                blockposition = cworld.getHandle().getSpawn();
++                blockposition = entityplayer1.getSpawnPoint(this.server, cworld.getHandle()); // PandaSpigot - Fix spawn point radius on respawn
+                 location = new Location(cworld, blockposition.getX() + 0.5, blockposition.getY(), blockposition.getZ() + 0.5);
+             }
+ 

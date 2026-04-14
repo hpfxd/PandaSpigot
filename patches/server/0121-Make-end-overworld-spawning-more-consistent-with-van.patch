@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: md_5 <git@md-5.net>
+Date: Tue, 14 Apr 2026 18:33:56 -0300
+Subject: [PATCH] Make end->overworld spawning more consistent with vanilla
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index f61dce199e2d30d425e0d8af312406cc09baf018..3cc5fcdf65dac0f2ecf20b464de22fe7ce3ce6ce 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -680,7 +680,12 @@ public abstract class PlayerList {
+                 // THE_END -> NORMAL; use bed if available, otherwise default spawn
+                 exit = ((org.bukkit.craftbukkit.entity.CraftPlayer) entityplayer.getBukkitEntity()).getBedSpawnLocation();
+                 if (exit == null || ((CraftWorld) exit.getWorld()).getHandle().dimension != 0) {
+-                    exit = exitWorld.getWorld().getSpawnLocation();
++                // PandaSpigot start - Make end->overworld spawning more consistent with vanilla
++                    BlockPosition randomSpawn = entityplayer.getSpawnPoint(server, exitWorld);
++                    exit = new Location(exitWorld.getWorld(), randomSpawn.getX(), randomSpawn.getY(), randomSpawn.getZ());
++                } else {
++                    exit = exit.add(0.5F, 0.1F, 0.5F);
++                // PandaSpigot end
+                 }
+             } else {
+                 // NORMAL <-> NETHER or NORMAL -> THE_END
