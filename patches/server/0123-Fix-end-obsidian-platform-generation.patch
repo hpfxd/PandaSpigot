@@ -1,0 +1,58 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <constant4337@molecularmail.com>
+Date: Tue, 14 Apr 2026 22:33:24 -0600
+Subject: [PATCH] Fix end obsidian platform generation
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityPlayer.java b/src/main/java/net/minecraft/server/EntityPlayer.java
+index e9b9b66e25e747634f82cdfbc0306d33335db6f6..52c944a21e305701aa256de56e2951604e28672a 100644
+--- a/src/main/java/net/minecraft/server/EntityPlayer.java
++++ b/src/main/java/net/minecraft/server/EntityPlayer.java
+@@ -536,10 +536,15 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+         boolean endPortal = this.dimension == 1 && i == 1;
+         if (endPortal) {
+             this.b((Statistic) AchievementList.D);
++            this.world.kill(this); // PandaSpigot - From below. Always kill for correct end exit.
+             if (!world.paperSpigotConfig.disableEndCredits) {
+-                this.world.kill(this);
++                //this.world.kill(this); // PandaSpigot - Move above
+                 this.viewingCredits = true;
+                 this.playerConnection.sendPacket(new PacketPlayOutGameStateChange(4, 0.0F));
++            // PandaSpigot start - Manually teleport because credits are skipped.
++            } else {
++                this.server.getPlayerList().changeDimension(this, 0, TeleportCause.END_PORTAL);
++            // PandaSpigot end
+             }
+         // PaperSpigot end
+         } else {
+@@ -559,12 +564,16 @@ public class EntityPlayer extends EntityHuman implements ICrafting {
+             } else {
+                 this.b((Statistic) AchievementList.y);
+             }
++        // PandaSpigot start - Don't always run this with credits skipped.
++        /*
+         }
+ 
+         // PaperSpigot start - Allow configurable end portal credits
+         if (!endPortal || world.paperSpigotConfig.disableEndCredits) {
++         */
+             // CraftBukkit start
+-            TeleportCause cause = (endPortal || (this.dimension == 1 || i == 1)) ? TeleportCause.END_PORTAL : TeleportCause.NETHER_PORTAL;
++            TeleportCause cause = this.dimension == 1 || i == 1 ? TeleportCause.END_PORTAL : TeleportCause.NETHER_PORTAL;
++        // PandaSpigot end
+             this.server.getPlayerList().changeDimension(this, i, cause);
+             // CraftBukkit end
+             this.lastSentExp = -1;
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index fab74c7512fffa92605f88e8db0b6370f46ce9b9..63262a86c0c226422a229e6d28597e7ab45b3313 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -695,7 +695,7 @@ public abstract class PlayerList {
+         }
+ 
+         TravelAgent agent = exit != null ? (TravelAgent) ((CraftWorld) exit.getWorld()).getHandle().getTravelAgent() : org.bukkit.craftbukkit.CraftTravelAgent.DEFAULT; // return arbitrary TA to compensate for implementation dependent plugins
+-        agent.setCanCreatePortal(cause != TeleportCause.END_PORTAL); // PaperSpigot - Configurable end credits, don't allow End Portals to create portals
++        //agent.setCanCreatePortal(cause != TeleportCause.END_PORTAL); // PaperSpigot - Configurable end credits, don't allow End Portals to create portals // PandaSpigot - The end obsidian platform is considered a "portal" and should be generated still.
+ 
+         PlayerPortalEvent event = new PlayerPortalEvent(entityplayer.getBukkitEntity(), enter, exit, agent, cause);
+         event.useTravelAgent(useTravelAgent);
