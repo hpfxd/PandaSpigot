@@ -5,7 +5,7 @@ Subject: [PATCH] Make end->overworld spawning more consistent with vanilla
 
 
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index f61dce199e2d30d425e0d8af312406cc09baf018..fab74c7512fffa92605f88e8db0b6370f46ce9b9 100644
+index f61dce199e2d30d425e0d8af312406cc09baf018..3cc5fcdf65dac0f2ecf20b464de22fe7ce3ce6ce 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -680,7 +680,12 @@ public abstract class PlayerList {
@@ -22,12 +22,3 @@ index f61dce199e2d30d425e0d8af312406cc09baf018..fab74c7512fffa92605f88e8db0b6370
                  }
              } else {
                  // NORMAL <-> NETHER or NORMAL -> THE_END
-@@ -774,7 +779,7 @@ public abstract class PlayerList {
-             if (i == 1) {
-                 // use default NORMAL world spawn instead of target
-                 worldserver1 = this.server.worlds.get(0);
--                blockposition = worldserver1.getSpawn();
-+                blockposition = worldserver1.r(worldserver1.getSpawn()); // PandaSpigot - Make end->overworld spawning more consistent with vanilla
-             } else {
-                 blockposition = worldserver1.getDimensionSpawn();
-             }
