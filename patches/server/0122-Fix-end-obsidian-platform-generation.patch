@@ -44,7 +44,7 @@ index e9b9b66e25e747634f82cdfbc0306d33335db6f6..52c944a21e305701aa256de56e295160
              // CraftBukkit end
              this.lastSentExp = -1;
 diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
-index fab74c7512fffa92605f88e8db0b6370f46ce9b9..1505be500fb9a72998ed7daf4647742a1f9b672c 100644
+index 3cc5fcdf65dac0f2ecf20b464de22fe7ce3ce6ce..9b6214d194cbd43bf14345610c360ae9f790bab2 100644
 --- a/src/main/java/net/minecraft/server/PlayerList.java
 +++ b/src/main/java/net/minecraft/server/PlayerList.java
 @@ -695,7 +695,7 @@ public abstract class PlayerList {

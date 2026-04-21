@@ -320,7 +320,7 @@ index 04916c6a8ee6446e786eb23c54ae78e8d2cba84d..8388bb5bae0c3b072b191b9d3655873f
      public EntityFishingHook hookedFish;
      public boolean affectsSpawning = true; // PaperSpigot
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 9d2b4037119030eea027b7d79ab4f36f28af71ae..e613c8afd3b02b91f224dcdeab28277227fa2a84 100644
+index bed9076fc52dc7a4f2ee3fe28c2a3f72fb6b0293..e9550824b63f7c6fc211ecee2e5ec0a9131f57ad 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -1536,6 +1536,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs

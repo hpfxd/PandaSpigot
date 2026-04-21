@@ -3,10 +3,9 @@ From: uRyanxD <familiarodrigues123ro@gmail.com>
 Date: Sat, 22 Jun 2024 15:56:45 -0300
 Subject: [PATCH] Improve portal search logic
 
-Co-authored-by: Poweruser <poweruser.rs@hotmail.com>
 
 diff --git a/src/main/java/net/minecraft/server/PortalTravelAgent.java b/src/main/java/net/minecraft/server/PortalTravelAgent.java
-index 72f3735b196cbd7d420c6338eb7aba01b40c7804..fa0ad789e58255d3faa01deb5bc15d517790e69a 100644
+index 72f3735b196cbd7d420c6338eb7aba01b40c7804..486796d47cce34c94046548eee11b715c64c3f1d 100644
 --- a/src/main/java/net/minecraft/server/PortalTravelAgent.java
 +++ b/src/main/java/net/minecraft/server/PortalTravelAgent.java
 @@ -13,7 +13,7 @@ import org.bukkit.util.Vector;
@@ -18,18 +17,35 @@ index 72f3735b196cbd7d420c6338eb7aba01b40c7804..fa0ad789e58255d3faa01deb5bc15d51
      private final Random b;
      private final LongHashMap<PortalTravelAgent.ChunkCoordinatesPortal> c = new LongHashMap();
      private final List<Long> d = Lists.newArrayList();
-@@ -94,7 +94,13 @@ public class PortalTravelAgent {
+@@ -30,9 +30,13 @@ public class PortalTravelAgent {
+                 this.b(entity, f);
+             }
+         } else {
++            // PandaSpigot start - Moved down
++            /*
+             int i = MathHelper.floor(entity.locX);
+             int j = MathHelper.floor(entity.locY) - 1;
+             int k = MathHelper.floor(entity.locZ);
++            */
++            // PandaSpigot end
+             // CraftBukkit start - Modularize end portal creation
+             BlockPosition created = this.createEndPortal(entity.locX, entity.locY, entity.locZ);
+             entity.setPositionRotation((double) created.getX(), (double) created.getY(), (double) created.getZ(), entity.yaw, 0.0F);
+@@ -63,7 +67,7 @@ public class PortalTravelAgent {
+             }
+ 
+         // CraftBukkit start
+-        return new BlockPosition(i, k, k);
++        return new BlockPosition(i, j, k); // PandaSpigot - Fix createEndPortal locY
+     }
+ 
+     // use logic based on creation to verify end portal
+@@ -94,7 +98,7 @@ public class PortalTravelAgent {
  
      public boolean b(Entity entity, float f) {
          // CraftBukkit start - Modularize portal search process and entity teleportation
 -        BlockPosition found = this.findPortal(entity.locX, entity.locY, entity.locZ, 128);
-+        // PandaSpigot start - Search proximity first and then do the larger search if the proximity search fails
-+        // TODO: If a player sets the portal search radius to some value equal to or less than 10 we can use normal logic
-+        BlockPosition found = this.findPortal(entity.locX, entity.locY, entity.locZ, 10);
-+        if (found == null) {
-+            found = this.findPortal(entity.locX, entity.locY, entity.locZ, a.paperSpigotConfig.portalSearchRadius); // PandaSpigot - Respect the Paper portal search radius configuration
-+        }
-+        // PandaSpigot end
++        BlockPosition found = this.findPortal(entity.locX, entity.locY, entity.locZ, a.paperSpigotConfig.portalSearchRadius); // PandaSpigot - Respect the Paper portal search radius configuration
          if (found == null) {
              return false;
          }
@@ -47,7 +63,7 @@ index d68deb81f9f7dfb82591d5876daaac9a3a258dc6..47af49c25e1ce57a93aa4797f833ef83
          this.C();
          this.getWorldBorder().a(minecraftserver.aI());
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftTravelAgent.java b/src/main/java/org/bukkit/craftbukkit/CraftTravelAgent.java
-index cae65cf86fac24733b9732a6c66bed1e7b45a8a9..ba494d07d25ebb3296c0c0d8e2500c655d6c8288 100644
+index cae65cf86fac24733b9732a6c66bed1e7b45a8a9..a9bda3946cc4b2364f87364aadbdd227e14023b8 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftTravelAgent.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftTravelAgent.java
 @@ -11,7 +11,7 @@ public class CraftTravelAgent extends PortalTravelAgent implements TravelAgent {
@@ -58,19 +74,4 @@ index cae65cf86fac24733b9732a6c66bed1e7b45a8a9..ba494d07d25ebb3296c0c0d8e2500c65
 +    private int searchRadius = a.paperSpigotConfig.portalSearchRadius; // PandaSpigot - Configurable portal search radius
      private int creationRadius = 16;
      private boolean canCreatePortal = true;
- 
-@@ -44,7 +44,13 @@ public class CraftTravelAgent extends PortalTravelAgent implements TravelAgent {
-     @Override
-     public Location findPortal(Location location) {
-         PortalTravelAgent pta = ((CraftWorld) location.getWorld()).getHandle().getTravelAgent();
--        BlockPosition found = pta.findPortal(location.getX(), location.getY(), location.getZ(), this.getSearchRadius());
-+        // PandaSpigot start - Search proximity first and then do the larger search if the proximity search fails
-+        // TODO: If a player sets the portal search radius to some value equal to or less than 10 we can use normal logic
-+        BlockPosition found = pta.findPortal(location.getX(), location.getY(), location.getZ(), 10);
-+        if (found == null) {
-+            found = pta.findPortal(location.getX(), location.getY(), location.getZ(), this.getSearchRadius());
-+        }
-+        // PandaSpigot end
-         return found != null ? new Location(location.getWorld(), found.getX(), found.getY(), found.getZ(), location.getYaw(), location.getPitch()) : null;
-     }
  

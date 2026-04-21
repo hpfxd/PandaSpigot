@@ -251,7 +251,7 @@ index 97699e7f86cef3ab8c4560066f0ef93c18a8f5ad..9bcfa3d9f26f88e704903d90695ab88b
          System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
          System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index e613c8afd3b02b91f224dcdeab28277227fa2a84..0833bedc4efd3382e69bfe5fe371a81882ce8d1c 100644
+index e9550824b63f7c6fc211ecee2e5ec0a9131f57ad..82c7de05cb6af9e179da419eed0545c16592320b 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -41,7 +41,7 @@ import org.apache.logging.log4j.Logger;
