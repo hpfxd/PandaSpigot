@@ -26,7 +26,7 @@ index c1110242136e8fd98661886920b765bb5367c37d..558ab56e5f2e670dc17e8ffd39d8f09d
              this.b(world, blockposition, iblockdata, 0);
              world.setTypeAndData(blockposition, Blocks.AIR.getBlockData(), 3);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 0833bedc4efd3382e69bfe5fe371a81882ce8d1c..afe357bef417fa542af2d022278d2b21c47fce4e 100644
+index 82c7de05cb6af9e179da419eed0545c16592320b..919871cc851bba4067c0e6627c7b70faa1c96782 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
 @@ -831,6 +831,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
