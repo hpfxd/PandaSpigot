@@ -5,14 +5,14 @@ Subject: [PATCH] Backport-CreateExplosion
 
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index 36a07f027fb05eba32b08e3a566486a02621c663..f5629b1c114304c59e66128a160b982c6270d72f 100644
+index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735333673b8 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -660,6 +660,162 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
+@@ -660,6 +660,159 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
       */
      public boolean createExplosion(Location loc, float power, boolean setFire);
  
-+    // PandaSpigot Start
++    // PandaSpigot start
 +    /**
 +     * Creates explosion at given coordinates with given power and optionally
 +     * setting blocks on fire or breaking blocks.
@@ -34,8 +34,6 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..f5629b1c114304c59e66128a160b982c
 +     */
 +    public boolean createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks, Entity source);
 +
-+
-+    // Paper start
 +    /**
 +     * Creates explosion at given location with given power and optionally
 +     * setting blocks on fire, with the specified entity as the source.
@@ -131,7 +129,6 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..f5629b1c114304c59e66128a160b982c
 +    public default boolean createExplosion(Entity source, float power) {
 +        return createExplosion(source, source.getLocation(), power, true, true);
 +    }
-+    // Paper end
 +
 +    /**
 +     * Creates explosion at given coordinates with given power and optionally
