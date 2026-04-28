@@ -1,0 +1,116 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: DieUnterKreatur <info@dieunterkreatur.de>
+Date: Tue, 7 Apr 2026 20:28:31 +0200
+Subject: [PATCH] Backport Modern Explosion API
+
+
+diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
+index 6671d4920f4b808d61fd458ef3f26f21a0e96322..e605298073e4911c746d06465d09d6cae0a63f6c 100644
+--- a/src/main/java/net/minecraft/server/Explosion.java
++++ b/src/main/java/net/minecraft/server/Explosion.java
+@@ -30,6 +30,7 @@ public class Explosion {
+     private final List<BlockPosition> blocks = Lists.newArrayList();
+     private final Map<EntityHuman, Vec3D> k = Maps.newHashMap();
+     public boolean wasCanceled = false; // CraftBukkit - add field
++    public boolean excludeSourceFromDamage = false; // PandaSpigot
+ 
+     public Explosion(World world, Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1) {
+         this.world = world;
+@@ -42,6 +43,20 @@ public class Explosion {
+         this.b = flag1;
+     }
+ 
++    // PandaSpigot start
++    public Explosion(World world, Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1, boolean excludeSourceFromDamage) {
++        this.world = world;
++        this.source = entity;
++        this.size = (float) Math.max(f, 0.0); // CraftBukkit - clamp bad values
++        this.posX = d0;
++        this.posY = d1;
++        this.posZ = d2;
++        this.a = flag;
++        this.b = flag1;
++        this.excludeSourceFromDamage = excludeSourceFromDamage;
++    }
++    // PandaSpigot end
++
+     public void a() {
+         // CraftBukkit start
+         if (this.size < 0.1F) {
+@@ -108,7 +123,7 @@ public class Explosion {
+         int j1 = MathHelper.floor(this.posZ - (double) f3 - 1.0D);
+         int k1 = MathHelper.floor(this.posZ + (double) f3 + 1.0D);
+         // PaperSpigot start - Fix lag from explosions processing dead entities
+-        List list = this.world.a(this.source, new AxisAlignedBB((double) i, (double) l, (double) j1, (double) j, (double) i1, (double) k1), new com.google.common.base.Predicate<Entity>() {
++        List list = this.world.a(excludeSourceFromDamage ? this.source : (Entity) null, new AxisAlignedBB((double) i, (double) l, (double) j1, (double) j, (double) i1, (double) k1), new com.google.common.base.Predicate<Entity>() { // PandaSpigot
+             @Override
+             public boolean apply(Entity entity) {
+                 return IEntitySelector.d.apply(entity) && !entity.dead;
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index fe9b4ea7584587c4a4d198e01fc21838ec59f471..9b86cdd3b83ae8b0c040dc9d250b54684d0b7510 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -2042,16 +2042,22 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public Explosion explode(Entity entity, double d0, double d1, double d2, float f, boolean flag) {
+-        return this.createExplosion(entity, d0, d1, d2, f, false, flag);
++        return this.createExplosion(entity, d0, d1, d2, f, false, flag, false); // PandaSpigot
+     }
+ 
+     public Explosion createExplosion(Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1) {
+-        Explosion explosion = new Explosion(this, entity, d0, d1, d2, f, flag, flag1);
++        return this.createExplosion(entity, d0, d1, d2, f, flag, flag1, false); // PandaSpigot
++    }
++
++    // PandaSpigot start
++    public Explosion createExplosion(Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1, boolean excludeSourceFromDamage) {
++        Explosion explosion = new Explosion(this, entity, d0, d1, d2, f, flag, flag1, excludeSourceFromDamage);
+ 
+         explosion.a();
+         explosion.a(true);
+         return explosion;
+     }
++    // PandaSpigot end
+ 
+     public float a(Vec3D vec3d, AxisAlignedBB axisalignedbb) {
+         double d0 = 1.0D / ((axisalignedbb.d - axisalignedbb.a) * 2.0D + 1.0D);
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index b1e389f16a2d5a85a15bb934117f4ba207c856b9..bdcff39db6353cd3f9386ff7cab58bccd0268751 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -566,7 +566,7 @@ public class CraftWorld implements World {
+     }
+ 
+     public boolean createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks) {
+-        return !world.createExplosion(null, x, y, z, power, setFire, breakBlocks).wasCanceled;
++        return createExplosion(x, y, z, power, setFire, breakBlocks, null); // PandaSpigot
+     }
+ 
+     public boolean createExplosion(Location loc, float power) {
+@@ -577,6 +577,25 @@ public class CraftWorld implements World {
+         return createExplosion(loc.getX(), loc.getY(), loc.getZ(), power, setFire);
+     }
+ 
++    // PandaSpigot start
++    public boolean createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks, Entity source) {
++        return createExplosion(x, y, z, power, setFire, breakBlocks, source, false);
++    }
++
++    public boolean createExplosion(double x, double y, double z, float power, boolean setFire, boolean breakBlocks, Entity source, boolean excludeSourceFromDamage) {
++        net.minecraft.server.Entity entity = (source == null) ? null : ((CraftEntity) source).getHandle();
++        return !world.createExplosion(entity, x, y, z, power, setFire, breakBlocks, excludeSourceFromDamage).wasCanceled;
++    }
++
++    public boolean createExplosion(Entity source, Location loc, float power, boolean setFire, boolean breakBlocks, boolean excludeSourceFromDamage) {
++        return createExplosion(loc.getX(), loc.getY(), loc.getZ(), power, setFire, breakBlocks, source, excludeSourceFromDamage);
++    }
++
++    public boolean createExplosion(Location loc, float power, boolean setFire, boolean breakBlocks, Entity source) {
++        return createExplosion(loc.getX(), loc.getY(), loc.getZ(), power, setFire, breakBlocks, source, false);
++    }
++    // PandaSpigot end
++
+     public Environment getEnvironment() {
+         return environment;
+     }
