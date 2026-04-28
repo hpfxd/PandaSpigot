@@ -1,14 +1,14 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: DieUnterKreatur <info@dieunterkreatur.de>
 Date: Tue, 7 Apr 2026 20:28:42 +0200
-Subject: [PATCH] Backport-CreateExplosion
+Subject: [PATCH] Backport Modern Explosion API
 
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735333673b8 100644
+index 36a07f027fb05eba32b08e3a566486a02621c663..a716d32b1ccc83b32f58503a0639f2802cb2fcbe 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
-@@ -660,6 +660,159 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
+@@ -660,6 +660,161 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
       */
      public boolean createExplosion(Location loc, float power, boolean setFire);
  
@@ -19,7 +19,7 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735
 +     * <p>
 +     * Note that if a non-null {@code source} Entity is provided and {@code
 +     * breakBlocks} is {@code true}, the value of {@code breakBlocks} will be
-+     * ignored if {@link GameRules#MOB_GRIEFING} is {@code false} in the world
++     * ignored if the {@code mobGriefing} gamerule is {@code false} in the world
 +     * in which the explosion occurs. In other words, the mob griefing gamerule
 +     * will take priority over {@code breakBlocks} if explosions are not allowed.
 +     *
@@ -59,14 +59,14 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735
 +     * @param breakBlocks Whether or not to have blocks be destroyed
 +     * @return false if explosion was canceled, otherwise true
 +     */
-+    default boolean createExplosion(Entity source, Location loc, float power, boolean setFire, boolean breakBlocks) {
++    public default boolean createExplosion(Entity source, Location loc, float power, boolean setFire, boolean breakBlocks) {
 +        return createExplosion(source, loc, power, setFire, breakBlocks, true);
 +    }
 +
 +    /**
 +     * Creates explosion at given location with given power and optionally
 +     * setting blocks on fire, with the specified entity as the source.
-+     *
++     * <p>
 +     * Will destroy other blocks
 +     *
 +     * @param source The source entity of the explosion
@@ -75,9 +75,10 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735
 +     * @param setFire Whether or not to set blocks on fire
 +     * @return false if explosion was canceled, otherwise true
 +     */
-+    public default boolean createExplosion( Entity source, Location loc, float power, boolean setFire) {
++    public default boolean createExplosion(Entity source, Location loc, float power, boolean setFire) {
 +        return createExplosion(source, loc, power, setFire, true);
 +    }
++
 +    /**
 +     * Creates explosion at given location with given power, with the specified entity as the source.
 +     * Will set blocks on fire and destroy blocks.
@@ -90,6 +91,7 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735
 +    public default boolean createExplosion(Entity source, Location loc, float power) {
 +        return createExplosion(source, loc, power, true, true);
 +    }
++
 +    /**
 +     * Creates explosion at given entities location with given power and optionally
 +     * setting blocks on fire, with the specified entity as the source.
@@ -103,10 +105,11 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735
 +    public default boolean createExplosion(Entity source, float power, boolean setFire, boolean breakBlocks) {
 +        return createExplosion(source, source.getLocation(), power, setFire, breakBlocks);
 +    }
++
 +    /**
 +     * Creates explosion at given entities location with given power and optionally
 +     * setting blocks on fire, with the specified entity as the source.
-+     *
++     * <p>
 +     * Will destroy blocks.
 +     *
 +     * @param source The source entity of the explosion
@@ -140,7 +143,7 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735
 +     * @param breakBlocks Whether or not to have blocks be destroyed
 +     * @return false if explosion was canceled, otherwise true
 +     */
-+    default boolean createExplosion(Location loc, float power, boolean setFire, boolean breakBlocks) {
++    public default boolean createExplosion(Location loc, float power, boolean setFire, boolean breakBlocks) {
 +        return this.createExplosion(loc, power, setFire, breakBlocks, null);
 +    }
 +
@@ -150,7 +153,7 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735
 +     * <p>
 +     * Note that if a non-null {@code source} Entity is provided and {@code
 +     * breakBlocks} is {@code true}, the value of {@code breakBlocks} will be
-+     * ignored if {@link GameRules#MOB_GRIEFING} is {@code false} in the world
++     * ignored if the {@code mobGriefing} gamerule is {@code false} in the world
 +     * in which the explosion occurs. In other words, the mob griefing gamerule
 +     * will take priority over {@code breakBlocks} if explosions are not allowed.
 +     *
@@ -161,9 +164,8 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..ada8d3aefad329f381adfdb78a159735
 +     * @param source the source entity, used for tracking damage
 +     * @return false if explosion was canceled, otherwise true
 +     */
-+    public boolean createExplosion(Location loc, float power, boolean setFire, boolean breakBlocks, Entity source);
-+
-+    // PandaSpigot end 
++    boolean createExplosion(Location loc, float power, boolean setFire, boolean breakBlocks, Entity source);
++    // PandaSpigot end
 +
      /**
       * Gets the {@link Environment} type of this world
