@@ -5,7 +5,7 @@ Subject: [PATCH] Backport Modern Explosion API
 
 
 diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
-index 36a07f027fb05eba32b08e3a566486a02621c663..f5cee50af5ac8c9576106e16eee2a0a55a4ff4eb 100644
+index 36a07f027fb05eba32b08e3a566486a02621c663..2cd9a09917caedd773cd09ad4866eafec0f1d51f 100644
 --- a/src/main/java/org/bukkit/World.java
 +++ b/src/main/java/org/bukkit/World.java
 @@ -660,6 +660,161 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
@@ -60,7 +60,7 @@ index 36a07f027fb05eba32b08e3a566486a02621c663..f5cee50af5ac8c9576106e16eee2a0a5
 +     * @return false if explosion was canceled, otherwise true
 +     */
 +    public default boolean createExplosion(Entity source, Location loc, float power, boolean setFire, boolean breakBlocks) {
-+        return createExplosion(source, loc, power, setFire, breakBlocks, true);
++        return createExplosion(source, loc, power, setFire, breakBlocks, false);
 +    }
 +
 +    /**
