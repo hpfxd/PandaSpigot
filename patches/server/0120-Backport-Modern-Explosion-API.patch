@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: DieUnterKreatur <info@dieunterkreatur.de>
 Date: Tue, 7 Apr 2026 20:28:31 +0200
-Subject: [PATCH] Backport-CreateExplosion
+Subject: [PATCH] Backport Modern Explosion API
 
 
 diff --git a/src/main/java/net/minecraft/server/Explosion.java b/src/main/java/net/minecraft/server/Explosion.java
-index 6671d4920f4b808d61fd458ef3f26f21a0e96322..9eccbb958013e193f4b2bc037b9745e32956ca68 100644
+index 6671d4920f4b808d61fd458ef3f26f21a0e96322..e605298073e4911c746d06465d09d6cae0a63f6c 100644
 --- a/src/main/java/net/minecraft/server/Explosion.java
 +++ b/src/main/java/net/minecraft/server/Explosion.java
 @@ -30,6 +30,7 @@ public class Explosion {
@@ -16,10 +16,10 @@ index 6671d4920f4b808d61fd458ef3f26f21a0e96322..9eccbb958013e193f4b2bc037b9745e3
  
      public Explosion(World world, Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1) {
          this.world = world;
-@@ -41,6 +42,19 @@ public class Explosion {
-         this.a = flag;
+@@ -42,6 +43,20 @@ public class Explosion {
          this.b = flag1;
      }
+ 
 +    // PandaSpigot start
 +    public Explosion(World world, Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1, boolean excludeSourceFromDamage) {
 +        this.world = world;
@@ -33,10 +33,11 @@ index 6671d4920f4b808d61fd458ef3f26f21a0e96322..9eccbb958013e193f4b2bc037b9745e3
 +        this.excludeSourceFromDamage = excludeSourceFromDamage;
 +    }
 +    // PandaSpigot end
- 
++
      public void a() {
          // CraftBukkit start
-@@ -108,7 +122,7 @@ public class Explosion {
+         if (this.size < 0.1F) {
+@@ -108,7 +123,7 @@ public class Explosion {
          int j1 = MathHelper.floor(this.posZ - (double) f3 - 1.0D);
          int k1 = MathHelper.floor(this.posZ + (double) f3 + 1.0D);
          // PaperSpigot start - Fix lag from explosions processing dead entities
@@ -46,22 +47,11 @@ index 6671d4920f4b808d61fd458ef3f26f21a0e96322..9eccbb958013e193f4b2bc037b9745e3
              public boolean apply(Entity entity) {
                  return IEntitySelector.d.apply(entity) && !entity.dead;
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index fe9b4ea7584587c4a4d198e01fc21838ec59f471..d6437ed17d03c0e7d3f33844f1d3b97d8b7a262a 100644
+index fe9b4ea7584587c4a4d198e01fc21838ec59f471..9b86cdd3b83ae8b0c040dc9d250b54684d0b7510 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
-@@ -2040,17 +2040,22 @@ public abstract class World implements IBlockAccess {
- 
-         return false;
+@@ -2042,16 +2042,22 @@ public abstract class World implements IBlockAccess {
      }
-+    // PandaSpigot start
-+    public Explosion createExplosion(Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1, boolean excludeSourceFromDamage) {
-+        Explosion explosion = new Explosion(this, entity, d0, d1, d2, f, flag, flag1, excludeSourceFromDamage);
-+
-+        explosion.a();
-+        explosion.a(true);
-+        return explosion;
-+    }
-+    // PandaSpigot end
  
      public Explosion explode(Entity entity, double d0, double d1, double d2, float f, boolean flag) {
 -        return this.createExplosion(entity, d0, d1, d2, f, false, flag);
@@ -70,16 +60,23 @@ index fe9b4ea7584587c4a4d198e01fc21838ec59f471..d6437ed17d03c0e7d3f33844f1d3b97d
  
      public Explosion createExplosion(Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1) {
 -        Explosion explosion = new Explosion(this, entity, d0, d1, d2, f, flag, flag1);
--
--        explosion.a();
--        explosion.a(true);
--        return explosion;
 +        return this.createExplosion(entity, d0, d1, d2, f, flag, flag1, false); // PandaSpigot
++    }
++
++    // PandaSpigot start
++    public Explosion createExplosion(Entity entity, double d0, double d1, double d2, float f, boolean flag, boolean flag1, boolean excludeSourceFromDamage) {
++        Explosion explosion = new Explosion(this, entity, d0, d1, d2, f, flag, flag1, excludeSourceFromDamage);
+ 
+         explosion.a();
+         explosion.a(true);
+         return explosion;
      }
++    // PandaSpigot end
  
      public float a(Vec3D vec3d, AxisAlignedBB axisalignedbb) {
+         double d0 = 1.0D / ((axisalignedbb.d - axisalignedbb.a) * 2.0D + 1.0D);
 diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
-index b1e389f16a2d5a85a15bb934117f4ba207c856b9..fe9eca3c946db41dbd8526ca013a9f471ec487a2 100644
+index b1e389f16a2d5a85a15bb934117f4ba207c856b9..bdcff39db6353cd3f9386ff7cab58bccd0268751 100644
 --- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 +++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
 @@ -566,7 +566,7 @@ public class CraftWorld implements World {
@@ -106,7 +103,7 @@ index b1e389f16a2d5a85a15bb934117f4ba207c856b9..fe9eca3c946db41dbd8526ca013a9f47
 +    }
 +
 +    public boolean createExplosion(Entity source, Location loc, float power, boolean setFire, boolean breakBlocks, boolean excludeSourceFromDamage) {
-+        return createExplosion(loc.getX(), loc.getY(), loc.getZ(), power, setFire,breakBlocks, source, excludeSourceFromDamage);
++        return createExplosion(loc.getX(), loc.getY(), loc.getZ(), power, setFire, breakBlocks, source, excludeSourceFromDamage);
 +    }
 +
 +    public boolean createExplosion(Location loc, float power, boolean setFire, boolean breakBlocks, Entity source) {
