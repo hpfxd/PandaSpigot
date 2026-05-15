@@ -1,0 +1,86 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Haniel Cota <hanielcota@hotmail.com>
+Date: Fri, 15 May 2026 13:31:53 -0300
+Subject: [PATCH] PandaSpigot - Reuse PacketDataSerializer instances in Netty
+ handlers to avoid allocation per packet
+
+
+diff --git a/src/main/java/net/minecraft/server/PacketCompressor.java b/src/main/java/net/minecraft/server/PacketCompressor.java
+index 37788a5f399590ce98c0a55bf48d576f88d4716b..de5996b786db944ebfd35d6eca710b49d43221fc 100644
+--- a/src/main/java/net/minecraft/server/PacketCompressor.java
++++ b/src/main/java/net/minecraft/server/PacketCompressor.java
+@@ -19,7 +19,7 @@ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+ 
+     protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
+         int i = bytebuf.readableBytes();
+-        PacketDataSerializer packetdataserializer = new PacketDataSerializer(bytebuf1);
++        PacketDataSerializer packetdataserializer = PacketDataSerializer.forBuffer(bytebuf1); // PandaSpigot
+ 
+         if (i < this.c) {
+             packetdataserializer.b(0);
+diff --git a/src/main/java/net/minecraft/server/PacketDataSerializer.java b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+index 09b8fa11efa326345b3b4eaf952676f4841f8115..bd494418f9a20231788c348d108d1f5d71294d99 100644
+--- a/src/main/java/net/minecraft/server/PacketDataSerializer.java
++++ b/src/main/java/net/minecraft/server/PacketDataSerializer.java
+@@ -29,12 +29,21 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack; // CraftBukkit
+ 
+ public class PacketDataSerializer extends ByteBuf {
+ 
+-    private final ByteBuf a;
++    private ByteBuf a; // PandaSpigot - removed final for reuse
++    private static final ThreadLocal<PacketDataSerializer> INSTANCE = ThreadLocal.withInitial(() -> new PacketDataSerializer(null)); // PandaSpigot
+ 
+     public PacketDataSerializer(ByteBuf bytebuf) {
+         this.a = bytebuf;
+     }
+ 
++    // PandaSpigot start - Reuse PacketDataSerializer instances to avoid allocation per packet in Netty handlers
++    public static PacketDataSerializer forBuffer(ByteBuf bytebuf) {
++        PacketDataSerializer s = INSTANCE.get();
++        s.a = bytebuf;
++        return s;
++    }
++    // PandaSpigot end
++
+     public static int a(int i) {
+         for (int j = 1; j < 5; ++j) {
+             if ((i & -1 << j * 7) == 0) {
+diff --git a/src/main/java/net/minecraft/server/PacketDecoder.java b/src/main/java/net/minecraft/server/PacketDecoder.java
+index d48e4934ed9ccdd81f23131845e1d3b2bf68be30..5ab66261bcc8ab872b8c8ae8449490c9c7922eb7 100644
+--- a/src/main/java/net/minecraft/server/PacketDecoder.java
++++ b/src/main/java/net/minecraft/server/PacketDecoder.java
+@@ -22,7 +22,7 @@ public class PacketDecoder extends ByteToMessageDecoder {
+ 
+     protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
+         if (bytebuf.readableBytes() != 0) {
+-            PacketDataSerializer packetdataserializer = new PacketDataSerializer(bytebuf);
++            PacketDataSerializer packetdataserializer = PacketDataSerializer.forBuffer(bytebuf); // PandaSpigot
+             int i = packetdataserializer.e();
+             Packet packet = ((EnumProtocol) channelhandlercontext.channel().attr(NetworkManager.c).get()).a(this.c, i);
+ 
+diff --git a/src/main/java/net/minecraft/server/PacketDecompressor.java b/src/main/java/net/minecraft/server/PacketDecompressor.java
+index 300d46475a682fbeb4db3e21e64f3c18e21a14c7..34d0e7b16f2e03a35e8bf00ddd44cdb5292ace05 100644
+--- a/src/main/java/net/minecraft/server/PacketDecompressor.java
++++ b/src/main/java/net/minecraft/server/PacketDecompressor.java
+@@ -20,7 +20,7 @@ public class PacketDecompressor extends ByteToMessageDecoder {
+ 
+     protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
+         if (bytebuf.readableBytes() != 0) {
+-            PacketDataSerializer packetdataserializer = new PacketDataSerializer(bytebuf);
++            PacketDataSerializer packetdataserializer = PacketDataSerializer.forBuffer(bytebuf); // PandaSpigot
+             int i = packetdataserializer.e();
+ 
+             if (i == 0) {
+diff --git a/src/main/java/net/minecraft/server/PacketEncoder.java b/src/main/java/net/minecraft/server/PacketEncoder.java
+index 9ebae0b5a96c0f4e5f6475e41251b4d4d519c86a..8ffde6983ef93d43dfe40e33732f94b0d32a2a2a 100644
+--- a/src/main/java/net/minecraft/server/PacketEncoder.java
++++ b/src/main/java/net/minecraft/server/PacketEncoder.java
+@@ -29,7 +29,7 @@ public class PacketEncoder extends MessageToByteEncoder<Packet> {
+         if (integer == null) {
+             throw new IOException("Can't serialize unregistered packet");
+         } else {
+-            PacketDataSerializer packetdataserializer = new PacketDataSerializer(bytebuf);
++            PacketDataSerializer packetdataserializer = PacketDataSerializer.forBuffer(bytebuf); // PandaSpigot
+ 
+             packetdataserializer.b(integer);
+ 
