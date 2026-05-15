@@ -1,0 +1,131 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Haniel Cota <hanielcota@hotmail.com>
+Date: Fri, 15 May 2026 13:21:23 -0300
+Subject: [PATCH] PandaSpigot - Replace synchronized packet limiter with
+ lock-free AtomicIntervalledCounter
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/util/AtomicIntervalledCounter.java b/src/main/java/com/hpfxd/pandaspigot/util/AtomicIntervalledCounter.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..d3102244e29d1197f21a73356c6aecdea81071eb
+--- /dev/null
++++ b/src/main/java/com/hpfxd/pandaspigot/util/AtomicIntervalledCounter.java
+@@ -0,0 +1,43 @@
++package com.hpfxd.pandaspigot.util;
++
++import java.util.concurrent.atomic.AtomicInteger;
++import java.util.concurrent.atomic.AtomicLong;
++import java.util.concurrent.atomic.LongAdder;
++
++// PandaSpigot - Lock-free replacement for IntervalledCounter in packet limiter hot path
++public final class AtomicIntervalledCounter {
++
++    private final long interval;
++    private final AtomicLong windowStart;
++    private final LongAdder[] counts;
++    private final AtomicInteger current;
++
++    public AtomicIntervalledCounter(long interval) {
++        this.interval = interval;
++        this.windowStart = new AtomicLong(System.nanoTime());
++        this.counts = new LongAdder[] { new LongAdder(), new LongAdder() };
++        this.current = new AtomicInteger(0);
++    }
++
++    public void updateAndAdd(int amount, long time) {
++        long start = this.windowStart.get();
++        if (time - start > this.interval) {
++            if (this.windowStart.compareAndSet(start, time)) {
++                int next = 1 - this.current.get();
++                this.counts[next].reset();
++                this.current.set(next);
++            }
++        }
++        this.counts[this.current.get()].add(amount);
++    }
++
++    // returns in units per second
++    public double getRate() {
++        long start = this.windowStart.get();
++        long age = System.nanoTime() - start;
++        if (age <= 0) {
++            return 0.0;
++        }
++        return this.counts[this.current.get()].sum() / (age * 1.0e-9);
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index 9ff04c5016f1b8f339975559b8cf619f1841da82..a3de7a3d68bc2333982a2e453d4fa624a5aefc89 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -118,12 +118,11 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     // PandaSpigot end
+ 
+     // PandaSpigot start - packet limiter
+-    protected final Object PACKET_LIMIT_LOCK = new Object();
+-    protected final com.hpfxd.pandaspigot.util.IntervalledCounter allPacketCounts = com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getAllPacketsLimit() != null ? new com.hpfxd.pandaspigot.util.IntervalledCounter(
++    protected final com.hpfxd.pandaspigot.util.AtomicIntervalledCounter allPacketCounts = com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getAllPacketsLimit() != null ? new com.hpfxd.pandaspigot.util.AtomicIntervalledCounter(
+         (long) (com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getAllPacketsLimit().packetLimitInterval * 1.0e9)
+     ) : null;
+-    protected final java.util.Map<Class<? extends Packet<?>>, com.hpfxd.pandaspigot.util.IntervalledCounter> packetSpecificLimits = new java.util.HashMap<>();
+-    private boolean stopReadingPackets;
++    protected final java.util.concurrent.ConcurrentHashMap<Class<? extends Packet<?>>, com.hpfxd.pandaspigot.util.AtomicIntervalledCounter> packetSpecificLimits = new java.util.concurrent.ConcurrentHashMap<>();
++    private volatile boolean stopReadingPackets;
+     private void killForPacketSpam() {
+         IChatBaseComponent[] reason = org.bukkit.craftbukkit.util.CraftChatMessage.fromString(org.bukkit.ChatColor.translateAlternateColorCodes('&', com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getKickMessage()));
+         this.a(new PacketPlayOutKickDisconnect(reason[0]), future -> {
+@@ -187,32 +186,30 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+             if (this.allPacketCounts != null ||
+                 com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getPacketSpecificLimits().containsKey(packet.getClass())) {
+                 long time = System.nanoTime();
+-                synchronized (PACKET_LIMIT_LOCK) {
+-                    if (this.allPacketCounts != null) {
+-                        this.allPacketCounts.updateAndAdd(1, time);
+-                        if (this.allPacketCounts.getRate() >= com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getAllPacketsLimit().maxPacketRate) {
+-                            this.killForPacketSpam();
+-                            return;
+-                        }
++                if (this.allPacketCounts != null) {
++                    this.allPacketCounts.updateAndAdd(1, time);
++                    if (this.allPacketCounts.getRate() >= com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getAllPacketsLimit().maxPacketRate) {
++                        this.killForPacketSpam();
++                        return;
+                     }
++                }
+ 
+-                    for (Class<?> check = packet.getClass(); check != Object.class; check = check.getSuperclass()) {
+-                        com.hpfxd.pandaspigot.config.PacketLimiterConfig.PacketLimit packetSpecificLimit = com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getPacketSpecificLimits().get(check);
+-                        if (packetSpecificLimit == null) {
+-                            continue;
+-                        }
+-                        com.hpfxd.pandaspigot.util.IntervalledCounter counter = this.packetSpecificLimits.computeIfAbsent((Class) check, clazz -> {
+-                            return new com.hpfxd.pandaspigot.util.IntervalledCounter((long) (packetSpecificLimit.packetLimitInterval * 1.0e9));
+-                        });
+-                        counter.updateAndAdd(1, time);
+-                        if (counter.getRate() >= packetSpecificLimit.maxPacketRate) {
+-                            switch (packetSpecificLimit.violateAction) {
+-                                case DROP:
+-                                    return;
+-                                case KICK:
+-                                    this.killForPacketSpam();
+-                                    return;
+-                            }
++                for (Class<?> check = packet.getClass(); check != Object.class; check = check.getSuperclass()) {
++                    com.hpfxd.pandaspigot.config.PacketLimiterConfig.PacketLimit packetSpecificLimit = com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().packetLimiter.getPacketSpecificLimits().get(check);
++                    if (packetSpecificLimit == null) {
++                        continue;
++                    }
++                    com.hpfxd.pandaspigot.util.AtomicIntervalledCounter counter = this.packetSpecificLimits.computeIfAbsent((Class) check, clazz -> {
++                        return new com.hpfxd.pandaspigot.util.AtomicIntervalledCounter((long) (packetSpecificLimit.packetLimitInterval * 1.0e9));
++                    });
++                    counter.updateAndAdd(1, time);
++                    if (counter.getRate() >= packetSpecificLimit.maxPacketRate) {
++                        switch (packetSpecificLimit.violateAction) {
++                            case DROP:
++                                return;
++                            case KICK:
++                                this.killForPacketSpam();
++                                return;
+                         }
+                     }
+                 }
