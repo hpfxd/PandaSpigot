@@ -1,0 +1,95 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PandaDev <panda@dev>
+Date: Fri, 15 May 2026 12:45:54 -0300
+Subject: [PATCH] PandaSpigot - Eliminate HashSet allocation per entity spawn
+ in AttributeMapServer.c()
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+EntityTrackerEntry.updatePlayer() previously called AttributeMapServer.c()
+for every new viewer of every living entity. c() allocated a new HashSet,
+populated it with all syncable attributes, and returned it — only for the
+caller to discard it immediately after serializing the packet.
+
+Changes:
+- AttributeMapServer: add getSyncableAttributes(Collection) to populate an
+  existing collection without allocating
+- AttributeMapServer.c(): now delegates to getSyncableAttributes(ArrayList)
+  to avoid HashSet overhead even for legacy callers
+- EntityTrackerEntry: add reusable ArrayList<AttributeInstance> field
+  syncableAttributes, used in updatePlayer() instead of allocating per spawn
+
+Impact:
+- Eliminates HashSet + node allocations for every entity spawn to every player
+- Reduces GC pressure significantly during chunk loads and player teleports
+- Zero behavioral change
+
+diff --git a/src/main/java/net/minecraft/server/AttributeMapServer.java b/src/main/java/net/minecraft/server/AttributeMapServer.java
+index 73ad81b01c4393d43aa916ca6975aedfbdd5a2a6..a1f4e8f89bc88de5f9446cd2bcab2a58b3ba95c8 100644
+--- a/src/main/java/net/minecraft/server/AttributeMapServer.java
++++ b/src/main/java/net/minecraft/server/AttributeMapServer.java
+@@ -64,16 +64,22 @@ public class AttributeMapServer extends AttributeMapBase {
+     }
+ 
+     public Collection<AttributeInstance> c() {
+-        HashSet hashset = Sets.newHashSet();
++        // PandaSpigot start - avoid HashSet allocation, use ArrayList instead
++        java.util.ArrayList<AttributeInstance> list = new java.util.ArrayList<>();
++        this.getSyncableAttributes(list);
++        return list;
++        // PandaSpigot end
++    }
+ 
++    // PandaSpigot start - populate an existing collection to avoid allocation
++    public void getSyncableAttributes(java.util.Collection<AttributeInstance> into) {
+         for (AttributeInstance attributeinstance : this.a()) {
+             if (attributeinstance.getAttribute().c()) {
+-                hashset.add(attributeinstance);
++                into.add(attributeinstance);
+             }
+         }
+-
+-        return hashset;
+     }
++    // PandaSpigot end
+ 
+     @Override
+     public AttributeInstance a(String s) {
+diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index 8f0284b736bba7c7543c707c66720a26d5080364..50ee9db232a73db65ae49591334488186b57d756 100644
+--- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+@@ -39,6 +39,7 @@ public class EntityTrackerEntry {
+     private boolean x;
+     private boolean y;
+     public boolean n;
++    private final java.util.ArrayList<AttributeInstance> syncableAttributes = new java.util.ArrayList<>(); // PandaSpigot - reusable collection to avoid allocation per spawn
+     // PaperSpigot start
+     // Replace trackedPlayers Set with a Map. The value is true until the player receives
+     // their first update (which is forced to have absolute coordinates), false afterward.
+@@ -364,17 +365,20 @@ public class EntityTrackerEntry {
+ 
+                     if (this.tracker instanceof EntityLiving) {
+                         AttributeMapServer attributemapserver = (AttributeMapServer) ((EntityLiving) this.tracker).getAttributeMap();
+-                        Collection collection = attributemapserver.c();
++                        // PandaSpigot start - reuse collection to avoid HashSet allocation per spawn
++                        this.syncableAttributes.clear();
++                        attributemapserver.getSyncableAttributes(this.syncableAttributes);
+ 
+                         // CraftBukkit start - If sending own attributes send scaled health instead of current maximum health
+                         if (this.tracker.getId() == entityplayer.getId()) {
+-                            ((EntityPlayer) this.tracker).getBukkitEntity().injectScaledMaxHealth(collection, false);
++                            ((EntityPlayer) this.tracker).getBukkitEntity().injectScaledMaxHealth(this.syncableAttributes, false);
+                         }
+                         // CraftBukkit end
+ 
+-                        if (!collection.isEmpty()) {
+-                            entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.tracker.getId(), collection));
++                        if (!this.syncableAttributes.isEmpty()) {
++                            entityplayer.playerConnection.sendPacket(new PacketPlayOutUpdateAttributes(this.tracker.getId(), this.syncableAttributes));
+                         }
++                        // PandaSpigot end
+                     }
+ 
+                     this.j = this.tracker.motX;
