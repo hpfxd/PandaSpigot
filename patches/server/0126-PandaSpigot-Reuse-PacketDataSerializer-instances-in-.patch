@@ -6,10 +6,10 @@ Subject: [PATCH] PandaSpigot - Reuse PacketDataSerializer instances in Netty
 
 
 diff --git a/src/main/java/net/minecraft/server/PacketCompressor.java b/src/main/java/net/minecraft/server/PacketCompressor.java
-index 37788a5f399590ce98c0a55bf48d576f88d4716b..de5996b786db944ebfd35d6eca710b49d43221fc 100644
+index ea86e43093f6f812b1d9caa9863c84bc3856caba..6cae301d42fad3841714a8adba1262583d92b70a 100644
 --- a/src/main/java/net/minecraft/server/PacketCompressor.java
 +++ b/src/main/java/net/minecraft/server/PacketCompressor.java
-@@ -19,7 +19,7 @@ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+@@ -20,7 +20,7 @@ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
  
      protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
          int i = bytebuf.readableBytes();
