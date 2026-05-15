@@ -1,0 +1,109 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Haniel Cota <hanielcota@hotmail.com>
+Date: Fri, 15 May 2026 13:39:36 -0300
+Subject: [PATCH] PandaSpigot - Pool QueuedPacket objects to avoid allocation
+ per queued packet
+
+
+diff --git a/src/main/java/net/minecraft/server/NetworkManager.java b/src/main/java/net/minecraft/server/NetworkManager.java
+index a3de7a3d68bc2333982a2e453d4fa624a5aefc89..0eed5be8883fc47a8d300640345cb11873e4320a 100644
+--- a/src/main/java/net/minecraft/server/NetworkManager.java
++++ b/src/main/java/net/minecraft/server/NetworkManager.java
+@@ -256,15 +256,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+         java.util.List<Packet<?>> extraPackets = InnerUtil.buildExtraPackets(packet);
+         boolean hasExtraPackets = extraPackets != null && !extraPackets.isEmpty();
+         if (!hasExtraPackets) {
+-            i.add(new NetworkManager.QueuedPacket(packet, listeners));
++            i.add(this.obtainQueuedPacket(packet, listeners));
+         } else {
+             java.util.List<NetworkManager.QueuedPacket> packets = new java.util.ArrayList<>(1 + extraPackets.size());
+-            packets.add(new NetworkManager.QueuedPacket(packet, (GenericFutureListener<? extends Future<? super Void>>[]) null)); // delay the future listener until the end of the extra packets
++            packets.add(this.obtainQueuedPacket(packet, (GenericFutureListener<? extends Future<? super Void>>[]) null)); // delay the future listener until the end of the extra packets
+ 
+             for (int i = 0, len = extraPackets.size(); i < len;) {
+                 Packet<?> extra = extraPackets.get(i);
+                 boolean end = ++i == len;
+-                packets.add(new NetworkManager.QueuedPacket(extra, end ? listeners : null)); // append listener to the end
++                packets.add(this.obtainQueuedPacket(extra, end ? listeners : null)); // append listener to the end
+             }
+             i.addAll(packets);
+         }
+@@ -412,6 +412,7 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+                 this.writePacket(packet, queued.getGenericFutureListener(), (!iterator.hasNext() && (needsFlush || this.canFlush)) ? Boolean.TRUE : Boolean.FALSE);
+                 hasWrotePacket = true;
+                 // PandaSpigot end
++                this.recycleQueuedPacket(queued); // PandaSpigot
+             }
+         }
+         return true;
+@@ -434,13 +435,14 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+     // PandaSpigot start
+     public void clearPacketQueue() {
+         EntityPlayer player = getPlayer();
+-        i.forEach(queuedPacket -> {
++        QueuedPacket queuedPacket;
++        while ((queuedPacket = i.poll()) != null) {
+             Packet<?> packet = queuedPacket.getPacket();
+-            if (packet.hasFinishListener()) {
++            if (packet != null && packet.hasFinishListener()) {
+                 packet.onPacketDispatchFinish(player, null);
+             }
+-        });
+-        i.clear();
++            this.recycleQueuedPacket(queuedPacket);
++        }
+     }
+     // PandaSpigot end
+ 
+@@ -535,8 +537,20 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+ 
+     static class QueuedPacket {
+ 
+-        private final Packet a; private Packet getPacket() { return this.a; } // PandaSpigot - OBFHELPER
+-        private final GenericFutureListener<? extends Future<? super Void>>[] b; private GenericFutureListener<? extends Future<? super Void>>[] getGenericFutureListener() { return this.b; } // PandaSpigot - OBFHELPER
++        private Packet a; private Packet getPacket() { return this.a; } // PandaSpigot - OBFHELPER
++        private GenericFutureListener<? extends Future<? super Void>>[] b; private GenericFutureListener<? extends Future<? super Void>>[] getGenericFutureListener() { return this.b; } // PandaSpigot - OBFHELPER
++
++        // PandaSpigot start - pooling support
++        void set(Packet packet, GenericFutureListener<? extends Future<? super Void>>[] listeners) {
++            this.a = packet;
++            this.b = listeners;
++        }
++
++        void clear() {
++            this.a = null;
++            this.b = null;
++        }
++        // PandaSpigot end
+ 
+         public QueuedPacket(Packet packet, GenericFutureListener<? extends Future<? super Void>>... agenericfuturelistener) {
+             this.a = packet;
+@@ -544,6 +558,28 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
+         }
+     }
+ 
++    // PandaSpigot start - QueuedPacket pool to avoid allocation per queued packet
++    private final java.util.ArrayDeque<QueuedPacket> queuedPacketPool = new java.util.ArrayDeque<>();
++
++    private QueuedPacket obtainQueuedPacket(Packet packet, GenericFutureListener<? extends Future<? super Void>>[] listeners) {
++        synchronized (this.queuedPacketPool) {
++            QueuedPacket q = this.queuedPacketPool.poll();
++            if (q != null) {
++                q.set(packet, listeners);
++                return q;
++            }
++        }
++        return new QueuedPacket(packet, listeners);
++    }
++
++    private void recycleQueuedPacket(QueuedPacket q) {
++        synchronized (this.queuedPacketPool) {
++            q.clear();
++            this.queuedPacketPool.offer(q);
++        }
++    }
++    // PandaSpigot end
++
+     // Spigot Start
+     public SocketAddress getRawAddress()
+     {
