@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PandaDev <panda@dev>
+Date: Fri, 15 May 2026 12:30:22 -0300
+Subject: [PATCH] PandaSpigot - Reuse ArrayList in
+ EntityTracker.updatePlayers() to avoid allocation per tick
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityTracker.java b/src/main/java/net/minecraft/server/EntityTracker.java
+index cb72b36725927272fddfdad929b268a7b06140ac..c40611ae0f19b45365ac9cea882be29b944134bb 100644
+--- a/src/main/java/net/minecraft/server/EntityTracker.java
++++ b/src/main/java/net/minecraft/server/EntityTracker.java
+@@ -16,6 +16,7 @@ public class EntityTracker {
+     private Set<EntityTrackerEntry> c = Sets.newHashSet();
+     public IntHashMap<EntityTrackerEntry> trackedEntities = new IntHashMap();
+     private int e;
++    private final ArrayList<EntityPlayer> movedPlayers = new ArrayList<>(); // PandaSpigot - Reuse list to avoid allocation per tick
+ 
+     public EntityTracker(WorldServer worldserver) {
+         this.world = worldserver;
+@@ -168,7 +169,9 @@ public class EntityTracker {
+     }
+ 
+     public void updatePlayers() {
+-        ArrayList arraylist = Lists.newArrayList();
++        // PandaSpigot start - Reuse list to avoid allocation per tick
++        this.movedPlayers.clear();
++        // PandaSpigot end
+         Iterator iterator = this.c.iterator();
+ 
+         while (iterator.hasNext()) {
+@@ -176,12 +179,12 @@ public class EntityTracker {
+ 
+             entitytrackerentry.track(this.world.players);
+             if (entitytrackerentry.n && entitytrackerentry.tracker instanceof EntityPlayer) {
+-                arraylist.add((EntityPlayer) entitytrackerentry.tracker);
++                this.movedPlayers.add((EntityPlayer) entitytrackerentry.tracker);
+             }
+         }
+ 
+-        for (int i = 0; i < arraylist.size(); ++i) {
+-            EntityPlayer entityplayer = (EntityPlayer) arraylist.get(i);
++        for (int i = 0; i < this.movedPlayers.size(); ++i) {
++            EntityPlayer entityplayer = this.movedPlayers.get(i);
+             Iterator iterator1 = this.c.iterator();
+ 
+             while (iterator1.hasNext()) {
