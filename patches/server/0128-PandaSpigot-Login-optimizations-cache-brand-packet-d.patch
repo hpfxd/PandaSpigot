@@ -1,0 +1,143 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Haniel Cota <hanielcota@hotmail.com>
+Date: Fri, 15 May 2026 14:41:26 -0300
+Subject: [PATCH] PandaSpigot - Login optimizations: cache brand packet, dedup
+ scoreboard without HashSet, cache spawn position
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 9b6214d194cbd43bf14345610c360ae9f790bab2..d8f13ec07c2729c46b27a559fda57695c2e82dd2 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -67,6 +67,10 @@ public abstract class PlayerList {
+     private CraftServer cserver;
+     private final Map<String,EntityPlayer> playersByName = new org.spigotmc.CaseInsensitiveMap<EntityPlayer>();
+ 
++    // PandaSpigot start - pre-build reusable brand packet to avoid allocation per login
++    private final PacketPlayOutCustomPayload brandPacket;
++    // PandaSpigot end
++
+     public PlayerList(MinecraftServer minecraftserver) {
+         this.cserver = minecraftserver.server = new CraftServer(minecraftserver, this);
+         minecraftserver.console = new com.hpfxd.pandaspigot.console.PandaConsoleCommandSender(); // PandaSpigot
+@@ -81,6 +85,9 @@ public abstract class PlayerList {
+         this.k.a(false);
+         this.l.a(false);
+         this.maxPlayers = 8;
++        // PandaSpigot start
++        this.brandPacket = new PacketPlayOutCustomPayload("MC|Brand", (new PacketDataSerializer(Unpooled.buffer())).a(minecraftserver.getServerModName()));
++        // PandaSpigot end
+     }
+ 
+     public void a(NetworkManager networkmanager, EntityPlayer entityplayer) {
+@@ -146,7 +153,7 @@ public abstract class PlayerList {
+ 
+         playerconnection.sendPacket(new PacketPlayOutLogin(entityplayer.getId(), entityplayer.playerInteractManager.getGameMode(), worlddata.isHardcore(), worldserver.worldProvider.getDimension(), worldserver.getDifficulty(), Math.min(this.getMaxPlayers(), 60), worlddata.getType(), worldserver.getGameRules().getBoolean("reducedDebugInfo"))); // CraftBukkit - cap player list to 60
+         entityplayer.getBukkitEntity().sendSupportedChannels(); // CraftBukkit
+-        playerconnection.sendPacket(new PacketPlayOutCustomPayload("MC|Brand", (new PacketDataSerializer(Unpooled.buffer())).a(this.getServer().getServerModName())));
++        playerconnection.sendPacket(this.brandPacket); // PandaSpigot - reuse brand packet
+         playerconnection.sendPacket(new PacketPlayOutServerDifficulty(worlddata.getDifficulty(), worlddata.isDifficultyLocked()));
+         playerconnection.sendPacket(new PacketPlayOutSpawnPosition(blockposition));
+         playerconnection.sendPacket(new PacketPlayOutAbilities(entityplayer.abilities));
+@@ -206,7 +213,9 @@ public abstract class PlayerList {
+     }
+ 
+     public void sendScoreboard(ScoreboardServer scoreboardserver, EntityPlayer entityplayer) {
+-        HashSet hashset = Sets.newHashSet();
++        // PandaSpigot start - avoid HashSet allocation; 19 slots max, use reference-equality dedup
++        ScoreboardObjective[] sent = new ScoreboardObjective[19];
++        int sentCount = 0;
+         Iterator iterator = scoreboardserver.getTeams().iterator();
+ 
+         while (iterator.hasNext()) {
+@@ -218,19 +227,29 @@ public abstract class PlayerList {
+         for (int i = 0; i < 19; ++i) {
+             ScoreboardObjective scoreboardobjective = scoreboardserver.getObjectiveForSlot(i);
+ 
+-            if (scoreboardobjective != null && !hashset.contains(scoreboardobjective)) {
+-                List list = scoreboardserver.getScoreboardScorePacketsForObjective(scoreboardobjective);
+-                Iterator iterator1 = list.iterator();
++            if (scoreboardobjective != null) {
++                boolean alreadySent = false;
++                for (int j = 0; j < sentCount; j++) {
++                    if (sent[j] == scoreboardobjective) {
++                        alreadySent = true;
++                        break;
++                    }
++                }
++                if (!alreadySent) {
++                    List list = scoreboardserver.getScoreboardScorePacketsForObjective(scoreboardobjective);
++                    Iterator iterator1 = list.iterator();
+ 
+-                while (iterator1.hasNext()) {
+-                    Packet packet = (Packet) iterator1.next();
++                    while (iterator1.hasNext()) {
++                        Packet packet = (Packet) iterator1.next();
+ 
+-                    entityplayer.playerConnection.sendPacket(packet);
+-                }
++                        entityplayer.playerConnection.sendPacket(packet);
++                    }
+ 
+-                hashset.add(scoreboardobjective);
++                    sent[sentCount++] = scoreboardobjective;
++                }
+             }
+         }
++        // PandaSpigot end
+ 
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 9b86cdd3b83ae8b0c040dc9d250b54684d0b7510..d9e00acf59ef17087fae057e986af2fa1870481c 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -219,14 +219,17 @@ public abstract class World implements IBlockAccess {
+         this.N.a(new IWorldBorderListener() {
+             public void a(WorldBorder worldborder, double d0) {
+                 getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_SIZE), World.this);
++                World.this.cachedSpawn = null; // PandaSpigot - invalidate spawn cache on border change
+             }
+ 
+             public void a(WorldBorder worldborder, double d0, double d1, long i) {
+                 getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.LERP_SIZE), World.this);
++                World.this.cachedSpawn = null; // PandaSpigot
+             }
+ 
+             public void a(WorldBorder worldborder, double d0, double d1) {
+                 getServer().getHandle().sendAll(new PacketPlayOutWorldBorder(worldborder, PacketPlayOutWorldBorder.EnumWorldBorderAction.SET_CENTER), World.this);
++                World.this.cachedSpawn = null; // PandaSpigot
+             }
+ 
+             public void a(WorldBorder worldborder, int i) {
+@@ -3145,19 +3148,26 @@ public abstract class World implements IBlockAccess {
+         this.worldData.setDayTime(i);
+     }
+ 
++    // PandaSpigot start - cache spawn position to avoid repeated allocation
++    private BlockPosition cachedSpawn;
++
+     public BlockPosition getSpawn() {
+-        BlockPosition blockposition = new BlockPosition(this.worldData.c(), this.worldData.d(), this.worldData.e());
++        if (this.cachedSpawn == null) {
++            this.cachedSpawn = new BlockPosition(this.worldData.c(), this.worldData.d(), this.worldData.e());
+ 
+-        if (!this.getWorldBorder().a(blockposition)) {
+-            blockposition = this.getHighestBlockYAt(new BlockPosition(this.getWorldBorder().getCenterX(), 0.0D, this.getWorldBorder().getCenterZ()));
++            if (!this.getWorldBorder().a(this.cachedSpawn)) {
++                this.cachedSpawn = this.getHighestBlockYAt(new BlockPosition(this.getWorldBorder().getCenterX(), 0.0D, this.getWorldBorder().getCenterZ()));
++            }
+         }
+ 
+-        return blockposition;
++        return this.cachedSpawn;
+     }
+ 
+     public void B(BlockPosition blockposition) {
+         this.worldData.setSpawn(blockposition);
++        this.cachedSpawn = null; // invalidate cache
+     }
++    // PandaSpigot end
+ 
+     public boolean a(EntityHuman entityhuman, BlockPosition blockposition) {
+         return true;
