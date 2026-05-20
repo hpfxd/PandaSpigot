@@ -264,7 +264,7 @@ index b4f301a3eb660b9bf080c4f6b4e3bbaa3678a8d6..7933d3191b9f61b4880d85ba99126bf9
          // we clean the player's inventory after the EntityDeathEvent is called so plugins can get the exact state of the inventory.
          if (!event.getKeepInventory()) {
 diff --git a/src/main/java/net/minecraft/server/LoginListener.java b/src/main/java/net/minecraft/server/LoginListener.java
-index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..8d2a07782d370d3cdd8d26790a17c88498b8d258 100644
+index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..db892152d785b2f1badd12c7062221220961821b 100644
 --- a/src/main/java/net/minecraft/server/LoginListener.java
 +++ b/src/main/java/net/minecraft/server/LoginListener.java
 @@ -75,12 +75,15 @@ public class LoginListener implements PacketLoginInListener, IUpdatePlayerListBo
@@ -293,7 +293,7 @@ index 9faa98501275cbd03a34dcc83f281d1e3f40a6e0..8d2a07782d370d3cdd8d26790a17c884
                                  final PlayerPreLoginEvent event = new PlayerPreLoginEvent(playerName, address, uniqueId);
                                  if (asyncEvent.getResult() != PlayerPreLoginEvent.Result.ALLOWED) {
 -                                    event.disallow(asyncEvent.getResult(), asyncEvent.getKickMessage());
-+                                    event.disallow(asyncEvent.getResult(), event.kickMessage()); // PandaSpigot - Adventure
++                                    event.disallow(asyncEvent.getResult(), asyncEvent.kickMessage()); // PandaSpigot - Adventure
                                  }
                                  Waitable<PlayerPreLoginEvent.Result> waitable = new Waitable<PlayerPreLoginEvent.Result>() {
                                      @Override
