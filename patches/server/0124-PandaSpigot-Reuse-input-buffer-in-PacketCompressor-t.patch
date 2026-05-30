@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Haniel Cota <hanielcota@hotmail.com>
+Date: Fri, 15 May 2026 13:08:47 -0300
+Subject: [PATCH] PandaSpigot - Reuse input buffer in PacketCompressor to avoid
+ allocation per compressed packet
+
+
+diff --git a/src/main/java/net/minecraft/server/PacketCompressor.java b/src/main/java/net/minecraft/server/PacketCompressor.java
+index 8107890ffbc205f5ce7e22c04d62fb8b16d087c2..ea86e43093f6f812b1d9caa9863c84bc3856caba 100644
+--- a/src/main/java/net/minecraft/server/PacketCompressor.java
++++ b/src/main/java/net/minecraft/server/PacketCompressor.java
+@@ -8,6 +8,8 @@ import java.util.zip.Deflater;
+ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+ 
+     private final byte[] a = new byte[8192];
++    private byte[] inputBuffer; // PandaSpigot - lazily initialized reusable input buffer
++    private static final int MAX_REUSABLE_SIZE = 65536; // PandaSpigot - cap reusable buffer to prevent unbounded growth per connection
+     private final Deflater b;
+     private int c;
+ 
+@@ -24,11 +26,20 @@ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+             packetdataserializer.b(0);
+             packetdataserializer.writeBytes(bytebuf);
+         } else {
+-            byte[] abyte = new byte[i];
+-
+-            bytebuf.readBytes(abyte);
+-            packetdataserializer.b(abyte.length);
+-            this.b.setInput(abyte, 0, i);
++            // PandaSpigot start - grow reusable input buffer instead of allocating, with lazy init and size cap
++            byte[] buf = this.inputBuffer;
++            if (buf == null || i > buf.length) {
++                if (i <= MAX_REUSABLE_SIZE) {
++                    buf = new byte[i];
++                    this.inputBuffer = buf;
++                } else {
++                    buf = new byte[i]; // oversized packet: allocate temporary, do not retain
++                }
++            }
++            bytebuf.readBytes(buf, 0, i);
++            packetdataserializer.b(i);
++            this.b.setInput(buf, 0, i);
++            // PandaSpigot end
+             this.b.finish();
+ 
+             while (!this.b.finished()) {
