@@ -288,6 +288,23 @@ index 61246ff1fb9de585054702b2e752c403b5eba973..534b5bf48e8191deb722122114f679fa
          }
      });
  
+diff --git a/src/main/java/net/minecraft/server/ChunkRegionLoader.java b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
+index 6b244904d60ebbd2bf4a93a320c9b161e879451e..2ce80c31d90b6a8e71a2ef05cc79bfb1ffb943e7 100644
+--- a/src/main/java/net/minecraft/server/ChunkRegionLoader.java
++++ b/src/main/java/net/minecraft/server/ChunkRegionLoader.java
+@@ -189,10 +189,8 @@ public class ChunkRegionLoader implements IChunkLoader, IAsyncChunkSaver {
+         try {
+             this.e = true;
+ 
+-            while (true) {
+-                if (this.c()) {
+-                    continue;
+-                }
++            while (this.c()) {
++                ;
+             }
+         } finally {
+             this.e = false;
 diff --git a/src/main/java/net/minecraft/server/CommandAbstract.java b/src/main/java/net/minecraft/server/CommandAbstract.java
 index f6b2e14f98c2ab0a0be6be539b42a6ac209e099f..e016f5d7a8a450dd5c916b4fe3f78a0c168fcd2b 100644
 --- a/src/main/java/net/minecraft/server/CommandAbstract.java
