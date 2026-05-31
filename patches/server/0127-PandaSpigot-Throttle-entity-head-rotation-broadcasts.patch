@@ -1,0 +1,53 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PandaDev <panda@dev>
+Date: Fri, 15 May 2026 12:50:18 -0300
+Subject: [PATCH] PandaSpigot - Throttle entity head rotation broadcasts to
+ reduce packet spam
+
+EntityTrackerEntry previously broadcast a head rotation packet every time
+the entity's head yaw changed by >= 4 units (~5.6 degrees). In PvP combat
+players flick their view constantly, generating a head rotation packet
+almost every tick for every viewer.
+
+Changes:
+- Add headRotationThrottle counter to EntityTrackerEntry
+- Update internal rotation state every time threshold is crossed
+- Only broadcast the packet every 2nd significant change
+- Reset throttle when rotation stabilizes (no significant change)
+
+Impact:
+- Reduces head rotation packet volume by ~50% during rapid view changes
+- Preserves server-side rotation accuracy (this.i is always updated)
+- Minimal visual impact; clients interpolate smoothly
+- Zero plugin API changes
+
+Patch: 0127
+
+diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index 50ee9db232a73db65ae49591334488186b57d756..e5a1dde2934932308e5c5281388a1e4805f916c5 100644
+--- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+@@ -39,6 +39,7 @@ public class EntityTrackerEntry {
+     private boolean x;
+     private boolean y;
+     public boolean n;
++    private int headRotationThrottle; // PandaSpigot - throttle head rotation broadcasts
+     private final java.util.ArrayList<AttributeInstance> syncableAttributes = new java.util.ArrayList<>(); // PandaSpigot - reusable collection to avoid allocation per spawn
+     // PaperSpigot start
+     // Replace trackedPlayers Set with a Map. The value is true until the player receives
+@@ -236,8 +237,13 @@ public class EntityTrackerEntry {
+ 
+             i = MathHelper.d(this.tracker.getHeadRotation() * 256.0F / 360.0F);
+             if (Math.abs(i - this.i) >= 4) {
+-                this.broadcast(new PacketPlayOutEntityHeadRotation(this.tracker, (byte) i));
+-                this.i = i;
++                this.i = i; // PandaSpigot - update internal state even if throttled
++                if (++this.headRotationThrottle >= 2) { // PandaSpigot - throttle: send at most every 2nd significant change
++                    this.headRotationThrottle = 0;
++                    this.broadcast(new PacketPlayOutEntityHeadRotation(this.tracker, (byte) i));
++                }
++            } else {
++                this.headRotationThrottle = 0; // PandaSpigot - reset throttle when rotation stabilizes
+             }
+ 
+             this.tracker.ai = false;
