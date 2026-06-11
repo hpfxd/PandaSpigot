@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Mon, 25 May 2026 14:23:02 +0000
+Subject: [PATCH] Fix vanilla spawn protection
+
+
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 8a302b2..4820219 100755
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -516,8 +516,12 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+     public boolean a(World world, BlockPosition blockposition, EntityHuman entityhuman) {
+         if (world.worldProvider.getDimension() != 0) {
+             return false;
++        // PandaSpigot start - Fix vanilla spawn protection
++        /*
+         } else if (this.aP().getOPs().isEmpty()) {
+             return false;
++        */
++        // PandaSpigot end
+         } else if (this.aP().isOp(entityhuman.getProfile())) {
+             return false;
+         } else if (this.getSpawnProtection() <= 0) {
