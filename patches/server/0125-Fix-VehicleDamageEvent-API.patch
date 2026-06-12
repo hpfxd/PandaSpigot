@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Sat, 30 May 2026 15:16:58 +0000
+Subject: [PATCH] Fix VehicleDamageEvent API
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityBoat.java b/src/main/java/net/minecraft/server/EntityBoat.java
+index 0e6f8c03501dd6ce5bda003ae54729763201ebd3..2f7510a016085fa0077ec9ab0ddcd7f9ecaf088b 100644
+--- a/src/main/java/net/minecraft/server/EntityBoat.java
++++ b/src/main/java/net/minecraft/server/EntityBoat.java
+@@ -108,7 +108,7 @@ public class EntityBoat extends Entity {
+                 if (event.isCancelled()) {
+                     return true;
+                 }
+-                // f = event.getDamage(); // TODO Why don't we do this?
++                f = (float) event.getDamage(); // PandaSpigot
+                 // CraftBukkit end
+ 
+                 this.b(-this.m());
