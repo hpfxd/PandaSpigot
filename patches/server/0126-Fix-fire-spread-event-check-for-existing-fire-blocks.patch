@@ -1,0 +1,19 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Tue, 16 Jun 2026 16:49:04 -0300
+Subject: [PATCH] Fix fire spread event check for existing fire blocks
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockFire.java b/src/main/java/net/minecraft/server/BlockFire.java
+index dfcf556b6bb82a5ff971fee645323d463c45ed0f..1b877831810c19d47a24e2ebba35dd36e67b644c 100644
+--- a/src/main/java/net/minecraft/server/BlockFire.java
++++ b/src/main/java/net/minecraft/server/BlockFire.java
+@@ -194,7 +194,7 @@ public class BlockFire extends Block {
+                                         }
+ 
+                                         // CraftBukkit start - Call to stop spread of fire
+-                                        if (world.getType(blockposition1) != Blocks.FIRE) {
++                                        if (world.getType(blockposition1).getBlock() != Blocks.FIRE) {
+                                             if (CraftEventFactory.callBlockIgniteEvent(world, blockposition1.getX(), blockposition1.getY(), blockposition1.getZ(), blockposition.getX(), blockposition.getY(), blockposition.getZ()).isCancelled()) {
+                                                 continue;
+                                             }
