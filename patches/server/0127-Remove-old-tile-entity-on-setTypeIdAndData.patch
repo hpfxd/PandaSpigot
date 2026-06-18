@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <github@masterdash5.com>
+Date: Sun, 7 Jun 2026 04:43:24 -0600
+Subject: [PATCH] Remove old tile entity on setTypeIdAndData()
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index 22a80551b5df5920499767a66a9932b9e77b5fb1..caa7e842cbbe1b666d96a6d3b94fd49fe9bf50f3 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -133,6 +133,11 @@ public class CraftBlock implements Block {
+     public boolean setTypeIdAndData(final int type, final byte data, final boolean applyPhysics) {
+         IBlockData blockData = getNMSBlock(type).fromLegacyData(data);
+         BlockPosition position = new BlockPosition(x, y, z);
++        // PandaSpigot start - Remove old tile entity
++        if (type != 0 && blockData.getBlock().isTileEntity() && type != getTypeId()) {
++            chunk.getHandle().getWorld().setTypeAndData(position, Blocks.AIR.getBlockData(), 0);
++        }
++        // PandaSpigot end
+         if (applyPhysics) {
+             return chunk.getHandle().getWorld().setTypeAndData(position, blockData, 3);
+         } else {
