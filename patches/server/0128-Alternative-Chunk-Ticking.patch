@@ -121,7 +121,7 @@ index 1c9dbe212cfbeb571f1e09f224fb7ed905dd475b..ec0bc88bc49707930567aada90357001
  
      // CraftBukkit start - Sorter to load nearby chunks first
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
-index fe9b4ea7584587c4a4d198e01fc21838ec59f471..ac0372f52534cd58362b98e50e33d0a4e1b12d06 100644
+index 9b86cdd3b83ae8b0c040dc9d250b54684d0b7510..3ead09b51f4032c70ee4ccf6baf6afcd0d08b1c2 100644
 --- a/src/main/java/net/minecraft/server/World.java
 +++ b/src/main/java/net/minecraft/server/World.java
 @@ -129,10 +129,10 @@ public abstract class World implements IBlockAccess {
@@ -168,7 +168,7 @@ index fe9b4ea7584587c4a4d198e01fc21838ec59f471..ac0372f52534cd58362b98e50e33d0a4
  
          this.L = this.random.nextInt(12000);
          this.allowMonsters = true;
-@@ -2339,6 +2343,7 @@ public abstract class World implements IBlockAccess {
+@@ -2345,6 +2349,7 @@ public abstract class World implements IBlockAccess {
          int k;
          int l;
  
@@ -176,7 +176,7 @@ index fe9b4ea7584587c4a4d198e01fc21838ec59f471..ac0372f52534cd58362b98e50e33d0a4
          // Spigot start
          int optimalChunks = spigotConfig.chunksPerTick;
          // Quick conditions to allow us to exist early
-@@ -2376,6 +2381,7 @@ public abstract class World implements IBlockAccess {
+@@ -2382,6 +2387,7 @@ public abstract class World implements IBlockAccess {
          }
              // Spigot End
          }
@@ -185,10 +185,10 @@ index fe9b4ea7584587c4a4d198e01fc21838ec59f471..ac0372f52534cd58362b98e50e33d0a4
          this.methodProfiler.b();
          if (this.L > 0) {
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 99eb33eef6e11f76385afd536a921e5cffa21cb8..61a556a07831c6be6ae06199a4a9f56655644433 100644
+index 864b63f20167491ecef7e51be7d170d8b141d166..54aac6718c946f468844fe2c75e6d9510950c825 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -379,13 +379,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -376,13 +376,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
          super.h();
          if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
              // Spigot start
@@ -205,7 +205,7 @@ index 99eb33eef6e11f76385afd536a921e5cffa21cb8..61a556a07831c6be6ae06199a4a9f566
                  // Spigot end
              }
  
-@@ -399,26 +397,12 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -396,26 +394,12 @@ public class WorldServer extends World implements IAsyncTaskHandler {
              //    int k = chunkcoordintpair1.x * 16;
              //    int l = chunkcoordintpair1.z * 16;
              // Spigot start
@@ -236,7 +236,7 @@ index 99eb33eef6e11f76385afd536a921e5cffa21cb8..61a556a07831c6be6ae06199a4a9f566
  
                  this.a(k, l, chunk);
                  this.methodProfiler.c("tickChunk");
-@@ -508,12 +492,14 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -505,12 +489,14 @@ public class WorldServer extends World implements IAsyncTaskHandler {
              }
  
          }
