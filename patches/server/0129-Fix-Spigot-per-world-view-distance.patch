@@ -1,0 +1,90 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Fri, 19 Jun 2026 03:18:09 +0000
+Subject: [PATCH] Fix Spigot per-world view distance
+
+View-distance can be configured per-world in spigot.yml instead of using
+the value from server.properties globally.
+However some of the systems still used the original global value instead
+of the Spigot one. This patch fixes those inconsistencies.
+
+Also backport "default" view distance from modern Spigot.
+This will not affect current configurations but simply make new
+configurations use the global default from server.properties.
+(Setting view-distance option to an invalid integer, which "default" is,
+will make it use the global default, this was already the case)
+
+diff --git a/src/main/java/net/minecraft/server/EntityEnderDragon.java b/src/main/java/net/minecraft/server/EntityEnderDragon.java
+index d246ae749ea49be9e07ff5ac6abd3bbf14782a6b..8a5025472dc039256740bb941e3fd0c5e7db684d 100644
+--- a/src/main/java/net/minecraft/server/EntityEnderDragon.java
++++ b/src/main/java/net/minecraft/server/EntityEnderDragon.java
+@@ -573,7 +573,7 @@ public class EntityEnderDragon extends EntityInsentient implements IComplex, IMo
+             if (this.by == 1) {
+                 // CraftBukkit start - Use relative location for far away sounds
+                 // this.world.a(1018, new BlockPosition(this), 0);
+-                int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16;
++                int viewDistance = this.world.spigotConfig.viewDistance * 16; // PandaSpigot - Fix Spigot per-world view distance
+                 for (EntityPlayer player : (List<EntityPlayer>) MinecraftServer.getServer().getPlayerList().players) {
+                     double deltaX = this.locX - player.locX;
+                     double deltaZ = this.locZ - player.locZ;
+diff --git a/src/main/java/net/minecraft/server/EntityLightning.java b/src/main/java/net/minecraft/server/EntityLightning.java
+index 286fdef9aa1cd9c0d3c399d483b7cd4a26d7aa63..9cfc03e032d1e163438a4353db9d4cae9d1dbe6a 100644
+--- a/src/main/java/net/minecraft/server/EntityLightning.java
++++ b/src/main/java/net/minecraft/server/EntityLightning.java
+@@ -70,7 +70,7 @@ public class EntityLightning extends EntityWeather {
+             // CraftBukkit start - Use relative location for far away sounds
+             //this.world.makeSound(this.locX, this.locY, this.locZ, "ambient.weather.thunder", 10000.0F, 0.8F + this.random.nextFloat() * 0.2F);
+             float pitch = 0.8F + this.random.nextFloat() * 0.2F;
+-            int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16;
++            int viewDistance = this.world.spigotConfig.viewDistance * 16; // PandaSpigot - Fix Spigot per-world view distance
+             for (EntityPlayer player : (List<EntityPlayer>) (List) this.world.players) {
+                 double deltaX = this.locX - player.locX;
+                 double deltaZ = this.locZ - player.locZ;
+diff --git a/src/main/java/net/minecraft/server/EntityWither.java b/src/main/java/net/minecraft/server/EntityWither.java
+index fb19bad3c01b03991f9dbaff6041acbccda3c8b3..7998cd4dd0546f36a41712b7d71ecfe34b873b8f 100644
+--- a/src/main/java/net/minecraft/server/EntityWither.java
++++ b/src/main/java/net/minecraft/server/EntityWither.java
+@@ -186,7 +186,7 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
+ 
+                 // CraftBukkit start - Use relative location for far away sounds
+                 // this.world.a(1013, new BlockPosition(this), 0);
+-                int viewDistance = ((WorldServer) this.world).getServer().getViewDistance() * 16;
++                int viewDistance = this.world.spigotConfig.viewDistance * 16; // PandaSpigot - Fix Spigot per-world view distance
+                 for (EntityPlayer player : (List<EntityPlayer>) MinecraftServer.getServer().getPlayerList().players) {
+                     double deltaX = this.locX - player.locX;
+                     double deltaZ = this.locZ - player.locZ;
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 9b86cdd3b83ae8b0c040dc9d250b54684d0b7510..90c7a6f4777d2fa2bb08b539be59ead6772572d1 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -199,7 +199,7 @@ public abstract class World implements IBlockAccess {
+         this.ticksPerMonsterSpawns = this.getServer().getTicksPerMonsterSpawns(); // CraftBukkit
+         // CraftBukkit end
+         // Spigot start
+-        this.chunkTickRadius = (byte) ( ( this.getServer().getViewDistance() < 7 ) ? this.getServer().getViewDistance() : 7 );
++        this.chunkTickRadius = (byte) ( ( spigotConfig.viewDistance < 7 ) ? spigotConfig.viewDistance : 7 ); // PandaSpigot - Fix Spigot per-world view distance
+         this.chunkTickList = new gnu.trove.map.hash.TLongShortHashMap( spigotConfig.chunksPerTick * 5, 0.7f, Long.MIN_VALUE, Short.MIN_VALUE );
+         this.chunkTickList.setAutoCompactionFactor( 0 );
+         // Spigot end
+diff --git a/src/main/java/org/spigotmc/SpigotWorldConfig.java b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+index c028e9ff37e37f08f7c764a59cf77f5b447b0655..b150df784a121911f6f323d7ac89403cf4567308 100644
+--- a/src/main/java/org/spigotmc/SpigotWorldConfig.java
++++ b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+@@ -128,12 +128,16 @@ public class SpigotWorldConfig
+         log( "Experience Merge Radius: " + expMerge );
+     }
+ 
++    // PandaSpigot start - Backport "default" view distance from modern Spigot
+     public int viewDistance;
+     private void viewDistance()
+     {
+-        viewDistance = getInt( "view-distance", Bukkit.getViewDistance() );
++        config.addDefault( "world-settings.default.view-distance", "default" );
++        viewDistance = config.getInt( "world-settings." + worldName + ".view-distance", config.getInt( "world-settings.default.view-distance" ) );
++        viewDistance = viewDistance > 0 ? viewDistance : Bukkit.getViewDistance();
+         log( "View Distance: " + viewDistance );
+     }
++    // PandaSpigot end
+ 
+     public byte mobSpawnRange;
+     private void mobSpawnRange()
