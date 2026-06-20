@@ -61,7 +61,7 @@ index 652c07975c7b3a3c5e3dc68cb60ca5fc52e1848c..d93670b5fd2ee58a7b1d4ccd2479cc43
          return (this.x << 4) + 8;
      }
 diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
-index 1c9dbe212cfbeb571f1e09f224fb7ed905dd475b..78974418ec38be2be922e4097a073e19190c1de6 100644
+index 1c9dbe212cfbeb571f1e09f224fb7ed905dd475b..4e5139ff054fdec1f1c603f720b37a74f572196d 100644
 --- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
 +++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
 @@ -1,5 +1,9 @@
@@ -141,12 +141,12 @@ index 1c9dbe212cfbeb571f1e09f224fb7ed905dd475b..78974418ec38be2be922e4097a073e19
              }
          };
          // CraftBukkit end
-@@ -553,7 +596,23 @@ public class PlayerChunkMap {
+@@ -553,6 +596,23 @@ public class PlayerChunkMap {
              }
  
          }
 +
-+      // PandaSpigot start - Alternative Chunk Ticking Selection
++        // PandaSpigot start - Alternative Chunk Ticking Selection
 +        public boolean hasPlayerMatching(double range, Predicate<EntityPlayer> predicate) {
 +            for (EntityPlayer player : this.b) {
 +                if (predicate.apply(player) && this.location.distanceToSqr(player) < range * range) {
@@ -160,11 +160,11 @@ index 1c9dbe212cfbeb571f1e09f224fb7ed905dd475b..78974418ec38be2be922e4097a073e19
 +        public Chunk getChunk() {
 +            return this.chunk;
 +        }
++        // PandaSpigot end
++
      }
-+    // PandaSpigot end
  
      // CraftBukkit start - Sorter to load nearby chunks first
-     private static class ChunkCoordComparator implements java.util.Comparator<ChunkCoordIntPair> {
 diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
 index 9b86cdd3b83ae8b0c040dc9d250b54684d0b7510..522c63e7f884a8b2202b111c81df9b54384703d5 100644
 --- a/src/main/java/net/minecraft/server/World.java
