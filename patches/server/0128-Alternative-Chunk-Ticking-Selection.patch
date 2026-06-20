@@ -179,7 +179,7 @@ index 9b86cdd3b83ae8b0c040dc9d250b54684d0b7510..522c63e7f884a8b2202b111c81df9b54
          int chunksPerPlayer = Math.min( 200, Math.max( 1, (int) ( ( ( optimalChunks - players.size() ) / (double) players.size() ) + 0.5 ) ) );
          int randRange = 3 + chunksPerPlayer / 30;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 864b63f20167491ecef7e51be7d170d8b141d166..f1b3aebd0723da48817b746ea5f78ddc88e60e1e 100644
+index 864b63f20167491ecef7e51be7d170d8b141d166..1c9e429b4107daf0991fe0c61bd5377cf4c22c95 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -372,7 +372,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
@@ -191,15 +191,7 @@ index 864b63f20167491ecef7e51be7d170d8b141d166..f1b3aebd0723da48817b746ea5f78ddc
          super.h();
          if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
              // Spigot start
-@@ -412,7 +412,6 @@ public class WorldServer extends World implements IAsyncTaskHandler {
-                 // ChunkCoordIntPair chunkcoordintpair = (ChunkCoordIntPair) iterator.next();
-                 int k = chunkX * 16;
-                 int l = chunkZ * 16;
--
-                 this.methodProfiler.a("getChunk");
-                 Chunk chunk = this.getChunkAt(chunkX, chunkZ);
-                 // CraftBukkit end
-@@ -513,6 +512,168 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -513,6 +513,168 @@ public class WorldServer extends World implements IAsyncTaskHandler {
          // Spigot End
      }
  
