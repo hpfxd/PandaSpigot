@@ -1,0 +1,62 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Fri, 19 Jun 2026 11:21:11 +0000
+Subject: [PATCH] Entity tracking range vanilla option
+
+Allow setting 'entity-tracking-range' to -1 to use vanilla entity
+tracking range values
+Also functions as a sanity check for negative values
+
+diff --git a/src/main/java/org/spigotmc/TrackingRange.java b/src/main/java/org/spigotmc/TrackingRange.java
+index 4bf4d2ac64b14a3fb740af8bbe888130099573c4..9ed203517647d1e81ee04dd2fb1288aa0f1cd7fd 100644
+--- a/src/main/java/org/spigotmc/TrackingRange.java
++++ b/src/main/java/org/spigotmc/TrackingRange.java
+@@ -21,31 +21,41 @@ public class TrackingRange
+      */
+     public static int getEntityTrackingRange(Entity entity, int defaultRange)
+     {
++        int i;
+         SpigotWorldConfig config = entity.world.spigotConfig;
+         if ( entity instanceof EntityPlayer )
+         {
+-            return config.playerTrackingRange;
++            i = config.playerTrackingRange;
+         }  else if ( entity.activationType == 1 )
+         {
+-            return config.monsterTrackingRange;
++            i = config.monsterTrackingRange;
+         } else if ( entity instanceof EntityGhast )
+         {
+             if ( config.monsterTrackingRange > config.monsterActivationRange )
+             {
+-                return config.monsterTrackingRange;
++                i = config.monsterTrackingRange;
+             } else
+             {
+-                return config.monsterActivationRange;
++                i = config.monsterActivationRange;
+             }
+         } else if ( entity.activationType == 2 )
+         {
+-            return config.animalTrackingRange;
++            i = config.animalTrackingRange;
+         } else if ( entity instanceof EntityItemFrame || entity instanceof EntityPainting || entity instanceof EntityItem || entity instanceof EntityExperienceOrb )
+         {
+-            return config.miscTrackingRange;
++            i = config.miscTrackingRange;
+         } else 
+         {
+-            return config.otherTrackingRange;
++            i = config.otherTrackingRange;
+         }
++
++        // PandaSpigot start - Entity tracking range vanilla option
++        if (i < 0)
++        {
++            i = defaultRange;
++        }
++        // PandaSpigot end
++
++        return i;
+     }
+ }
