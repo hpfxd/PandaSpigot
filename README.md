@@ -77,49 +77,66 @@ Building, patching, and compiling are all done through the main `panda` script.
 
 PandaSpigot can be built by running `./panda jar`, and you will find the final Paperclip jar in `paperclip.jar`
 
-### Windows with Git Bash
-On Windows, open Git Bash in the repository root and use the official `panda`
-script:
+### Panda Bash build script
+The `panda` Bash script is the entry point for setup, patching, and builds.
+Run it from a Bash-compatible shell on your platform. Run `./panda` without
+arguments to print its command list.
+
+Normal commands:
+
+| Command | Description |
+| --- | --- |
+| `rb`, `rebuild` | Rebuild patches, can be called from anywhere. |
+| `setup` | Remap, decompile, and patch Minecraft. Can be run from anywhere. |
+| `p`, `patch` | Apply all patches to the project without building it. Can be run from anywhere. |
+| `j`, `jar` | Apply all patches and build the project, `paperclip.jar` will be output. Can be run from anywhere. |
+| `c`, `clean` | Removes all generated files, `PandaSpigot-API`, `PandaSpigot-Server`, and `work`. |
+| `con`, `continue` | Shortcut command for running `git am --continue` or `git rebase --continue`. |
+
+Commands that require `. ./panda install` first:
+
+| Command | Description |
+| --- | --- |
+| `r`, `root` | Change directory to the root of the project. |
+| `a`, `api` | Move to the `PandaSpigot-API` directory. |
+| `s`, `server` | Move to the `PandaSpigot-Server` directory. |
+| `e`, `edit` | Use to edit a specific patch, give it the argument `server` or `api` respectively to edit the correct project. Use the argument `continue` after the changes have been made to finish and rebuild patches. Can be called from anywhere. |
+| `install` | Add an alias to `$RCPATH` to allow full functionality of this script. |
+
+Install the default `panda` alias with:
 
 ```bash
-./panda setup
-./panda jar
+. ./panda install
 ```
 
-Run `./panda setup` for the first setup or after cleaning generated files. Run
-`./panda jar` to apply patches, build the project, and write the final
-`paperclip.jar`.
+You can also provide a custom alias name:
+
+```bash
+. ./panda install example
+```
+
+`PandaSpigot-API` and `PandaSpigot-Server` are generated work trees created by
+the build scripts. The patch creation process follows Paper's contributing guide,
+which is linked below; `./panda rb` is the PandaSpigot command that saves those
+work tree commits back into `patches/api` and `patches/server`.
 
 ### Patch workflow
-`PandaSpigot-API` and `PandaSpigot-Server` are generated work trees. Commit inside
-them only to create patch files. Do not push or pull from those directories; only
-push from the repository root.
+PandaSpigot uses a patch-based workflow. Changes are committed once inside the
+generated work tree, then committed again from the repository root after the
+patch files are rebuilt.
 
-For server changes:
+Use this order:
 
-```bash
-cd PandaSpigot-Server
-git add .
-git commit -m "Describe the server change"
-cd ..
-./panda rb
-git add patches/server
-git commit -m "Describe the patch"
-git push origin master
-```
+1. Make your changes in `PandaSpigot-API` or `PandaSpigot-Server`.
+2. Commit those changes inside that generated work tree.
+3. Return to the repository root and run `./panda rb`.
+4. Review the regenerated files in `patches/api` or `patches/server`.
+5. Commit the regenerated patch files from the repository root.
 
-For API changes:
-
-```bash
-cd PandaSpigot-API
-git add .
-git commit -m "Describe the API change"
-cd ..
-./panda rb
-git add patches/api
-git commit -m "Describe the patch"
-git push origin master
-```
+Only push commits from the repository root. Do not push or pull from
+`PandaSpigot-API` or `PandaSpigot-Server`; their commits are only used to create
+patch files. Commit work tree changes before rebuilding or reapplying patches,
+because those commands can reset the generated work trees.
 
 ## Contributing
 You can mostly follow [Paper's contributing guide](https://github.com/PaperMC/Paper-archive/blob/ver/1.16.5/CONTRIBUTING.md), just remember:
