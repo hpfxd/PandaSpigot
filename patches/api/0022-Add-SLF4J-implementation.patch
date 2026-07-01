@@ -5,10 +5,10 @@ Subject: [PATCH] Add SLF4J implementation
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 260e26967f8b8b0d617345eea3ed9a728d1e43d8..d98d86623ef945ae233fa37b7017c83311eb1cd1 100644
+index 17836f8338282c00ebf4675fb57131478d675a64..0bcff7067e0df01cd613c4ed16a7c004d632e10d 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
-@@ -21,6 +21,7 @@ dependencies {
+@@ -22,6 +22,7 @@ dependencies {
      // bundled with Minecraft, should be kept in sync
      api("com.google.guava:guava:17.0")
      api("com.google.code.gson:gson:2.2.4")
@@ -16,7 +16,7 @@ index 260e26967f8b8b0d617345eea3ed9a728d1e43d8..d98d86623ef945ae233fa37b7017c833
  
      // testing
      testImplementation("junit:junit:4.12")
-@@ -64,6 +65,7 @@ tasks {
+@@ -75,6 +76,7 @@ tasks {
                  "https://javadoc.io/doc/org.yaml/snakeyaml/1.15/",
                  "https://javadoc.io/doc/com.google.code.gson/gson/2.2.4/",
                  "https://repo.hpfxd.com/javadoc/releases/net/md-5/bungeecord-chat/1.8-SNAPSHOT/raw/",
