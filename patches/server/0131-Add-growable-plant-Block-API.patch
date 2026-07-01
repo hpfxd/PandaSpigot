@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: WilyWork <hezodions@gmail.com>
-Date: Mon, 29 Jun 2026 15:54:15 -0300
-Subject: [PATCH] Add growable plant abstraction
+Date: Wed, 1 Jul 2026 20:16:55 -0300
+Subject: [PATCH] Add growable plant Block API
 
-Introduce PandaGrowablePlant to expose shared helpers for reading a plant's growth state, current growth level, and maximum growth level.
+Introduce PandaGrowablePlant for age-based NMS plants and expose the data through the public Block API implementation.
 
-Implement the contract for vanilla age-based plants and retain the configured BlockStateInteger upper bound for callers.
+This keeps the API-facing CraftBlock bridge and the underlying server abstraction in a single patch.
 
 diff --git a/src/main/java/net/minecraft/server/BlockCactus.java b/src/main/java/net/minecraft/server/BlockCactus.java
 index ddc213517d36fb772999182d66baf7f9ea49d29b..c12465aead468be5fd4930dc61113f416fb2d531 100644
@@ -233,3 +233,46 @@ index 0000000000000000000000000000000000000000..e16a9d0cd5e4c386e3b03be4c82788bb
 +        return this.getGrowthLevel(iblockdata) >= this.getMaxGrowthLevel();
 +    }
 +}
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index caa7e842cbbe1b666d96a6d3b94fd49fe9bf50f3..345f72ce4d17f4f5122868b561e79975e63a38af 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -379,6 +379,38 @@ public class CraftBlock implements Block {
+         return getBlockPower(BlockFace.SELF);
+     }
+ 
++    // PandaSpigot start - Add growable plant API
++    private IBlockData getNMSBlockData() {
++        return chunk.getHandle().getBlockData(new BlockPosition(this.x, this.y, this.z));
++    }
++
++    private PandaGrowablePlant getGrowablePlant(IBlockData blockData) {
++        net.minecraft.server.Block block = blockData.getBlock();
++        return block instanceof PandaGrowablePlant ? (PandaGrowablePlant) block : null;
++    }
++
++    public boolean isGrowablePlant() {
++        return getGrowablePlant(getNMSBlockData()) != null;
++    }
++
++    public int getGrowthLevel() {
++        IBlockData blockData = getNMSBlockData();
++        PandaGrowablePlant plant = getGrowablePlant(blockData);
++        return plant != null ? plant.getGrowthLevel(blockData) : -1;
++    }
++
++    public int getMaxGrowthLevel() {
++        PandaGrowablePlant plant = getGrowablePlant(getNMSBlockData());
++        return plant != null ? plant.getMaxGrowthLevel() : -1;
++    }
++
++    public boolean isFullyGrown() {
++        IBlockData blockData = getNMSBlockData();
++        PandaGrowablePlant plant = getGrowablePlant(blockData);
++        return plant != null && plant.isFullyGrown(blockData);
++    }
++    // PandaSpigot end
++
+     public boolean isEmpty() {
+         return getType() == Material.AIR;
+     }
