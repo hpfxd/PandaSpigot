@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: WilyWork <hezodions@gmail.com>
+Date: Tue, 30 Jun 2026 22:03:07 -0300
+Subject: [PATCH] Implement growable plant Block API
+
+Bridge the public Block growth helpers to the internal PandaGrowablePlant abstraction while keeping non-growable blocks easy to query.
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+index caa7e842cbbe1b666d96a6d3b94fd49fe9bf50f3..345f72ce4d17f4f5122868b561e79975e63a38af 100644
+--- a/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
++++ b/src/main/java/org/bukkit/craftbukkit/block/CraftBlock.java
+@@ -379,6 +379,38 @@ public class CraftBlock implements Block {
+         return getBlockPower(BlockFace.SELF);
+     }
+ 
++    // PandaSpigot start - Add growable plant API
++    private IBlockData getNMSBlockData() {
++        return chunk.getHandle().getBlockData(new BlockPosition(this.x, this.y, this.z));
++    }
++
++    private PandaGrowablePlant getGrowablePlant(IBlockData blockData) {
++        net.minecraft.server.Block block = blockData.getBlock();
++        return block instanceof PandaGrowablePlant ? (PandaGrowablePlant) block : null;
++    }
++
++    public boolean isGrowablePlant() {
++        return getGrowablePlant(getNMSBlockData()) != null;
++    }
++
++    public int getGrowthLevel() {
++        IBlockData blockData = getNMSBlockData();
++        PandaGrowablePlant plant = getGrowablePlant(blockData);
++        return plant != null ? plant.getGrowthLevel(blockData) : -1;
++    }
++
++    public int getMaxGrowthLevel() {
++        PandaGrowablePlant plant = getGrowablePlant(getNMSBlockData());
++        return plant != null ? plant.getMaxGrowthLevel() : -1;
++    }
++
++    public boolean isFullyGrown() {
++        IBlockData blockData = getNMSBlockData();
++        PandaGrowablePlant plant = getGrowablePlant(blockData);
++        return plant != null && plant.isFullyGrown(blockData);
++    }
++    // PandaSpigot end
++
+     public boolean isEmpty() {
+         return getType() == Material.AIR;
+     }
