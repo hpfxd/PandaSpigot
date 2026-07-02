@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Thu, 18 Jun 2026 13:36:13 +0000
+Subject: [PATCH] Fix MC-87 map scaling/cloning issues
+
+Backport MC-87 fix from 1.11
+Fixes map not scaling when shift-clicking the result from workbench
+And NBT tags not cloning when cloning a map
+
+diff --git a/src/main/java/net/minecraft/server/ContainerWorkbench.java b/src/main/java/net/minecraft/server/ContainerWorkbench.java
+index 48d524e54a6b9b13dd6d4b3863d328b97bce6a7e..78df2db46005cc9eeb7090a75aee55c02948075f 100644
+--- a/src/main/java/net/minecraft/server/ContainerWorkbench.java
++++ b/src/main/java/net/minecraft/server/ContainerWorkbench.java
+@@ -95,6 +95,8 @@ public class ContainerWorkbench extends Container {
+ 
+             itemstack = itemstack1.cloneItemStack();
+             if (i == 0) {
++                itemstack1.getItem().d(itemstack1, this.g, entityhuman); // PandaSpigot - Fix MC-87 map scaling/cloning issues
++
+                 if (!this.a(itemstack1, 10, 46, true)) {
+                     return null;
+                 }
+diff --git a/src/main/java/net/minecraft/server/RecipeMapClone.java b/src/main/java/net/minecraft/server/RecipeMapClone.java
+index 579f6d1d2e68c86d11054c3c6c79993ef18f3017..9e3ae8969b1f3bf8a24cb3adb1890d37e1d9bef1 100644
+--- a/src/main/java/net/minecraft/server/RecipeMapClone.java
++++ b/src/main/java/net/minecraft/server/RecipeMapClone.java
+@@ -66,6 +66,13 @@ public class RecipeMapClone extends ShapelessRecipes implements IRecipe { // Cra
+                 itemstack2.c(itemstack.getName());
+             }
+ 
++            // PandaSpigot start - Fix MC-87 map scaling/cloning issues
++            if (itemstack.hasTag())
++            {
++                itemstack2.setTag(itemstack.getTag());
++            }
++            // PandaSpigot end
++
+             return itemstack2;
+         } else {
+             return null;
