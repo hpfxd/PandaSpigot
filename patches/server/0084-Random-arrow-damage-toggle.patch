@@ -8,7 +8,7 @@ diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.j
 index 3e85450bbccc54414be7998562fadc92d2541fb4..360ed37b95fce68941c234615b465090b8ea7308 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -58,4 +58,8 @@ public class PandaSpigotWorldConfig {
+@@ -55,4 +55,8 @@ public class PandaSpigotWorldConfig {
      public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
  
      public boolean optimizeArmorStandMovement = false; // Doesn't fully emulate vanilla behavior, see TacoSpigot issue #1

@@ -11,7 +11,7 @@ diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.j
 index bde014f003bccca916dbc74fc27436bf4b193fdf..fb9db2dafcf180dbb25c768936cb59a58a7a3584 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -22,6 +22,15 @@ public class PandaSpigotWorldConfig {
+@@ -20,6 +20,15 @@ public class PandaSpigotWorldConfig {
              "With this option enabled, they will be able to move their head just like normal.")
      public boolean smoothTeleportation = false;
      

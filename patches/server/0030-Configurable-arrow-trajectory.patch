@@ -13,7 +13,7 @@ diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.j
 index 04f04ce721aa06fba935618176c77587e305a5b0..05c9ebb76a3cb19e887bea1311ac36035334b9a1 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -36,6 +36,10 @@ public class PandaSpigotWorldConfig {
+@@ -33,6 +33,10 @@ public class PandaSpigotWorldConfig {
              "This has the same effect as Spigot's \"nerf-spawner-mobs\" option, but applies to all entities.")
      public boolean disableEntityAi = false;
      
