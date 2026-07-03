@@ -5,11 +5,9 @@ set -e
 PS1="$"
 basedir="$(cd "$1" && pwd -P)"
 workdir="$basedir/base"
-minecraftversion=$(cat "$workdir/Paper/BuildData/info.json"  | grep minecraftVersion | cut -d '"' -f 4)
 spigotdecompiledir="$workdir/mc-dev/spigot"
 nms="$spigotdecompiledir/net/minecraft/server"
 cb="src/main/java/net/minecraft/server"
-resources="src/main/resources"
 gitcmd="git -c commit.gpgsign=false"
 
 # https://stackoverflow.com/a/38595160

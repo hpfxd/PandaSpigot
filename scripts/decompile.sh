@@ -6,7 +6,6 @@ PS1="$"
 basedir="$(cd "$1" && pwd -P)"
 workdir="$basedir/base"
 minecraftversion=$(cat "$workdir/Paper/BuildData/info.json"  | grep minecraftVersion | cut -d '"' -f 4)
-windows="$([[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" ]] && echo "true" || echo "false")"
 decompiledir="$workdir/mc-dev"
 spigotdecompiledir="$decompiledir/spigot"
 pandadecompiledir="$decompiledir/panda"
