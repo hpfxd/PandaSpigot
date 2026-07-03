@@ -1,0 +1,39 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Sun, 28 Jun 2026 17:18:47 +0000
+Subject: [PATCH] Wakeup Time Sync
+
+Sends a time sync packet immediately after waking up.
+This should make players wake up to daylight as long as they aren't
+lagging too much.
+
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index 1c9e429b4107daf0991fe0c61bd5377cf4c22c95..3469119b6bc502bbf6db005189381a4cc1e5a248 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -212,11 +212,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+         }
+ 
+         this.worldProvider.m().b();
++        boolean timeNeedsSync = false; // PandaSpigot - Wakeup Time Sync
+         if (this.everyoneDeeplySleeping()) {
+             if (this.getGameRules().getBoolean("doDaylightCycle")) {
+                 long i = this.worldData.getDayTime() + 24000L;
+ 
+                 this.worldData.setDayTime(i - i % 24000L);
++                timeNeedsSync = true;  // PandaSpigot - Wakeup Time Sync
+             }
+ 
+             this.e();
+@@ -243,6 +245,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+         this.worldData.setTime(this.worldData.getTime() + 1L);
+         if (this.getGameRules().getBoolean("doDaylightCycle")) {
+             this.worldData.setDayTime(this.worldData.getDayTime() + 1L);
++            // PandaSpigot start - Wakeup Time Sync
++            if (timeNeedsSync) {
++                this.server.getPlayerList().a(new PacketPlayOutUpdateTime(this.worldData.getTime(), this.worldData.getDayTime(), true), this.worldProvider.getDimension());
++            }
++            // PandaSpigot end
+         }
+ 
+         timings.doChunkUnload.stopTiming(); // Spigot
