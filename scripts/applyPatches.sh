@@ -4,7 +4,6 @@
 PS1="$"
 basedir="$(cd "$1" && pwd -P)"
 workdir="$basedir/base"
-minecraftversion=$(cat "$workdir/Paper/BuildData/info.json" | grep minecraftVersion | cut -d '"' -f 4)
 gitcmd="git -c commit.gpgsign=false"
 applycmd="$gitcmd am --3way --ignore-whitespace"
 # Windows detection to workaround ARG_MAX limitation

@@ -17,7 +17,7 @@ if [ -z "${1:-}" ]; then
     _is_dep_available jar "was not found; you can download the JDK from https://adoptium.net/ or via your package manager"
 else
     # Require all dependencies provided.
-    for dep in $@; do
+    for dep in "$@"; do
         _is_dep_available "$dep"
     done
 fi

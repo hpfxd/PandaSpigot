@@ -27,7 +27,6 @@ function cleanupPatches {
 
 function savePatches {
     what=$1
-    what_name=$(basename "$what")
     target=$2
     patch_folder=$3
     echo "Formatting patches for $what..."
