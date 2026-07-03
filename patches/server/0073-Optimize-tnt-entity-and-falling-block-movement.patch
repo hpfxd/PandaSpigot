@@ -11,7 +11,7 @@ diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.j
 index 05c9ebb76a3cb19e887bea1311ac36035334b9a1..1e0393f667029809ac3476069cebe1ef34afadc8 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -52,4 +52,8 @@ public class PandaSpigotWorldConfig {
+@@ -49,4 +49,8 @@ public class PandaSpigotWorldConfig {
          public double extraHorizontal = 0.5;
          public double extraVertical = 0.1;
      }

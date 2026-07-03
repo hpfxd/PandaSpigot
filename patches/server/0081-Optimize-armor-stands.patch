@@ -12,7 +12,7 @@ diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.j
 index 1e0393f667029809ac3476069cebe1ef34afadc8..3e85450bbccc54414be7998562fadc92d2541fb4 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -56,4 +56,6 @@ public class PandaSpigotWorldConfig {
+@@ -53,4 +53,6 @@ public class PandaSpigotWorldConfig {
      public boolean optimizeTntMovement = false; // May not fully emulate vanilla behavior
  
      public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default

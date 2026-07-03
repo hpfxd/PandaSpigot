@@ -8,12 +8,11 @@ diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.j
 index fb9db2dafcf180dbb25c768936cb59a58a7a3584..04f04ce721aa06fba935618176c77587e305a5b0 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -31,6 +31,11 @@ public class PandaSpigotWorldConfig {
+@@ -29,6 +29,10 @@ public class PandaSpigotWorldConfig {
      @Comment("When enabled, this option will disable saving world chunks.")
      public boolean disableChunkSaving = false;
      
 +    @Comment("When enabled, entity AI will be disabled.\n" +
-+            "\n" +
 +            "This has the same effect as Spigot's \"nerf-spawner-mobs\" option, but applies to all entities.")
 +    public boolean disableEntityAi = false;
 +    

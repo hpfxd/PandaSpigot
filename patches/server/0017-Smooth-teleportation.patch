@@ -11,14 +11,13 @@ diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.j
 index b5f16e8cab9e43ad7597b2ea5bc921399b37872b..bde014f003bccca916dbc74fc27436bf4b193fdf 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -13,6 +13,15 @@ public class PandaSpigotWorldConfig {
+@@ -12,6 +12,14 @@ public class PandaSpigotWorldConfig {
              "higher, unless you're constantly changing the time, or the server is lagging.")
      public int timeUpdateFrequency = 100;
      
 +    @Comment("This option makes it so that when players are teleported to a location\n" +
 +            "with the same rotation they currently have, the server will send a special\n" +
 +            "packet indicating that the client should not update it's rotation at all.\n" +
-+            "\n" +
 +            "For example, normally constantly teleporting a player to their own location\n" +
 +            "will make moving their head very difficult, especially for players with higher latency.\n" +
 +            "With this option enabled, they will be able to move their head just like normal.")
