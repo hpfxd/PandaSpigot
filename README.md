@@ -77,6 +77,50 @@ Building, patching, and compiling are all done through the main `panda` script.
 
 PandaSpigot can be built by running `./panda jar`, and you will find the final Paperclip jar in `paperclip.jar`
 
+### Windows with Git Bash
+On Windows, open Git Bash in the repository root and use the official `panda`
+script:
+
+```bash
+./panda setup
+./panda jar
+```
+
+Run `./panda setup` for the first setup or after cleaning generated files. Run
+`./panda jar` to apply patches, build the project, and write the final
+`paperclip.jar`.
+
+### Patch workflow
+`PandaSpigot-API` and `PandaSpigot-Server` are generated work trees. Commit inside
+them only to create patch files. Do not push or pull from those directories; only
+push from the repository root.
+
+For server changes:
+
+```bash
+cd PandaSpigot-Server
+git add .
+git commit -m "Describe the server change"
+cd ..
+./panda rb
+git add patches/server
+git commit -m "Describe the patch"
+git push origin master
+```
+
+For API changes:
+
+```bash
+cd PandaSpigot-API
+git add .
+git commit -m "Describe the API change"
+cd ..
+./panda rb
+git add patches/api
+git commit -m "Describe the patch"
+git push origin master
+```
+
 ## Contributing
 You can mostly follow [Paper's contributing guide](https://github.com/PaperMC/Paper-archive/blob/ver/1.16.5/CONTRIBUTING.md), just remember:
 - Multi-line changes start with `// PandaSpigot start` and end with `// PandaSpigot end`
