@@ -1,0 +1,941 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Fri, 3 Jul 2026 02:14:47 +0000
+Subject: [PATCH] Starlight
+
+Implement Starlight optimized lighting engine
+This vastly improves lighting performance and fixes vanilla lighting bugs
+Random light updates to "fix" broken lighting are no longer required at all
+
+diff --git a/src/main/java/ca/spottedleaf/starlight/StarlightEngine.java b/src/main/java/ca/spottedleaf/starlight/StarlightEngine.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..44d499e30b0cdbd72acb56555e9581dfbe83762f
+--- /dev/null
++++ b/src/main/java/ca/spottedleaf/starlight/StarlightEngine.java
+@@ -0,0 +1,710 @@
++package ca.spottedleaf.starlight;
++
++import net.minecraft.server.Block;
++import net.minecraft.server.BlockPosition;
++import net.minecraft.server.Blocks;
++import net.minecraft.server.Chunk;
++import net.minecraft.server.EnumSkyBlock;
++import net.minecraft.server.IBlockData;
++import net.minecraft.server.World;
++
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.List;
++
++public class StarlightEngine {
++
++    protected static enum AxisDirection {
++
++        // Declaration order is important and relied upon. Do not change without modifying propagation code.
++        POSITIVE_X(1, 0, 0), NEGATIVE_X(-1, 0, 0),
++        POSITIVE_Z(0, 0, 1), NEGATIVE_Z(0, 0, -1),
++        POSITIVE_Y(0, 1, 0), NEGATIVE_Y(0, -1, 0);
++
++        static {
++            POSITIVE_X.opposite = NEGATIVE_X; NEGATIVE_X.opposite = POSITIVE_X;
++            POSITIVE_Z.opposite = NEGATIVE_Z; NEGATIVE_Z.opposite = POSITIVE_Z;
++            POSITIVE_Y.opposite = NEGATIVE_Y; NEGATIVE_Y.opposite = POSITIVE_Y;
++        }
++
++        protected AxisDirection opposite;
++
++        public final int x;
++        public final int y;
++        public final int z;
++        public final long everythingButThisDirection;
++        public final long everythingButTheOppositeDirection;
++
++        AxisDirection(final int x, final int y, final int z) {
++            this.x = x;
++            this.y = y;
++            this.z = z;
++            this.everythingButThisDirection = (long)(ALL_DIRECTIONS_BITSET ^ (1 << this.ordinal()));
++            // positive is always even, negative is always odd. Flip the 1 bit to get the negative direction.
++            this.everythingButTheOppositeDirection = (long)(ALL_DIRECTIONS_BITSET ^ (1 << (this.ordinal() ^ 1)));
++        }
++
++        public AxisDirection getOpposite() {
++            return this.opposite;
++        }
++    }
++
++    protected static final AxisDirection[] DIRECTIONS = AxisDirection.values();
++    protected static final AxisDirection[] AXIS_DIRECTIONS = DIRECTIONS;
++    protected static final AxisDirection[] ONLY_HORIZONTAL_DIRECTIONS = new AxisDirection[] {
++            AxisDirection.POSITIVE_X, AxisDirection.NEGATIVE_X,
++            AxisDirection.POSITIVE_Z, AxisDirection.NEGATIVE_Z
++    };
++
++    protected static final AxisDirection[][] OLD_CHECK_DIRECTIONS = new AxisDirection[1 << 6][];
++    protected static final int ALL_DIRECTIONS_BITSET = (1 << 6) - 1;
++    static {
++        for (int i = 0; i < OLD_CHECK_DIRECTIONS.length; ++i) {
++            final List<AxisDirection> directions = new ArrayList<>();
++            for (int bitset = i, len = Integer.bitCount(i), index = 0; index < len; ++index, bitset ^= (-bitset & bitset)) {
++                directions.add(AXIS_DIRECTIONS[Integer.numberOfTrailingZeros(bitset)]);
++            }
++            OLD_CHECK_DIRECTIONS[i] = directions.toArray(new AxisDirection[0]);
++        }
++    }
++
++    // always initialised during start of lighting.
++    // index = x + (z * 5)
++    protected final Chunk[] chunkCache = new Chunk[5 * 5];
++
++    protected int encodeOffsetX;
++    protected int encodeOffsetY;
++    protected int encodeOffsetZ;
++
++    protected int coordinateOffset;
++
++    protected int chunkOffsetX;
++    protected int chunkOffsetY;
++    protected int chunkOffsetZ;
++
++    protected int chunkIndexOffset;
++    protected int chunkSectionIndexOffset;
++
++    protected final boolean skylightPropagator;
++    protected final int emittedLightMask;
++    protected final boolean isClientSide;
++
++    protected final World world;
++
++    public StarlightEngine(final boolean skylightPropagator, final World world) {
++        this.skylightPropagator = skylightPropagator;
++        this.emittedLightMask = skylightPropagator ? 0 : 0xF;
++        this.isClientSide = false;
++        this.world = world;
++    }
++
++    protected final void setupEncodeOffset(final int centerX, final int centerY, final int centerZ) {
++        // 31 = center + encodeOffset
++        this.encodeOffsetX = 31 - centerX;
++        this.encodeOffsetY = (-(-1 - 1) << 4); // we want 0 to be the smallest encoded value
++        this.encodeOffsetZ = 31 - centerZ;
++
++        // coordinateIndex = x | (z << 6) | (y << 12)
++        this.coordinateOffset = this.encodeOffsetX + (this.encodeOffsetZ << 6) + (this.encodeOffsetY << 12);
++
++        // 2 = (centerX >> 4) + chunkOffset
++        this.chunkOffsetX = 2 - (centerX >> 4);
++        this.chunkOffsetY = -(-1 - 1); // lowest should be 0
++        this.chunkOffsetZ = 2 - (centerZ >> 4);
++
++        // chunk index = x + (5 * z)
++        this.chunkIndexOffset = this.chunkOffsetX + (5 * this.chunkOffsetZ);
++
++        // chunk section index = x + (5 * z) + ((5*5) * y)
++        this.chunkSectionIndexOffset = this.chunkIndexOffset + ((5 * 5) * this.chunkOffsetY);
++    }
++
++    protected final void setupCaches(final World chunkProvider, final int centerX, final int centerY, final int centerZ,
++                                     final boolean relaxed) {
++        final int centerChunkX = centerX >> 4;
++        final int centerChunkY = centerY >> 4;
++        final int centerChunkZ = centerZ >> 4;
++
++        this.setupEncodeOffset(centerChunkX * 16 + 7, centerChunkY * 16 + 7, centerChunkZ * 16 + 7);
++
++        final int radius = 1;
++
++        for (int dz = -radius; dz <= radius; ++dz) {
++            for (int dx = -radius; dx <= radius; ++dx) {
++                final int cx = centerChunkX + dx;
++                final int cz = centerChunkZ + dz;
++                final Chunk chunk = !chunkProvider.isChunkLoaded(cx, cz, false) ? null : chunkProvider.getChunkAt(cx, cz);
++
++                if (chunk == null) {
++                    if (relaxed) {
++                        continue;
++                    }
++                    throw new IllegalArgumentException("Trying to propagate light update before 1 radius neighbours ready");
++                }
++
++                this.setChunkInCache(cx, cz, chunk);
++            }
++        }
++    }
++
++    protected final Chunk getChunkInCache(final int chunkX, final int chunkZ) {
++        return this.chunkCache[chunkX + 5 * chunkZ + this.chunkIndexOffset];
++    }
++
++    protected final void setChunkInCache(final int chunkX, final int chunkZ, final Chunk chunk) {
++        this.chunkCache[chunkX + 5 * chunkZ + this.chunkIndexOffset] = chunk;
++    }
++
++    protected final int getBlockLight(final int worldX, final int worldY, final int worldZ) {
++        final Chunk chunk = this.getChunkInCache(worldX >> 4, worldZ >> 4);
++
++        if (chunk == null || worldY < 0 || worldY > 255) {
++            return 0;
++        }
++
++        return chunk.getBrightness(EnumSkyBlock.BLOCK, new BlockPosition(worldX, worldY, worldZ));
++    }
++
++    protected final int getSkylight(final int worldX, final int worldY, final int worldZ) {
++        final Chunk chunk = this.getChunkInCache(worldX >> 4, worldZ >> 4);
++
++        if (chunk == null || worldY < 0 || worldY > 255) {
++            return this.skylightPropagator ? 15 : 0;
++        }
++
++        return chunk.getBrightness(EnumSkyBlock.SKY, new BlockPosition(worldX, worldY, worldZ));
++    }
++
++    protected final IBlockData getBlockData(final int worldX, final int worldY, final int worldZ) {
++        final Chunk chunk = this.getChunkInCache(worldX >> 4, worldZ >> 4);
++
++        if (chunk == null || worldY < 0 || worldY > 255) {
++            return Blocks.AIR.getBlockData();
++        }
++
++        return chunk.getBlockData(new BlockPosition(worldX, worldY, worldZ));
++    }
++
++    protected final int getLightLevel(final int worldX, final int worldY, final int worldZ) {
++        if (this.skylightPropagator) {
++            return this.getSkylight(worldX, worldY, worldZ);
++        } else {
++            return this.getBlockLight(worldX, worldY, worldZ);
++        }
++    }
++
++    protected final void destroyCaches() {
++        for (final Chunk chunk : this.chunkCache) {
++            if (chunk != null) {
++                chunk.setModified(true);
++            }
++        }
++        Arrays.fill(this.chunkCache, null);
++    }
++
++    protected final void setLightLevel(final int worldX, final int worldY, final int worldZ, final int level) {
++        final Chunk chunk = this.getChunkInCache(worldX >> 4, worldZ >> 4);
++
++        if (chunk != null && worldY >= 0 && worldY <= 255) {
++            BlockPosition pos = new BlockPosition(worldX, worldY, worldZ);
++            if (this.skylightPropagator) {
++                chunk.setBrightness(EnumSkyBlock.SKY, pos, level);
++            } else {
++                chunk.setBrightness(EnumSkyBlock.BLOCK, pos, level);
++            }
++        }
++    }
++
++    protected final void postLightUpdate(final int worldX, final int worldY, final int worldZ) {
++        // not needed server side
++    }
++
++    // contains:
++    // lower (6 + 6 + 16) = 28 bits: encoded coordinate position (x | (z << 6) | (y << (6 + 6))))
++    // next 4 bits: propagated light level [0, 15]
++    // next 6 bits: propagation direction bitset
++    // next 24 bits: unused
++    // last 3 bits: state flags
++    // state flags:
++    // whether the increase propagator needs to write the propagated level to the position, used to avoid cascading light
++    // updates for block sources
++    protected static final long FLAG_WRITE_LEVEL = Long.MIN_VALUE >>> 2;
++    // whether the propagation needs to check if its current level is equal to the expected level
++    // used only in increase propagation
++    protected static final long FLAG_RECHECK_LEVEL = Long.MIN_VALUE >>> 1;
++    // whether the propagation needs to consider if its block is conditionally transparent
++    protected static final long FLAG_HAS_SIDED_TRANSPARENT_BLOCKS = Long.MIN_VALUE;
++
++    protected long[] increaseQueue = new long[16 * 16 * 16];
++    protected int increaseQueueInitialLength;
++    protected long[] decreaseQueue = new long[16 * 16 * 16];
++    protected int decreaseQueueInitialLength;
++
++    protected final long[] resizeIncreaseQueue() {
++        return this.increaseQueue = Arrays.copyOf(this.increaseQueue, this.increaseQueue.length * 2);
++    }
++
++    protected final long[] resizeDecreaseQueue() {
++        return this.decreaseQueue = Arrays.copyOf(this.decreaseQueue, this.decreaseQueue.length * 2);
++    }
++
++    protected final void appendToIncreaseQueue(final long value) {
++        final int idx = this.increaseQueueInitialLength++;
++        long[] queue = this.increaseQueue;
++        if (idx >= queue.length) {
++            queue = this.resizeIncreaseQueue();
++            queue[idx] = value;
++        } else {
++            queue[idx] = value;
++        }
++    }
++
++    protected final void appendToDecreaseQueue(final long value) {
++        final int idx = this.decreaseQueueInitialLength++;
++        long[] queue = this.decreaseQueue;
++        if (idx >= queue.length) {
++            queue = this.resizeDecreaseQueue();
++            queue[idx] = value;
++        } else {
++            queue[idx] = value;
++        }
++    }
++
++    protected final void performLightIncrease(final World world) {
++        long[] queue = this.increaseQueue;
++        int queueReadIndex = 0;
++        int queueLength = this.increaseQueueInitialLength;
++        this.increaseQueueInitialLength = 0;
++        final int decodeOffsetX = -this.encodeOffsetX;
++        final int decodeOffsetY = -this.encodeOffsetY;
++        final int decodeOffsetZ = -this.encodeOffsetZ;
++        final int encodeOffset = this.coordinateOffset;
++
++        while (queueReadIndex < queueLength) {
++            final long queueValue = queue[queueReadIndex++];
++
++            final int posX = ((int)queueValue & 63) + decodeOffsetX;
++            final int posZ = (((int)queueValue >>> 6) & 63) + decodeOffsetZ;
++            final int posY = (((int)queueValue >>> 12) & ((1 << 16) - 1)) + decodeOffsetY;
++            final int propagatedLightLevel = (int)((queueValue >>> (6 + 6 + 16)) & 0xFL);
++            final AxisDirection[] checkDirections = OLD_CHECK_DIRECTIONS[(int)((queueValue >>> (6 + 6 + 16 + 4)) & 63L)];
++
++            if ((queueValue & FLAG_RECHECK_LEVEL) != 0L) {
++                if (this.getLightLevel(posX, posY, posZ) != propagatedLightLevel) {
++                    // not at the level we expect, so something changed.
++                    continue;
++                }
++            } else if ((queueValue & FLAG_WRITE_LEVEL) != 0L) {
++                // these are used to restore block sources after a propagation decrease
++                this.setLightLevel(posX, posY, posZ, propagatedLightLevel);
++            }
++
++            // we don't need to worry about our state here.
++            for (final AxisDirection propagate : checkDirections) {
++                final int offX = posX + propagate.x;
++                final int offY = posY + propagate.y;
++                final int offZ = posZ + propagate.z;
++
++                if (offY < 0 || offY > 255) {
++                    continue;
++                }
++
++                final Chunk currentChunk = this.getChunkInCache(offX >> 4, offZ >> 4);
++                if (currentChunk == null) {
++                    continue; // unloaded
++                }
++
++                final int currentLevel = this.getLightLevel(offX, offY, offZ);
++                if (currentLevel >= (propagatedLightLevel - 1)) {
++                    continue; // already at the level we want
++                }
++
++                final IBlockData blockState = this.getBlockData(offX, offY, offZ);
++                final int opacityCached = blockState.getBlock().getLightOpacity();
++
++                final int targetLevel = propagatedLightLevel - Math.max(1, opacityCached);
++                if (targetLevel > currentLevel) {
++                    this.setLightLevel(offX, offY, offZ, targetLevel);
++                    this.postLightUpdate(offX, offY, offZ);
++
++                    if (targetLevel > 1) {
++                        if (queueLength >= queue.length) {
++                            queue = this.resizeIncreaseQueue();
++                        }
++                        queue[queueLength++] =
++                                ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                                        | ((targetLevel & 0xFL) << (6 + 6 + 16))
++                                        | (propagate.everythingButTheOppositeDirection << (6 + 6 + 16 + 4));
++                    }
++                }
++            }
++        }
++    }
++
++    protected final void performLightDecrease(final World world) {
++        long[] queue = this.decreaseQueue;
++        long[] increaseQueue = this.increaseQueue;
++        int queueReadIndex = 0;
++        int queueLength = this.decreaseQueueInitialLength;
++        this.decreaseQueueInitialLength = 0;
++        int increaseQueueLength = this.increaseQueueInitialLength;
++        final int decodeOffsetX = -this.encodeOffsetX;
++        final int decodeOffsetY = -this.encodeOffsetY;
++        final int decodeOffsetZ = -this.encodeOffsetZ;
++        final int encodeOffset = this.coordinateOffset;
++        final int emittedMask = this.emittedLightMask;
++
++        while (queueReadIndex < queueLength) {
++            final long queueValue = queue[queueReadIndex++];
++
++            final int posX = ((int)queueValue & 63) + decodeOffsetX;
++            final int posZ = (((int)queueValue >>> 6) & 63) + decodeOffsetZ;
++            final int posY = (((int)queueValue >>> 12) & ((1 << 16) - 1)) + decodeOffsetY;
++            final int propagatedLightLevel = (int)((queueValue >>> (6 + 6 + 16)) & 0xF);
++            final AxisDirection[] checkDirections = OLD_CHECK_DIRECTIONS[(int)((queueValue >>> (6 + 6 + 16 + 4)) & 63)];
++
++            // we don't need to worry about our state here.
++            for (final AxisDirection propagate : checkDirections) {
++                final int offX = posX + propagate.x;
++                final int offY = posY + propagate.y;
++                final int offZ = posZ + propagate.z;
++
++                if (offY < 0 || offY > 255) {
++                    continue;
++                }
++
++                final Chunk currentChunk = this.getChunkInCache(offX >> 4, offZ >> 4);
++                final int lightLevel;
++
++                if (currentChunk == null || (lightLevel = this.getLightLevel(offX, offY, offZ)) == 0) {
++                    // already at lowest (or unloaded), nothing we can do
++                    continue;
++                }
++
++                final IBlockData blockState = this.getBlockData(offX, offY, offZ);
++                final int opacityCached = blockState.getBlock().getLightOpacity();
++
++                final int targetLevel = Math.max(0, propagatedLightLevel - Math.max(1, opacityCached));
++                if (lightLevel > targetLevel) {
++                    // it looks like another source propagated here, so re-propagate it
++                    if (increaseQueueLength >= increaseQueue.length) {
++                        increaseQueue = this.resizeIncreaseQueue();
++                    }
++                    increaseQueue[increaseQueueLength++] =
++                            ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                                    | ((lightLevel & 0xFL) << (6 + 6 + 16))
++                                    | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
++                                    | FLAG_RECHECK_LEVEL;
++                    continue;
++                }
++                final int emittedLight = blockState.getBlock().getLightValue() & emittedMask;
++                if (emittedLight != 0) {
++                    // re-propagate source
++                    // note: do not set recheck level, or else the propagation will fail
++                    if (increaseQueueLength >= increaseQueue.length) {
++                        increaseQueue = this.resizeIncreaseQueue();
++                    }
++                    increaseQueue[increaseQueueLength++] =
++                            ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                                    | ((emittedLight & 0xFL) << (6 + 6 + 16))
++                                    | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
++                                    | (FLAG_WRITE_LEVEL);
++                }
++
++                this.setLightLevel(offX, offY, offZ, 0);
++                this.postLightUpdate(offX, offY, offZ);
++
++                if (targetLevel > 0) { // we actually need to propagate 0 just in case we find a neighbour...
++                    if (queueLength >= queue.length) {
++                        queue = this.resizeDecreaseQueue();
++                    }
++                    queue[queueLength++] =
++                            ((offX + (offZ << 6) + (offY << 12) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                                    | ((targetLevel & 0xFL) << (6 + 6 + 16))
++                                    | ((propagate.everythingButTheOppositeDirection) << (6 + 6 + 16 + 4));
++                    continue;
++                }
++                continue;
++            }
++        }
++
++        // propagate sources we clobbered
++        this.increaseQueueInitialLength = increaseQueueLength;
++        this.performLightIncrease(world);
++    }
++
++    public final void checkBlockEmittance(final int worldX, final int worldY, final int worldZ) {
++        this.setupCaches(this.world, worldX, worldY, worldZ, true);
++        try {
++            // blocks can change opacity
++            // blocks can change emitted light
++            // blocks can change direction of propagation
++
++            final int encodeOffset = this.coordinateOffset;
++            final int emittedMask = this.emittedLightMask;
++
++            final int currentLevel = this.getLightLevel(worldX, worldY, worldZ);
++            final IBlockData blockState = this.getBlockData(worldX, worldY, worldZ);
++            final int emittedLevel = blockState.getBlock().getLightValue() & emittedMask;
++
++            this.setLightLevel(worldX, worldY, worldZ, emittedLevel);
++            // this accounts for change in emitted light that would cause an increase
++            if (emittedLevel != 0) {
++                this.appendToIncreaseQueue(
++                        ((worldX + (worldZ << 6) + (worldY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                                | (emittedLevel & 0xFL) << (6 + 6 + 16)
++                                | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
++                );
++            }
++            // this also accounts for a change in emitted light that would cause a decrease
++            // this also accounts for the change of direction of propagation (i.e old block was full transparent, new block is full opaque or vice versa)
++            // as it checks all neighbours (even if current level is 0)
++            this.appendToDecreaseQueue(
++                    ((worldX + (worldZ << 6) + (worldY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                            | (currentLevel & 0xFL) << (6 + 6 + 16)
++                            | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
++                    // always keep sided transparent false here, new block might be conditionally transparent which would
++                    // prevent us from decreasing sources in the directions where the new block is opaque
++                    // if it turns out we were wrong to de-propagate the source, the re-propagate logic WILL always
++                    // catch that and fix it.
++            );
++            // re-propagating neighbours (done by the decrease queue) will also account for opacity changes in this block
++
++            this.performLightDecrease(this.world);
++        } finally {
++            this.destroyCaches();
++        }
++    }
++
++    public final void checkSkyEmittance(final int worldX, final int worldY, final int worldZ) {
++        this.setupCaches(this.world, worldX, worldY, worldZ, true);
++        try {
++            // try and propagate from the above y
++            // delay light set until after processing all sources to setup
++            final int maxPropagationY = this.tryPropagateSkylight(this.world, worldX, worldY, worldZ);
++
++            // maxPropagationY is now the highest block that could not be propagated to
++
++            // remove all sources below that are 15
++            final long propagateDirection = AxisDirection.POSITIVE_Y.everythingButThisDirection;
++            final int encodeOffset = this.coordinateOffset;
++
++            if (this.getLightLevel(worldX, maxPropagationY, worldZ) == 15) {
++                for (int currY = maxPropagationY; currY >= 0; --currY) {
++                    if (this.getLightLevel(worldX, currY, worldZ) != 15) {
++                        break;
++                    }
++
++                    this.appendToDecreaseQueue(
++                            ((worldX + (worldZ << 6) + (currY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                                    | (15L << (6 + 6 + 16))
++                                    | (propagateDirection << (6 + 6 + 16 + 4))
++                            // do not set transparent blocks for the same reason we don't in the checkBlock method
++                    );
++
++                    this.setLightLevel(worldX, currY, worldZ, 0);
++                }
++            }
++
++            // inlined checkBlock
++
++            // blocks can change opacity
++            // blocks can change direction of propagation
++
++            // same logic applies from BlockStarLightEngine#checkBlock
++
++            final int currentLevel = this.getLightLevel(worldX, worldY, worldZ);
++
++            if (currentLevel == 15) {
++                // must re-propagate clobbered source
++                this.appendToIncreaseQueue(
++                        ((worldX + (worldZ << 6) + (worldY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                                | (currentLevel & 0xFL) << (6 + 6 + 16)
++                                | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
++                                | FLAG_HAS_SIDED_TRANSPARENT_BLOCKS // don't know if the block is conditionally transparent
++                );
++            } else {
++                this.setLightLevel(worldX, worldY, worldZ, 0);
++            }
++
++            this.appendToDecreaseQueue(
++                    ((worldX + (worldZ << 6) + (worldY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                            | (currentLevel & 0xFL) << (6 + 6 + 16)
++                            | (((long)ALL_DIRECTIONS_BITSET) << (6 + 6 + 16 + 4))
++            );
++
++            this.performLightDecrease(this.world);
++        } finally {
++            this.destroyCaches();
++        }
++    }
++
++    // delaying the light set is useful for block changes since they need to worry about initialising nibblearrays
++    // while also queueing light at the same time (initialising nibblearrays might depend on nibbles above, so
++    // clobbering the light values will result in broken propagation)
++    protected final int tryPropagateSkylight(final World world, final int worldX, int startY, final int worldZ) {
++        final int encodeOffset = this.coordinateOffset;
++        final long propagateDirection = AxisDirection.POSITIVE_Y.everythingButThisDirection; // just don't check upwards.
++
++        if (this.getLightLevel(worldX, startY + 1, worldZ) != 15) {
++            return startY;
++        }
++
++        for (; startY >= 0; --startY) {
++            IBlockData current = this.getBlockData(worldX, startY, worldZ);
++
++            final int opacityIfCached = current.getBlock().getLightOpacity();
++            // does light propagate from the top down?
++            if (opacityIfCached != 0) {
++                // we cannot propagate 15 through this
++                break;
++            }
++
++            // most of the time it falls here.
++            // add to propagate
++            // light set delayed until we determine if this nibble section is null
++            this.appendToIncreaseQueue(
++                    ((worldX + (worldZ << 6) + (startY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                            | (15L << (6 + 6 + 16)) // we know we're at full lit here
++                            | (propagateDirection << (6 + 6 + 16 + 4))
++            );
++
++            this.setLightLevel(worldX, startY, worldZ, 15);
++        }
++
++        return startY;
++    }
++
++    public final void initSkylight(final int chunkX, final int chunkZ) {
++        this.setupCaches(this.world, (chunkX << 4) | 7, 64, (chunkZ << 4) | 7, true);
++        try {
++            // now setup sources
++            final int worldChunkX = chunkX << 4;
++            final int worldChunkZ = chunkZ << 4;
++
++            for (int currZ = 0; currZ <= 15; ++currZ) {
++                for (int currX = 0; currX <= 15; ++currX) {
++                    final int worldX = currX | worldChunkX;
++                    final int worldZ = currZ | worldChunkZ;
++                    this.tryPropagateSkylight(this.world, worldX, 255, worldZ);
++                }
++            }
++
++            this.propagateNeighbourLevels(chunkX, chunkZ);
++
++            this.performLightIncrease(this.world);
++        } finally {
++            this.destroyCaches();
++        }
++    }
++
++    public final void initBlockLight(final int chunkX, final int chunkZ) {
++        this.setupCaches(this.world, (chunkX << 4) | 7, 64, (chunkZ << 4) | 7, true);
++        try {
++            if (this.world.worldProvider.getHasNoSky()) {
++                final Chunk chunk = this.getChunkInCache(chunkX, chunkZ);
++                if (chunk != null) {
++                    for (int x = 0; x <= 15; ++x) {
++                        for (int z = 0; z <= 15; ++z) {
++                            for (int y = 0; y <= 255; ++y) {
++                                final IBlockData blockState = chunk.getBlockData(new BlockPosition(x, y, z));
++                                if (blockState == Blocks.AIR.getBlockData()) {
++                                    continue;
++                                }
++                                final int emittedLight = blockState.getBlock().getLightValue();
++
++                                if (emittedLight != 0) {
++                                    int worldX = x | (chunkX << 4);
++                                    int worldZ = z | (chunkZ << 4);
++                                    this.setLightLevel(worldX, y, worldZ, emittedLight);
++                                    final int encodeOffset = this.coordinateOffset;
++                                    this.appendToIncreaseQueue(
++                                            (((worldX) + (worldZ << 6) + (y << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                                                    | ((emittedLight & 0xFL) << (6 + 6 + 16))
++                                                    | ((long)ALL_DIRECTIONS_BITSET << (6 + 6 + 16 + 4))
++                                                    | FLAG_HAS_SIDED_TRANSPARENT_BLOCKS // don't know if the current block is transparent, must check.
++                                    );
++                                }
++                            }
++                        }
++                    }
++                }
++            }
++
++            this.propagateNeighbourLevels(chunkX, chunkZ);
++
++            this.performLightIncrease(this.world);
++        } finally {
++            this.destroyCaches();
++        }
++    }
++
++    protected final void propagateNeighbourLevels(final int chunkX, final int chunkZ) {
++        for (int currSectionY = (255 >> 4); currSectionY >= 0; --currSectionY) {
++            for (final AxisDirection direction : ONLY_HORIZONTAL_DIRECTIONS) {
++                final int neighbourOffX = direction.x;
++                final int neighbourOffZ = direction.z;
++
++                final Chunk neighbourChunk = this.getChunkInCache(chunkX + neighbourOffX, chunkZ + neighbourOffZ);
++
++                if (neighbourChunk == null) {
++                    // can't pull from 0
++                    continue;
++                }
++
++                // neighbour chunk
++                final int incX;
++                final int incZ;
++                final int startX;
++                final int startZ;
++
++                if (neighbourOffX != 0) {
++                    // x direction
++                    incX = 0;
++                    incZ = 1;
++
++                    if (direction.x < 0) {
++                        // negative
++                        startX = (chunkX << 4) - 1;
++                    } else {
++                        startX = (chunkX << 4) + 16;
++                    }
++                    startZ = chunkZ << 4;
++                } else {
++                    // z direction
++                    incX = 1;
++                    incZ = 0;
++
++                    if (neighbourOffZ < 0) {
++                        // negative
++                        startZ = (chunkZ << 4) - 1;
++                    } else {
++                        startZ = (chunkZ << 4) + 16;
++                    }
++                    startX = chunkX << 4;
++                }
++
++                final long propagateDirection = 1L << direction.getOpposite().ordinal(); // we only want to check in this direction towards this chunk
++                final int encodeOffset = this.coordinateOffset;
++
++                for (int currY = currSectionY << 4, maxY = currY | 15; currY <= maxY; ++currY) {
++                    for (int i = 0, currX = startX, currZ = startZ; i < 16; ++i, currX += incX, currZ += incZ) {
++                        final int level = this.getLightLevel(currX, currY, currZ);
++
++                        if (level <= 1) {
++                            // nothing to propagate
++                            continue;
++                        }
++
++                        this.appendToIncreaseQueue(
++                                ((currX + (currZ << 6) + (currY << (6 + 6)) + encodeOffset) & ((1L << (6 + 6 + 16)) - 1))
++                                        | ((level & 0xFL) << (6 + 6 + 16))
++                                        | (propagateDirection << (6 + 6 + 16 + 4))
++                                        | FLAG_HAS_SIDED_TRANSPARENT_BLOCKS // don't know if the current block is transparent, must check.
++                        );
++                    }
++                }
++            }
++        }
++    }
++}
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index a45c7fcd8aace57ac7408e691d88b8f249b9c81d..be7fe9fd6028c1feda83124866feaccbb1f0c05e 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -76,4 +76,8 @@ public class PandaSpigotWorldConfig {
+     @Comment("Whether players and mobs can destroy crops by jumping on them.\n" +
+             "Default: true (vanilla behaviour)")
+     public boolean cropTrampling = true;
++
++    @Comment("Use Starlight optimized lighting engine.\n" +
++            "Default: true")
++    public boolean useStarlight = true;
+ }
+diff --git a/src/main/java/net/minecraft/server/Block.java b/src/main/java/net/minecraft/server/Block.java
+index a784e04a09ffac4d09415353084aea3fd5451d9c..21ba37d84a4bd3b7f5f46384442c4c9682c2d563 100644
+--- a/src/main/java/net/minecraft/server/Block.java
++++ b/src/main/java/net/minecraft/server/Block.java
+@@ -133,10 +133,12 @@ public class Block {
+         return this.r;
+     }
+ 
++    public final int getLightOpacity() { return this.s; } // PandaSpigot - OBFHELPER
+     public int p() {
+         return this.s;
+     }
+ 
++    public final int getLightValue() { return this.u; } // PandaSpigot - OBFHELPER
+     public int r() {
+         return this.u;
+     }
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index bdbda3e61c86dc298862fe560942a08fdc57e3a5..1c72a906437496f27322d9d4dd5ccac997fc5c98 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -240,7 +240,7 @@ public class Chunk {
+                         }
+                     }
+ 
+-                    if (!this.world.worldProvider.o()) {
++                    if (!this.world.pandaSpigotConfig.useStarlight && !this.world.worldProvider.o()) { // PandaSpigot - Starlight
+                         l = 15;
+                         int i1 = i + 16 - 1;
+ 
+@@ -620,7 +620,7 @@ public class Chunk {
+             } else {
+                 if (flag) {
+                     this.initLighting();
+-                } else {
++                } else if (!this.world.pandaSpigotConfig.useStarlight) { // PandaSpigot - Starlight
+                     int j1 = block.p();
+                     int k1 = block1.p();
+ 
+@@ -636,6 +636,9 @@ public class Chunk {
+                         this.d(i, k);
+                     }
+                 }
++                if (this.world.pandaSpigotConfig.useStarlight) { // PandaSpigot - Starlight
++                    this.updateLight(i, j, k);
++                }
+ 
+                 TileEntity tileentity;
+ 
+@@ -678,6 +681,7 @@ public class Chunk {
+         return chunksection == null ? (this.d(blockposition) ? enumskyblock.c : 0) : (enumskyblock == EnumSkyBlock.SKY ? (this.world.worldProvider.o() ? 0 : chunksection.d(i, j & 15, k)) : (enumskyblock == EnumSkyBlock.BLOCK ? chunksection.e(i, j & 15, k) : enumskyblock.c));
+     }
+ 
++    public final void setBrightness(EnumSkyBlock enumskyblock, BlockPosition blockposition, int i) { this.a(enumskyblock, blockposition, i); } // PandaSpigot - OBFHELPER
+     public void a(EnumSkyBlock enumskyblock, BlockPosition blockposition, int i) {
+         int j = blockposition.getX() & 15;
+         int k = blockposition.getY();
+@@ -1158,12 +1162,12 @@ public class Chunk {
+     }
+ 
+     public void b(boolean flag) {
+-        if (this.k && !this.world.worldProvider.o() && !flag) {
++        if (!this.world.pandaSpigotConfig.useStarlight && this.k && !this.world.worldProvider.o() && !flag) { // PandaSpigot - Starlight
+             this.recheckGaps(this.world.isClientSide); // PaperSpigot - Asynchronous lighting updates
+         }
+ 
+         this.p = true;
+-        if (!this.lit && this.done && this.world.spigotConfig.randomLightUpdates) { // Spigot - also use random light updates setting to determine if we should relight
++        if (!this.lit && this.done && (this.world.pandaSpigotConfig.useStarlight || this.world.spigotConfig.randomLightUpdates)) { // Spigot - also use random light updates setting to determine if we should relight // PandaSpigot - Starlight
+             this.n();
+         }
+ 
+@@ -1280,6 +1284,8 @@ public class Chunk {
+     }
+ 
+     public void m() {
++        if (this.world.pandaSpigotConfig.useStarlight) return; // PandaSpigot - Starlight
++
+         BlockPosition blockposition = new BlockPosition(this.locX << 4, 0, this.locZ << 4);
+ 
+         for (int i = 0; i < 8; ++i) {
+@@ -1320,6 +1326,7 @@ public class Chunk {
+     public void n() {
+         this.done = true;
+         this.lit = true;
++        if (this.world.pandaSpigotConfig.useStarlight) return; // PandaSpigot - Starlight
+         BlockPosition blockposition = new BlockPosition(this.locX << 4, 0, this.locZ << 4);
+ 
+         if (!this.world.worldProvider.o()) {
+@@ -1466,6 +1473,7 @@ public class Chunk {
+         this.lit = flag;
+     }
+ 
++    public final void setModified(boolean modified) { this.q = modified; } // PandaSpigot - OBFHELPER
+     public void f(boolean flag) {
+         this.q = flag;
+     }
+@@ -1490,6 +1498,26 @@ public class Chunk {
+         this.u = i;
+     }
+ 
++    // PandaSpigot start - Starlight
++    public void initLightingForRealNotJustHeightmap() {
++        this.world.blockLight.initBlockLight(this.locX, this.locZ);
++
++        if (!this.world.worldProvider.getHasNoSky()) {
++            this.world.skyLight.initSkylight(this.locX, this.locZ);
++        }
++    }
++
++    public void updateLight(int localX, int worldY, int localZ) {
++        int worldX = localX | (this.locX << 4);
++        int worldZ = localZ | (this.locZ << 4);
++
++        this.world.blockLight.checkBlockEmittance(worldX, worldY, worldZ);
++        if (!this.world.worldProvider.getHasNoSky()) {
++            this.world.skyLight.checkSkyEmittance(worldX, worldY, worldZ);
++        }
++    }
++    // PandaSpigot end
++
+     public static enum EnumTileEntityState {
+ 
+         IMMEDIATE, QUEUED, CHECK;
+diff --git a/src/main/java/net/minecraft/server/ChunkProviderServer.java b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+index 041ede2857ddcc6fc8a4f52318ef4ba9d975782a..96b7ad408940c9b5fa9ce7559e55700bbe0b57d9 100644
+--- a/src/main/java/net/minecraft/server/ChunkProviderServer.java
++++ b/src/main/java/net/minecraft/server/ChunkProviderServer.java
+@@ -178,6 +178,7 @@ public class ChunkProviderServer implements IChunkProvider {
+             this.chunks.put(key, chunk); // PandaSpigot - Reuse key
+             
+             chunk.addEntities();
++            if (chunk.world.pandaSpigotConfig.useStarlight && newChunk) chunk.initLightingForRealNotJustHeightmap(); // PandaSpigot - Starlight
+             
+             // CraftBukkit start
+             Server server = world.getServer();
+diff --git a/src/main/java/net/minecraft/server/PlayerChunkMap.java b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+index 6a489b4514d565b47d930a6ed1abf94cd863cf54..6a4bb8b616ae042f2efe54f937d7856078a174c8 100644
+--- a/src/main/java/net/minecraft/server/PlayerChunkMap.java
++++ b/src/main/java/net/minecraft/server/PlayerChunkMap.java
+@@ -57,7 +57,7 @@ public class PlayerChunkMap {
+                         continue;
+                     }
+ 
+-                    if (PlayerChunkMap.this.world.spigotConfig.randomLightUpdates && !chunk.u() && chunk.isDone()) {
++                    if (PlayerChunkMap.this.world.spigotConfig.randomLightUpdates && !PlayerChunkMap.this.world.pandaSpigotConfig.useStarlight && !chunk.u() && chunk.isDone()) { // PandaSpigot - Starlight
+                         return chunk;
+                     }
+ 
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 522c63e7f884a8b2202b111c81df9b54384703d5..892227edf6c053d8a8844a28e14abf060308c451 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -144,6 +144,10 @@ public abstract class World implements IBlockAccess {
+     private int tileTickPosition;
+     public ExecutorService lightingExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("PaperSpigot - Lighting Thread").build()); // PaperSpigot - Asynchronous lighting updates
+     public final Map<Explosion.CacheKey, Float> explosionDensityCache = new HashMap<Explosion.CacheKey, Float>(); // PaperSpigot - Optimize explosions
++    // PandaSpigot start - Starlight
++    public final ca.spottedleaf.starlight.StarlightEngine blockLight = new ca.spottedleaf.starlight.StarlightEngine(false, this);
++    public final ca.spottedleaf.starlight.StarlightEngine skyLight = new ca.spottedleaf.starlight.StarlightEngine(true, this);
++    // PandaSpigot end
+ 
+     public static long chunkToKey(int x, int z)
+     {
+@@ -369,7 +373,7 @@ public abstract class World implements IBlockAccess {
+         }
+     }
+ 
+-    protected boolean isChunkLoaded(int i, int j, boolean flag) {
++    public boolean isChunkLoaded(int i, int j, boolean flag) { // PandaSpigot - public
+         return this.chunkProvider.isChunkLoaded(i, j) && (flag || !this.chunkProvider.getOrCreateChunk(i, j).isEmpty());
+     }
+ 
+@@ -2389,7 +2393,7 @@ public abstract class World implements IBlockAccess {
+         }
+ 
+         this.methodProfiler.a("playerCheckLight");
+-        if (spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot
++        if (!this.pandaSpigotConfig.useStarlight && spigotConfig.randomLightUpdates && !this.players.isEmpty()) { // Spigot // PandaSpigot - Starlight
+             i = this.random.nextInt(this.players.size());
+             entityhuman = (EntityHuman) this.players.get(i);
+             j = MathHelper.floor(entityhuman.locX) + this.random.nextInt(11) - 5;
+@@ -2561,6 +2565,8 @@ public abstract class World implements IBlockAccess {
+         if (chunk == null /*|| !chunk.areNeighborsLoaded(1)*/ /*!this.areChunksLoaded(blockposition, 17, false)*/) {
+             // CraftBukkit end
+             return false;
++        } else if (this.pandaSpigotConfig.useStarlight) { // PandaSpigot - Starlight
++            return true;
+         } else {
+             int i = 0;
+             int j = 0;
+diff --git a/src/main/java/net/minecraft/server/WorldProvider.java b/src/main/java/net/minecraft/server/WorldProvider.java
+index f72c6fa9b3fc3cfd261494a2edaa6a7c735f79a4..469a6ca35743315d57dc8f4e2a0e91707e12645e 100644
+--- a/src/main/java/net/minecraft/server/WorldProvider.java
++++ b/src/main/java/net/minecraft/server/WorldProvider.java
+@@ -111,6 +111,7 @@ public abstract class WorldProvider {
+         return this.d;
+     }
+ 
++    public final boolean getHasNoSky() { return this.e; } // PandaSpigot - OBFHELPER
+     public boolean o() {
+         return this.e;
+     }
