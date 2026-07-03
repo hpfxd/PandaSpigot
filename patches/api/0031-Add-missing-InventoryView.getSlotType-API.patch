@@ -1,0 +1,101 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Tue, 30 Jun 2026 17:40:57 +0000
+Subject: [PATCH] Add missing InventoryView.getSlotType API
+
+
+diff --git a/src/main/java/org/bukkit/inventory/InventoryView.java b/src/main/java/org/bukkit/inventory/InventoryView.java
+index c1235f11f9139898265eb39bc8dbed88b5c6e707..ba841bc4384a21de447d4bf80e0a9606cab81761 100644
+--- a/src/main/java/org/bukkit/inventory/InventoryView.java
++++ b/src/main/java/org/bukkit/inventory/InventoryView.java
+@@ -3,6 +3,7 @@ package org.bukkit.inventory;
+ import org.bukkit.GameMode;
+ import org.bukkit.entity.HumanEntity;
+ import org.bukkit.event.inventory.InventoryType;
++import org.bukkit.event.inventory.InventoryType.SlotType;
+ 
+ /**
+  * Represents a view linking two inventories and a single player (whose
+@@ -208,6 +209,82 @@ public abstract class InventoryView {
+         return getTopInventory().getSize() + getBottomInventory().getSize();
+     }
+ 
++    /**
++     * Determine the type of the slot by its raw slot ID.
++     * <p>
++     * If the type of the slot is unknown, then
++     * {@link InventoryType.SlotType#CONTAINER} will be returned.
++     *
++     * @param slot The raw slot ID
++     * @return the slot type
++     */
++    public SlotType getSlotType(int slot) {
++        SlotType type = SlotType.CONTAINER;
++        if (slot >= 0 && slot < getTopInventory().getSize()) {
++            switch(getType()) {
++            case FURNACE:
++                if (slot == 2) {
++                    type = SlotType.RESULT;
++                } else if(slot == 1) {
++                    type = SlotType.FUEL;
++                } else {
++                    type = SlotType.CRAFTING;
++                }
++                break;
++            case BREWING:
++                if (slot == 3) {
++                    type = SlotType.FUEL;
++                } else {
++                    type = SlotType.CRAFTING;
++                }
++                break;
++            case ENCHANTING:
++                type = SlotType.CRAFTING;
++                break;
++            case WORKBENCH:
++            case CRAFTING:
++                if (slot == 0) {
++                    type = SlotType.RESULT;
++                } else {
++                    type = SlotType.CRAFTING;
++                }
++                break;
++            case MERCHANT:
++                if (slot == 2) {
++                    type = SlotType.RESULT;
++                } else {
++                    type = SlotType.CRAFTING;
++                }
++                break;
++            case BEACON:
++                type = SlotType.CRAFTING;
++                break;
++            case ANVIL:
++                if (slot == 2) {
++                    type = SlotType.RESULT;
++                } else {
++                    type = SlotType.CRAFTING;
++                }
++                break;
++            default:
++                // Nothing to do, it's a CONTAINER slot
++            }
++        } else {
++            if (slot == -999) {
++                type = SlotType.OUTSIDE;
++            } else if (getType() == InventoryType.CRAFTING) {
++                if (slot < 9) {
++                    type = SlotType.ARMOR;
++                } else if (slot > 35) {
++                    type = SlotType.QUICKBAR;
++                }
++            } else if (slot >= (countSlots() - 9)) {
++                type = SlotType.QUICKBAR;
++            }
++        }
++        return type;
++    }
++
+     /**
+      * Sets an extra property of this inventory if supported by that
+      * inventory, for example the state of a progress bar.
