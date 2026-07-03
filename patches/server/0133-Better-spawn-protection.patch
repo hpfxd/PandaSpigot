@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Sun, 28 Jun 2026 13:21:04 +0000
+Subject: [PATCH] Better spawn protection
+
+Protect spawn from explosions
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+index f1769ecc8fe0725171b638b7d8b7bbbc9e5250d1..c63cd15c13b503d91ef0245ffe0de7f85dd6f540 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotConfig.java
+@@ -127,4 +127,7 @@ public class PandaSpigotConfig {
+     public int tabSpamIncrement = 10;
+ 
+     public int tabSpamLimit = 500;
++
++    @Comment("Protect spawn from explosions")
++    public boolean betterSpawnProtection = true;
+ }
+diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
+index 67d7f178a43256a3fc37f235cc8b4db990e17c35..0f4e8c767632430a4cda8905331e6cede4351566 100644
+--- a/src/main/java/net/minecraft/server/DedicatedServer.java
++++ b/src/main/java/net/minecraft/server/DedicatedServer.java
+@@ -522,7 +522,7 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
+             return false;
+         */
+         // PandaSpigot end
+-        } else if (this.aP().isOp(entityhuman.getProfile())) {
++        } else if (entityhuman != null && this.aP().isOp(entityhuman.getProfile())) { // PandaSpigot - Better spawn protection
+             return false;
+         } else if (this.getSpawnProtection() <= 0) {
+             return false;
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index 9d8bb72b469163db7def78f623d18dc4056b1f6b..e2b6f0a788fe56cacbadb457a7c65b3412a1b528 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -2056,7 +2056,13 @@ public abstract class Entity implements ICommandListener {
+     }
+ 
+     public boolean a(Explosion explosion, World world, BlockPosition blockposition, IBlockData iblockdata, float f) {
+-        return true;
++        // PandaSpigot start - Better spawn protection
++        if (com.hpfxd.pandaspigot.config.PandaSpigotConfig.get().betterSpawnProtection) {
++            return !MinecraftServer.getServer().a(world, blockposition, (this instanceof EntityHuman) ? (EntityHuman)this : null);
++        } else {
++            return true;
++        }
++        // PandaSpigot end
+     }
+ 
+     public int aE() {
