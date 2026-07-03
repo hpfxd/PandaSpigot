@@ -1,0 +1,33 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Fri, 3 Jul 2026 01:28:19 +0000
+Subject: [PATCH] Configurable Soil Trampling
+
+Whether players and mobs can destroy crops by jumping on them.
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 64384362774ed9b7f06f4ea880249ccc34cadbc3..a45c7fcd8aace57ac7408e691d88b8f249b9c81d 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -72,4 +72,8 @@ public class PandaSpigotWorldConfig {
+     public boolean useSpigotChunkTickingSelection = false;
+ 
+     public boolean projectileFixes = true;
++
++    @Comment("Whether players and mobs can destroy crops by jumping on them.\n" +
++            "Default: true (vanilla behaviour)")
++    public boolean cropTrampling = true;
+ }
+diff --git a/src/main/java/net/minecraft/server/BlockSoil.java b/src/main/java/net/minecraft/server/BlockSoil.java
+index 362a346fc057981fae6201b8e18ed441c4bde75d..331b6bedfa739b2324684dff29c822870e6e30ef 100644
+--- a/src/main/java/net/minecraft/server/BlockSoil.java
++++ b/src/main/java/net/minecraft/server/BlockSoil.java
+@@ -57,6 +57,8 @@ public class BlockSoil extends Block {
+         super.fallOn(world, blockposition, entity, f); // CraftBukkit - moved here as game rules / events shouldn't affect fall damage.
+         if (entity instanceof EntityLiving) {
+             if (!world.isClientSide && world.random.nextFloat() < f - 0.5F) {
++                if (!world.pandaSpigotConfig.cropTrampling) { return; } // PandaSpigot - Configurable Soil Trampling
++
+                 if (!(entity instanceof EntityHuman) && !world.getGameRules().getBoolean("mobGriefing")) {
+                     return;
+                 }
