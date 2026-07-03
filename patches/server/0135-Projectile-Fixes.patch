@@ -1,0 +1,70 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Fri, 3 Jul 2026 01:23:58 +0000
+Subject: [PATCH] Projectile Fixes
+
+Make projectile not collide with the ridden entity for first few ticks
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index fc00a5f67c5a6b2642c23834da1bef31338e2f07..64384362774ed9b7f06f4ea880249ccc34cadbc3 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -70,4 +70,6 @@ public class PandaSpigotWorldConfig {
+         "behaviour while still providing performance optimizations.\n" +
+         "Default: false")
+     public boolean useSpigotChunkTickingSelection = false;
++
++    public boolean projectileFixes = true;
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
+index ecde0d9ec034024355c09b249694ce118b3b10bc..375b930ff42f933e5c01fa6ecfcf1f4f6c831e50 100644
+--- a/src/main/java/net/minecraft/server/EntityArrow.java
++++ b/src/main/java/net/minecraft/server/EntityArrow.java
+@@ -191,7 +191,7 @@ public class EntityArrow extends Entity implements IProjectile {
+             for (j = 0; j < list.size(); ++j) {
+                 Entity entity1 = (Entity) list.get(j);
+ 
+-                if (entity1.ad() && (entity1 != this.shooter || this.as >= 5)) {
++                if (entity1.ad() && ((entity1 != this.shooter && (!this.world.pandaSpigotConfig.projectileFixes || entity1.passenger != this.shooter)) || this.as >= 5)) { // PandaSpigot - Projectile Fixes
+                     f1 = 0.3F;
+                     AxisAlignedBB axisalignedbb1 = entity1.getBoundingBox().grow((double) f1, (double) f1, (double) f1);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb1.a(vec3d, vec3d1);
+diff --git a/src/main/java/net/minecraft/server/EntityFireball.java b/src/main/java/net/minecraft/server/EntityFireball.java
+index 2524e2b8d8e03e4c97464eb74a964b595584f8a7..662a4c132a9bc1b332b7b42b7c1d1a47754dfa49 100644
+--- a/src/main/java/net/minecraft/server/EntityFireball.java
++++ b/src/main/java/net/minecraft/server/EntityFireball.java
+@@ -106,7 +106,7 @@ public abstract class EntityFireball extends Entity {
+             for (int i = 0; i < list.size(); ++i) {
+                 Entity entity1 = (Entity) list.get(i);
+ 
+-                if (entity1.ad() && (!entity1.k(this.shooter) || this.as >= 25)) {
++                if (entity1.ad() && ((!entity1.k(this.shooter) && (!this.world.pandaSpigotConfig.projectileFixes || entity1.passenger != this.shooter)) || this.as >= 25)) { // PandaSpigot - Projectile Fixes
+                     float f = 0.3F;
+                     AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow((double) f, (double) f, (double) f);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
+diff --git a/src/main/java/net/minecraft/server/EntityFishingHook.java b/src/main/java/net/minecraft/server/EntityFishingHook.java
+index 6eca198f9f026c82b8b31d446c3953dabdc956cf..bf3df19fdfe9643f8d78a12d169ece561e84da6c 100644
+--- a/src/main/java/net/minecraft/server/EntityFishingHook.java
++++ b/src/main/java/net/minecraft/server/EntityFishingHook.java
+@@ -168,7 +168,7 @@ public class EntityFishingHook extends Entity {
+             for (int i = 0; i < list.size(); ++i) {
+                 Entity entity1 = (Entity) list.get(i);
+ 
+-                if (entity1.ad() && (entity1 != this.owner || this.au >= 5)) {
++                if (entity1.ad() && ((entity1 != this.owner && (!this.world.pandaSpigotConfig.projectileFixes || entity1.passenger != this.owner)) || this.au >= 5)) { // PandaSpigot - Projectile Fixes
+                     float f = 0.3F;
+                     AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow((double) f, (double) f, (double) f);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
+diff --git a/src/main/java/net/minecraft/server/EntityProjectile.java b/src/main/java/net/minecraft/server/EntityProjectile.java
+index fba0c18c6e1128d2f627c176531e4afe54bcd7df..bc2054b10bbada19fdb4d296aaeca6f264664fa9 100644
+--- a/src/main/java/net/minecraft/server/EntityProjectile.java
++++ b/src/main/java/net/minecraft/server/EntityProjectile.java
+@@ -126,7 +126,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
+             for (int i = 0; i < list.size(); ++i) {
+                 Entity entity1 = (Entity) list.get(i);
+ 
+-                if (entity1.ad() && (entity1 != entityliving || this.ar >= 5)) {
++                if (entity1.ad() && ((entity1 != entityliving && (!this.world.pandaSpigotConfig.projectileFixes || entity1.passenger != entityliving)) || this.ar >= 5)) { // PandaSpigot - Projectile Fixes
+                     float f = 0.3F;
+                     AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow((double) f, (double) f, (double) f);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
