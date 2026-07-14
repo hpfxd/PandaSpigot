@@ -20,6 +20,19 @@ index 48d524e54a6b9b13dd6d4b3863d328b97bce6a7e..78df2db46005cc9eeb7090a75aee55c0
                  if (!this.a(itemstack1, 10, 46, true)) {
                      return null;
                  }
+diff --git a/src/main/java/net/minecraft/server/ItemWorldMap.java b/src/main/java/net/minecraft/server/ItemWorldMap.java
+index 6473ee5b795253994cd482f1c0caea1e83ff985c..0cc720392dfd386324f6a553411d28a0749b9835 100644
+--- a/src/main/java/net/minecraft/server/ItemWorldMap.java
++++ b/src/main/java/net/minecraft/server/ItemWorldMap.java
+@@ -208,6 +208,8 @@ public class ItemWorldMap extends ItemWorldMapBase {
+             worldmap1.c();
+             world.a("map_" + itemstack.getData(), (PersistentBase) worldmap1);
+ 
++            itemstack.getTag().remove("map_is_scaling"); // PandaSpigot - Fix MC-87 map scaling/cloning issues
++
+             // CraftBukkit start
+             MapInitializeEvent event = new MapInitializeEvent(worldmap1.mapView);
+             Bukkit.getServer().getPluginManager().callEvent(event);
 diff --git a/src/main/java/net/minecraft/server/RecipeMapClone.java b/src/main/java/net/minecraft/server/RecipeMapClone.java
 index 579f6d1d2e68c86d11054c3c6c79993ef18f3017..9e3ae8969b1f3bf8a24cb3adb1890d37e1d9bef1 100644
 --- a/src/main/java/net/minecraft/server/RecipeMapClone.java
