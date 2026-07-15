@@ -5,7 +5,7 @@ Subject: [PATCH] Add SLF4J implementation
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index 17836f8338282c00ebf4675fb57131478d675a64..0bcff7067e0df01cd613c4ed16a7c004d632e10d 100644
+index 4476529604e907b77b75e0fa513bba149d868803..0742b5c85e6e6d40917ec532d47c7aa953c79a30 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -22,6 +22,7 @@ dependencies {
@@ -16,7 +16,7 @@ index 17836f8338282c00ebf4675fb57131478d675a64..0bcff7067e0df01cd613c4ed16a7c004
  
      // testing
      testImplementation("junit:junit:4.12")
-@@ -75,6 +76,7 @@ tasks {
+@@ -73,6 +74,7 @@ tasks {
                  "https://javadoc.io/doc/org.yaml/snakeyaml/1.15/",
                  "https://javadoc.io/doc/com.google.code.gson/gson/2.2.4/",
                  "https://repo.hpfxd.com/javadoc/releases/net/md-5/bungeecord-chat/1.8-SNAPSHOT/raw/",
