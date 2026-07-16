@@ -1,0 +1,215 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Wed, 15 Jul 2026 05:04:49 +0000
+Subject: [PATCH] Extend Animals API
+
+add methods:
+  getBreedItems
+  setBreedItems
+  addBreedItem
+  removeBreedItem
+
+diff --git a/src/main/java/org/bukkit/Bukkit.java b/src/main/java/org/bukkit/Bukkit.java
+index 2ae8b301052020afc17c15435d8022c55cce9675..b61f4b137963a184d517f6dda6dbb77c167134ef 100644
+--- a/src/main/java/org/bukkit/Bukkit.java
++++ b/src/main/java/org/bukkit/Bukkit.java
+@@ -43,6 +43,8 @@ import org.bukkit.generator.ChunkGenerator;
+ import org.bukkit.inventory.ItemFactory;
+ import org.bukkit.inventory.meta.ItemMeta;
+ 
++import org.bukkit.data.AnimalData; // PandaSpigot - Extend Animals API
++
+ /**
+  * Represents the Bukkit core, for version and Server singleton handling
+  */
+@@ -1316,6 +1318,17 @@ public final class Bukkit {
+     }
+     // PandaSpigot end
+ 
++    // PandaSpigot start - Extend Animals API
++    /**
++     * Returns the accessor for static Animals methods.
++     *
++     * @return accessor for static Animals methods
++     */
++    public static AnimalData getAnimalData() {
++        return server.getAnimalData();
++    }
++    // PandaSpigot end
++
+     public static Server.Spigot spigot()
+     {
+         return server.spigot();
+diff --git a/src/main/java/org/bukkit/Server.java b/src/main/java/org/bukkit/Server.java
+index 51849294e3618b94aec5c81c0438d95e00e3a33a..dfeb2c71cde104622ae34b8eceeee37c361403e4 100644
+--- a/src/main/java/org/bukkit/Server.java
++++ b/src/main/java/org/bukkit/Server.java
+@@ -44,6 +44,8 @@ import org.bukkit.generator.ChunkGenerator;
+ import org.bukkit.inventory.ItemFactory;
+ import org.bukkit.inventory.meta.ItemMeta;
+ 
++import org.bukkit.data.AnimalData; // PandaSpigot - Extend Animals API
++
+ /**
+  * Represents a server implementation.
+  */
+@@ -1079,6 +1081,15 @@ public interface Server extends PluginMessageRecipient, net.kyori.adventure.audi
+     File getPluginsFolder();
+     // PandaSpigot end
+ 
++    // PandaSpigot start - Extend Animals API
++    /**
++     * Returns the accessor for static Animals methods.
++     *
++     * @return accessor for static Animals methods
++     */
++    AnimalData getAnimalData();
++    // PandaSpigot end
++
+     public class Spigot
+     {
+         @Deprecated
+diff --git a/src/main/java/org/bukkit/data/AnimalData.java b/src/main/java/org/bukkit/data/AnimalData.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..26480b6024053aabdaf24d536e97315e4f7b5395
+--- /dev/null
++++ b/src/main/java/org/bukkit/data/AnimalData.java
+@@ -0,0 +1,69 @@
++package org.bukkit.data;
++
++import org.bukkit.Material;
++import org.bukkit.entity.EntityType;
++import org.bukkit.inventory.ItemStack;
++
++/**
++ * Accessor for static breeding options
++ */
++public interface AnimalData {
++
++    /**
++     * Get all breeding items for an entity class.
++     * The returned array is a copy and modifying it will not affect the
++     * entity's breeding item set. Use {@link #setBreedItems()} if you
++     * need to modify the item set.
++     *
++     * @param entityType Entity class
++     * @return Material array of items valid for breeding, or an empty array if none
++     */
++    Material[] getBreedItems(EntityType entityType);
++
++    /**
++     * Set all breeding items for an entity class.
++     * This will replace any existing breeding items. Passing {@code null}
++     * will clear all breeding items.
++     * Not supported for Horses.
++     *
++     * @param entityType Entity class
++     * @param materials the new breeding items, or null to clear
++     */
++    void setBreedItems(EntityType entityType, Material[] materials);
++
++    /**
++     * Add a breeding item for an entity class.
++     * Not supported for Horses.
++     *
++     * @param entityType Entity class
++     * @param material the material to add
++     */
++    void addBreedItem(EntityType entityType, Material material);
++
++    /**
++     * Add a breeding item for an entity class.
++     * Not supported for Horses.
++     *
++     * @param entityType Entity class
++     * @param itemStack the item to add
++     */
++    void addBreedItem(EntityType entityType, ItemStack itemStack);
++
++    /**
++     * Remove a breeding item for an entity class.
++     * Not supported for Horses.
++     *
++     * @param entityType Entity class
++     * @param material the material to remove
++     */
++    void removeBreedItem(EntityType entityType, Material material);
++
++    /**
++     * Remove a breeding item for an entity class.
++     * Not supported for Horses.
++     *
++     * @param entityType Entity class
++     * @param itemStack the item to remove
++     */
++    void removeBreedItem(EntityType entityType, ItemStack itemStack);
++}
+diff --git a/src/main/java/org/bukkit/entity/Animals.java b/src/main/java/org/bukkit/entity/Animals.java
+index 46a11d900bec03947dd3351cbf69bf43d4cdd22d..4b99ae134f6856af375a17892290aa9dda281458 100644
+--- a/src/main/java/org/bukkit/entity/Animals.java
++++ b/src/main/java/org/bukkit/entity/Animals.java
+@@ -3,6 +3,7 @@ package org.bukkit.entity;
+ import java.util.UUID;
+ import org.bukkit.Material;
+ import org.bukkit.inventory.ItemStack;
++import org.bukkit.entity.EntityType;
+ 
+ /**
+  * Represents an Animal.
+@@ -70,4 +71,56 @@ public interface Animals extends Ageable {
+      * entity.
+      */
+     boolean isBreedItem(Material material);
++
++    /**
++     * Get all breeding items for this entity class.
++     * The returned array is a copy and modifying it will not affect the
++     * entity's breeding item set. Use {@link #setBreedItems()} if you
++     * need to modify the item set.
++     *
++     * @return Material array of items valid for breeding, or an empty array if none
++     */
++    Material[] getBreedItems();
++
++    /**
++     * Set all breeding items for this entity class.
++     * This will replace any existing breeding items. Passing {@code null}
++     * will clear all breeding items.
++     * Not supported for Horses.
++     *
++     * @param materials the new breeding items, or null to clear
++     */
++    void setBreedItems(Material[] materials);
++
++    /**
++     * Add a breeding item for this entity class.
++     * Not supported for Horses.
++     *
++     * @param material the material to add
++     */
++    void addBreedItem(Material material);
++
++    /**
++     * Add a breeding item for this entity class.
++     * Not supported for Horses.
++     *
++     * @param itemStack the item to add
++     */
++    void addBreedItem(ItemStack itemStack);
++
++    /**
++     * Remove a breeding item for this entity class.
++     * Not supported for Horses.
++     *
++     * @param material the material to remove
++     */
++    void removeBreedItem(Material material);
++    
++    /**
++     * Remove a breeding item for this entity class.
++     * Not supported for Horses.
++     *
++     * @param itemStack the item to remove
++     */
++    void removeBreedItem(ItemStack itemStack);
+ }

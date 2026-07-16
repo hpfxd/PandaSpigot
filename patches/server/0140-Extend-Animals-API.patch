@@ -1,0 +1,687 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Thu, 16 Jul 2026 22:34:46 +0000
+Subject: [PATCH] Extend Animals API
+
+add methods:
+  getBreedItems
+  setBreedItems
+  addBreedItem
+  removeBreedItem
+
+diff --git a/src/main/java/net/minecraft/server/EntityAnimal.java b/src/main/java/net/minecraft/server/EntityAnimal.java
+index 4b37f2afd9985a61bd3106111427133f46db35d7..ac4c24e8e4b5eb265189dffb05109e912b58b073 100644
+--- a/src/main/java/net/minecraft/server/EntityAnimal.java
++++ b/src/main/java/net/minecraft/server/EntityAnimal.java
+@@ -1,10 +1,15 @@
+ package net.minecraft.server;
+ 
++// PandaSpigot start
++import java.util.Set;
++// PandaSpigot end
++
+ public abstract class EntityAnimal extends EntityAgeable implements IAnimal {
+ 
+     protected Block bn;
+     private int bm;
+     private EntityHuman bo;
++    public abstract Set<Item> getTemptationItems(); // PandaSpigot - Extend Animals API
+ 
+     public EntityAnimal(World world) {
+         super(world);
+@@ -88,7 +93,7 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimal {
+ 
+     public final boolean isFood(ItemStack itemstack) { return this.d(itemstack); } // PandaSpigot - OBFHELPER
+     public boolean d(ItemStack itemstack) {
+-        return itemstack == null ? false : itemstack.getItem() == Items.WHEAT;
++        return itemstack == null ? false : this.getTemptationItems().contains(itemstack.getItem());
+     }
+ 
+     public boolean a(EntityHuman entityhuman) {
+diff --git a/src/main/java/net/minecraft/server/EntityChicken.java b/src/main/java/net/minecraft/server/EntityChicken.java
+index 0d279987f2d6af228a5256cb32ee90995a4b708c..9201b77d9d3b5ffa19647eaf94c0df45311c408a 100644
+--- a/src/main/java/net/minecraft/server/EntityChicken.java
++++ b/src/main/java/net/minecraft/server/EntityChicken.java
+@@ -1,5 +1,10 @@
+ package net.minecraft.server;
+ 
++// PandaSpigot start
++import com.google.common.collect.Sets;
++import java.util.Set;
++// PandaSpigot end
++
+ public class EntityChicken extends EntityAnimal {
+ 
+     public float bm;
+@@ -9,6 +14,7 @@ public class EntityChicken extends EntityAnimal {
+     public float br = 1.0F;
+     public int bs;
+     public boolean bt;
++    public static final Set<Item> TEMPTATION_ITEMS = Sets.newHashSet(new Item[] {Items.WHEAT_SEEDS}); // PandaSpigot - Extend Animals API
+ 
+     public EntityChicken(World world) {
+         super(world);
+@@ -17,7 +23,7 @@ public class EntityChicken extends EntityAnimal {
+         this.goalSelector.a(0, new PathfinderGoalFloat(this));
+         this.goalSelector.a(1, new PathfinderGoalPanic(this, 1.4D));
+         this.goalSelector.a(2, new PathfinderGoalBreed(this, 1.0D));
+-        this.goalSelector.a(3, new PathfinderGoalTempt(this, 1.0D, Items.WHEAT_SEEDS, false));
++        this.goalSelector.a(3, new PathfinderGoalTempt(this, 1.0D, null, false)); // PandaSpigot - Extend Animals API
+         this.goalSelector.a(4, new PathfinderGoalFollowParent(this, 1.1D));
+         this.goalSelector.a(5, new PathfinderGoalRandomStroll(this, 1.0D));
+         this.goalSelector.a(6, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 6.0F));
+@@ -104,9 +110,11 @@ public class EntityChicken extends EntityAnimal {
+         return new EntityChicken(this.world);
+     }
+ 
++    /* PandaSpigot - Extend Animals API
+     public boolean d(ItemStack itemstack) {
+         return itemstack != null && itemstack.getItem() == Items.WHEAT_SEEDS;
+     }
++    */
+ 
+     public void a(NBTTagCompound nbttagcompound) {
+         super.a(nbttagcompound);
+@@ -156,4 +164,11 @@ public class EntityChicken extends EntityAnimal {
+     public EntityAgeable createChild(EntityAgeable entityageable) {
+         return this.b(entityageable);
+     }
++
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public Set<Item> getTemptationItems() {
++        return TEMPTATION_ITEMS;
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityCow.java b/src/main/java/net/minecraft/server/EntityCow.java
+index b5627b7cc28744eb5d702ecb44304e6865cce92e..4882888a781fbb7ad98174dfc84d94a892bcf41a 100644
+--- a/src/main/java/net/minecraft/server/EntityCow.java
++++ b/src/main/java/net/minecraft/server/EntityCow.java
+@@ -5,8 +5,15 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
+ import org.bukkit.craftbukkit.inventory.CraftItemStack;
+ // CraftBukkit end
+ 
++// PandaSpigot start
++import com.google.common.collect.Sets;
++import java.util.Set;
++// PandaSpigot end
++
+ public class EntityCow extends EntityAnimal {
+ 
++    public static final Set<Item> TEMPTATION_ITEMS = Sets.newHashSet(new Item[] {Items.WHEAT}); // PandaSpigot - Extend Animals API
++
+     public EntityCow(World world) {
+         super(world);
+         this.setSize(0.9F, 1.3F);
+@@ -14,7 +21,7 @@ public class EntityCow extends EntityAnimal {
+         this.goalSelector.a(0, new PathfinderGoalFloat(this));
+         this.goalSelector.a(1, new PathfinderGoalPanic(this, 2.0D));
+         this.goalSelector.a(2, new PathfinderGoalBreed(this, 1.0D));
+-        this.goalSelector.a(3, new PathfinderGoalTempt(this, 1.25D, Items.WHEAT, false));
++        this.goalSelector.a(3, new PathfinderGoalTempt(this, 1.25D, null, false)); // PandaSpigot - Extend Animals API
+         this.goalSelector.a(4, new PathfinderGoalFollowParent(this, 1.25D));
+         this.goalSelector.a(5, new PathfinderGoalRandomStroll(this, 1.0D));
+         this.goalSelector.a(6, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 6.0F));
+@@ -109,4 +116,11 @@ public class EntityCow extends EntityAnimal {
+     public EntityAgeable createChild(EntityAgeable entityageable) {
+         return this.b(entityageable);
+     }
++
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public Set<Item> getTemptationItems() {
++        return TEMPTATION_ITEMS;
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityHorse.java b/src/main/java/net/minecraft/server/EntityHorse.java
+index 53aaa65494dc3c35e9883e8539c11f28ad14aaf0..8d69e81de7d0864ff447f9541c7e41e0c48904ce 100644
+--- a/src/main/java/net/minecraft/server/EntityHorse.java
++++ b/src/main/java/net/minecraft/server/EntityHorse.java
+@@ -6,6 +6,11 @@ import java.util.List;
+ 
+ import org.bukkit.event.entity.EntityRegainHealthEvent.RegainReason; // CraftBukkit
+ 
++// PandaSpigot start
++import com.google.common.collect.Sets;
++import java.util.Set;
++// PandaSpigot end
++
+ public class EntityHorse extends EntityAnimal implements IInventoryListener {
+ 
+     private static final Predicate<Entity> bs = new Predicate() {
+@@ -47,6 +52,7 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
+     private String[] bP = new String[3];
+     private boolean bQ = false;
+     public int maxDomestication = 100; // CraftBukkit - store max domestication value
++    public static final Set<Item> TEMPTATION_ITEMS = Sets.newHashSet(new Item[] {Items.GOLDEN_CARROT, Items.GOLDEN_APPLE}); // PandaSpigot - Extend Animals API
+ 
+     public EntityHorse(World world) {
+         super(world);
+@@ -1313,6 +1319,13 @@ public class EntityHorse extends EntityAnimal implements IInventoryListener {
+         }
+     }
+ 
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public Set<Item> getTemptationItems() {
++        return TEMPTATION_ITEMS;
++    }
++    // PandaSpigot end
++
+     public static class GroupDataHorse implements GroupDataEntity {
+ 
+         public int a;
+diff --git a/src/main/java/net/minecraft/server/EntityOcelot.java b/src/main/java/net/minecraft/server/EntityOcelot.java
+index edcb30792a28abf638012df334a2db626b3c4733..306524157683f333ec4c7cedab06c1be87ea75f6 100644
+--- a/src/main/java/net/minecraft/server/EntityOcelot.java
++++ b/src/main/java/net/minecraft/server/EntityOcelot.java
+@@ -2,11 +2,17 @@ package net.minecraft.server;
+ 
+ import com.google.common.base.Predicate;
+ 
++// PandaSpigot start
++import com.google.common.collect.Sets;
++import java.util.Set;
++// PandaSpigot end
++
+ public class EntityOcelot extends EntityTameableAnimal {
+ 
+     private PathfinderGoalAvoidTarget<EntityHuman> bo;
+     private PathfinderGoalTempt bp;
+     public boolean spawnBonus = true; // Spigot
++    public static final Set<Item> TEMPTATION_ITEMS = Sets.newHashSet(new Item[] {Items.FISH}); // PandaSpigot - Extend Animals API
+ 
+     public EntityOcelot(World world) {
+         super(world);
+@@ -14,7 +20,7 @@ public class EntityOcelot extends EntityTameableAnimal {
+         ((Navigation) this.getNavigation()).a(true);
+         this.goalSelector.a(1, new PathfinderGoalFloat(this));
+         this.goalSelector.a(2, this.bm);
+-        this.goalSelector.a(3, this.bp = new PathfinderGoalTempt(this, 0.6D, Items.FISH, true));
++        this.goalSelector.a(3, this.bp = new PathfinderGoalTempt(this, 0.6D, null, true)); // PandaSpigot - Extend Animals API
+         this.goalSelector.a(5, new PathfinderGoalFollowOwner(this, 1.0D, 10.0F, 5.0F));
+         this.goalSelector.a(6, new PathfinderGoalJumpOnBlock(this, 0.8D));
+         this.goalSelector.a(7, new PathfinderGoalLeapAtTarget(this, 0.3F));
+@@ -161,9 +167,11 @@ public class EntityOcelot extends EntityTameableAnimal {
+         return entityocelot;
+     }
+ 
++    /* PandaSpigot - Extend Animals API
+     public boolean d(ItemStack itemstack) {
+         return itemstack != null && itemstack.getItem() == Items.FISH;
+     }
++    */
+ 
+     public boolean mate(EntityAnimal entityanimal) {
+         if (entityanimal == this) {
+@@ -247,4 +255,11 @@ public class EntityOcelot extends EntityTameableAnimal {
+     public EntityAgeable createChild(EntityAgeable entityageable) {
+         return this.b(entityageable);
+     }
++
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public Set<Item> getTemptationItems() {
++        return TEMPTATION_ITEMS;
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityPig.java b/src/main/java/net/minecraft/server/EntityPig.java
+index 3f2ce15ff362a6a992a4252718d8bf55f2aea08e..ab39692caa11d9716d85cf1d707e6dc51d1bab9f 100644
+--- a/src/main/java/net/minecraft/server/EntityPig.java
++++ b/src/main/java/net/minecraft/server/EntityPig.java
+@@ -2,9 +2,15 @@ package net.minecraft.server;
+ 
+ import org.bukkit.craftbukkit.event.CraftEventFactory; // CraftBukkit
+ 
++// PandaSpigot start
++import com.google.common.collect.Sets;
++import java.util.Set;
++// PandaSpigot end
++
+ public class EntityPig extends EntityAnimal {
+ 
+     private final PathfinderGoalPassengerCarrotStick bm;
++    public static final Set<Item> TEMPTATION_ITEMS = Sets.newHashSet(new Item[] {Items.CARROT}); // PandaSpigot - Extend Animals API
+ 
+     public EntityPig(World world) {
+         super(world);
+@@ -15,7 +21,7 @@ public class EntityPig extends EntityAnimal {
+         this.goalSelector.a(2, this.bm = new PathfinderGoalPassengerCarrotStick(this, 0.3F));
+         this.goalSelector.a(3, new PathfinderGoalBreed(this, 1.0D));
+         this.goalSelector.a(4, new PathfinderGoalTempt(this, 1.2D, Items.CARROT_ON_A_STICK, false));
+-        this.goalSelector.a(4, new PathfinderGoalTempt(this, 1.2D, Items.CARROT, false));
++        this.goalSelector.a(4, new PathfinderGoalTempt(this, 1.2D, null, false)); // PandaSpigot - Extend Animals API
+         this.goalSelector.a(5, new PathfinderGoalFollowParent(this, 1.1D));
+         this.goalSelector.a(6, new PathfinderGoalRandomStroll(this, 1.0D));
+         this.goalSelector.a(7, new PathfinderGoalLookAtPlayer(this, EntityHuman.class, 6.0F));
+@@ -146,9 +152,11 @@ public class EntityPig extends EntityAnimal {
+         return new EntityPig(this.world);
+     }
+ 
++    /* PandaSpigot - Extend Animals API
+     public boolean d(ItemStack itemstack) {
+         return itemstack != null && itemstack.getItem() == Items.CARROT;
+     }
++    */
+ 
+     public PathfinderGoalPassengerCarrotStick cm() {
+         return this.bm;
+@@ -157,4 +165,11 @@ public class EntityPig extends EntityAnimal {
+     public EntityAgeable createChild(EntityAgeable entityageable) {
+         return this.b(entityageable);
+     }
++
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public Set<Item> getTemptationItems() {
++        return TEMPTATION_ITEMS;
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityRabbit.java b/src/main/java/net/minecraft/server/EntityRabbit.java
+index bb47e09aca2163d15e39e7b552d15a2137773b93..89d275e02bdd91a81d5b52028bcfc333efc3f652 100644
+--- a/src/main/java/net/minecraft/server/EntityRabbit.java
++++ b/src/main/java/net/minecraft/server/EntityRabbit.java
+@@ -1,5 +1,10 @@
+ package net.minecraft.server;
+ 
++// PandaSpigot start
++import com.google.common.collect.Sets;
++import java.util.Set;
++// PandaSpigot end
++
+ public class EntityRabbit extends EntityAnimal {
+ 
+     private EntityRabbit.PathfinderGoalRabbitAvoidTarget<EntityWolf> bm;
+@@ -11,6 +16,7 @@ public class EntityRabbit extends EntityAnimal {
+     private EntityRabbit.EnumRabbitState bt;
+     private int bu;
+     private EntityHuman bv;
++    public static final Set<Item> TEMPTATION_ITEMS = Sets.newHashSet(new Item[] {Items.CARROT, Items.GOLDEN_CARROT, Item.getItemOf(Blocks.YELLOW_FLOWER)}); // PandaSpigot - Extend Animals API
+ 
+     public EntityRabbit(World world) {
+         super(world);
+@@ -30,9 +36,7 @@ public class EntityRabbit extends EntityAnimal {
+         this.navigation.a(2.5F);
+         this.goalSelector.a(1, new PathfinderGoalFloat(this));
+         this.goalSelector.a(1, new EntityRabbit.PathfinderGoalRabbitPanic(this, 1.33D));
+-        this.goalSelector.a(2, new PathfinderGoalTempt(this, 1.0D, Items.CARROT, false));
+-        this.goalSelector.a(2, new PathfinderGoalTempt(this, 1.0D, Items.GOLDEN_CARROT, false));
+-        this.goalSelector.a(2, new PathfinderGoalTempt(this, 1.0D, Item.getItemOf(Blocks.YELLOW_FLOWER), false));
++        this.goalSelector.a(2, new PathfinderGoalTempt(this, 1.0D, null, false)); // PandaSpigot - Extend Animals API
+         this.goalSelector.a(3, new PathfinderGoalBreed(this, 0.8D));
+         this.goalSelector.a(5, new EntityRabbit.PathfinderGoalEatCarrots(this));
+         this.goalSelector.a(5, new PathfinderGoalRandomStroll(this, 0.6D));
+@@ -255,9 +259,11 @@ public class EntityRabbit extends EntityAnimal {
+ 
+     }
+ 
++    /* PandaSpigot - Extend Animals API
+     private boolean a(Item item) {
+         return item == Items.CARROT || item == Items.GOLDEN_CARROT || item == Item.getItemOf(Blocks.YELLOW_FLOWER);
+     }
++    */
+ 
+     public EntityRabbit b(EntityAgeable entityageable) {
+         EntityRabbit entityrabbit = new EntityRabbit(this.world);
+@@ -269,9 +275,11 @@ public class EntityRabbit extends EntityAnimal {
+         return entityrabbit;
+     }
+ 
++    /* PandaSpigot - Extend Animals API
+     public boolean d(ItemStack itemstack) {
+         return itemstack != null && this.a(itemstack.getItem());
+     }
++    */
+ 
+     public int getRabbitType() {
+         return this.datawatcher.getByte(18);
+@@ -329,6 +337,13 @@ public class EntityRabbit extends EntityAnimal {
+         return this.b(entityageable);
+     }
+ 
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public Set<Item> getTemptationItems() {
++        return TEMPTATION_ITEMS;
++    }
++    // PandaSpigot end
++
+     static enum EnumRabbitState {
+ 
+         NONE(0.0F, 0.0F, 30, 1), HOP(0.8F, 0.2F, 20, 10), STEP(1.0F, 0.45F, 14, 14), SPRINT(1.75F, 0.4F, 1, 8), ATTACK(2.0F, 0.7F, 7, 8);
+diff --git a/src/main/java/net/minecraft/server/EntitySheep.java b/src/main/java/net/minecraft/server/EntitySheep.java
+index 29611a194b8a582d57159231091c66adb7c6944f..c3cfb51be75660000c694fedc52b9e79480248c3 100644
+--- a/src/main/java/net/minecraft/server/EntitySheep.java
++++ b/src/main/java/net/minecraft/server/EntitySheep.java
+@@ -10,6 +10,11 @@ import org.bukkit.event.player.PlayerShearEntityEvent;
+ import org.bukkit.inventory.InventoryView;
+ // CraftBukkit end
+ 
++// PandaSpigot start
++import com.google.common.collect.Sets;
++import java.util.Set;
++// PandaSpigot end
++
+ public class EntitySheep extends EntityAnimal {
+ 
+     private final InventoryCrafting bm = new InventoryCrafting(new Container() {
+@@ -27,6 +32,7 @@ public class EntitySheep extends EntityAnimal {
+     private static final Map<EnumColor, float[]> bo = Maps.newEnumMap(EnumColor.class);
+     private int bp;
+     private PathfinderGoalEatTile bq = new PathfinderGoalEatTile(this);
++    public static final Set<Item> TEMPTATION_ITEMS = Sets.newHashSet(new Item[] {Items.WHEAT}); // PandaSpigot - Extend Animals API
+ 
+     public static float[] a(EnumColor enumcolor) {
+         return (float[]) EntitySheep.bo.get(enumcolor);
+@@ -39,7 +45,7 @@ public class EntitySheep extends EntityAnimal {
+         this.goalSelector.a(0, new PathfinderGoalFloat(this));
+         this.goalSelector.a(1, new PathfinderGoalPanic(this, 1.25D));
+         this.goalSelector.a(2, new PathfinderGoalBreed(this, 1.0D));
+-        this.goalSelector.a(3, new PathfinderGoalTempt(this, 1.1D, Items.WHEAT, false));
++        this.goalSelector.a(3, new PathfinderGoalTempt(this, 1.1D, null, false)); // PandaSpigot - Extend Animals API
+         this.goalSelector.a(4, new PathfinderGoalFollowParent(this, 1.1D));
+         this.goalSelector.a(5, this.bq);
+         this.goalSelector.a(6, new PathfinderGoalRandomStroll(this, 1.0D));
+@@ -242,6 +248,13 @@ public class EntitySheep extends EntityAnimal {
+         return this.b(entityageable);
+     }
+ 
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public Set<Item> getTemptationItems() {
++        return TEMPTATION_ITEMS;
++    }
++    // PandaSpigot end
++
+     static {
+         EntitySheep.bo.put(EnumColor.WHITE, new float[] { 1.0F, 1.0F, 1.0F});
+         EntitySheep.bo.put(EnumColor.ORANGE, new float[] { 0.85F, 0.5F, 0.2F});
+diff --git a/src/main/java/net/minecraft/server/EntityWolf.java b/src/main/java/net/minecraft/server/EntityWolf.java
+index 469c87a179b452b5df06e79a6bc1d8e7fce07965..61f5deb5e85cd26446ab66e4def5d6eeb689354c 100644
+--- a/src/main/java/net/minecraft/server/EntityWolf.java
++++ b/src/main/java/net/minecraft/server/EntityWolf.java
+@@ -7,6 +7,11 @@ import org.bukkit.craftbukkit.event.CraftEventFactory;
+ import org.bukkit.event.entity.EntityTargetEvent.TargetReason;
+ // CraftBukkit end
+ 
++// PandaSpigot start
++import com.google.common.collect.Sets;
++import java.util.Set;
++// PandaSpigot end
++
+ public class EntityWolf extends EntityTameableAnimal {
+ 
+     private float bo;
+@@ -15,6 +20,7 @@ public class EntityWolf extends EntityTameableAnimal {
+     private boolean br;
+     private float bs;
+     private float bt;
++    public static final Set<Item> TEMPTATION_ITEMS = Sets.newHashSet(new Item[] {Items.PORKCHOP, Items.COOKED_PORKCHOP, Items.BEEF, Items.COOKED_BEEF, Items.CHICKEN, Items.COOKED_CHICKEN, Items.MUTTON, Items.COOKED_MUTTON, Items.RABBIT, Items.COOKED_RABBIT, Items.ROTTEN_FLESH}); // PandaSpigot - Extend Animals API
+ 
+     public EntityWolf(World world) {
+         super(world);
+@@ -243,7 +249,7 @@ public class EntityWolf extends EntityTameableAnimal {
+                 if (itemstack.getItem() instanceof ItemFood) {
+                     ItemFood itemfood = (ItemFood) itemstack.getItem();
+ 
+-                    if (itemfood.g() && this.datawatcher.getFloat(18) < 20.0F) {
++                    if (this.d(itemstack) && this.datawatcher.getFloat(18) < 20.0F) { // PandaSpigot - Extend Animals API
+                         if (!entityhuman.abilities.canInstantlyBuild) {
+                             --itemstack.count;
+                         }
+@@ -308,7 +314,7 @@ public class EntityWolf extends EntityTameableAnimal {
+     }
+ 
+     public boolean d(ItemStack itemstack) {
+-        return itemstack == null ? false : (!(itemstack.getItem() instanceof ItemFood) ? false : ((ItemFood) itemstack.getItem()).g());
++        return itemstack == null ? false : (!(itemstack.getItem() instanceof ItemFood) ? false : this.getTemptationItems().contains(itemstack.getItem())); // PandaSpigot - Extend Animals API
+     }
+ 
+     public int bV() {
+@@ -404,4 +410,11 @@ public class EntityWolf extends EntityTameableAnimal {
+     public EntityAgeable createChild(EntityAgeable entityageable) {
+         return this.b(entityageable);
+     }
++
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public Set<Item> getTemptationItems() {
++        return TEMPTATION_ITEMS;
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/net/minecraft/server/PathfinderGoalTempt.java b/src/main/java/net/minecraft/server/PathfinderGoalTempt.java
+index 3dedcf832e8ad64f3a8e1388eebef81bf7b3703a..63fb6c88f0c8bb5c73e422f7515c7e2dbb1261e3 100644
+--- a/src/main/java/net/minecraft/server/PathfinderGoalTempt.java
++++ b/src/main/java/net/minecraft/server/PathfinderGoalTempt.java
+@@ -39,6 +39,12 @@ public class PathfinderGoalTempt extends PathfinderGoal {
+             } else {
+                 ItemStack itemstack = this.h.bZ();
+ 
++                // PandaSpigot start - Extend Animals API
++                if (this.k == null && this.a instanceof EntityAnimal) {
++                    return itemstack == null ? false : ((EntityAnimal) this.a).getTemptationItems().contains(itemstack.getItem());
++                }
++                // PandaSpigot end
++
+                 return itemstack == null ? false : itemstack.getItem() == this.k;
+             }
+         }
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftServer.java b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+index 2eac381a825ed0edabd12816432f6d2d655887ef..c0fd4f4bfdbef70b867bd0b92ca516e32e583511 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftServer.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftServer.java
+@@ -125,6 +125,11 @@ import io.netty.handler.codec.base64.Base64;
+ //import jline.console.ConsoleReader; // PandaSpigot - comment out
+ import net.md_5.bungee.api.chat.BaseComponent;
+ 
++// PandaSpigot start - Extend Animals API
++import org.bukkit.data.AnimalData;
++import org.bukkit.craftbukkit.data.CraftAnimalData;
++// PandaSpigot end
++
+ public final class CraftServer implements Server {
+     private static final Player[] EMPTY_PLAYER_ARRAY = new Player[0];
+     private final String serverName = "PandaSpigot"; // PandaSpigot
+@@ -165,6 +170,7 @@ public final class CraftServer implements Server {
+     private final UUID invalidUserUUID = UUID.nameUUIDFromBytes("InvalidUsername".getBytes(Charsets.UTF_8));
+     private final List<CraftPlayer> playerView;
+     public int reloadCount;
++    private final AnimalData animalData = new CraftAnimalData(); // PandaSpigot - Extend Animals API
+ 
+     private final class BooleanWrapper {
+         private boolean value = true;
+@@ -1839,6 +1845,13 @@ public final class CraftServer implements Server {
+     }
+     // PandaSpigot end
+ 
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public AnimalData getAnimalData() {
++        return this.animalData;
++    }
++    // PandaSpigot end
++
+     private final Spigot spigot = new Spigot()
+     {
+ 
+diff --git a/src/main/java/org/bukkit/craftbukkit/data/CraftAnimalData.java b/src/main/java/org/bukkit/craftbukkit/data/CraftAnimalData.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..59fdd8c7d57eb525a8e63bf0a3b74e4a1a253c67
+--- /dev/null
++++ b/src/main/java/org/bukkit/craftbukkit/data/CraftAnimalData.java
+@@ -0,0 +1,118 @@
++package org.bukkit.craftbukkit.data;
++
++import net.minecraft.server.EntityChicken;
++import net.minecraft.server.EntityCow;
++import net.minecraft.server.EntityHorse;
++import net.minecraft.server.EntityOcelot;
++import net.minecraft.server.EntityPig;
++import net.minecraft.server.EntityRabbit;
++import net.minecraft.server.EntitySheep;
++import net.minecraft.server.EntityWolf;
++import net.minecraft.server.Item;
++import net.minecraft.server.ItemFood;
++
++import org.bukkit.Material;
++import org.bukkit.craftbukkit.entity.CraftAnimals;
++import org.bukkit.craftbukkit.util.CraftMagicNumbers;
++import org.bukkit.data.AnimalData;
++import org.bukkit.entity.EntityType;
++import org.bukkit.inventory.ItemStack;
++
++import java.util.Map;
++import java.util.Set;
++import java.util.EnumMap;
++
++public class CraftAnimalData implements AnimalData {
++
++    @Override
++    public Material[] getBreedItems(EntityType entityType) {
++        Set<Item> items = BREED_MAP.get(entityType);
++        if (items == null) {
++            throw new IllegalArgumentException(entityType + " is not Animal type");
++        }
++        Material[] result = new Material[items.size()];
++        int i = 0;
++        for (Item item : items) {
++            result[i++] = CraftMagicNumbers.getMaterial(item);
++        }
++        return result;
++    }
++
++    @Override
++    public void setBreedItems(EntityType entityType, Material[] materials) {
++        if (entityType == EntityType.HORSE) {
++            throw new UnsupportedOperationException("Horses' breeding items are not modifiable.");
++        }
++        Set<Item> items = BREED_MAP.get(entityType);
++        if (items == null) {
++            throw new IllegalArgumentException(entityType + " is not Animal type");
++        }
++        items.clear();
++        if (materials == null) return;
++
++        for (Material material : materials) {
++            if (material == null || material == Material.AIR) continue;
++            Item item = CraftMagicNumbers.getItem(material);
++            if (item == null) continue;
++            if (entityType == EntityType.WOLF && !(item instanceof ItemFood)) {
++                throw new IllegalArgumentException("Wolves can only eat food items");
++            }
++            items.add(item);
++        }
++    }
++
++    @Override
++    public void addBreedItem(EntityType entityType, Material material) {
++        if (entityType == EntityType.HORSE) {
++            throw new UnsupportedOperationException("Horses' breeding items are not modifiable.");
++        }
++        Set<Item> items = BREED_MAP.get(entityType);
++        if (items == null) {
++            throw new IllegalArgumentException(entityType + " is not Animal type");
++        }
++        if (material == null || material == Material.AIR) return;
++        Item item = CraftMagicNumbers.getItem(material);
++        if (item == null) return;
++        if (entityType == EntityType.WOLF && !(item instanceof ItemFood)) {
++            throw new IllegalArgumentException("Wolves can only eat food items");
++        }
++        items.add(item);
++    }
++
++    @Override
++    public void addBreedItem(EntityType entityType, ItemStack itemStack) {
++        this.addBreedItem(entityType, itemStack.getType());
++    }
++
++    @Override
++    public void removeBreedItem(EntityType entityType, Material material) {
++        if (entityType == EntityType.HORSE) {
++            throw new UnsupportedOperationException("Horses' breeding items are not modifiable.");
++        }
++        Set<Item> items = BREED_MAP.get(entityType);
++        if (items == null) {
++            throw new IllegalArgumentException(entityType + " is not Animal type");
++        }
++        if (material == null || material == Material.AIR) return;
++        Item item = CraftMagicNumbers.getItem(material);
++        if (item == null) return;
++        items.remove(item);
++    }
++
++    @Override
++    public void removeBreedItem(EntityType entityType, ItemStack itemStack) {
++        this.removeBreedItem(entityType, itemStack.getType());
++    }
++
++    private static final Map<EntityType, Set<Item>> BREED_MAP = new EnumMap<>(EntityType.class);
++    static {
++        BREED_MAP.put(EntityType.CHICKEN, EntityChicken.TEMPTATION_ITEMS);
++        BREED_MAP.put(EntityType.COW, EntityCow.TEMPTATION_ITEMS);
++        BREED_MAP.put(EntityType.HORSE, EntityHorse.TEMPTATION_ITEMS);
++        BREED_MAP.put(EntityType.OCELOT, EntityOcelot.TEMPTATION_ITEMS);
++        BREED_MAP.put(EntityType.PIG, EntityPig.TEMPTATION_ITEMS);
++        BREED_MAP.put(EntityType.RABBIT, EntityRabbit.TEMPTATION_ITEMS);
++        BREED_MAP.put(EntityType.SHEEP, EntitySheep.TEMPTATION_ITEMS);
++        BREED_MAP.put(EntityType.WOLF, EntityWolf.TEMPTATION_ITEMS);
++    }
++}
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftAnimals.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftAnimals.java
+index c40ee60ce5353df92681d16d4b45163d143afc35..e2e3b212337d3bcce0000bcc33f1bae057c05837 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftAnimals.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftAnimals.java
+@@ -4,8 +4,10 @@ import com.google.common.base.Preconditions;
+ import java.util.UUID;
+ import net.minecraft.server.EntityAnimal;
+ import net.minecraft.server.EntityHuman;
++import org.bukkit.Bukkit;
+ import org.bukkit.Material;
+ import org.bukkit.craftbukkit.CraftServer;
++import org.bukkit.craftbukkit.data.CraftAnimalData;
+ import org.bukkit.craftbukkit.entity.CraftPlayer;
+ import org.bukkit.craftbukkit.inventory.CraftItemStack;
+ import org.bukkit.entity.Animals;
+@@ -73,4 +75,36 @@ public class CraftAnimals extends CraftAgeable implements Animals {
+         if (material == null) return false;
+         return isBreedItem(new ItemStack(material));
+     }
++
++    // PandaSpigot start - Extend Animals API
++    @Override
++    public Material[] getBreedItems() {
++        return Bukkit.getAnimalData().getBreedItems(this.getType());
++    }
++
++    @Override
++    public void setBreedItems(Material[] materials) {
++        Bukkit.getAnimalData().setBreedItems(this.getType(), materials);
++    }
++
++    @Override
++    public void addBreedItem(Material material) {
++        Bukkit.getAnimalData().addBreedItem(this.getType(), material);
++    }
++
++    @Override
++    public void addBreedItem(ItemStack itemStack) {
++        Bukkit.getAnimalData().addBreedItem(this.getType(), itemStack);
++    }
++
++    @Override
++    public void removeBreedItem(Material material) {
++        Bukkit.getAnimalData().removeBreedItem(this.getType(), material);
++    }
++
++    @Override
++    public void removeBreedItem(ItemStack itemStack) {
++        Bukkit.getAnimalData().removeBreedItem(this.getType(), itemStack);
++    }
++    // PandaSpigot end
+ }
