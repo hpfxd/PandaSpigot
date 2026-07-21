@@ -1,0 +1,93 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Fri, 26 Jun 2026 12:33:53 +0000
+Subject: [PATCH] Unbreaking Break Effect Fix
+
+Half of the bug is client-side so this cannot entirely be fixed.
+Item breaking happens client-side, this is usually fine except with
+Unbreaking which introduces RNG, and now client and server no longer
+agree on whether the item was broken.
+
+This patch makes item breaking effects, sound and particles, happen
+on server-side. So no more silent breakdowns, client will always hear
+the item breaking. However the client-side logic cannot be fixed, so
+if client rolls break and server does not, client will stil hear
+this false item break. If the client and server roll break at the
+same time, client will hear the sound twice, but this works out fine.
+
+Importantly, an inventory update is now sent every time there is a
+chance that the Unbreaking item was broken. This syncs up the server
+and client, no more ghost items when item breaks server-side but not
+on client-side.
+
+diff --git a/src/main/java/net/minecraft/server/EntityLiving.java b/src/main/java/net/minecraft/server/EntityLiving.java
+index 32752dfad24bc7883b1ab52e29834f1aa6fa60c6..c307907ba9fb8ab2997da848ac56d2aaeadc1cc0 100644
+--- a/src/main/java/net/minecraft/server/EntityLiving.java
++++ b/src/main/java/net/minecraft/server/EntityLiving.java
+@@ -832,9 +832,31 @@ public abstract class EntityLiving extends Entity {
+         }
+     }
+ 
++    // PandaSpigot start - Unbreaking Break Effect Fix
++    public void renderBrokenItemStack(ItemStack itemstack, boolean broadcast) {
++        if (broadcast) {
++            super.makeSound("random.break", 0.8F, 0.8F + this.world.random.nextFloat() * 0.4F);
++            Vec3D vec3d = new Vec3D(((double) this.random.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
++            vec3d = vec3d.a(-this.pitch * 3.1415927F / 180.0F);
++            vec3d = vec3d.b(-this.yaw * 3.1415927F / 180.0F);
++            double d0 = (double) (-this.random.nextFloat()) * 0.6D - 0.3D;
++
++            Vec3D vec3d1 = new Vec3D(((double) this.random.nextFloat() - 0.5D) * 0.3D, d0, 0.6D);
++            vec3d1 = vec3d1.a(-this.pitch * 3.1415927F / 180.0F);
++            vec3d1 = vec3d1.b(-this.yaw * 3.1415927F / 180.0F);
++            vec3d1 = vec3d1.add(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
++
++            ((WorldServer) this.world).sendParticles(this instanceof EntityPlayer ? (EntityPlayer) this : null, EnumParticle.ITEM_CRACK, false, vec3d1.a, vec3d1.b, vec3d1.c, 5, vec3d.a, vec3d.b + 0.05D, vec3d.c, 0.08D, new int[] { Item.getId(itemstack.getItem()), 0 });
++        } else {
++            b(itemstack);
++        }
++    }
++    // PandaSpigot end
++
+     public void b(ItemStack itemstack) {
+         this.makeSound("random.break", 0.8F, 0.8F + this.world.random.nextFloat() * 0.4F);
+ 
++        /* No need to do client-side calculations, addParticle is nullsub on server-side - PandaSpigot
+         for (int i = 0; i < 5; ++i) {
+             Vec3D vec3d = new Vec3D(((double) this.random.nextFloat() - 0.5D) * 0.1D, Math.random() * 0.1D + 0.1D, 0.0D);
+ 
+@@ -848,6 +870,7 @@ public abstract class EntityLiving extends Entity {
+             vec3d1 = vec3d1.add(this.locX, this.locY + (double) this.getHeadHeight(), this.locZ);
+             this.world.addParticle(EnumParticle.ITEM_CRACK, vec3d1.a, vec3d1.b, vec3d1.c, vec3d.a, vec3d.b + 0.05D, vec3d.c, new int[] { Item.getId(itemstack.getItem())});
+         }
++        PandaSpigot end */
+ 
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/ItemStack.java b/src/main/java/net/minecraft/server/ItemStack.java
+index 015ce283495dc57c8a9dc018ad36a04ebfd637d0..e2cac57120721aaf7adaa3aed236a5226376d9b0 100644
+--- a/src/main/java/net/minecraft/server/ItemStack.java
++++ b/src/main/java/net/minecraft/server/ItemStack.java
+@@ -392,8 +392,9 @@ public final class ItemStack {
+     public void damage(int i, EntityLiving entityliving) {
+         if (!(entityliving instanceof EntityHuman) || !((EntityHuman) entityliving).abilities.canInstantlyBuild) {
+             if (this.e()) {
++                boolean hasUnbreaking = (EnchantmentManager.getEnchantmentLevel(Enchantment.DURABILITY.id, this) > 0); // PandaSpigot - Unbreaking Break Effect Fix
+                 if (this.isDamaged(i, entityliving.bc(), entityliving)) { // Spigot
+-                    entityliving.b(this);
++                    entityliving.renderBrokenItemStack(this, hasUnbreaking); // PandaSpigot - Unbreaking Break Effect Fix
+                     --this.count;
+                     if (entityliving instanceof EntityHuman) {
+                         EntityHuman entityhuman = (EntityHuman) entityliving;
+@@ -417,6 +418,11 @@ public final class ItemStack {
+                     this.damage = 0;
+                 }
+ 
++                // PandaSpigot start - Unbreaking Break Effect Fix
++                if (hasUnbreaking && entityliving instanceof EntityPlayer && this.damage + i > this.j()) {
++                    ((EntityPlayer) entityliving).getBukkitEntity().updateInventory(); // TODO: is it possible to not update entire inventory?
++                }
++                // PandaSpigot end
+             }
+         }
+     }
