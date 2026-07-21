@@ -13,6 +13,9 @@ Fork of Paper for 1.8.8 focused on improved performance and stability.
     - **Improved flush handling** to massively improve entity tracker performance.
     - **Support for Unix domain sockets** to avoid the overhead of TCP when using a proxy on the same machine.
 
+- **Faster and correct lighting**
+    - Implemented **[Starlight](https://github.com/PaperMC/Starlight)** lighting engine, which greatly improves lighting performance and fixes vanilla lighting bugs.
+
 - **More configuration options**, such as:
     - Customizable knockback
     - World and player data saving
