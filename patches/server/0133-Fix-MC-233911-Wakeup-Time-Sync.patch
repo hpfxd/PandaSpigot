@@ -1,39 +1,48 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: anzz1 <anzz1@live.com>
-Date: Sun, 28 Jun 2026 17:18:47 +0000
+Date: Mon, 27 Jul 2026 08:03:39 +0000
 Subject: [PATCH] Fix MC-233911 Wakeup Time Sync
 
-Sends a time sync packet immediately after waking up.
-This should make players wake up to daylight as long as they aren't
-lagging too much.
+Sends a time sync packet immediately after waking up from sleep.
 
+diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
+index ae0259e025d1121adb5d09cda05e84fe711d8a35..d5993c69ffcfba7334d4a614b056b665978e6622 100644
+--- a/src/main/java/net/minecraft/server/MinecraftServer.java
++++ b/src/main/java/net/minecraft/server/MinecraftServer.java
+@@ -857,7 +857,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+             long worldTime = world.getTime();
+             final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
+             for (EntityHuman entityhuman : world.players) {
+-                if (!(entityhuman instanceof EntityPlayer) || (this.ticks + entityhuman.getId()) % world.pandaSpigotConfig.timeUpdateFrequency != 0) {
++                if (!(entityhuman instanceof EntityPlayer) || (!world.timeNeedsSync && (this.ticks + entityhuman.getId()) % world.pandaSpigotConfig.timeUpdateFrequency != 0)) { // PandaSpigot - Wakeup Time Sync
+                     continue;
+                 }
+                 EntityPlayer entityplayer = (EntityPlayer) entityhuman;
+@@ -866,6 +866,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                         new PacketPlayOutUpdateTime(worldTime, playerTime, doDaylight);
+                 entityplayer.playerConnection.sendPacket(packet); // Add support for per player time
+             }
++            world.timeNeedsSync = false; // PandaSpigot - Wakeup Time Sync
+         }
+         // PandaSpigot end
+         SpigotTimings.timeUpdateTimer.stopTiming(); // Spigot
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 1c9e429b4107daf0991fe0c61bd5377cf4c22c95..3469119b6bc502bbf6db005189381a4cc1e5a248 100644
+index 1c9e429b4107daf0991fe0c61bd5377cf4c22c95..28f7e597c7a1088b9bd6b9878ef8d62ef842a403 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -212,11 +212,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
-         }
+@@ -51,6 +51,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+     private List<NextTickListEntry> V = Lists.newArrayList();
+     public boolean hasEntityMoveEvent = false; // PandaSpigot
+     public boolean hasPhysicsEvent = true; // PandaSpigot
++    public boolean timeNeedsSync = false; // PandaSpigot - Wakeup Time Sync
  
-         this.worldProvider.m().b();
-+        boolean timeNeedsSync = false; // PandaSpigot - Wakeup Time Sync
-         if (this.everyoneDeeplySleeping()) {
-             if (this.getGameRules().getBoolean("doDaylightCycle")) {
+     // CraftBukkit start
+     public final int dimension;
+@@ -217,6 +218,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
                  long i = this.worldData.getDayTime() + 24000L;
  
                  this.worldData.setDayTime(i - i % 24000L);
-+                timeNeedsSync = true;  // PandaSpigot - Wakeup Time Sync
++                this.timeNeedsSync = true;  // PandaSpigot - Wakeup Time Sync
              }
  
              this.e();
-@@ -243,6 +245,11 @@ public class WorldServer extends World implements IAsyncTaskHandler {
-         this.worldData.setTime(this.worldData.getTime() + 1L);
-         if (this.getGameRules().getBoolean("doDaylightCycle")) {
-             this.worldData.setDayTime(this.worldData.getDayTime() + 1L);
-+            // PandaSpigot start - Wakeup Time Sync
-+            if (timeNeedsSync) {
-+                this.server.getPlayerList().a(new PacketPlayOutUpdateTime(this.worldData.getTime(), this.worldData.getDayTime(), true), this.worldProvider.getDimension());
-+            }
-+            // PandaSpigot end
-         }
- 
-         timings.doChunkUnload.stopTiming(); // Spigot
