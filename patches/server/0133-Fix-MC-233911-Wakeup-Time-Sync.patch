@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Wed, 29 Jul 2026 15:40:47 +0000
+Subject: [PATCH] Fix MC-233911 Wakeup Time Sync
+
+Sends a time sync packet immediately after waking up from sleep.
+
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index a1f85f055d4e8418cb9733832cd36037cafc1793..caa0b174932468a616d283e79ccc3995d54877dd 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -212,11 +212,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+         }
+ 
+         this.worldProvider.m().b();
++        boolean timeNeedsSync = false; // PandaSpigot - Wakeup Time Sync
+         if (this.everyoneDeeplySleeping()) {
+             if (this.getGameRules().getBoolean("doDaylightCycle")) {
+                 long i = this.worldData.getDayTime() + 24000L;
+ 
+                 this.worldData.setDayTime(i - i % 24000L);
++                timeNeedsSync = true; // PandaSpigot - Wakeup Time Sync
+             }
+ 
+             this.e();
+@@ -243,6 +245,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+         this.worldData.setTime(this.worldData.getTime() + 1L);
+         if (this.getGameRules().getBoolean("doDaylightCycle")) {
+             this.worldData.setDayTime(this.worldData.getDayTime() + 1L);
++            if (timeNeedsSync) {
++                this.sendWorldTimeUpdate(true); // PandaSpigot - Wakeup Time Sync
++            }
+         }
+ 
+         timings.doChunkUnload.stopTiming(); // Spigot

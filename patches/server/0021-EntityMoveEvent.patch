@@ -31,10 +31,10 @@ index 72c7e6fc8bb0a71877d6759af44d39030bcf51f5..1353a791235ae3b820072fa80ef60c3c
  
      protected void doTick() {}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 918863f601bb2199f5b46ca85f54152c138bbe7e..00429aa61ca5dbfc8ebc29557d20b5b40e4ea6b3 100644
+index dff0bb4bf07ce7b28f9115f5917e9a55bf36bec0..0113ae0f14e2d49818011e496c4c7a6c9c25a19e 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -823,6 +823,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -810,6 +810,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
  
              // if (i == 0 || this.getAllowNether()) {
                  WorldServer worldserver = this.worlds.get(i);
@@ -43,7 +43,7 @@ index 918863f601bb2199f5b46ca85f54152c138bbe7e..00429aa61ca5dbfc8ebc29557d20b5b4
                  this.methodProfiler.a(worldserver.getWorldData().getName());
                  /* Drop global time updates
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index f54a279407ad09fabcac038b11e8d668e68c35f6..9bf5b0a7d4b7eac5496768b3ce8dad22b02b332c 100644
+index 179d2e3625e3e538170eeae88bf7c70630767d06..2320da544fd0faa727ba9ba8569e33fc57c6bd00 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -49,6 +49,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {

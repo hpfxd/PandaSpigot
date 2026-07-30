@@ -1,11 +1,11 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: hpfxd <me@hpfxd.com>
 Date: Sat, 30 Oct 2021 14:42:18 -0400
-Subject: [PATCH] Configurable time update frequency.
+Subject: [PATCH] Configurable time update frequency
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 3dd3d0702c17541083d0d365ca46e93602105bce..b5f16e8cab9e43ad7597b2ea5bc921399b37872b 100644
+index 3dd3d0702c17541083d0d365ca46e93602105bce..ff05881b80710d989a619baf21e07ad16eafb61d 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -6,6 +6,12 @@ import org.spongepowered.configurate.objectmapping.meta.Comment;
@@ -21,16 +21,16 @@ index 3dd3d0702c17541083d0d365ca46e93602105bce..b5f16e8cab9e43ad7597b2ea5bc92139
      @Comment("These options control velocity players receive when damaged.")
      public KnockbackConfig knockback;
      
-diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 735f8d4d08d9adf4daf31cb68045dda1d0229b94..918863f601bb2199f5b46ca85f54152c138bbe7e 100644
---- a/src/main/java/net/minecraft/server/MinecraftServer.java
-+++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -803,7 +803,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
-             long worldTime = world.getTime();
-             final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
-             for (EntityHuman entityhuman : world.players) {
--                if (!(entityhuman instanceof EntityPlayer) || (this.ticks + entityhuman.getId()) % 20 != 0) {
-+                if (!(entityhuman instanceof EntityPlayer) || (this.ticks + entityhuman.getId()) % world.pandaSpigotConfig.timeUpdateFrequency != 0) {
-                     continue;
-                 }
-                 EntityPlayer entityplayer = (EntityPlayer) entityhuman;
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index e1478127b9d1bc308a570ef3e137762f14a1225b..795deaa6470a30d4602e6a1494b2575cf5202844 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -1222,7 +1222,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+         long worldTime = this.getTime();
+         final PacketPlayOutUpdateTime worldPacket = new PacketPlayOutUpdateTime(worldTime, dayTime, doDaylight);
+         for (EntityHuman entityhuman : this.players) {
+-            if (!(entityhuman instanceof EntityPlayer) || (!force && (this.server.at() + entityhuman.getId()) % 20 != 0)) {
++            if (!(entityhuman instanceof EntityPlayer) || (!force && (this.server.at() + entityhuman.getId()) % this.pandaSpigotConfig.timeUpdateFrequency != 0)) { // PandaSpigot - Configurable time update frequency
+                 continue;
+             }
+             EntityPlayer entityplayer = (EntityPlayer) entityhuman;
