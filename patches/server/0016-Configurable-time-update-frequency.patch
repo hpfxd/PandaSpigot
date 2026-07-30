@@ -22,7 +22,7 @@ index 3dd3d0702c17541083d0d365ca46e93602105bce..ff05881b80710d989a619baf21e07ad1
      public KnockbackConfig knockback;
      
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 5b52fdb261f4cce3ad75619c1eff46be97458a75..795deaa6470a30d4602e6a1494b2575cf5202844 100644
+index e1478127b9d1bc308a570ef3e137762f14a1225b..795deaa6470a30d4602e6a1494b2575cf5202844 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -1222,7 +1222,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
