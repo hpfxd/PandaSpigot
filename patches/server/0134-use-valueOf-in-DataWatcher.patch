@@ -1,0 +1,185 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <github@masterdash5.com>
+Date: Thu, 30 Jul 2026 17:35:17 -0600
+Subject: [PATCH] use valueOf in DataWatcher
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityBat.java b/src/main/java/net/minecraft/server/EntityBat.java
+index abe696e5519f450de0c2e4e1b10ba776608510c3..786eb898553f7f3d8bf1507b5ac544bba3cbfd37 100644
+--- a/src/main/java/net/minecraft/server/EntityBat.java
++++ b/src/main/java/net/minecraft/server/EntityBat.java
+@@ -15,7 +15,7 @@ public class EntityBat extends EntityAmbient {
+     @Override
+     protected void h() {
+         super.h();
+-        this.datawatcher.a(16, new Byte((byte) 0));
++        this.datawatcher.a(16, Byte.valueOf((byte) 0)); // PandaSpigot - use valueOf in DataWatcher
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/EntityBlaze.java b/src/main/java/net/minecraft/server/EntityBlaze.java
+index 720b0d227520e56e2c30cf460c01849a4f0c13c1..88bd2eb2aabb215632f03e7df6d198e50a58ec4b 100644
+--- a/src/main/java/net/minecraft/server/EntityBlaze.java
++++ b/src/main/java/net/minecraft/server/EntityBlaze.java
+@@ -29,7 +29,7 @@ public class EntityBlaze extends EntityMonster {
+     @Override
+     protected void h() {
+         super.h();
+-        this.datawatcher.a(16, new Byte((byte) 0));
++        this.datawatcher.a(16, Byte.valueOf((byte) 0)); // PandaSpigot - use valueOf in DataWatcher
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/EntityBoat.java b/src/main/java/net/minecraft/server/EntityBoat.java
+index 764a0046fd4727b1d9cfc0b6097d76227f3ca166..c042345bc6a2ffb646b205b49fbd65b241264723 100644
+--- a/src/main/java/net/minecraft/server/EntityBoat.java
++++ b/src/main/java/net/minecraft/server/EntityBoat.java
+@@ -57,9 +57,11 @@ public class EntityBoat extends Entity {
+     }
+ 
+     protected void h() {
+-        this.datawatcher.a(17, new Integer(0));
+-        this.datawatcher.a(18, new Integer(1));
+-        this.datawatcher.a(19, new Float(0.0F));
++        // PandaSpigot start - use valueOf in DataWatcher
++        this.datawatcher.a(17, Integer.valueOf(0));
++        this.datawatcher.a(18, Integer.valueOf(1));
++        this.datawatcher.a(19, Float.valueOf(0.0F));
++        // PandaSpigot end
+     }
+ 
+     public AxisAlignedBB j(Entity entity) {
+diff --git a/src/main/java/net/minecraft/server/EntityEnderman.java b/src/main/java/net/minecraft/server/EntityEnderman.java
+index 6d5fec85c8a79df2ea299c31196bab58f722fa9e..b1565f7ddb2b379ac6c62ff30f7535736b24afc2 100644
+--- a/src/main/java/net/minecraft/server/EntityEnderman.java
++++ b/src/main/java/net/minecraft/server/EntityEnderman.java
+@@ -55,9 +55,11 @@ public class EntityEnderman extends EntityMonster {
+ 
+     protected void h() {
+         super.h();
+-        this.datawatcher.a(16, new Short((short) 0));
+-        this.datawatcher.a(17, new Byte((byte) 0));
+-        this.datawatcher.a(18, new Byte((byte) 0));
++        // PandaSpigot start - use valueOf in DataWatcher
++        this.datawatcher.a(16, Short.valueOf((short) 0));
++        this.datawatcher.a(17, Byte.valueOf((byte) 0));
++        this.datawatcher.a(18, Byte.valueOf((byte) 0));
++        // PandaSpigot end
+     }
+ 
+     public void b(NBTTagCompound nbttagcompound) {
+diff --git a/src/main/java/net/minecraft/server/EntityMinecartAbstract.java b/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
+index 4bf790cdffdbc8950450644a813d9c7bb539793d..6f753f1cd0384c61d8b4341c8a5b5e17e444fb79 100644
+--- a/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
++++ b/src/main/java/net/minecraft/server/EntityMinecartAbstract.java
+@@ -72,11 +72,13 @@ public abstract class EntityMinecartAbstract extends Entity implements INamableT
+     }
+ 
+     protected void h() {
+-        this.datawatcher.a(17, new Integer(0));
+-        this.datawatcher.a(18, new Integer(1));
+-        this.datawatcher.a(19, new Float(0.0F));
+-        this.datawatcher.a(20, new Integer(0));
+-        this.datawatcher.a(21, new Integer(6));
++        // PandaSpigot start - use valueOf in DataWatcher
++        this.datawatcher.a(17, Integer.valueOf(0));
++        this.datawatcher.a(18, Integer.valueOf(1));
++        this.datawatcher.a(19, Float.valueOf(0.0F));
++        this.datawatcher.a(20, Integer.valueOf(0));
++        this.datawatcher.a(21, Integer.valueOf(6));
++        // PandaSpigot end
+         this.datawatcher.a(22, Byte.valueOf((byte) 0));
+     }
+ 
+diff --git a/src/main/java/net/minecraft/server/EntityMinecartFurnace.java b/src/main/java/net/minecraft/server/EntityMinecartFurnace.java
+index 908620d41116f7d0474b11ec823acf8222bebe80..075d80e9c7867bd678c6bf28838a3fd89d2d8b90 100644
+--- a/src/main/java/net/minecraft/server/EntityMinecartFurnace.java
++++ b/src/main/java/net/minecraft/server/EntityMinecartFurnace.java
+@@ -20,7 +20,7 @@ public class EntityMinecartFurnace extends EntityMinecartAbstract {
+ 
+     protected void h() {
+         super.h();
+-        this.datawatcher.a(16, new Byte((byte) 0));
++        this.datawatcher.a(16, Byte.valueOf((byte) 0)); // PandaSpigot - use valueOf in DataWatcher
+     }
+ 
+     public void t_() {
+diff --git a/src/main/java/net/minecraft/server/EntitySheep.java b/src/main/java/net/minecraft/server/EntitySheep.java
+index 29611a194b8a582d57159231091c66adb7c6944f..560cfdb3bc84c91ffcfc1ea2a5cb6d8d65034ec9 100644
+--- a/src/main/java/net/minecraft/server/EntitySheep.java
++++ b/src/main/java/net/minecraft/server/EntitySheep.java
+@@ -71,7 +71,7 @@ public class EntitySheep extends EntityAnimal {
+ 
+     protected void h() {
+         super.h();
+-        this.datawatcher.a(16, new Byte((byte) 0));
++        this.datawatcher.a(16, Byte.valueOf((byte) 0)); // PandaSpigot - use valueOf in DataWatcher
+     }
+ 
+     protected void dropDeathLoot(boolean flag, int i) {
+diff --git a/src/main/java/net/minecraft/server/EntitySkeleton.java b/src/main/java/net/minecraft/server/EntitySkeleton.java
+index 46bff95d8bf73e34eb8e0a9b94fb9fa9e9cc5cfb..ce906c2fe9a7a31f6b0cdb03ab294927f37ddf6c 100644
+--- a/src/main/java/net/minecraft/server/EntitySkeleton.java
++++ b/src/main/java/net/minecraft/server/EntitySkeleton.java
+@@ -34,7 +34,7 @@ public class EntitySkeleton extends EntityMonster implements IRangedEntity {
+ 
+     protected void h() {
+         super.h();
+-        this.datawatcher.a(13, new Byte((byte) 0));
++        this.datawatcher.a(13, Byte.valueOf((byte) 0)); // PandaSpigot - use valueOf in DataWatcher
+     }
+ 
+     protected String z() {
+diff --git a/src/main/java/net/minecraft/server/EntitySpider.java b/src/main/java/net/minecraft/server/EntitySpider.java
+index 68a253c9698d2b239e400d7a9406c4430072cc33..5ab26d722ae5f01e898689be5474a3e56573c688 100644
+--- a/src/main/java/net/minecraft/server/EntitySpider.java
++++ b/src/main/java/net/minecraft/server/EntitySpider.java
+@@ -29,7 +29,7 @@ public class EntitySpider extends EntityMonster {
+ 
+     protected void h() {
+         super.h();
+-        this.datawatcher.a(16, new Byte((byte) 0));
++        this.datawatcher.a(16, Byte.valueOf((byte) 0)); // PandaSpigot - use valueOf in DataWatcher
+     }
+ 
+     public void t_() {
+diff --git a/src/main/java/net/minecraft/server/EntityWither.java b/src/main/java/net/minecraft/server/EntityWither.java
+index fb19bad3c01b03991f9dbaff6041acbccda3c8b3..ecf0f46011f1e27990672353257a0a58f352e241 100644
+--- a/src/main/java/net/minecraft/server/EntityWither.java
++++ b/src/main/java/net/minecraft/server/EntityWither.java
+@@ -48,10 +48,12 @@ public class EntityWither extends EntityMonster implements IRangedEntity {
+ 
+     protected void h() {
+         super.h();
+-        this.datawatcher.a(17, new Integer(0));
+-        this.datawatcher.a(18, new Integer(0));
+-        this.datawatcher.a(19, new Integer(0));
+-        this.datawatcher.a(20, new Integer(0));
++        // PandaSpigot start - use valueOf in DataWatcher
++        this.datawatcher.a(17, Integer.valueOf(0));
++        this.datawatcher.a(18, Integer.valueOf(0));
++        this.datawatcher.a(19, Integer.valueOf(0));
++        this.datawatcher.a(20, Integer.valueOf(0));
++        // PandaSpigot end
+     }
+ 
+     public void b(NBTTagCompound nbttagcompound) {
+diff --git a/src/main/java/net/minecraft/server/EntityWolf.java b/src/main/java/net/minecraft/server/EntityWolf.java
+index 469c87a179b452b5df06e79a6bc1d8e7fce07965..931888ba9901d26736e463b952bb9037443c89c9 100644
+--- a/src/main/java/net/minecraft/server/EntityWolf.java
++++ b/src/main/java/net/minecraft/server/EntityWolf.java
+@@ -87,9 +87,11 @@ public class EntityWolf extends EntityTameableAnimal {
+ 
+     protected void h() {
+         super.h();
+-        this.datawatcher.a(18, new Float(this.getHealth()));
+-        this.datawatcher.a(19, new Byte((byte) 0));
+-        this.datawatcher.a(20, new Byte((byte) EnumColor.RED.getColorIndex()));
++        // PandaSpigot start - use valueOf in DataWatcher
++        this.datawatcher.a(18, Float.valueOf(this.getHealth()));
++        this.datawatcher.a(19, Byte.valueOf((byte) 0));
++        this.datawatcher.a(20, Byte.valueOf((byte) EnumColor.RED.getColorIndex()));
++        // PandaSpigot end
+     }
+ 
+     protected void a(BlockPosition blockposition, Block block) {
