@@ -26,10 +26,10 @@ index c1110242136e8fd98661886920b765bb5367c37d..558ab56e5f2e670dc17e8ffd39d8f09d
              this.b(world, blockposition, iblockdata, 0);
              world.setTypeAndData(blockposition, Blocks.AIR.getBlockData(), 3);
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index 82c7de05cb6af9e179da419eed0545c16592320b..919871cc851bba4067c0e6627c7b70faa1c96782 100644
+index d071805238fc401abdee89398f91516ab16ef4ff..0ed943bb6a6da43a71eddb7aac8e9a5294aecce5 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -831,6 +831,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -818,6 +818,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
              // if (i == 0 || this.getAllowNether()) {
                  WorldServer worldserver = this.worlds.get(i);
                  worldserver.hasEntityMoveEvent = io.papermc.paper.event.entity.EntityMoveEvent.getHandlerList().getRegisteredListeners().length > 0; // PandaSpigot
@@ -51,7 +51,7 @@ index 42c077870727d1eb40bc9bf5e0a3ca580131331d..589bf95c13e9c78c792498a7b73fd048
                      this.getServer().getPluginManager().callEvent(event);
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 9bf5b0a7d4b7eac5496768b3ce8dad22b02b332c..0700b5aec26a6a4ba4db4d3c66b8b15c295c5a03 100644
+index 2320da544fd0faa727ba9ba8569e33fc57c6bd00..eee932b24cdd3cb07f318586f4c5fb27de37b42c 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -50,6 +50,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
