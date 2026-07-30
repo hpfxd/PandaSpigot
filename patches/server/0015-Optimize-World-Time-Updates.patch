@@ -29,7 +29,7 @@ index 610775bfd092b988f907013f35bfc5b2adeb738a..dff0bb4bf07ce7b28f9115f5917e9a55
  
          int i;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 87529552aa27fc89a542130a27a6b2bfdda44ccd..5b52fdb261f4cce3ad75619c1eff46be97458a75 100644
+index 87529552aa27fc89a542130a27a6b2bfdda44ccd..e1478127b9d1bc308a570ef3e137762f14a1225b 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -1215,6 +1215,25 @@ public class WorldServer extends World implements IAsyncTaskHandler {
@@ -49,7 +49,7 @@ index 87529552aa27fc89a542130a27a6b2bfdda44ccd..5b52fdb261f4cce3ad75619c1eff46be
 +            EntityPlayer entityplayer = (EntityPlayer) entityhuman;
 +            long playerTime = entityplayer.getPlayerTime();
 +            PacketPlayOutUpdateTime packet = (playerTime == dayTime) ? worldPacket :
-+                    new PacketPlayOutUpdateTime(worldTime, playerTime, doDaylight);
++                new PacketPlayOutUpdateTime(worldTime, playerTime, doDaylight);
 +            entityplayer.playerConnection.sendPacket(packet); // Add support for per player time
 +        }
 +    }
