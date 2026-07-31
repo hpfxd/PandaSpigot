@@ -1,0 +1,26 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <github@masterdash5.com>
+Date: Thu, 30 Jul 2026 18:27:55 -0600
+Subject: [PATCH] Fix MC-12211: Comparator in subtract sometimes does not
+ visually update
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
+index 6f5e45d5c9a42cc64a8eca28e237f9727746ec93..220e321225798bbc931a68158f533036ce3bf8cf 100644
+--- a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
++++ b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
+@@ -162,8 +162,12 @@ public class BlockRedstoneComparator extends BlockDiodeAbstract implements ICont
+             tileentitycomparator.a(i);
+         }
+ 
+-        if (j != i || iblockdata.get(BlockRedstoneComparator.MODE) == BlockRedstoneComparator.EnumComparatorMode.COMPARE) {
+-            boolean flag = this.e(world, blockposition, iblockdata);
++        // PandaSpigot start - Fix MC-12211: Comparator in subtract sometimes does not visually update
++        boolean compare = iblockdata.get(BlockRedstoneComparator.MODE) == BlockRedstoneComparator.EnumComparatorMode.COMPARE;
++
++        if (j != i || compare) {
++            boolean flag = compare ? this.e(world, blockposition, iblockdata) : i > 0;
++        // PandaSpigot end
+             boolean flag1 = this.l(iblockdata);
+ 
+             if (flag1 && !flag) {
