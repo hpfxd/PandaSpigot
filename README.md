@@ -13,6 +13,9 @@ Fork of Paper for 1.8.8 focused on improved performance and stability.
     - **Improved flush handling** to massively improve entity tracker performance.
     - **Support for Unix domain sockets** to avoid the overhead of TCP when using a proxy on the same machine.
 
+- **Faster and correct lighting**
+    - Implemented **[Starlight](https://github.com/PaperMC/Starlight)** lighting engine, which greatly improves lighting performance and fixes vanilla lighting bugs.
+
 - **More configuration options**, such as:
     - Customizable knockback
     - World and player data saving
@@ -90,7 +93,8 @@ Normal commands:
 | `setup` | Remap, decompile, and patch Minecraft. Can be run from anywhere. |
 | `p`, `patch` | Apply all patches to the project without building it. Can be run from anywhere. |
 | `j`, `jar` | Apply all patches and build the project, `paperclip.jar` will be output. Can be run from anywhere. |
-| `c`, `clean` | Removes all generated files, `PandaSpigot-API`, `PandaSpigot-Server`, and `work`. |
+| `c`, `clean` | Removes build files under `PandaSpigot-API`, `PandaSpigot-Server`. |
+| `dc`, `distclean` | Removes all generated files, `PandaSpigot-API`, `PandaSpigot-Server`, and work. |
 | `con`, `continue` | Shortcut command for running `git am --continue` or `git rebase --continue`. |
 
 Commands that require `. ./panda install` first:
