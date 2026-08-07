@@ -6,12 +6,13 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..260e26967f8b8b0d617345eea3ed9a728d1e43d8
+index 0000000000000000000000000000000000000000..4476529604e907b77b75e0fa513bba149d868803
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,128 @@
+@@ -0,0 +1,137 @@
 +plugins {
 +    id("pandaspigot.conventions")
++    id("com.gradleup.shadow") version "9.4.1"
 +    `maven-publish`
 +}
 +
@@ -51,6 +52,14 @@ index 0000000000000000000000000000000000000000..260e26967f8b8b0d617345eea3ed9a72
 +        doLast {
 +            pomProps.get().asFile.writeText("version=$projectVersion")
 +        }
++    }
++
++	shadowJar {
++		archiveClassifier.set("shaded")
++	}
++
++    named("build") {
++        dependsOn(named("shadowJar"))
 +    }
 +
 +    jar {
