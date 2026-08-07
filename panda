@@ -49,7 +49,7 @@ case "$1" in
     (
         set -e
         cd "$basedir"
-        scripts/build.sh "$basedir" "--setup" || exit 1
+        scripts/setup.sh "$basedir" || exit 1
     ) || failed=1
     ;;
     "p" | "patch")
@@ -63,7 +63,7 @@ case "$1" in
     (
         set -e
         cd "$basedir"
-        scripts/build.sh "$basedir" "--jar" || exit 1
+        ./gradlew build && ./scripts/paperclip.sh "$basedir" || exit 1
     ) || failed=1
     ;;
     "pc" | "paperclip")
@@ -72,15 +72,6 @@ case "$1" in
         cd "$basedir"
         scripts/paperclip.sh "$basedir" || exit 1
     ) || failed=1
-    ;;
-    "make")
-    (
-        if [[ "$2" = "bacon" ]] ; then
-            set -e
-            cd "$basedir"
-            scripts/build.sh "$basedir" "--jar"
-        fi
-    )
     ;;
     "r" | "root")
         cd "$basedir"
