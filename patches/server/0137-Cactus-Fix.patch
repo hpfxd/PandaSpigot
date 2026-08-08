@@ -1,0 +1,20 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Mon, 29 Jun 2026 14:12:17 +0000
+Subject: [PATCH] Cactus Fix
+
+Cactus no longer damages dropped cactus blocks
+
+diff --git a/src/main/java/net/minecraft/server/EntityItem.java b/src/main/java/net/minecraft/server/EntityItem.java
+index 47272471c8477cb34720b116c212cd3f61f4735f..cd4dea6246290be970a70c41fa02039cf68e58a5 100644
+--- a/src/main/java/net/minecraft/server/EntityItem.java
++++ b/src/main/java/net/minecraft/server/EntityItem.java
+@@ -229,6 +229,8 @@ public class EntityItem extends Entity {
+             return false;
+         } else if (this.getItemStack() != null && this.getItemStack().getItem() == Items.NETHER_STAR && damagesource.isExplosion()) {
+             return false;
++        } else if (this.getItemStack() != null && this.getItemStack().getItem() == Item.getItemOf(Blocks.CACTUS) && damagesource == DamageSource.CACTUS) { // PandaSpigot - Cactus Fix
++            return false;
+         } else {
+             // CraftBukkit start
+             if (org.bukkit.craftbukkit.event.CraftEventFactory.handleNonLivingEntityDamageEvent(this, damagesource, f)) {
