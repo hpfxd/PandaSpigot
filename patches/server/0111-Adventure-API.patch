@@ -5,14 +5,14 @@ Subject: [PATCH] Adventure API
 
 
 diff --git a/build.gradle.kts b/build.gradle.kts
-index f5c5c322973966f781aa1b6ec32db7c070bf55b1..e9df20a48afde91bc88c653be4db02a17d4c475b 100644
+index 4a7879a5ff235fedaae167331cac06f08d0e8b6d..5fd93af71de1c39690c5335b94b9cb2b62af14d1 100644
 --- a/build.gradle.kts
 +++ b/build.gradle.kts
 @@ -4,6 +4,7 @@ plugins {
  }
  
  val minecraftVersion = "1_8_R3"
-+val adventureVersion = "4.24.0" // PandaSpigot - Adventure
++val adventureVersion = "4.25.0" // PandaSpigot - Adventure
  
  repositories {
      maven(url = "https://libraries.minecraft.net")

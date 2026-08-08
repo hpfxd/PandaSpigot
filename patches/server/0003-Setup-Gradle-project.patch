@@ -6,13 +6,13 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..d05f6cfa9d47a9990911377002a546a0e029f8f6
+index 0000000000000000000000000000000000000000..fcd4026f3f2d3fdebae6b180115a67f1ec93beab
 --- /dev/null
 +++ b/build.gradle.kts
-@@ -0,0 +1,132 @@
+@@ -0,0 +1,144 @@
 +plugins {
 +    id("pandaspigot.conventions")
-+    id("com.gradleup.shadow") version "9.4.1"
++    id("com.gradleup.shadow") version "9.6.1"
 +}
 +
 +val minecraftVersion = "1_8_R3"
@@ -85,8 +85,20 @@ index 0000000000000000000000000000000000000000..d05f6cfa9d47a9990911377002a546a0
 +        dependsOn(named("shadowJar"))
 +    }
 +
++    val prepareTestServerDir = register("prepareTestServerDir") {
++        doLast {
++            mkdir(layout.buildDirectory.dir("test-server").get().asFile)
++        }
++    }
++
 +    test {
-+        exclude("org/bukkit/craftbukkit/inventory/ItemStack*Test.class", "org/bukkit/craftbukkit/inventory/ItemFactoryTest.class")
++        workingDir = layout.buildDirectory.dir("test-server").get().asFile
++        dependsOn(prepareTestServerDir)
++
++        exclude(
++            "org/bukkit/craftbukkit/inventory/ItemStack*Test.class",
++            "org/bukkit/craftbukkit/inventory/ItemFactoryTest.class"
++        )
 +    }
 +
 +    jar {

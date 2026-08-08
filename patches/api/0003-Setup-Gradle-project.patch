@@ -6,7 +6,7 @@ Subject: [PATCH] Setup Gradle project
 
 diff --git a/build.gradle.kts b/build.gradle.kts
 new file mode 100644
-index 0000000000000000000000000000000000000000..260e26967f8b8b0d617345eea3ed9a728d1e43d8
+index 0000000000000000000000000000000000000000..ae765d5c3c18205b799db89f7d5a25a952772979
 --- /dev/null
 +++ b/build.gradle.kts
 @@ -0,0 +1,128 @@
@@ -41,7 +41,7 @@ index 0000000000000000000000000000000000000000..260e26967f8b8b0d617345eea3ed9a72
 +}
 +
 +tasks {
-+    val generateApiVersioningFile by registering {
++    val generateApiVersioningFile = register("generateApiVersioningFile") {
 +        val projectVersion = project.version
 +        val pomProps = layout.buildDirectory.file("pom.properties")
 +
