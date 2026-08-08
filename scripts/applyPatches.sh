@@ -72,7 +72,7 @@ function applyPatch {
     fi
 }
 
-if [ "$2" == "--setup" ] || [ "$2" == "--jar" ]; then
+if [ "$2" == "--setup" ]; then
     echo "Rebuilding Forked projects.... "
 
     # Move into Paper dir
