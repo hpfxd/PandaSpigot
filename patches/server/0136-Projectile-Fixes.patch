@@ -3,7 +3,7 @@ From: anzz1 <anzz1@live.com>
 Date: Sat, 8 Aug 2026 19:54:03 +0000
 Subject: [PATCH] Projectile Fixes
 
-- Make projectile not collide with the ridden entity for first few ticks
+Make projectile not collide with the ridden entity for first few ticks
 
 diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
 index ecde0d9ec034024355c09b249694ce118b3b10bc..1cfea4ba17c64ff6534d6898408ed9ddd3eb6fd6 100644
