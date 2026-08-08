@@ -1,0 +1,59 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Sat, 8 Aug 2026 19:54:03 +0000
+Subject: [PATCH] Projectile Fixes
+
+Make projectile not collide with the ridden entity for first few ticks
+
+diff --git a/src/main/java/net/minecraft/server/EntityArrow.java b/src/main/java/net/minecraft/server/EntityArrow.java
+index ecde0d9ec034024355c09b249694ce118b3b10bc..1cfea4ba17c64ff6534d6898408ed9ddd3eb6fd6 100644
+--- a/src/main/java/net/minecraft/server/EntityArrow.java
++++ b/src/main/java/net/minecraft/server/EntityArrow.java
+@@ -191,7 +191,7 @@ public class EntityArrow extends Entity implements IProjectile {
+             for (j = 0; j < list.size(); ++j) {
+                 Entity entity1 = (Entity) list.get(j);
+ 
+-                if (entity1.ad() && (entity1 != this.shooter || this.as >= 5)) {
++                if (entity1.ad() && ((entity1 != this.shooter && entity1.passenger != this.shooter) || this.as >= 5)) { // PandaSpigot - Projectile Fixes
+                     f1 = 0.3F;
+                     AxisAlignedBB axisalignedbb1 = entity1.getBoundingBox().grow((double) f1, (double) f1, (double) f1);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb1.a(vec3d, vec3d1);
+diff --git a/src/main/java/net/minecraft/server/EntityFireball.java b/src/main/java/net/minecraft/server/EntityFireball.java
+index 2524e2b8d8e03e4c97464eb74a964b595584f8a7..0a3a5d9370a56056abdbd33e7bf5993b81c5d9cc 100644
+--- a/src/main/java/net/minecraft/server/EntityFireball.java
++++ b/src/main/java/net/minecraft/server/EntityFireball.java
+@@ -106,7 +106,7 @@ public abstract class EntityFireball extends Entity {
+             for (int i = 0; i < list.size(); ++i) {
+                 Entity entity1 = (Entity) list.get(i);
+ 
+-                if (entity1.ad() && (!entity1.k(this.shooter) || this.as >= 25)) {
++                if (entity1.ad() && ((!entity1.k(this.shooter) && entity1.passenger != this.shooter) || this.as >= 25)) { // PandaSpigot - Projectile Fixes
+                     float f = 0.3F;
+                     AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow((double) f, (double) f, (double) f);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
+diff --git a/src/main/java/net/minecraft/server/EntityFishingHook.java b/src/main/java/net/minecraft/server/EntityFishingHook.java
+index 6eca198f9f026c82b8b31d446c3953dabdc956cf..6630761c1fcbd6c1588252cb2df28123f7577295 100644
+--- a/src/main/java/net/minecraft/server/EntityFishingHook.java
++++ b/src/main/java/net/minecraft/server/EntityFishingHook.java
+@@ -168,7 +168,7 @@ public class EntityFishingHook extends Entity {
+             for (int i = 0; i < list.size(); ++i) {
+                 Entity entity1 = (Entity) list.get(i);
+ 
+-                if (entity1.ad() && (entity1 != this.owner || this.au >= 5)) {
++                if (entity1.ad() && ((entity1 != this.owner && entity1.passenger != this.owner) || this.au >= 5)) { // PandaSpigot - Projectile Fixes
+                     float f = 0.3F;
+                     AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow((double) f, (double) f, (double) f);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
+diff --git a/src/main/java/net/minecraft/server/EntityProjectile.java b/src/main/java/net/minecraft/server/EntityProjectile.java
+index fba0c18c6e1128d2f627c176531e4afe54bcd7df..fa69eafadea380aff012723f0c42ff345ec6b51b 100644
+--- a/src/main/java/net/minecraft/server/EntityProjectile.java
++++ b/src/main/java/net/minecraft/server/EntityProjectile.java
+@@ -126,7 +126,7 @@ public abstract class EntityProjectile extends Entity implements IProjectile {
+             for (int i = 0; i < list.size(); ++i) {
+                 Entity entity1 = (Entity) list.get(i);
+ 
+-                if (entity1.ad() && (entity1 != entityliving || this.ar >= 5)) {
++                if (entity1.ad() && ((entity1 != entityliving && entity1.passenger != entityliving) || this.ar >= 5)) { // PandaSpigot - Projectile Fixes
+                     float f = 0.3F;
+                     AxisAlignedBB axisalignedbb = entity1.getBoundingBox().grow((double) f, (double) f, (double) f);
+                     MovingObjectPosition movingobjectposition1 = axisalignedbb.a(vec3d, vec3d1);
