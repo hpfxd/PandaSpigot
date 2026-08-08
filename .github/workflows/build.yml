@@ -37,9 +37,20 @@ jobs:
         run: |
           cp -v "./paperclip/build/libs/paperclip-1.8.8-R0.1-SNAPSHOT.jar" "./pandaspigot-$GITHUB_RUN_NUMBER.jar"
 
-      - name: Upload artifacts
+      - name: Copy API jar
+        run: |
+          cp -v "./PandaSpigot-API/build/libs/pandaspigot-api-1.8.8-R0.1-SNAPSHOT.jar" "./pandaspigot-api-$GITHUB_RUN_NUMBER.jar"
+
+      - name: Upload Server artifact
         uses: actions/upload-artifact@v6
         with:
           name: Server JAR
           path: pandaspigot-${{ github.run_number }}.jar
+          if-no-files-found: error
+
+      - name: Upload API artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: API JAR
+          path: pandaspigot-api-${{ github.run_number }}.jar
           if-no-files-found: error
