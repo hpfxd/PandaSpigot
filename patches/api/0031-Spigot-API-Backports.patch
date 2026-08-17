@@ -11,7 +11,7 @@ Current backports:
 InventoryView.getSlotType()
 
 diff --git a/src/main/java/org/bukkit/inventory/InventoryView.java b/src/main/java/org/bukkit/inventory/InventoryView.java
-index c1235f11f9139898265eb39bc8dbed88b5c6e707..07090cdaa8036f7b9043054c8ba8d1aa4fabdc0b 100644
+index c1235f11f9139898265eb39bc8dbed88b5c6e707..8341a7b31cf4baf96925bcf45d0b09fed38eb439 100644
 --- a/src/main/java/org/bukkit/inventory/InventoryView.java
 +++ b/src/main/java/org/bukkit/inventory/InventoryView.java
 @@ -3,6 +3,7 @@ package org.bukkit.inventory;
@@ -31,7 +31,7 @@ index c1235f11f9139898265eb39bc8dbed88b5c6e707..07090cdaa8036f7b9043054c8ba8d1aa
 +     * Determine the type of the slot by its raw slot ID.
 +     * <p>
 +     * If the type of the slot is unknown, then
-+     * {@link InventoryType.SlotType#CONTAINER} will be returned.
++     * {@link SlotType#CONTAINER} will be returned.
 +     *
 +     * @param slot The raw slot ID
 +     * @return the slot type
