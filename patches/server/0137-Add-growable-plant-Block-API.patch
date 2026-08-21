@@ -198,31 +198,23 @@ index 24daf93ef18f46e307cf35e627f900a545509de0..4fa8c69d39d1c30e106668950be2de7f
      }
 diff --git a/src/main/java/net/minecraft/server/PandaGrowablePlant.java b/src/main/java/net/minecraft/server/PandaGrowablePlant.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..e16a9d0cd5e4c386e3b03be4c82788bb69389ce5
+index 0000000000000000000000000000000000000000..69bbf0a4e38967c416557752d1acd0b0d189c36d
 --- /dev/null
 +++ b/src/main/java/net/minecraft/server/PandaGrowablePlant.java
-@@ -0,0 +1,31 @@
+@@ -0,0 +1,23 @@
 +package net.minecraft.server;
 +
 +public interface PandaGrowablePlant {
-+
-+    BlockStateInteger getGrowthState();
 +
 +    static PandaGrowablePlant getById(int id) {
 +        Block block = Block.getById(id);
 +        return block instanceof PandaGrowablePlant ? (PandaGrowablePlant) block : null;
 +    }
 +
-+    static boolean isGrowablePlant(int id) {
-+        return getById(id) != null;
-+    }
++    BlockStateInteger getGrowthState();
 +
 +    default int getGrowthLevel(IBlockData iblockdata) {
-+        return ((Integer) iblockdata.get(this.getGrowthState())).intValue();
-+    }
-+
-+    default int getGrowthLevel(int legacyData) {
-+        return this.getGrowthLevel(((Block) this).fromLegacyData(legacyData));
++        return iblockdata.get(this.getGrowthState()).intValue();
 +    }
 +
 +    default int getMaxGrowthLevel() {
