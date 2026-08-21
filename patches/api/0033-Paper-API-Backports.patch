@@ -1,0 +1,32 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Mon, 10 Aug 2026 16:00:00 +0000
+Subject: [PATCH] Paper API Backports
+
+This patch serves as a consolidation of API backports from Paper small
+enough to not necessitate their own patch
+
+Current backports:
+
+World.isDayTime()
+
+diff --git a/src/main/java/org/bukkit/World.java b/src/main/java/org/bukkit/World.java
+index 2cd9a09917caedd773cd09ad4866eafec0f1d51f..85a37926e9c9c8b6378356328ec397682696c3a0 100644
+--- a/src/main/java/org/bukkit/World.java
++++ b/src/main/java/org/bukkit/World.java
+@@ -545,6 +545,15 @@ public interface World extends PluginMessageRecipient, Metadatable, net.kyori.ad
+      */
+     public void setFullTime(long time);
+ 
++    // PandaSpigot start - Paper API Backports
++    /**
++     * Check if it is currently daytime in this world
++     *
++     * @return True if it is daytime
++     */
++    public boolean isDayTime();
++    // PandaSpigot end
++
+     /**
+      * Returns whether the world has an ongoing storm.
+      *
