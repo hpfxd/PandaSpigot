@@ -1,0 +1,29 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Mon, 10 Aug 2026 16:00:27 +0000
+Subject: [PATCH] Paper API Backports
+
+This patch serves as a consolidation of API backports from Paper small
+enough to not necessitate their own patch
+
+Current backports:
+
+World.isDayTime()
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index bdcff39db6353cd3f9386ff7cab58bccd0268751..da8164a0e797f0e747810b6b208af2e9d78e08ba 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -557,6 +557,12 @@ public class CraftWorld implements World {
+         }
+     }
+ 
++    // PandaSpigot start - Paper API Backports
++    public boolean isDayTime() {
++        return getHandle().w();
++    }
++    // PandaSpigot end
++
+     public boolean createExplosion(double x, double y, double z, float power) {
+         return createExplosion(x, y, z, power, false, true);
+     }
