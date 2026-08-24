@@ -6,10 +6,10 @@ Subject: [PATCH] Fix MC-233911 Wakeup Time Sync
 Sends a time sync packet immediately after waking up from sleep.
 
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index a1f85f055d4e8418cb9733832cd36037cafc1793..caa0b174932468a616d283e79ccc3995d54877dd 100644
+index f148c6931fb2b935adea6deb6d909ab596d5030c..b05baecc5180bf8506da30142ef24816975b0d50 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -212,11 +212,13 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -212,11 +212,13 @@ public class WorldServer extends World /*implements IAsyncTaskHandler*/ { // Pan
          }
  
          this.worldProvider.m().b();
@@ -23,7 +23,7 @@ index a1f85f055d4e8418cb9733832cd36037cafc1793..caa0b174932468a616d283e79ccc3995
              }
  
              this.e();
-@@ -243,6 +245,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -243,6 +245,9 @@ public class WorldServer extends World /*implements IAsyncTaskHandler*/ { // Pan
          this.worldData.setTime(this.worldData.getTime() + 1L);
          if (this.getGameRules().getBoolean("doDaylightCycle")) {
              this.worldData.setDayTime(this.worldData.getDayTime() + 1L);
