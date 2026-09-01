@@ -1,0 +1,115 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Mon, 13 Jul 2026 05:55:30 +0000
+Subject: [PATCH] Backport modern Animals API
+
+
+diff --git a/src/main/java/net/minecraft/server/EntityAnimal.java b/src/main/java/net/minecraft/server/EntityAnimal.java
+index a8315297b3b258cf23fb83056a531efd2759da05..4b37f2afd9985a61bd3106111427133f46db35d7 100644
+--- a/src/main/java/net/minecraft/server/EntityAnimal.java
++++ b/src/main/java/net/minecraft/server/EntityAnimal.java
+@@ -86,6 +86,7 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimal {
+         return 1 + this.world.random.nextInt(3);
+     }
+ 
++    public final boolean isFood(ItemStack itemstack) { return this.d(itemstack); } // PandaSpigot - OBFHELPER
+     public boolean d(ItemStack itemstack) {
+         return itemstack == null ? false : itemstack.getItem() == Items.WHEAT;
+     }
+@@ -126,6 +127,7 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimal {
+         this.world.broadcastEntityEffect(this, (byte) 18);
+     }
+ 
++    public final EntityHuman getLoveCause() { return this.bo; } // PandaSpigot - OBFHELPER
+     public EntityHuman cq() {
+         return this.bo;
+     }
+@@ -141,4 +143,16 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimal {
+     public boolean mate(EntityAnimal entityanimal) {
+         return entityanimal == this ? false : (entityanimal.getClass() != this.getClass() ? false : this.isInLove() && entityanimal.isInLove());
+     }
++
++    // PandaSpigot start - Backport modern Animals API
++    public void setInLoveTime(int ticks) {
++        this.bm = ticks;
++    }
++    public int getInLoveTime() {
++        return this.bm;
++    }
++    public void setLoveCause(EntityHuman entityhuman) {
++        this.bo = entityhuman;
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/org/bukkit/craftbukkit/entity/CraftAnimals.java b/src/main/java/org/bukkit/craftbukkit/entity/CraftAnimals.java
+index 4b9b07830587c3c19d5f7360f9c50e2b086e1ecf..c40ee60ce5353df92681d16d4b45163d143afc35 100644
+--- a/src/main/java/org/bukkit/craftbukkit/entity/CraftAnimals.java
++++ b/src/main/java/org/bukkit/craftbukkit/entity/CraftAnimals.java
+@@ -1,8 +1,16 @@
+ package org.bukkit.craftbukkit.entity;
+ 
++import com.google.common.base.Preconditions;
++import java.util.UUID;
+ import net.minecraft.server.EntityAnimal;
++import net.minecraft.server.EntityHuman;
++import org.bukkit.Material;
+ import org.bukkit.craftbukkit.CraftServer;
++import org.bukkit.craftbukkit.entity.CraftPlayer;
++import org.bukkit.craftbukkit.inventory.CraftItemStack;
+ import org.bukkit.entity.Animals;
++import org.bukkit.entity.Player;
++import org.bukkit.inventory.ItemStack;
+ 
+ public class CraftAnimals extends CraftAgeable implements Animals {
+ 
+@@ -19,4 +27,50 @@ public class CraftAnimals extends CraftAgeable implements Animals {
+     public String toString() {
+         return "CraftAnimals";
+     }
++
++    @Override
++    public UUID getBreedCause() {
++        EntityHuman loveCause = getHandle().getLoveCause();
++        return (loveCause != null) ? loveCause.getUniqueID() : null;
++    }
++
++    @Override
++    public void setBreedCause(UUID uuid) {
++        if (uuid == null) {
++            getHandle().setLoveCause(null);
++        }
++        Player player = getServer().getPlayer(uuid);
++        if (player == null) {
++            throw new IllegalArgumentException("Invalid uuid " + uuid);
++        }
++        getHandle().setLoveCause(((CraftPlayer)player).getHandle());
++    }
++
++    @Override
++    public boolean isLoveMode() {
++        return getHandle().isInLove();
++    }
++
++    @Override
++    public void setLoveModeTicks(int ticks) {
++        Preconditions.checkArgument(ticks >= 0, "Love mode ticks must be positive or 0");
++        getHandle().setInLoveTime(ticks);
++    }
++
++    @Override
++    public int getLoveModeTicks() {
++        return getHandle().getInLoveTime();
++    }
++
++    @Override
++    public boolean isBreedItem(ItemStack itemStack) {
++        if (itemStack == null) return false;
++        return getHandle().isFood(CraftItemStack.asNMSCopy(itemStack));
++    }
++
++    @Override
++    public boolean isBreedItem(Material material) {
++        if (material == null) return false;
++        return isBreedItem(new ItemStack(material));
++    }
+ }

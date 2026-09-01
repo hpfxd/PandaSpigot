@@ -1,0 +1,85 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Mon, 13 Jul 2026 05:55:48 +0000
+Subject: [PATCH] Backport modern Animals API
+
+
+diff --git a/src/main/java/org/bukkit/entity/Animals.java b/src/main/java/org/bukkit/entity/Animals.java
+index f0dc157dc3f228cd9e92b804feb3e3e4396e1e43..46a11d900bec03947dd3351cbf69bf43d4cdd22d 100644
+--- a/src/main/java/org/bukkit/entity/Animals.java
++++ b/src/main/java/org/bukkit/entity/Animals.java
+@@ -1,6 +1,73 @@
+ package org.bukkit.entity;
+ 
++import java.util.UUID;
++import org.bukkit.Material;
++import org.bukkit.inventory.ItemStack;
++
+ /**
+  * Represents an Animal.
+  */
+-public interface Animals extends Ageable {}
++public interface Animals extends Ageable {
++
++    /**
++     * Get the UUID of the entity that caused this entity to enter the
++     * {@link #canBreed()} state.
++     *
++     * @return uuid if set, or null
++     */
++    UUID getBreedCause();
++
++    /**
++     * Set the UUID of the entity that caused this entity to enter the
++     * {@link #canBreed()} state.
++     *
++     * @param uuid new uuid, or null
++     */
++    void setBreedCause(UUID uuid);
++
++    /**
++     * Get whether or not this entity is in love mode and will produce
++     * offspring with another entity in love mode. Will return true if
++     * and only if {@link #getLoveModeTicks()} is greater than 0.
++     *
++     * @return true if in love mode, false otherwise
++     */
++    boolean isLoveMode();
++
++    /**
++     * Get the amount of ticks remaining for this entity in love mode.
++     * If the entity is not in love mode, 0 will be returned.
++     *
++     * @return the remaining love mode ticks
++     */
++    int getLoveModeTicks();
++
++    /**
++     * Set the amount of ticks for which this entity should be in love mode.
++     * Setting the love mode ticks to 600 is the equivalent of a player
++     * feeding the entity their breeding item of choice.
++     *
++     * @param ticks the love mode ticks. Must be positive
++     */
++    void setLoveModeTicks(int ticks);
++
++    /**
++     * Check if the provided ItemStack is the correct item used for breeding
++     * this entity.
++     *
++     * @param stack ItemStack to check.
++     * @return if the provided ItemStack is the correct food item for this
++     * entity.
++     */
++    boolean isBreedItem(ItemStack stack);
++
++    /**
++     * Check if the provided Material is the correct item used for breeding
++     * this entity.
++     *
++     * @param material Material to check.
++     * @return if the provided Material is the correct food item for this
++     * entity.
++     */
++    boolean isBreedItem(Material material);
++}
