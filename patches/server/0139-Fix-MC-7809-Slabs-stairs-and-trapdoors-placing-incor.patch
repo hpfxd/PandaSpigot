@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ThatApplePieGuy <necrozma999@gmail.com>
+Date: Mon, 3 Aug 2026 18:05:20 -0600
+Subject: [PATCH] Fix MC-7809 Slabs, stairs, and trapdoors placing incorrectly
+
+The client may perform a raytrace to the top half of a block but round it to a cursor position of 0.5 inside the block
+placement packet, so as the server we need to treat 0.5 as the top half of the block as well
+
+diff --git a/src/main/java/net/minecraft/server/BlockStairs.java b/src/main/java/net/minecraft/server/BlockStairs.java
+index f0a8ef076edff1457fe3975782049ecaa53c780d..172ba93d212939d1a5a4453631bb5ad4c95a42ba 100644
+--- a/src/main/java/net/minecraft/server/BlockStairs.java
++++ b/src/main/java/net/minecraft/server/BlockStairs.java
+@@ -491,7 +491,7 @@ public class BlockStairs extends Block {
+         IBlockData iblockdata = super.getPlacedState(world, blockposition, enumdirection, f, f1, f2, i, entityliving);
+ 
+         iblockdata = iblockdata.set(BlockStairs.FACING, entityliving.getDirection()).set(BlockStairs.SHAPE, BlockStairs.EnumStairShape.STRAIGHT);
+-        return enumdirection != EnumDirection.DOWN && (enumdirection == EnumDirection.UP || (double) f1 <= 0.5D) ? iblockdata.set(BlockStairs.HALF, BlockStairs.EnumHalf.BOTTOM) : iblockdata.set(BlockStairs.HALF, BlockStairs.EnumHalf.TOP);
++        return enumdirection != EnumDirection.DOWN && (enumdirection == EnumDirection.UP || (double) f1 < 0.5D) ? iblockdata.set(BlockStairs.HALF, BlockStairs.EnumHalf.BOTTOM) : iblockdata.set(BlockStairs.HALF, BlockStairs.EnumHalf.TOP); // PandaSpigot - Fix MC-7809 Slabs, stairs, and trapdoors placing incorrectly
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/BlockStepAbstract.java b/src/main/java/net/minecraft/server/BlockStepAbstract.java
+index b31d11511e0251c7da4cc1c19951b372a8550e1d..06b415ef371a2007b01ac26363be4df7569f6384 100644
+--- a/src/main/java/net/minecraft/server/BlockStepAbstract.java
++++ b/src/main/java/net/minecraft/server/BlockStepAbstract.java
+@@ -66,7 +66,7 @@ public abstract class BlockStepAbstract extends Block {
+     public IBlockData getPlacedState(World world, BlockPosition blockposition, EnumDirection enumdirection, float f, float f1, float f2, int i, EntityLiving entityliving) {
+         IBlockData iblockdata = super.getPlacedState(world, blockposition, enumdirection, f, f1, f2, i, entityliving).set(BlockStepAbstract.HALF, BlockStepAbstract.EnumSlabHalf.BOTTOM);
+ 
+-        return this.l() ? iblockdata : (enumdirection != EnumDirection.DOWN && (enumdirection == EnumDirection.UP || (double) f1 <= 0.5D) ? iblockdata : iblockdata.set(BlockStepAbstract.HALF, BlockStepAbstract.EnumSlabHalf.TOP));
++        return this.l() ? iblockdata : (enumdirection != EnumDirection.DOWN && (enumdirection == EnumDirection.UP || (double) f1 < 0.5D) ? iblockdata : iblockdata.set(BlockStepAbstract.HALF, BlockStepAbstract.EnumSlabHalf.TOP)); // PandaSpigot - Fix MC-7809 Slabs, stairs, and trapdoors placing incorrectly
+     }
+ 
+     @Override
+diff --git a/src/main/java/net/minecraft/server/BlockTrapdoor.java b/src/main/java/net/minecraft/server/BlockTrapdoor.java
+index 1a2cdd1bcf1dc399aa4e6927afc0586245f35e53..e6b92c896f5ba775efececc5db5382b5ef110ab5 100644
+--- a/src/main/java/net/minecraft/server/BlockTrapdoor.java
++++ b/src/main/java/net/minecraft/server/BlockTrapdoor.java
+@@ -138,7 +138,7 @@ public class BlockTrapdoor extends Block {
+ 
+         if (enumdirection.k().c()) {
+             iblockdata = iblockdata.set(BlockTrapdoor.FACING, enumdirection).set(BlockTrapdoor.OPEN, Boolean.valueOf(false));
+-            iblockdata = iblockdata.set(BlockTrapdoor.HALF, f1 > 0.5F ? BlockTrapdoor.EnumTrapdoorHalf.TOP : BlockTrapdoor.EnumTrapdoorHalf.BOTTOM);
++            iblockdata = iblockdata.set(BlockTrapdoor.HALF, f1 >= 0.5F ? BlockTrapdoor.EnumTrapdoorHalf.TOP : BlockTrapdoor.EnumTrapdoorHalf.BOTTOM); // PandaSpigot - Fix MC-7809 Slabs, stairs, and trapdoors placing incorrectly
+         }
+ 
+         return iblockdata;
