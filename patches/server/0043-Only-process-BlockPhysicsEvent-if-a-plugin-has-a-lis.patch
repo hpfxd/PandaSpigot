@@ -51,7 +51,7 @@ index 42c077870727d1eb40bc9bf5e0a3ca580131331d..589bf95c13e9c78c792498a7b73fd048
                      this.getServer().getPluginManager().callEvent(event);
  
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 2320da544fd0faa727ba9ba8569e33fc57c6bd00..eee932b24cdd3cb07f318586f4c5fb27de37b42c 100644
+index ca30e15f40e73819b56de579ade491f702657800..9ed5d90cb8fa7502d7e1218ba31fec957a8f8520 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -50,6 +50,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {

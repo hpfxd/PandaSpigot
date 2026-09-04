@@ -6,6 +6,7 @@ Fork of Paper for 1.8.8 focused on improved performance and stability.
     - ServerTickStartEvent & ServerTickEndEvent
     - PlayerChunkLoadEvent & PlayerChunkUnloadEvent
     - PlayerHandshakeEvent
+    - Native Adventure API
     - EntityMoveEvent
 
 - **Greatly improved network performance**
