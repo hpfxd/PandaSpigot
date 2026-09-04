@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MasterDash5 <constant4337@molecularmail.com>
+Date: Tue, 13 Jan 2026 13:43:26 -0700
+Subject: [PATCH] Fix BookHack
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 360ed37b95fce68941c234615b465090b8ea7308..fb1ba8dabde87a6c1c9a2672d2565d4847b5a75c 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -62,4 +62,8 @@ public class PandaSpigotWorldConfig {
+     @Comment("This option controls whether or not there is a chance for arrow crits to deal extra damage.\n" +
+             "By default, this is true (vanilla behaviour)")
+     public boolean randomArrowDamage = true;
++
++    @Comment("This option controls if JSON should be stripped from books when signed.\n" +
++            "This prevents modded clients from adding a clickEvent to the signed book.")
++    public boolean fixBookHack = true;
+ }
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index a4c9ee61ca31700b35250cb014f31ffc413cbf8c..c8245309dad5531342b58a9b2b5dc553cefc24a2 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -2143,7 +2143,16 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+                         itemstack1 = new ItemStack(Items.WRITTEN_BOOK);
+                         itemstack1.a("author", (NBTBase) (new NBTTagString(this.player.getName())));
+                         itemstack1.a("title", (NBTBase) (new NBTTagString(itemstack.getTag().getString("title"))));
+-                        itemstack1.a("pages", (NBTBase) itemstack.getTag().getList("pages", 8));
++                        // PandaSpigot start - Strip JSON from pages
++                        NBTTagList pages = itemstack.getTag().getList("pages", 8);
++                        for (int i = 0; i < pages.size(); i++) {
++                            String page = pages.getString(i);
++                            pages.a(i, new NBTTagString(player.world.pandaSpigotConfig.fixBookHack ?
++                                IChatBaseComponent.ChatSerializer.a(page).getText() :
++                                page));
++                        }
++                        itemstack1.a("pages", pages);
++                        // PandaSpigot end
+                         itemstack1.setItem(Items.WRITTEN_BOOK);
+                         CraftEventFactory.handleEditBookEvent(player, itemstack1);
+                         // CraftBukkit end
