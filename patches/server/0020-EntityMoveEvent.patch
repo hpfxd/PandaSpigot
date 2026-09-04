@@ -43,7 +43,7 @@ index dff0bb4bf07ce7b28f9115f5917e9a55bf36bec0..0113ae0f14e2d49818011e496c4c7a6c
                  this.methodProfiler.a(worldserver.getWorldData().getName());
                  /* Drop global time updates
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 179d2e3625e3e538170eeae88bf7c70630767d06..2320da544fd0faa727ba9ba8569e33fc57c6bd00 100644
+index 08ebad639873aee9572e30519acc30be4bcf2232..ca30e15f40e73819b56de579ade491f702657800 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -49,6 +49,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {

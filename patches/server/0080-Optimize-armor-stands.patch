@@ -9,10 +9,10 @@ This patch also avoids armor stands looking up entities, which provides
 most of the benefits of avoiding move() while keeping gravity.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 1e0393f667029809ac3476069cebe1ef34afadc8..3e85450bbccc54414be7998562fadc92d2541fb4 100644
+index 2c032ee3028423f9d0e0e3e0aaf9f7d159c8eba1..8b3f60dc12393a570d0b4e787d273b9dd37c4cc6 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -53,4 +53,6 @@ public class PandaSpigotWorldConfig {
+@@ -47,4 +47,6 @@ public class PandaSpigotWorldConfig {
      public boolean optimizeTntMovement = false; // May not fully emulate vanilla behavior
  
      public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default

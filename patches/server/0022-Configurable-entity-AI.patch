@@ -5,10 +5,10 @@ Subject: [PATCH] Configurable entity AI
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index fb9db2dafcf180dbb25c768936cb59a58a7a3584..04f04ce721aa06fba935618176c77587e305a5b0 100644
+index 3726a6c378613528d0426a9c0f1cd7a3eff0f054..400548a743e070a990d5a7fbbb8ace18a543aacd 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -29,6 +29,10 @@ public class PandaSpigotWorldConfig {
+@@ -23,6 +23,10 @@ public class PandaSpigotWorldConfig {
      @Comment("When enabled, this option will disable saving world chunks.")
      public boolean disableChunkSaving = false;
      

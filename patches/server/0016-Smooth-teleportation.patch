@@ -8,13 +8,13 @@ will send a relative teleport packet indicating that the player's
 rotation should stay the same as it currently is on the client.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index b5f16e8cab9e43ad7597b2ea5bc921399b37872b..bde014f003bccca916dbc74fc27436bf4b193fdf 100644
+index 3dd3d0702c17541083d0d365ca46e93602105bce..dd77d71b0fd752d5b9bd4e1e41744e0989d1fae7 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -12,6 +12,14 @@ public class PandaSpigotWorldConfig {
-             "higher, unless you're constantly changing the time, or the server is lagging.")
-     public int timeUpdateFrequency = 100;
-     
+@@ -6,6 +6,14 @@ import org.spongepowered.configurate.objectmapping.meta.Comment;
+ @ConfigSerializable
+ @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"})
+ public class PandaSpigotWorldConfig {
 +    @Comment("This option makes it so that when players are teleported to a location\n" +
 +            "with the same rotation they currently have, the server will send a special\n" +
 +            "packet indicating that the client should not update it's rotation at all.\n" +
