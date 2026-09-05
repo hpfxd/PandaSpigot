@@ -5,7 +5,7 @@ Subject: [PATCH] Alternative Chunk Ticking Selection
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 360ed37b95fce68941c234615b465090b8ea7308..aa2af045e8b5be60b5fae412c8dd29bd2e288639 100644
+index cbfe9f17644bc55dbdfb9d51271a02211d20f258..fc00a5f67c5a6b2642c23834da1bef31338e2f07 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -59,4 +59,15 @@ public class PandaSpigotWorldConfig {
@@ -177,10 +177,10 @@ index 9b86cdd3b83ae8b0c040dc9d250b54684d0b7510..522c63e7f884a8b2202b111c81df9b54
          int chunksPerPlayer = Math.min( 200, Math.max( 1, (int) ( ( ( optimalChunks - players.size() ) / (double) players.size() ) + 0.5 ) ) );
          int randRange = 3 + chunksPerPlayer / 30;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 864b63f20167491ecef7e51be7d170d8b141d166..1c9e429b4107daf0991fe0c61bd5377cf4c22c95 100644
+index af774917da6c730cac475287f990af32ff60a5bf..f148c6931fb2b935adea6deb6d909ab596d5030c 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
-@@ -372,7 +372,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -372,7 +372,7 @@ public class WorldServer extends World /*implements IAsyncTaskHandler*/ { // Pan
          }
      }
  
@@ -189,7 +189,7 @@ index 864b63f20167491ecef7e51be7d170d8b141d166..1c9e429b4107daf0991fe0c61bd5377c
          super.h();
          if (this.worldData.getType() == WorldType.DEBUG_ALL_BLOCK_STATES) {
              // Spigot start
-@@ -513,6 +513,168 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -513,6 +513,168 @@ public class WorldServer extends World /*implements IAsyncTaskHandler*/ { // Pan
          // Spigot End
      }
  

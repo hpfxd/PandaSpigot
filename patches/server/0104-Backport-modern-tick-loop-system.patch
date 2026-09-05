@@ -3,22 +3,225 @@ From: uRyanxD <familiarodrigues123ro@gmail.com>
 Date: Mon, 10 Feb 2025 14:55:55 -0300
 Subject: [PATCH] Backport modern tick loop system
 
-Also removes redundant empty list check before putting a task on the
-main thread
 
+diff --git a/src/main/java/net/minecraft/server/IAsyncTaskHandler.java b/src/main/java/net/minecraft/server/IAsyncTaskHandler.java
+index 41cdbe73cde7ce1bac0d5dab3bd8e9e6ef69a7b0..2413e320145b70be9530369af5d64da7a141aa96 100644
+--- a/src/main/java/net/minecraft/server/IAsyncTaskHandler.java
++++ b/src/main/java/net/minecraft/server/IAsyncTaskHandler.java
+@@ -1,10 +1,109 @@
+ package net.minecraft.server;
+ 
+-import com.google.common.util.concurrent.ListenableFuture;
++import com.google.common.collect.Queues;
++import org.apache.logging.log4j.LogManager;
++import org.apache.logging.log4j.Logger;
+ 
+-public interface IAsyncTaskHandler {
++import java.util.Queue;
++import java.util.concurrent.locks.LockSupport;
++import java.util.function.BooleanSupplier;
+ 
+-    ListenableFuture<Object> postToMainThread(Runnable runnable);
++public abstract class IAsyncTaskHandler<R extends Runnable> {
+ 
+-    boolean isMainThread();
++    public static final long BLOCK_TIME_NANOS = 100000L;
++    private static final Logger LOGGER = LogManager.getLogger();
++    private final String name;
++    private final Queue<R> pendingTasks = Queues.newConcurrentLinkedQueue();
++    private int blockingCount;
++
++    protected IAsyncTaskHandler(final String name) {
++        this.name = name;
++    }
++
++    public static boolean isNonRecoverable(final Throwable t) {
++        return t instanceof ReportedException ? isNonRecoverable(t.getCause()) : t instanceof OutOfMemoryError || t instanceof StackOverflowError;
++    }
++
++    protected abstract R wrapRunnable(final Runnable runnable);
++
++    protected abstract boolean shouldRun(final R task);
++
++    public boolean isMainThread() {
++        return Thread.currentThread() == this.aM();
++    } // Poor name, just to maintain compatibility
++
++    protected abstract Thread aM(); // Poor name, just to maintain compatibility
++
++    protected boolean scheduleExecutables() {
++        return !this.isMainThread();
++    }
++
++    public String name() {
++        return this.name;
++    }
++
++    public void schedule(final R task) {
++        this.pendingTasks.add(task);
++        LockSupport.unpark(aM());
++    }
++
++    public void execute(final Runnable command) {
++        R task = this.wrapRunnable(command);
++        if (this.scheduleExecutables()) {
++            this.schedule(task);
++        } else {
++            this.doRunTask(task);
++        }
++    }
++
++    public void postToMainThread(final Runnable runnable) {
++        execute(runnable);
++    }
++
++    protected void runAllTasks() {
++        while (this.pollTask()) {
++        }
++    }
++
++    protected boolean pollTask() {
++        R task = this.pendingTasks.peek();
++        if (task == null) {
++            return false;
++        } else if (this.blockingCount == 0 && !shouldRun(task)) {
++            return false;
++        } else {
++            this.doRunTask(this.pendingTasks.remove());
++            return true;
++        }
++    }
++
++    public void managedBlock(final BooleanSupplier condition) {
++        this.blockingCount++;
++
++        try {
++            while (!condition.getAsBoolean()) {
++                if (!this.pollTask()) {
++                    this.waitForTasks();
++                }
++            }
++        } finally {
++            this.blockingCount--;
++        }
++    }
++
++    protected void waitForTasks() {
++        Thread.yield();
++        LockSupport.parkNanos("waiting for tasks", BLOCK_TIME_NANOS);
++    }
++
++    protected void doRunTask(final R task) {
++        try {
++            task.run();
++        } catch (Exception e) {
++            LOGGER.fatal("Error executing task on {}", this.name, e);
++            if (isNonRecoverable(e)) {
++                throw e;
++            }
++        }
++    }
+ }
+diff --git a/src/main/java/net/minecraft/server/IAsyncTaskHandlerReentrant.java b/src/main/java/net/minecraft/server/IAsyncTaskHandlerReentrant.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..fd7fc8571ca861c0d732c8f3ea4c8948e9a9949c
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/IAsyncTaskHandlerReentrant.java
+@@ -0,0 +1,30 @@
++package net.minecraft.server;
++
++public abstract class IAsyncTaskHandlerReentrant<R extends Runnable> extends IAsyncTaskHandler<R> {
++
++    private int reentrantCount;
++
++    public IAsyncTaskHandlerReentrant(final String name) {
++        super(name);
++    }
++
++    @Override
++    protected boolean scheduleExecutables() {
++        return this.runningTask() || super.scheduleExecutables();
++    }
++
++    protected boolean runningTask() {
++        return this.reentrantCount > 0;
++    }
++
++    @Override
++    protected void doRunTask(final R task) {
++        this.reentrantCount++;
++
++        try {
++            super.doRunTask(task);
++        } finally {
++            this.reentrantCount--;
++        }
++    }
++}
 diff --git a/src/main/java/net/minecraft/server/MinecraftServer.java b/src/main/java/net/minecraft/server/MinecraftServer.java
-index ef17d45eb60ea375aad19ccc31773fa3c2346841..ae0259e025d1121adb5d09cda05e84fe711d8a35 100644
+index b50930ad4e28c45ad76a3f475ea1eebe15c96ec0..a132a29f82bc20da22ee04622fe1df513cabea70 100644
 --- a/src/main/java/net/minecraft/server/MinecraftServer.java
 +++ b/src/main/java/net/minecraft/server/MinecraftServer.java
-@@ -512,6 +512,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -40,6 +40,8 @@ import org.apache.logging.log4j.Logger;
+ 
+ // CraftBukkit start
+ import java.io.IOException;
++import java.util.concurrent.TimeUnit;
++import java.util.concurrent.locks.LockSupport;
+ 
+ //import jline.console.ConsoleReader; // PandaSpigot - comment out
+ import joptsimple.OptionSet;
+@@ -48,7 +50,7 @@ import org.bukkit.craftbukkit.Main;
+ import co.aikar.timings.SpigotTimings; // Spigot
+ // CraftBukkit end
+ 
+-public abstract class MinecraftServer implements Runnable, ICommandListener, IAsyncTaskHandler, IMojangStatistics {
++public abstract class MinecraftServer extends IAsyncTaskHandlerReentrant<TickTask> implements Runnable, ICommandListener, IMojangStatistics { // PandaSpigot - Modern Tick Loop
+ 
+     public static final Logger LOGGER = LogManager.getLogger();
+     public static final File a = new File("usercache.json");
+@@ -100,9 +102,9 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     private long X = 0L;
+     private final GameProfileRepository Y;
+     private final UserCache Z;
+-    protected final Queue<FutureTask<?>> j = new java.util.concurrent.ConcurrentLinkedQueue<FutureTask<?>>(); // Spigot, PAIL: Rename
++    // protected final Queue<FutureTask<?>> j = new java.util.concurrent.ConcurrentLinkedQueue<FutureTask<?>>(); // Spigot, PAIL: Rename // PandaSpigot - IAsyncTaskHandler handles this now
+     private Thread serverThread;
+-    private long ab = az();
++    private long ab = getNanoTime(); // PandaSpigot - Modern Tick Loop
+ 
+     // CraftBukkit start
+     public List<WorldServer> worlds = new ArrayList<WorldServer>();
+@@ -116,8 +118,20 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
+     public int autosavePeriod;
+     // CraftBukkit end
++    // PandaSpigot start - Modern Tick Loop
++    private static final long OVERLOADED_THRESHOLD_NANOS = 20L * TimeUnit.SECONDS.toNanos(1L) / 20L;
++    private static final int OVERLOADED_TICKS_THRESHOLD = 20;
++    private static final long OVERLOADED_WARNING_INTERVAL_NANOS = 10L * TimeUnit.SECONDS.toNanos(1L);
++    private static final int OVERLOADED_TICKS_WARNING_INTERVAL = 100;
++    private static final long NANOSECONDS_PER_TICK = TimeUnit.SECONDS.toNanos(1L) / 20L;
++    private static final long NANOSECONDS_MILLI_PER_MILLISECOND = TimeUnit.MILLISECONDS.toNanos(1L);
++    private boolean mayHaveDelayedTasks;
++    private long delayedTasksMaxNextTickTime;
++    private boolean waitingForNextTick = false;
++    // PandaSpigot end
+ 
+     public MinecraftServer(OptionSet options, Proxy proxy, File file1) {
++        super("Server"); // PandaSpigot - Modern Tick Loop
+         io.netty.util.ResourceLeakDetector.setEnabled( false ); // Spigot - disable
+         this.e = proxy;
+         MinecraftServer.l = this;
+@@ -512,6 +526,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      }
  
      // PaperSpigot start - Further improve tick loop
-+    private long lastTick = 0; // PandaSpigot - New Tick Loop System
++    private long lastTick = 0; // PandaSpigot - Modern Tick Loop
      private static final int TPS = 20;
      private static final long SEC_IN_NANO = 1000000000;
      private static final long TICK_TIME = SEC_IN_NANO / TPS;
-@@ -525,46 +526,60 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -525,46 +540,54 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      public static class RollingAverage {
          private final int size;
          private long time;
@@ -73,50 +276,44 @@ index ef17d45eb60ea375aad19ccc31773fa3c2346841..ae0259e025d1121adb5d09cda05e84fe
      }
 +    private static final java.math.BigDecimal TPS_BASE = new java.math.BigDecimal("1E9").multiply(new java.math.BigDecimal(SAMPLE_INTERVAL)); // PandaSpigot - Use BigDecimal to improve accuracy of TPS results
      // PaperSpigot End
-+
-+    // PandaSpigot start - New Tick Loop System
-+    private boolean isAheadOfTime() {
-+        return az() < this.ab;
-+    }
-+    // PandaSpigot end
   
      public void run() {
          try {
              if (this.init()) {
-                 this.ab = az();
+-                this.ab = az();
 -                long i = 0L;
++                this.ab = getNanoTime(); // PandaSpigot - Modern Tick Loop
 +                // long i = 0L; // PandaSpigot - No longer used
  
                  this.r.setMOTD(new ChatComponentText(this.motd));
                  this.r.setServerInfo(new ServerPing.ServerData("1.8.8", 47));
-@@ -573,10 +588,24 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -573,10 +596,23 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                  // Spigot start
                  // PaperSpigot start - Further improve tick loop
                  Arrays.fill( recentTps, 20 );
 -                //long lastTick = System.nanoTime(), catchupTime = 0, curTime, wait, tickSection = lastTick;
 -                long start = System.nanoTime(), lastTick = start - TICK_TIME, catchupTime = 0, curTime, wait, tickSection = start;
-+                // PandaSpigot start - New Tick Loop System
++                // PandaSpigot start - Modern Tick Loop
 +                long start = System.nanoTime(), curTime, tickSection = start;
 +                lastTick = start - TICK_TIME;
 +                // PandaSpigot end
                  // PaperSpigot end
                  while (this.isRunning) {
-+                    // PandaSpigot start - New Tick Loop System
-+                    curTime = System.nanoTime();
-+                    long i = az() - this.ab;
-+                    if (i > 5000L && this.ab - this.R >= 30000L) { // CraftBukkit
-+                        long j = i / 50L;
++                    // PandaSpigot start - Modern Tick Loop
++                    long behindTime = (curTime = System.nanoTime()) - this.ab;
++                    if (behindTime > OVERLOADED_THRESHOLD_NANOS + OVERLOADED_TICKS_THRESHOLD * NANOSECONDS_PER_TICK && this.ab - this.R >= OVERLOADED_WARNING_INTERVAL_NANOS + OVERLOADED_TICKS_WARNING_INTERVAL * NANOSECONDS_PER_TICK) {
++                        long behindTicks = behindTime / NANOSECONDS_PER_TICK;
 +                        if (server.getWarnOnOverload()) { // CraftBukkit
-+                            LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", i, j);
++                            LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", behindTime / NANOSECONDS_MILLI_PER_MILLISECOND, behindTicks);
 +                        }
-+                        this.ab += j * 50L;
++                        this.ab += behindTicks * NANOSECONDS_PER_TICK;
 +                        this.R = this.ab;
 +                    }
 +                    /*
                      curTime = System.nanoTime();
                      // PaperSpigot start - Further improve tick loop
                      wait = TICK_TIME - (curTime - lastTick);
-@@ -598,11 +627,13 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -598,11 +634,13 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
                      }
  
                      catchupTime = Math.min(MAX_CATCHUP_BUFFER, catchupTime - wait);
@@ -131,22 +328,75 @@ index ef17d45eb60ea375aad19ccc31773fa3c2346841..ae0259e025d1121adb5d09cda05e84fe
                          tps1.add(currentTps, diff);
                          tps5.add(currentTps, diff);
                          tps15.add(currentTps, diff);
-@@ -616,6 +647,14 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -615,7 +653,15 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+                     }
                      lastTick = curTime;
  
-                     this.A();
-+                    // PandaSpigot start - New Tick Loop System
-+                    this.ab += 50L;
++                    // PandaSpigot start - Modern Tick Loop
++                    this.ab += NANOSECONDS_PER_TICK;
 +
-+                    while(this.isAheadOfTime()) {
-+                        java.util.concurrent.locks.LockSupport.parkNanos(1_000_000);
-+                    }
+                     this.A();
++                    this.mayHaveDelayedTasks = true;
++                    this.delayedTasksMaxNextTickTime = Math.max(getNanoTime() + NANOSECONDS_PER_TICK, this.ab);
++                    this.waitUntilNextTick();
 +                    // PandaSpigot end
 +
                      this.Q = true;
                  }
                  // Spigot end
-@@ -708,6 +747,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -671,6 +717,51 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+ 
+     }
+ 
++    // PandaSpigot start - Modern Tick Loop
++    public long getNanoTime() {
++        return System.nanoTime();
++    }
++
++    private boolean haveTime() {
++        return this.runningTask() || getNanoTime() < (this.mayHaveDelayedTasks ? this.delayedTasksMaxNextTickTime : this.ab);
++    }
++
++    protected void waitUntilNextTick() {
++        // this.runAllTasks(); // PandaSpigot - Moved this into the tick method for timings
++        this.waitingForNextTick = true;
++
++        try {
++            this.managedBlock(() -> !this.haveTime());
++        } finally {
++            this.waitingForNextTick = false;
++        }
++    }
++
++    @Override
++    protected void waitForTasks() {
++        long waitTime = this.waitingForNextTick ? this.ab - getNanoTime() : IAsyncTaskHandler.BLOCK_TIME_NANOS;
++        LockSupport.parkNanos("waiting for tasks", waitTime);
++    }
++
++    public TickTask wrapRunnable(final Runnable runnable) {
++        return new TickTask(this.ticks, runnable);
++    }
++
++    protected boolean shouldRun(final TickTask task) {
++        return task.getTick() + 3 < this.ticks || haveTime();
++    }
++
++    @Override
++    protected boolean pollTask() {
++        return this.mayHaveDelayedTasks = super.pollTask();
++    }
++
++    @Override
++    public boolean scheduleExecutables() {
++        return super.scheduleExecutables() /*&& !this.isStopped*/; // CraftBukkit - Fix MC-142590
++    }
++    // PandaSpigot end
++
+     private void a(ServerPing serverping) {
+         File file = this.d("server-icon.png");
+ 
+@@ -708,6 +799,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
      protected void A() throws ExceptionWorldConflict { // CraftBukkit - added throws
          co.aikar.timings.TimingsManager.FULL_SERVER_TICK.startTiming(); // Spigot
          long i = System.nanoTime();
@@ -154,7 +404,7 @@ index ef17d45eb60ea375aad19ccc31773fa3c2346841..ae0259e025d1121adb5d09cda05e84fe
  
          ++this.ticks;
          if (this.T) {
-@@ -766,6 +806,11 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+@@ -766,12 +858,19 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
          this.methodProfiler.b();
          this.methodProfiler.b();
          org.spigotmc.WatchdogThread.tick(); // Spigot
@@ -166,16 +416,124 @@ index ef17d45eb60ea375aad19ccc31773fa3c2346841..ae0259e025d1121adb5d09cda05e84fe
          co.aikar.timings.TimingsManager.FULL_SERVER_TICK.stopTiming(); // Spigot
      }
  
-@@ -776,8 +821,10 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     public void B() {
+         SpigotTimings.minecraftSchedulerTimer.startTiming(); // Spigot
+         this.methodProfiler.a("jobs");
++        // PandaSpigot start - IAsyncTaskHandler handles this now
++        /*
+         Queue queue = this.j;
  
          // Spigot start
-         FutureTask<?> entry;
--        int count = this.j.size();
--        while (count-- > 0 && (entry = this.j.poll()) != null) {
-+        // PandaSpigot start - Remove redundant empty list check
-+        // int count = this.j.size();
-+        while (/*count-- > 0 &&*/ (entry = this.j.poll()) != null) {
-+        // PandaSpigot end
+@@ -781,6 +880,9 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
              SystemUtils.a(entry, MinecraftServer.LOGGER);
           }
          // Spigot end
++        */
++        this.runAllTasks(); // Moved from waitUntilNextTick() for timings
++        // PandaSpigot end
+         SpigotTimings.minecraftSchedulerTimer.stopTiming(); // Spigot
+ 
+         this.methodProfiler.c("levels");
+@@ -1583,6 +1685,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+         return 29999984;
+     }
+ 
++    /* // PandaSpigot start - IAsyncTaskHandler handles this now
+     public <V> ListenableFuture<V> a(Callable<V> callable) {
+         Validate.notNull(callable);
+         if (!this.isMainThread()) { // CraftBukkit && !this.isStopped()) {
+@@ -1610,6 +1713,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
+     public boolean isMainThread() {
+         return Thread.currentThread() == this.serverThread;
+     }
++    */ // PandaSpigot end
+ 
+     public int aK() {
+         return 256;
+diff --git a/src/main/java/net/minecraft/server/PlayerConnectionUtils.java b/src/main/java/net/minecraft/server/PlayerConnectionUtils.java
+index 2956c34ea5e158a26a9d15b1e9d88aa61c94e805..8f22f59c54f287eaca5f45b4758c1904638228d2 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnectionUtils.java
++++ b/src/main/java/net/minecraft/server/PlayerConnectionUtils.java
+@@ -2,7 +2,13 @@ package net.minecraft.server;
+ 
+ public class PlayerConnectionUtils {
+ 
+-    public static <T extends PacketListener> void ensureMainThread(final Packet<T> packet, final T t0, IAsyncTaskHandler iasynctaskhandler) throws CancelledPacketHandleException {
++    // PandaSpigot start - Redirect to MinecraftServer so that IAsyncTaskHandler can handle it
++    public static <T extends PacketListener> void ensureMainThread(final Packet<T> packet, final T t0, WorldServer worldServer) throws CancelledPacketHandleException {
++        ensureMainThread(packet, t0, worldServer.getMinecraftServer());
++    }
++
++    public static <T extends PacketListener> void ensureMainThread(final Packet<T> packet, final T t0, IAsyncTaskHandler<?> iasynctaskhandler) throws CancelledPacketHandleException {
++    // PandaSpigot end
+         if (!iasynctaskhandler.isMainThread()) {
+             iasynctaskhandler.postToMainThread(new Runnable() {
+                 public void run() {
+diff --git a/src/main/java/net/minecraft/server/SystemUtils.java b/src/main/java/net/minecraft/server/SystemUtils.java
+index 7b784acdf090dac4b0c777ecec396c511392e127..482b8456acda74315c1c3e967aabcbe8957869e0 100644
+--- a/src/main/java/net/minecraft/server/SystemUtils.java
++++ b/src/main/java/net/minecraft/server/SystemUtils.java
+@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
+ 
+ public class SystemUtils {
+ 
++    @Deprecated // PandaSpigot - IAsyncTaskHandler handles this now
+     public static <V> V a(FutureTask<V> futuretask, Logger logger) {
+         try {
+             futuretask.run();
+diff --git a/src/main/java/net/minecraft/server/TickTask.java b/src/main/java/net/minecraft/server/TickTask.java
+new file mode 100644
+index 0000000000000000000000000000000000000000..976cf4ee035d9a40dee8a3ccf284977eb5982133
+--- /dev/null
++++ b/src/main/java/net/minecraft/server/TickTask.java
+@@ -0,0 +1,21 @@
++package net.minecraft.server;
++
++public class TickTask implements Runnable {
++
++    private final int tick;
++    private final Runnable runnable;
++
++    public TickTask(final int tick, final Runnable runnable) {
++        this.tick = tick;
++        this.runnable = runnable;
++    }
++
++    public int getTick() {
++        return this.tick;
++    }
++
++    @Override
++    public void run() {
++        this.runnable.run();
++    }
++}
+diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
+index b108aa3572471da742e77ae36eccadeedf6207a6..91293110e51b7bd3eaac7bbbf777f8355b7a9978 100644
+--- a/src/main/java/net/minecraft/server/WorldServer.java
++++ b/src/main/java/net/minecraft/server/WorldServer.java
+@@ -29,7 +29,7 @@ import org.bukkit.event.block.BlockFormEvent;
+ import org.bukkit.event.weather.LightningStrikeEvent;
+ // CraftBukkit end
+ 
+-public class WorldServer extends World implements IAsyncTaskHandler {
++public class WorldServer extends World /*implements IAsyncTaskHandler*/ { // PandaSpigot - Redirect to MinecraftServer so that IAsyncTaskHandler can handle it
+ 
+     private static final Logger a = LogManager.getLogger();
+     private final MinecraftServer server;
+@@ -1248,6 +1248,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+         return (Entity) this.entitiesByUUID.get(uuid);
+     }
+ 
++    /* // PandaSpigot start - Redirect to MinecraftServer so that IAsyncTaskHandler can handle it
+     public ListenableFuture<Object> postToMainThread(Runnable runnable) {
+         return this.server.postToMainThread(runnable);
+     }
+@@ -1255,6 +1256,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+     public boolean isMainThread() {
+         return this.server.isMainThread();
+     }
++    */ // PandaSpigot end
+ 
+     static class BlockActionDataList extends ArrayList<BlockActionData> {
+ 
