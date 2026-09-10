@@ -5,7 +5,7 @@ Subject: [PATCH] Fix vanilla spawn protection
 
 
 diff --git a/src/main/java/net/minecraft/server/DedicatedServer.java b/src/main/java/net/minecraft/server/DedicatedServer.java
-index 8a302b2..4820219 100755
+index 8a302b2678916f862cac0c020fa3247043204e6a..67d7f178a43256a3fc37f235cc8b4db990e17c35 100644
 --- a/src/main/java/net/minecraft/server/DedicatedServer.java
 +++ b/src/main/java/net/minecraft/server/DedicatedServer.java
 @@ -516,8 +516,12 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer

@@ -8,7 +8,7 @@ diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.j
 index cbfe9f17644bc55dbdfb9d51271a02211d20f258..fc00a5f67c5a6b2642c23834da1bef31338e2f07 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -59,4 +59,15 @@ public class PandaSpigotWorldConfig {
+@@ -53,4 +53,15 @@ public class PandaSpigotWorldConfig {
      @Comment("This option controls whether or not there is a chance for arrow crits to deal extra damage.\n" +
              "By default, this is true (vanilla behaviour)")
      public boolean randomArrowDamage = true;

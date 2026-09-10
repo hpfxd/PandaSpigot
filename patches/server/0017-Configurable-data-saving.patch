@@ -8,10 +8,10 @@ This patch adds configuration options for:
 - Region writing (world data)
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index bde014f003bccca916dbc74fc27436bf4b193fdf..fb9db2dafcf180dbb25c768936cb59a58a7a3584 100644
+index dd77d71b0fd752d5b9bd4e1e41744e0989d1fae7..3726a6c378613528d0426a9c0f1cd7a3eff0f054 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -20,6 +20,15 @@ public class PandaSpigotWorldConfig {
+@@ -14,6 +14,15 @@ public class PandaSpigotWorldConfig {
              "With this option enabled, they will be able to move their head just like normal.")
      public boolean smoothTeleportation = false;
      
@@ -48,7 +48,7 @@ index b4056a28a00ba706a4cec5c22ed815ca9c980196..ba13f3f20bb86f667178f51f4d3d1df6
  
          try {
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 87529552aa27fc89a542130a27a6b2bfdda44ccd..f54a279407ad09fabcac038b11e8d668e68c35f6 100644
+index e1478127b9d1bc308a570ef3e137762f14a1225b..08ebad639873aee9572e30519acc30be4bcf2232 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -958,7 +958,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {

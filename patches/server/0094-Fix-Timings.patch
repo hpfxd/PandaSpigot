@@ -5,7 +5,7 @@ Subject: [PATCH] Fix Timings
 
 
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 47af49c25e1ce57a93aa4797f833ef8381fab523..99eb33eef6e11f76385afd536a921e5cffa21cb8 100644
+index e5f9be032f60322f7aff56ded1019cb36f5a7546..ccf81c565167319ced1ff67d407adcac61c56a22 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -271,7 +271,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {
