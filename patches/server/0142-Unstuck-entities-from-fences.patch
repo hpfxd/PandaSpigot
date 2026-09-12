@@ -1,0 +1,120 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Tue, 21 Jul 2026 01:52:56 +0000
+Subject: [PATCH] Unstuck entities from fences
+
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index f9845c782a64f5a9b27e65b05f05b468e5bfe207..7c613ac9b06ec90aa6ccff8512926f5e336d8159 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -80,4 +80,8 @@ public class PandaSpigotWorldConfig {
+     @Comment("Whether to fix MC-140545 pathfinding bias bug.\n" +
+             "Default: true (non-vanilla behaviour)")
+     public boolean fixPathFindingBias = true;
++
++    @Comment("Unstuck entities from fences by pushing them out.\n" +
++            "Default: true (non-vanilla behaviour)")
++    public boolean fenceUnstuck = true;
+ }
+diff --git a/src/main/java/net/minecraft/server/EntityInsentient.java b/src/main/java/net/minecraft/server/EntityInsentient.java
+index 0b6427cc5d0bbb81217f3da261c2e0f4a4fdca3a..20ba30c7c0fb7503f4d5f1155b487770abecf80d 100644
+--- a/src/main/java/net/minecraft/server/EntityInsentient.java
++++ b/src/main/java/net/minecraft/server/EntityInsentient.java
+@@ -337,6 +337,7 @@ public abstract class EntityInsentient extends EntityLiving {
+ 
+     public void m() {
+         super.m();
++        if (this.world.pandaSpigotConfig.fenceUnstuck) this.pushOutOfFences(this.ticksLived != 1); // PandaSpigot - Unstuck entities from fences
+         this.world.methodProfiler.a("looting");
+         if (!this.world.isClientSide && this.bY() && !this.aP && this.world.getGameRules().getBoolean("mobGriefing")) {
+             List list = this.world.a(EntityItem.class, this.getBoundingBox().grow(1.0D, 0.0D, 1.0D));
+@@ -949,6 +950,88 @@ public abstract class EntityInsentient extends EntityLiving {
+         return this.datawatcher.getByte(15) != 0;
+     }
+ 
++    // PandaSpigot start - Unstuck entities from fences
++    protected void pushOutOfFences(boolean cornersOnly) {
++        int x = MathHelper.floor(this.locX);
++        int y = MathHelper.floor(this.locY);
++        int z = MathHelper.floor(this.locZ);
++        BlockPosition pos = new BlockPosition(x, y, z);
++
++        boolean inside = this.world.getType(pos).getBlock() instanceof BlockFence || this.world.getType(pos).getBlock() instanceof BlockCobbleWall || (this.world.getType(pos).getBlock() instanceof BlockThin && this.world.getType(pos.up()).getBlock().getMaterial().isSolid());
++        if (inside) {
++            double dx = this.locX - x;
++            double dz = this.locZ - z;
++
++            double dW = dx;
++            double dE = 1.0D - dx;
++            double dN = dz;
++            double dS = 1.0D - dz;
++
++            double min = dW;
++            int dir = 0;
++            if (dE < min) { min = dE; dir = 1; }
++            if (dN < min) { min = dN; dir = 2; }
++            if (dS < min) { min = dS; dir = 3; }
++
++            double newX = this.locX;
++            double newZ = this.locZ;
++            switch (dir) {
++                case 0: { newX = x; break; }
++                case 1: { newX = x + 1.0; break; }
++                case 2: { newZ = z; break; }
++                case 3: { newZ = z + 1.0; break; }
++            }
++
++            this.setPosition(newX, this.locY, newZ);
++            return;
++        }
++
++        boolean W = this.world.getType(pos.west()).getBlock() instanceof BlockFence ||
++                this.world.getType(pos.west()).getBlock() instanceof BlockCobbleWall ||
++                (this.world.getType(pos.west()).getBlock() instanceof BlockThin && this.world.getType(pos.west().up()).getBlock().getMaterial().isSolid());
++        boolean E = this.world.getType(pos.east()).getBlock() instanceof BlockFence ||
++                this.world.getType(pos.east()).getBlock() instanceof BlockCobbleWall ||
++                (this.world.getType(pos.east()).getBlock() instanceof BlockThin && this.world.getType(pos.east().up()).getBlock().getMaterial().isSolid());
++        boolean N = this.world.getType(pos.north()).getBlock() instanceof BlockFence ||
++                this.world.getType(pos.north()).getBlock() instanceof BlockCobbleWall ||
++                (this.world.getType(pos.north()).getBlock() instanceof BlockThin && this.world.getType(pos.north().up()).getBlock().getMaterial().isSolid());
++        boolean S = this.world.getType(pos.south()).getBlock() instanceof BlockFence ||
++                this.world.getType(pos.south()).getBlock() instanceof BlockCobbleWall ||
++                (this.world.getType(pos.south()).getBlock() instanceof BlockThin && this.world.getType(pos.south().up()).getBlock().getMaterial().isSolid());
++
++        if (cornersOnly && !((W || E) && (N || S))) {
++            return;
++        }
++
++        double centerX = x + 0.5D;
++        double centerZ = z + 0.5D;
++
++        double dx = this.locX - centerX;
++        double dz = this.locZ - centerZ;
++
++        double newX = this.locX;
++        double newZ = this.locZ;
++
++        if (W && dx < 0) {
++            newX = Math.max(this.locX, centerX);
++        }
++        else if (E && dx > 0) {
++            newX = Math.min(this.locX, centerX);
++        }
++
++        if (N && dz < 0) {
++            newZ = Math.max(this.locZ, centerZ);
++        }
++        else if (S && dz > 0) {
++            newZ = Math.min(this.locZ, centerZ);
++        }
++
++        if (newX != this.locX || newZ != this.locZ) {
++            this.setPosition(newX, this.locY, newZ);
++        }
++    }
++    // PandaSpigot end
++
+     public static enum EnumEntityPositionType {
+ 
+         ON_GROUND, IN_AIR, IN_WATER;
