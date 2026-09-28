@@ -5,7 +5,7 @@ Subject: [PATCH] Alternative Chunk Ticking Selection
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 09d19eb526e0812f3165b42a28720d73c72f1bbc..8db2b968e8cd1ff8a6dc7a519c0361de63080041 100644
+index 09d19eb526e0812f3165b42a28720d73c72f1bbc..d4f0ad02249f36d6ce45db8d204d44359b0def50 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -54,4 +54,14 @@ public class PandaSpigotWorldConfig {
@@ -13,14 +13,14 @@ index 09d19eb526e0812f3165b42a28720d73c72f1bbc..8db2b968e8cd1ff8a6dc7a519c0361de
      public boolean randomArrowDamage = true;
  
 +    @Comment("When enabled, uses Spigot's alternative chunk ticking selection algorithm.\n" +
-+        "This algorithm limits the number of chunks processed each tick and randomly\n" +
-+        "selects chunks around players for ticking, improving performance at the cost\n" +
-+        "of deviating from vanilla chunk ticking behaviour (for example, plant growth\n" +
-+        "rates may differ).\n" +
-+        "When disabled, uses PandaSpigot's chunk ticking implementation based on\n" +
-+        "the vanilla 1.9 algorithm, which more closely matches vanilla 1.8/1.9\n" +
-+        "behaviour while still providing performance optimizations.\n" +
-+        "Default: false")
++            "This algorithm limits the number of chunks processed each tick and randomly\n" +
++            "selects chunks around players for ticking, improving performance at the cost\n" +
++            "of deviating from vanilla chunk ticking behaviour (for example, plant growth\n" +
++            "rates may differ).\n" +
++            "When disabled, uses PandaSpigot's chunk ticking implementation based on\n" +
++            "the vanilla 1.9 algorithm, which more closely matches vanilla 1.8/1.9\n" +
++            "behaviour while still providing performance optimizations.\n" +
++            "Default: false")
 +    public boolean useSpigotChunkTickingSelection = false;
  }
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
