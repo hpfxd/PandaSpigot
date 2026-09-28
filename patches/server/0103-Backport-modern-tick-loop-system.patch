@@ -509,7 +509,7 @@ index 0000000000000000000000000000000000000000..976cf4ee035d9a40dee8a3ccf284977e
 +    }
 +}
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index b108aa3572471da742e77ae36eccadeedf6207a6..91293110e51b7bd3eaac7bbbf777f8355b7a9978 100644
+index e29cc6f3872f1e47e8da0716cece04cf5e90f8ad..e009baa9553ab52a6db674273c0b96b0ed0ca7ab 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -29,7 +29,7 @@ import org.bukkit.event.block.BlockFormEvent;
@@ -521,7 +521,7 @@ index b108aa3572471da742e77ae36eccadeedf6207a6..91293110e51b7bd3eaac7bbbf777f835
  
      private static final Logger a = LogManager.getLogger();
      private final MinecraftServer server;
-@@ -1248,6 +1248,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -1246,6 +1246,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
          return (Entity) this.entitiesByUUID.get(uuid);
      }
  
@@ -529,7 +529,7 @@ index b108aa3572471da742e77ae36eccadeedf6207a6..91293110e51b7bd3eaac7bbbf777f835
      public ListenableFuture<Object> postToMainThread(Runnable runnable) {
          return this.server.postToMainThread(runnable);
      }
-@@ -1255,6 +1256,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
+@@ -1253,6 +1254,7 @@ public class WorldServer extends World implements IAsyncTaskHandler {
      public boolean isMainThread() {
          return this.server.isMainThread();
      }

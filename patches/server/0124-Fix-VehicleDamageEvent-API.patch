@@ -5,7 +5,7 @@ Subject: [PATCH] Fix VehicleDamageEvent API
 
 
 diff --git a/src/main/java/net/minecraft/server/EntityBoat.java b/src/main/java/net/minecraft/server/EntityBoat.java
-index 0e6f8c03501dd6ce5bda003ae54729763201ebd3..2f7510a016085fa0077ec9ab0ddcd7f9ecaf088b 100644
+index 0e6f8c03501dd6ce5bda003ae54729763201ebd3..764a0046fd4727b1d9cfc0b6097d76227f3ca166 100644
 --- a/src/main/java/net/minecraft/server/EntityBoat.java
 +++ b/src/main/java/net/minecraft/server/EntityBoat.java
 @@ -108,7 +108,7 @@ public class EntityBoat extends Entity {

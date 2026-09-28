@@ -8,17 +8,17 @@ This is configurable using the "tnt.optimize-movement" and
 "tnt.optimize-liquid-explosions" options respectively.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 05c9ebb76a3cb19e887bea1311ac36035334b9a1..1e0393f667029809ac3476069cebe1ef34afadc8 100644
+index b9fef541c7d2866b653abf177a67c73150cf6682..22777fb4f48ea53f7221721f8953c9418953078a 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -49,4 +49,8 @@ public class PandaSpigotWorldConfig {
-         public double extraHorizontal = 0.5;
-         public double extraVertical = 0.1;
-     }
-+
+@@ -44,4 +44,8 @@ public class PandaSpigotWorldConfig {
+             "By default, this is true (vanilla behaviour)")
+     public boolean randomArrowTrajectory = true;
+ 
 +    public boolean optimizeTntMovement = false; // May not fully emulate vanilla behavior
 +
 +    public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
++
  }
 diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
 index 854cf888d64e50bfd85420bb5dcc93860a64f132..b0aee5e189d70e2f68c3c95a6406467981c25e2b 100644
