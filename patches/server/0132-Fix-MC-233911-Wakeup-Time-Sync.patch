@@ -6,7 +6,7 @@ Subject: [PATCH] Fix MC-233911 Wakeup Time Sync
 Sends a time sync packet immediately after waking up from sleep.
 
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index aa2f0f81723cc046e29b397fc31a00b636e3a0b8..3c91fe3411cef4f28a716f48fb78a405b28f697a 100644
+index be21eaacf73405790fb963c0ebe1c69cdabcc73f..fa64dcafc3ccb2d4c2dcfc00a5aea2c3e6cd8719 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -212,11 +212,13 @@ public class WorldServer extends World /*implements IAsyncTaskHandler*/ { // Pan
