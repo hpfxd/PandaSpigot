@@ -8,13 +8,14 @@ This patch adds configuration options for:
 - Region writing (world data)
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index bc102f9729b66b322c1454dfd0e896e01b0f8f52..ee28b1b30e18aa2d5d85f3e70924a6fa1e9646fa 100644
+index 224dfa106c15a0eb6db3f3f9208267ec83b425c0..775c3d71c863361d5ba58395c5289bb170ec2fa3 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -27,4 +27,13 @@ public class PandaSpigotWorldConfig {
+@@ -26,4 +26,13 @@ public class PandaSpigotWorldConfig {
+             "will make moving their head very difficult, especially for players with higher latency.\n" +
              "With this option enabled, they will be able to move their head just like normal.")
      public boolean smoothTeleportation = false;
- 
++
 +    @Comment("When enabled, this option disables reading and writing player data such as:\n" +
 +            "- Position\n" +
 +            "- Inventory\n" +
@@ -23,7 +24,6 @@ index bc102f9729b66b322c1454dfd0e896e01b0f8f52..ee28b1b30e18aa2d5d85f3e70924a6fa
 +
 +    @Comment("When enabled, this option will disable saving world chunks.")
 +    public boolean disableChunkSaving = false;
-+
  }
 diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
 index b4056a28a00ba706a4cec5c22ed815ca9c980196..ba13f3f20bb86f667178f51f4d3d1df63f5acf2d 100644

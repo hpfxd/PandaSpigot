@@ -9,15 +9,15 @@ This patch also avoids armor stands looking up entities, which provides
 most of the benefits of avoiding move() while keeping gravity.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 22777fb4f48ea53f7221721f8953c9418953078a..e4d7199a38177a7952266a67f2420c50ff5b6bee 100644
+index 544419b96d52319efa2a1373f33f62ca28ec9438..e12684808ab045a7fece1a885734721857147e35 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -48,4 +48,6 @@ public class PandaSpigotWorldConfig {
+@@ -47,4 +47,6 @@ public class PandaSpigotWorldConfig {
+     public boolean optimizeTntMovement = false; // May not fully emulate vanilla behavior
  
      public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
- 
-+    public boolean optimizeArmorStandMovement = false; // Doesn't fully emulate vanilla behavior, see TacoSpigot issue #1
 +
++    public boolean optimizeArmorStandMovement = false; // Doesn't fully emulate vanilla behavior, see TacoSpigot issue #1
  }
 diff --git a/src/main/java/net/minecraft/server/EntityArmorStand.java b/src/main/java/net/minecraft/server/EntityArmorStand.java
 index 2ea4a5fd32629a7931189786f86dce99d1db6d63..f8415dd404e14d85290724e66abc8a1ab1db95cb 100644

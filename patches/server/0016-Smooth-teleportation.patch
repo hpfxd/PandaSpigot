@@ -8,10 +8,10 @@ will send a relative teleport packet indicating that the player's
 rotation should stay the same as it currently is on the client.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 3dd3d0702c17541083d0d365ca46e93602105bce..bc102f9729b66b322c1454dfd0e896e01b0f8f52 100644
+index 40d31728068cc3b1e1d87c3ceb9f00cfdc719d94..224dfa106c15a0eb6db3f3f9208267ec83b425c0 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -18,4 +18,13 @@ public class PandaSpigotWorldConfig {
+@@ -18,4 +18,12 @@ public class PandaSpigotWorldConfig {
          public double extraHorizontal = 0.5;
          public double extraVertical = 0.1;
      }
@@ -23,7 +23,6 @@ index 3dd3d0702c17541083d0d365ca46e93602105bce..bc102f9729b66b322c1454dfd0e896e0
 +            "will make moving their head very difficult, especially for players with higher latency.\n" +
 +            "With this option enabled, they will be able to move their head just like normal.")
 +    public boolean smoothTeleportation = false;
-+
  }
 diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
 index 4391ad7e7cf547b5e179c06e64b3a6e02cbe7a41..5842cedc81b90b4f3565d71ba5dfa8c0c98dfca6 100644

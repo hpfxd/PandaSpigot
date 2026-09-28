@@ -5,13 +5,14 @@ Subject: [PATCH] Alternative Chunk Ticking Selection
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 09d19eb526e0812f3165b42a28720d73c72f1bbc..d4f0ad02249f36d6ce45db8d204d44359b0def50 100644
+index a6427ebaa834ef14d295e6852cfacc7dcb37e61e..34b8ca649aca13dc9a8c2de9df2e568112aff6c0 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -54,4 +54,14 @@ public class PandaSpigotWorldConfig {
+@@ -53,4 +53,15 @@ public class PandaSpigotWorldConfig {
+     @Comment("This option controls whether or not there is a chance for arrow crits to deal extra damage.\n" +
              "By default, this is true (vanilla behaviour)")
      public boolean randomArrowDamage = true;
- 
++
 +    @Comment("When enabled, uses Spigot's alternative chunk ticking selection algorithm.\n" +
 +            "This algorithm limits the number of chunks processed each tick and randomly\n" +
 +            "selects chunks around players for ticking, improving performance at the cost\n" +
