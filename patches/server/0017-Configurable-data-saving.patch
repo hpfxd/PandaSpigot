@@ -8,25 +8,23 @@ This patch adds configuration options for:
 - Region writing (world data)
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index bde014f003bccca916dbc74fc27436bf4b193fdf..fb9db2dafcf180dbb25c768936cb59a58a7a3584 100644
+index 224dfa106c15a0eb6db3f3f9208267ec83b425c0..775c3d71c863361d5ba58395c5289bb170ec2fa3 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -20,6 +20,15 @@ public class PandaSpigotWorldConfig {
+@@ -26,4 +26,13 @@ public class PandaSpigotWorldConfig {
+             "will make moving their head very difficult, especially for players with higher latency.\n" +
              "With this option enabled, they will be able to move their head just like normal.")
      public boolean smoothTeleportation = false;
-     
++
 +    @Comment("When enabled, this option disables reading and writing player data such as:\n" +
 +            "- Position\n" +
 +            "- Inventory\n" +
 +            "- Enderchest")
 +    public boolean disablePlayerData = false;
-+    
++
 +    @Comment("When enabled, this option will disable saving world chunks.")
 +    public boolean disableChunkSaving = false;
-+    
-     @Comment("These options control velocity players receive when damaged.")
-     public KnockbackConfig knockback;
-     
+ }
 diff --git a/src/main/java/net/minecraft/server/WorldNBTStorage.java b/src/main/java/net/minecraft/server/WorldNBTStorage.java
 index b4056a28a00ba706a4cec5c22ed815ca9c980196..ba13f3f20bb86f667178f51f4d3d1df63f5acf2d 100644
 --- a/src/main/java/net/minecraft/server/WorldNBTStorage.java
@@ -48,7 +46,7 @@ index b4056a28a00ba706a4cec5c22ed815ca9c980196..ba13f3f20bb86f667178f51f4d3d1df6
  
          try {
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 87529552aa27fc89a542130a27a6b2bfdda44ccd..f54a279407ad09fabcac038b11e8d668e68c35f6 100644
+index e1478127b9d1bc308a570ef3e137762f14a1225b..08ebad639873aee9572e30519acc30be4bcf2232 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -958,7 +958,9 @@ public class WorldServer extends World implements IAsyncTaskHandler {

@@ -5,7 +5,7 @@ Subject: [PATCH] Fix MC-120567: Bed portal crash
 
 
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index 379bff423212f5af8037f3fc946b8508296a4425..9798d326f22fa1f6ad35a3848ecd5a3694794baa 100644
+index e009baa9553ab52a6db674273c0b96b0ed0ca7ab..aa2f0f81723cc046e29b397fc31a00b636e3a0b8 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -314,14 +314,11 @@ public class WorldServer extends World /*implements IAsyncTaskHandler*/ { // Pan

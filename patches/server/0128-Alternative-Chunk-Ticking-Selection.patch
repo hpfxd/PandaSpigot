@@ -5,23 +5,23 @@ Subject: [PATCH] Alternative Chunk Ticking Selection
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index cbfe9f17644bc55dbdfb9d51271a02211d20f258..fc00a5f67c5a6b2642c23834da1bef31338e2f07 100644
+index a6427ebaa834ef14d295e6852cfacc7dcb37e61e..34b8ca649aca13dc9a8c2de9df2e568112aff6c0 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-@@ -59,4 +59,15 @@ public class PandaSpigotWorldConfig {
+@@ -53,4 +53,15 @@ public class PandaSpigotWorldConfig {
      @Comment("This option controls whether or not there is a chance for arrow crits to deal extra damage.\n" +
              "By default, this is true (vanilla behaviour)")
      public boolean randomArrowDamage = true;
 +
 +    @Comment("When enabled, uses Spigot's alternative chunk ticking selection algorithm.\n" +
-+        "This algorithm limits the number of chunks processed each tick and randomly\n" +
-+        "selects chunks around players for ticking, improving performance at the cost\n" +
-+        "of deviating from vanilla chunk ticking behaviour (for example, plant growth\n" +
-+        "rates may differ).\n" +
-+        "When disabled, uses PandaSpigot's chunk ticking implementation based on\n" +
-+        "the vanilla 1.9 algorithm, which more closely matches vanilla 1.8/1.9\n" +
-+        "behaviour while still providing performance optimizations.\n" +
-+        "Default: false")
++            "This algorithm limits the number of chunks processed each tick and randomly\n" +
++            "selects chunks around players for ticking, improving performance at the cost\n" +
++            "of deviating from vanilla chunk ticking behaviour (for example, plant growth\n" +
++            "rates may differ).\n" +
++            "When disabled, uses PandaSpigot's chunk ticking implementation based on\n" +
++            "the vanilla 1.9 algorithm, which more closely matches vanilla 1.8/1.9\n" +
++            "behaviour while still providing performance optimizations.\n" +
++            "Default: false")
 +    public boolean useSpigotChunkTickingSelection = false;
  }
 diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
@@ -177,7 +177,7 @@ index 9b86cdd3b83ae8b0c040dc9d250b54684d0b7510..522c63e7f884a8b2202b111c81df9b54
          int chunksPerPlayer = Math.min( 200, Math.max( 1, (int) ( ( ( optimalChunks - players.size() ) / (double) players.size() ) + 0.5 ) ) );
          int randRange = 3 + chunksPerPlayer / 30;
 diff --git a/src/main/java/net/minecraft/server/WorldServer.java b/src/main/java/net/minecraft/server/WorldServer.java
-index af774917da6c730cac475287f990af32ff60a5bf..f148c6931fb2b935adea6deb6d909ab596d5030c 100644
+index aa2f0f81723cc046e29b397fc31a00b636e3a0b8..be21eaacf73405790fb963c0ebe1c69cdabcc73f 100644
 --- a/src/main/java/net/minecraft/server/WorldServer.java
 +++ b/src/main/java/net/minecraft/server/WorldServer.java
 @@ -372,7 +372,7 @@ public class WorldServer extends World /*implements IAsyncTaskHandler*/ { // Pan
