@@ -5,14 +5,14 @@ Subject: [PATCH] Random arrow damage toggle
 
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index e12684808ab045a7fece1a885734721857147e35..a6427ebaa834ef14d295e6852cfacc7dcb37e61e 100644
+index 9c750d34b6ab7ddd95fddcf69b957c06cf1dc650..a7a4dc5864bbb71cd3e815facb3443b63e5c70f7 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -49,4 +49,8 @@ public class PandaSpigotWorldConfig {
      public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
  
      public boolean optimizeArmorStandMovement = false; // Doesn't fully emulate vanilla behavior, see TacoSpigot issue #1
-+ 
++
 +    @Comment("This option controls whether or not there is a chance for arrow crits to deal extra damage.\n" +
 +            "By default, this is true (vanilla behaviour)")
 +    public boolean randomArrowDamage = true;

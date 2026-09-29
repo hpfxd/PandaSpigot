@@ -8,14 +8,14 @@ This is configurable using the "tnt.optimize-movement" and
 "tnt.optimize-liquid-explosions" options respectively.
 
 diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
-index 552ee2cc025bcee5e1c394e6b8be455dc3335fda..544419b96d52319efa2a1373f33f62ca28ec9438 100644
+index 552ee2cc025bcee5e1c394e6b8be455dc3335fda..d27991b5a1da44ccac9afcbe0c28e02bc75afc56 100644
 --- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 +++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
 @@ -43,4 +43,8 @@ public class PandaSpigotWorldConfig {
      @Comment("This option controls whether or not to add a bit of randomness to an arrow's trajectory.\n" +
              "By default, this is true (vanilla behaviour)")
      public boolean randomArrowTrajectory = true;
-+ 
++
 +    public boolean optimizeTntMovement = false; // May not fully emulate vanilla behavior
 +
 +    public boolean optimizeLiquidExplosions = true; // This seems like a pretty sane default
