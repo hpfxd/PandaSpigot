@@ -1,0 +1,86 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: uRyanxD <familiarodrigues123ro@gmail.com>
+Date: Tue, 29 Sep 2026 22:31:14 -0300
+Subject: [PATCH] Add missing crops to the crop growth rate configuration
+
+
+diff --git a/src/main/java/net/minecraft/server/BlockCocoa.java b/src/main/java/net/minecraft/server/BlockCocoa.java
+index 3ffb28cb0e649026e3548480e0e5915d42642022..815db9a09fb05a05fe17782988c8ccbc664f12de 100644
+--- a/src/main/java/net/minecraft/server/BlockCocoa.java
++++ b/src/main/java/net/minecraft/server/BlockCocoa.java
+@@ -17,7 +17,7 @@ public class BlockCocoa extends BlockDirectional implements IBlockFragilePlantEl
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
+         if (!this.e(world, blockposition, iblockdata)) {
+             this.f(world, blockposition, iblockdata);
+-        } else if (world.random.nextInt(5) == 0) {
++        } else if (world.random.nextInt(Math.max(1, (int) world.growthOdds / world.spigotConfig.cocoaModifier * 5)) == 0) { // PandaSpigot - Add missing crops to the crop growth rate configuration
+             int i = ((Integer) iblockdata.get(BlockCocoa.AGE)).intValue();
+ 
+             if (i < 2) {
+diff --git a/src/main/java/net/minecraft/server/BlockCrops.java b/src/main/java/net/minecraft/server/BlockCrops.java
+index bee09025dbc55612c4ee04b6ff2d99aef1fc1cbe..7c89b2573a50f781aab13db80833ab7c27d10005 100644
+--- a/src/main/java/net/minecraft/server/BlockCrops.java
++++ b/src/main/java/net/minecraft/server/BlockCrops.java
+@@ -32,7 +32,18 @@ public class BlockCrops extends BlockPlant implements IBlockFragilePlantElement,
+             if (i < 7) {
+                 float f = a((Block) this, world, blockposition);
+ 
+-                if (random.nextInt((int) (world.growthOdds / world.spigotConfig.wheatModifier * (25.0F / f)) + 1) == 0) { // Spigot                    // CraftBukkit start
++                // PandaSpigot start - Add missing crops to the crop growth rate configuration
++                int modifier;
++                if (this == Blocks.CARROTS) {
++                    modifier = world.spigotConfig.carrotModifier;
++                } else if (this == Blocks.POTATOES) {
++                    modifier = world.spigotConfig.potatoModifier;
++                } else {
++                    modifier = world.spigotConfig.wheatModifier;
++                }
++
++                if (random.nextInt((int) (world.growthOdds / modifier * (25.0F / f)) + 1) == 0) { // Spigot                    // CraftBukkit start
++                // PandaSpigot end
+                     IBlockData data = iblockdata.set(AGE, Integer.valueOf(i + 1));
+                     CraftEventFactory.handleBlockGrowEvent(world, blockposition.getX(), blockposition.getY(), blockposition.getZ(), this, toLegacyData(data));
+                     // CraftBukkit end
+diff --git a/src/main/java/net/minecraft/server/BlockVine.java b/src/main/java/net/minecraft/server/BlockVine.java
+index 25d19c4c2b110d94d952f33a9a6e8e5f7f2cc1cf..6931cf70d83848995daa7fe910beff58abbcb09b 100644
+--- a/src/main/java/net/minecraft/server/BlockVine.java
++++ b/src/main/java/net/minecraft/server/BlockVine.java
+@@ -165,7 +165,7 @@ public class BlockVine extends Block {
+ 
+     public void b(World world, BlockPosition blockposition, IBlockData iblockdata, Random random) {
+         if (!world.isClientSide) {
+-            if (world.random.nextInt(4) == 0) {
++            if (world.random.nextInt(Math.max(1, (int) world.growthOdds / world.spigotConfig.vineModifier * 4)) == 0) { // PandaSpigot - Add missing crops to the crop growth rate configuration
+                 byte b0 = 4;
+                 int i = 5;
+                 boolean flag = false;
+diff --git a/src/main/java/org/spigotmc/SpigotWorldConfig.java b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+index c028e9ff37e37f08f7c764a59cf77f5b447b0655..02d3ebfd8fff0d0e55dab58d48a1a696cd43a664 100644
+--- a/src/main/java/org/spigotmc/SpigotWorldConfig.java
++++ b/src/main/java/org/spigotmc/SpigotWorldConfig.java
+@@ -90,6 +90,12 @@ public class SpigotWorldConfig
+     public int saplingModifier;
+     public int wheatModifier;
+     public int wartModifier;
++    // PandaSpigot start - Add missing crops to the crop growth rate configuration
++    public int carrotModifier;
++    public int potatoModifier;
++    public int vineModifier;
++    public int cocoaModifier;
++    // PandaSpigot end
+     private int getAndValidateGrowth(String crop)
+     {
+         int modifier = getInt( "growth." + crop.toLowerCase() + "-modifier", 100 );
+@@ -112,6 +118,12 @@ public class SpigotWorldConfig
+         saplingModifier = getAndValidateGrowth( "Sapling" );
+         wheatModifier = getAndValidateGrowth( "Wheat" );
+         wartModifier = getAndValidateGrowth( "NetherWart" );
++        // PandaSpigot start - Add missing crops to the crop growth rate configuration
++        carrotModifier = getAndValidateGrowth("Carrot");
++        potatoModifier = getAndValidateGrowth("Potato");
++        vineModifier = getAndValidateGrowth("Vine");
++        cocoaModifier = getAndValidateGrowth("Cocoa");
++        // PandaSpigot end
+     }
+ 
+     public double itemMerge;
