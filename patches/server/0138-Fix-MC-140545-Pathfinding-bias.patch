@@ -1,0 +1,46 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Mon, 6 Jul 2026 21:53:22 +0000
+Subject: [PATCH] Fix MC-140545 Pathfinding bias
+
+Configurable with fixPathFindingBias as some might prefer the vanilla
+bugged/biased pathing for whatever reason
+
+diff --git a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+index 7f40cda04ceae71e7ba884a3556e95f5e55188e1..f9845c782a64f5a9b27e65b05f05b468e5bfe207 100644
+--- a/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
++++ b/src/main/java/com/hpfxd/pandaspigot/config/PandaSpigotWorldConfig.java
+@@ -76,4 +76,8 @@ public class PandaSpigotWorldConfig {
+     @Comment("Use Starlight optimized lighting engine.\n" +
+             "Default: true")
+     public boolean useStarlight = true;
++
++    @Comment("Whether to fix MC-140545 pathfinding bias bug.\n" +
++            "Default: true (non-vanilla behaviour)")
++    public boolean fixPathFindingBias = true;
+ }
+diff --git a/src/main/java/net/minecraft/server/Pathfinder.java b/src/main/java/net/minecraft/server/Pathfinder.java
+index 5dc05149efe507b9dac5e7b772e6966c45dea8d1..ea45c3891193170637979c58e4335ee0fb5739eb 100644
+--- a/src/main/java/net/minecraft/server/Pathfinder.java
++++ b/src/main/java/net/minecraft/server/Pathfinder.java
+@@ -32,7 +32,7 @@ public class Pathfinder {
+     private PathEntity a(Entity entity, PathPoint pathpoint, PathPoint pathpoint1, float f) {
+         pathpoint.e = 0.0F;
+         pathpoint.f = pathpoint.b(pathpoint1);
+-        pathpoint.g = pathpoint.f;
++        pathpoint.g = entity.world.pandaSpigotConfig.fixPathFindingBias ? pathpoint.f * 1.0001F : pathpoint.f; // PandaSpigot - Fix MC-140545 Pathfinding bias
+         this.a.a();
+         this.a.a(pathpoint);
+         PathPoint pathpoint2 = pathpoint;
+@@ -60,9 +60,9 @@ public class Pathfinder {
+                     pathpoint4.e = f1;
+                     pathpoint4.f = pathpoint4.b(pathpoint1);
+                     if (pathpoint4.a()) {
+-                        this.a.a(pathpoint4, pathpoint4.e + pathpoint4.f);
++                        this.a.a(pathpoint4, pathpoint4.e + (entity.world.pandaSpigotConfig.fixPathFindingBias ? pathpoint4.f * 1.0001F : pathpoint4.f)); // PandaSpigot - Fix MC-140545 Pathfinding bias
+                     } else {
+-                        pathpoint4.g = pathpoint4.e + pathpoint4.f;
++                        pathpoint4.g = pathpoint4.e + (entity.world.pandaSpigotConfig.fixPathFindingBias ? pathpoint4.f * 1.0001F : pathpoint4.f); // PandaSpigot - Fix MC-140545 Pathfinding bias
+                         this.a.a(pathpoint4);
+                     }
+                 }
