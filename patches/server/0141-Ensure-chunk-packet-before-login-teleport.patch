@@ -1,0 +1,146 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: anzz1 <anzz1@live.com>
+Date: Sat, 11 Jul 2026 04:43:23 +0000
+Subject: [PATCH] Ensure chunk packet before login teleport
+
+This patch makes sure that the chunk packet for the player position is
+sent first before the teleport packet to it, this prevents the issue
+where client thinks it's ready and spawns the player into a void before
+having received the correct chunk packet
+
+diff --git a/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java b/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
+index a0021fb96bac484f69e9d7c5c935c034d56358f9..df157130a8035e41c7ba59a9ff10a95dea4b6795 100644
+--- a/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
++++ b/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
+@@ -110,6 +110,15 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
+         return i + abyte.length;
+     }
+ 
++    // PandaSpigot start
++    public int getChunkX() {
++        return this.a;
++    }
++    public int getChunkZ() {
++        return this.b;
++    }
++    // PandaSpigot end
++
+     public static class ChunkMap {
+ 
+         public byte[] a;
+diff --git a/src/main/java/net/minecraft/server/PacketPlayOutMapChunkBulk.java b/src/main/java/net/minecraft/server/PacketPlayOutMapChunkBulk.java
+index 00c05385066dc2dafad5fd2fc891295cd65bc2df..d1c82934cecccd70bd862d9e48d6bd28f15053ba 100644
+--- a/src/main/java/net/minecraft/server/PacketPlayOutMapChunkBulk.java
++++ b/src/main/java/net/minecraft/server/PacketPlayOutMapChunkBulk.java
+@@ -79,4 +79,16 @@ public class PacketPlayOutMapChunkBulk implements Packet<PacketListenerPlayOut>
+     public void a(PacketListenerPlayOut packetlistenerplayout) {
+         packetlistenerplayout.a(this);
+     }
++
++    // PandaSpigot start
++    public int getChunkX(int i) {
++        return this.a[i];
++    }
++    public int getChunkZ(int i) {
++        return this.b[i];
++    }
++    public int getChunkCount() {
++        return this.a.length;
++    }
++    // PandaSpigot end
+ }
+diff --git a/src/main/java/net/minecraft/server/PlayerConnection.java b/src/main/java/net/minecraft/server/PlayerConnection.java
+index a4c9ee61ca31700b35250cb014f31ffc413cbf8c..efba87a9616860b499e781a596ec9be79e27079b 100644
+--- a/src/main/java/net/minecraft/server/PlayerConnection.java
++++ b/src/main/java/net/minecraft/server/PlayerConnection.java
+@@ -11,6 +11,7 @@ import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.Collections;
+ import java.util.Date;
++import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Set;
+@@ -97,6 +98,11 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+     private double q;
+     private boolean checkMovement = true;
+     private boolean processedDisconnect; // CraftBukkit - added
++    // PandaSpigot start - Ensure chunk packet before login teleport
++    private boolean hasSeenChunkData = false;
++    private final Set<Long> seenChunkDataSet = new HashSet<>();
++    private PacketPlayOutPosition pendingTeleport = null;
++    // PandaSpigot end
+ 
+     public PlayerConnection(MinecraftServer minecraftserver, NetworkManager networkmanager, EntityPlayer entityplayer) {
+         this.minecraftServer = minecraftserver;
+@@ -107,6 +113,11 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+ 
+         // CraftBukkit start - add fields and methods
+         this.server = minecraftserver.server;
++        // PandaSpigot start - Ensure chunk packet before login teleport
++        this.hasSeenChunkData = false;
++        this.seenChunkDataSet.clear();
++        this.pendingTeleport = null;
++        // PandaSpigot end
+     }
+ 
+     private final org.bukkit.craftbukkit.CraftServer server;
+@@ -144,6 +155,22 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+         }
+ 
+         this.minecraftServer.methodProfiler.b();
++
++        // PandaSpigot start - Ensure chunk packet before login teleport
++        if (this.pendingTeleport != null) {
++            if (!this.hasSeenChunkData) {
++                if(this.seenChunkDataSet.contains(ChunkCoordIntPair.a(((int)this.player.locX >> 4), ((int)this.player.locZ >> 4)))) {
++                    this.hasSeenChunkData = true;
++                    this.seenChunkDataSet.clear();
++                }
++            }
++            if (this.hasSeenChunkData) {
++                this.player.playerConnection.sendPacket(this.pendingTeleport);
++                this.pendingTeleport = null;
++            }
++        }
++        // PandaSpigot end
++
+         // CraftBukkit start
+         for (int spam; (spam = this.chatThrottle) > 0 && !chatSpamField.compareAndSet(this, spam, spam - 1); ) ;
+         if (tabSpamLimiter.get() > 0) tabSpamLimiter.getAndDecrement(); // PandaSpigot - Split variable
+@@ -593,7 +620,14 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+         // CraftBukkit end
+ 
+         this.player.setLocation(this.o, this.p, this.q, f2, f3);
+-        this.player.playerConnection.sendPacket(new PacketPlayOutPosition(d0, d1, d2, f, f1, set));
++
++        // PandaSpigot start - Ensure chunk packet before login teleport
++        if (this.hasSeenChunkData) {
++            this.player.playerConnection.sendPacket(new PacketPlayOutPosition(d0, d1, d2, f, f1, set));
++        } else {
++            this.pendingTeleport = new PacketPlayOutPosition(d0, d1, d2, f, f1, set);
++        }
++        // PandaSpigot end
+     }
+ 
+     public void a(PacketPlayInBlockDig packetplayinblockdig) {
+@@ -930,6 +964,19 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
+             }
+         }
+ 
++        // PandaSpigot start - Ensure chunk packet before login teleport
++        if (!this.hasSeenChunkData) {
++            if (packet instanceof PacketPlayOutMapChunk) {
++                this.seenChunkDataSet.add(ChunkCoordIntPair.a(((PacketPlayOutMapChunk)packet).getChunkX(), ((PacketPlayOutMapChunk)packet).getChunkZ()));
++            } else if (packet instanceof PacketPlayOutMapChunkBulk) {
++                int j = ((PacketPlayOutMapChunkBulk)packet).getChunkCount();
++                for (int i = 0; i < j; i++) {
++                    this.seenChunkDataSet.add(ChunkCoordIntPair.a(((PacketPlayOutMapChunkBulk)packet).getChunkX(i), ((PacketPlayOutMapChunkBulk)packet).getChunkZ(i)));
++                }
++            }
++        }
++        // PandaSpigot end
++
+         // CraftBukkit start
+         if (packet == null || this.processedDisconnect) { // Spigot
+             return;
