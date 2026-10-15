@@ -1,0 +1,30 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ShanguanLinG <bilibiliShanguanLinG@outlook.com>
+Date: Thu, 15 Oct 2026 13:00:01 +0800
+Subject: [PATCH] Clear item use across inventory window transitions
+
+
+diff --git a/src/main/java/net/minecraft/server/PlayerInteractManager.java b/src/main/java/net/minecraft/server/PlayerInteractManager.java
+index 4a6b183900ff2b17084e45ac54b8b079ab8628cb..df544438f720823bbc7c4b019aca1b8c59bd8a0f 100644
+--- a/src/main/java/net/minecraft/server/PlayerInteractManager.java
++++ b/src/main/java/net/minecraft/server/PlayerInteractManager.java
+@@ -371,6 +371,7 @@ public class PlayerInteractManager {
+     }
+ 
+     public boolean useItem(EntityHuman entityhuman, World world, ItemStack itemstack) {
++        if (entityhuman.activeContainer != entityhuman.defaultContainer) return false; // PandaSpigot - Ignore use packets arriving after a window opened
+         if (this.gamemode == WorldSettings.EnumGamemode.SPECTATOR) {
+             return false;
+         } else {
+diff --git a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+index 1705b5a51b37d45f3a6081f5e1f3688c436ce53d..7207f1991a058cd3fec412efe8135f8112afd9ea 100644
+--- a/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
++++ b/src/main/java/org/bukkit/craftbukkit/event/CraftEventFactory.java
+@@ -737,6 +737,7 @@ public class CraftEventFactory {
+             return null;
+         }
+ 
++        player.bV(); // PandaSpigot - Cancel item use when opening a window without releasing a charged bow
+         return container;
+     }
+ 
