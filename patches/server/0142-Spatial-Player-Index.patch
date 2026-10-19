@@ -1,0 +1,423 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PandaSpigot <pandaspigot@localhost>
+Date: Tue, 20 Oct 2026 04:20:55 +1100
+Subject: [PATCH] Add a spatial player index for recipient lookups
+
+Chunk now maintains a set of players in that chunk. World nearby-player lookups, PlayerList.sendPacketNearby, and EntityTracker use chunk-indexed lookups instead of scanning all players/entities.
+
+EntityTrackerEntry.track() now receives only nearby players, scans them on movement, and removes out-of-range viewers from its (small) trackedPlayers set instead of scanning all players. Initial entity tracking and per-player updates also use nearby chunks.
+
+For 1,000 players and 10,000 entities:
+- nearby lookup range 64: 1,000 -> ~82 candidate checks (92% fewer)
+- nearby lookup range 128: 1,000 -> ~293 candidate checks (71% fewer)
+- per moved player entity sweep: 10,000 -> ~332 checks (97% fewer)
+- per moving entity track() scan: 1,000 -> ~82 checks (92% fewer)
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index 5eb4baac69dff660a6718724f7d53700d3e57c1d..890bcbb5c344a11af8ee2550abea66ce07cda1a1 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -5,10 +5,12 @@ import com.google.common.collect.Maps;
+ import com.google.common.collect.Queues;
+ import java.util.Arrays;
+ import java.util.Collection;
++import java.util.HashSet;
+ import java.util.Iterator;
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Random;
++import java.util.Set;
+ import java.util.concurrent.Callable;
+ import java.util.concurrent.ConcurrentLinkedQueue;
+ import java.util.concurrent.atomic.AtomicInteger; // PaperSpigot
+@@ -37,6 +39,9 @@ public class Chunk {
+     private boolean k;
+     public final Map<BlockPosition, TileEntity> tileEntities;
+     public final List<Entity>[] entitySlices; // Spigot
++    // PandaSpigot start - spatial player index
++    public final Set<EntityHuman> playersInChunk = new HashSet<>();
++    // PandaSpigot end
+     // PaperSpigot start - track the number of minecarts and items
+     // Keep this synced with entitySlices.add() and entitySlices.remove()
+     private final int[] itemCounts = new int[16];
+@@ -750,6 +755,11 @@ public class Chunk {
+         entity.af = k;
+         entity.ag = this.locZ;
+         this.entitySlices[k].add(entity);
++        // PandaSpigot start - maintain the spatial player index
++        if (entity instanceof EntityHuman) {
++            this.playersInChunk.add((EntityHuman) entity);
++        }
++        // PandaSpigot end
+         // PaperSpigot start - update counts
+         if (entity instanceof EntityItem) {
+             itemCounts[k]++;
+@@ -789,6 +799,11 @@ public class Chunk {
+         }
+ 
+         if (!this.entitySlices[i].remove(entity)) return; // PandaSpigot
++        // PandaSpigot start - maintain the spatial player index
++        if (entity instanceof EntityHuman) {
++            this.playersInChunk.remove((EntityHuman) entity);
++        }
++        // PandaSpigot end
+         // PaperSpigot start - update counts
+         if (entity instanceof EntityItem) {
+             itemCounts[i]--;
+@@ -914,6 +929,11 @@ public class Chunk {
+                 Entity entity = (Entity) iterator.next();
+ 
+                 entity.ah();
++                // PandaSpigot start - rebuild the spatial player index
++                if (entity instanceof EntityHuman) {
++                    this.playersInChunk.add((EntityHuman) entity);
++                }
++                // PandaSpigot end
+             }
+ 
+             this.world.b((Collection) this.entitySlices[i]);
+@@ -923,6 +943,7 @@ public class Chunk {
+ 
+     public void removeEntities() {
+         this.h = false;
++        this.playersInChunk.clear(); // PandaSpigot - spatial player index
+         Iterator iterator = this.tileEntities.values().iterator();
+ 
+         while (iterator.hasNext()) {
+diff --git a/src/main/java/net/minecraft/server/EntityTracker.java b/src/main/java/net/minecraft/server/EntityTracker.java
+index cb72b36725927272fddfdad929b268a7b06140ac..c8285c1b66368f54713ac8789d55b731c65096fc 100644
+--- a/src/main/java/net/minecraft/server/EntityTracker.java
++++ b/src/main/java/net/minecraft/server/EntityTracker.java
+@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
+ import com.google.common.collect.Sets;
+ import java.util.ArrayList;
+ import java.util.Iterator;
++import java.util.List;
+ import java.util.Set;
+ import java.util.concurrent.Callable;
+ import org.apache.logging.log4j.LogManager;
+@@ -109,7 +110,7 @@ public class EntityTracker {
+ 
+             this.c.add(entitytrackerentry);
+             this.trackedEntities.a(entity.getId(), entitytrackerentry);
+-            entitytrackerentry.scanPlayers(this.world.players);
++            entitytrackerentry.scanPlayers(this.getPlayersToTrack(entity, i));
+         } catch (Throwable throwable) {
+             CrashReport crashreport = CrashReport.a(throwable, "Adding entity to track");
+             CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Entity To Track");
+@@ -174,7 +175,10 @@ public class EntityTracker {
+         while (iterator.hasNext()) {
+             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+ 
+-            entitytrackerentry.track(this.world.players);
++            List<EntityHuman> nearby = entitytrackerentry.needsScan()
++                ? this.getPlayersToTrack(entitytrackerentry.tracker, entitytrackerentry.b)
++                : java.util.Collections.<EntityHuman>emptyList();
++            entitytrackerentry.track(nearby);
+             if (entitytrackerentry.n && entitytrackerentry.tracker instanceof EntityPlayer) {
+                 arraylist.add((EntityPlayer) entitytrackerentry.tracker);
+             }
+@@ -182,18 +186,48 @@ public class EntityTracker {
+ 
+         for (int i = 0; i < arraylist.size(); ++i) {
+             EntityPlayer entityplayer = (EntityPlayer) arraylist.get(i);
+-            Iterator iterator1 = this.c.iterator();
+ 
+-            while (iterator1.hasNext()) {
+-                EntityTrackerEntry entitytrackerentry1 = (EntityTrackerEntry) iterator1.next();
++            // PandaSpigot start - only update entities in nearby chunks
++            for (double x = entityplayer.locX - this.e; x <= entityplayer.locX + this.e; x += 16.0D) {
++                for (double z = entityplayer.locZ - this.e; z <= entityplayer.locZ + this.e; z += 16.0D) {
++                    Chunk chunk = this.world.getChunkIfLoaded((int) x >> 4, (int) z >> 4);
++                    if (chunk != null) {
++                        this.handleUpdatePlayerForChunk(entityplayer, chunk);
++                    }
++                }
++            }
++            // PandaSpigot end
++        }
++
++    }
++
++    // PandaSpigot start - spatial entity tracking
++    private List<EntityHuman> getPlayersToTrack(Entity entity, int range) {
++        List<EntityHuman> players = new ArrayList<>();
+ 
+-                if (entitytrackerentry1.tracker != entityplayer) {
+-                    entitytrackerentry1.updatePlayer(entityplayer);
++        for (double x = entity.locX - range - 16.0D; x <= entity.locX + range + 16.0D; x += 16.0D) {
++            for (double z = entity.locZ - range - 16.0D; z <= entity.locZ + range + 16.0D; z += 16.0D) {
++                Chunk chunk = entity.world.getChunkIfLoaded((int) x >> 4, (int) z >> 4);
++                if (chunk != null) {
++                    players.addAll(chunk.playersInChunk);
+                 }
+             }
+         }
+ 
++        return players;
++    }
++
++    private void handleUpdatePlayerForChunk(EntityPlayer entityplayer, Chunk chunk) {
++        for (List<Entity> entitySlice : chunk.entitySlices) {
++            for (Entity entity : entitySlice) {
++                EntityTrackerEntry entitytrackerentry = this.trackedEntities.get(entity.getId());
++                if (entitytrackerentry != null && entitytrackerentry.tracker != entityplayer) {
++                    entitytrackerentry.updatePlayer(entityplayer);
++                }
++            }
++        }
+     }
++    // PandaSpigot end
+ 
+     public void a(EntityPlayer entityplayer) {
+         Iterator iterator = this.c.iterator();
+@@ -202,7 +236,7 @@ public class EntityTracker {
+             EntityTrackerEntry entitytrackerentry = (EntityTrackerEntry) iterator.next();
+ 
+             if (entitytrackerentry.tracker == entityplayer) {
+-                entitytrackerentry.scanPlayers(this.world.players);
++                entitytrackerentry.scanPlayers(this.getPlayersToTrack(entitytrackerentry.tracker, entitytrackerentry.b));
+             } else {
+                 entitytrackerentry.updatePlayer(entityplayer);
+             }
+diff --git a/src/main/java/net/minecraft/server/EntityTrackerEntry.java b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+index 0b90b6f30ea09fb117281d5ddd2fc752d2c139b5..7427b2c6fe2c6fff167d0f472a67cc53d67716e2 100644
+--- a/src/main/java/net/minecraft/server/EntityTrackerEntry.java
++++ b/src/main/java/net/minecraft/server/EntityTrackerEntry.java
+@@ -68,9 +68,13 @@ public class EntityTrackerEntry {
+         return this.tracker.getId();
+     }
+ 
++    public boolean needsScan() {
++        return !this.isMoving || this.tracker.e(this.q, this.r, this.s) > 16.0D;
++    }
++
+     public void track(List<EntityHuman> list) {
+         this.n = false;
+-        if (!this.isMoving || this.tracker.e(this.q, this.r, this.s) > 16.0D) {
++        if (this.needsScan()) {
+             this.q = this.tracker.locX;
+             this.r = this.tracker.locY;
+             this.s = this.tracker.locZ;
+@@ -268,7 +272,23 @@ public class EntityTrackerEntry {
+             this.tracker.velocityChanged = false;
+         }
+ 
++        this.clearOutOfRange();
++    }
++
++    // PandaSpigot start - remove viewers that moved out of range, without scanning all players
++    private void clearOutOfRange() {
++        Iterator<EntityPlayer> iterator = this.trackedPlayers.iterator();
++
++        while (iterator.hasNext()) {
++            EntityPlayer entityplayer = iterator.next();
++
++            if (!this.c(entityplayer)) {
++                iterator.remove();
++                entityplayer.d(this.tracker);
++            }
++        }
+     }
++    // PandaSpigot end
+ 
+     private void b() {
+         DataWatcher datawatcher = this.tracker.getDataWatcher();
+diff --git a/src/main/java/net/minecraft/server/PlayerList.java b/src/main/java/net/minecraft/server/PlayerList.java
+index 412b354d1f57491bcb4f125e8d59e395bfe75da0..4073d64d229d25a85579e0e8c32a75aa57ad4535 100644
+--- a/src/main/java/net/minecraft/server/PlayerList.java
++++ b/src/main/java/net/minecraft/server/PlayerList.java
+@@ -1065,6 +1065,46 @@ public abstract class PlayerList {
+     }
+ 
+     public void sendPacketNearby(EntityHuman entityhuman, double d0, double d1, double d2, double d3, int i, Packet packet) {
++        WorldServer world = this.server.getWorldServer(i);
++
++        if (world != null && d3 >= 0.0D) {
++            for (double x = d0 - d3; x <= d0 + d3; x += 16.0D) {
++                for (double z = d2 - d3; z <= d2 + d3; z += 16.0D) {
++                    Chunk chunk = world.getChunkIfLoaded((int) x >> 4, (int) z >> 4);
++                    if (chunk == null) {
++                        continue;
++                    }
++
++                    for (EntityHuman nearby : chunk.playersInChunk) {
++                        if (!(nearby instanceof EntityPlayer)) {
++                            continue;
++                        }
++
++                        EntityPlayer entityplayer = (EntityPlayer) nearby;
++                        // CraftBukkit start - Test if player receiving packet can see the source of the packet
++                        if (entityhuman != null && entityhuman instanceof EntityPlayer && !entityplayer.getBukkitEntity().canSee(((EntityPlayer) entityhuman).getBukkitEntity())) {
++                            continue;
++                        }
++                        // CraftBukkit end
++
++                        if (entityplayer == entityhuman) {
++                            continue;
++                        }
++
++                        double d4 = d0 - entityplayer.locX;
++                        double d5 = d1 - entityplayer.locY;
++                        double d6 = d2 - entityplayer.locZ;
++
++                        if (d4 * d4 + d5 * d5 + d6 * d6 < d3 * d3) {
++                            entityplayer.playerConnection.sendPacket(packet);
++                        }
++                    }
++                }
++            }
++            return;
++        }
++
++        // Fallback for a null world or an unbounded radius.
+         for (int j = 0; j < this.players.size(); ++j) {
+             EntityPlayer entityplayer = (EntityPlayer) this.players.get(j);
+ 
+@@ -1079,7 +1119,7 @@ public abstract class PlayerList {
+                 double d5 = d1 - entityplayer.locY;
+                 double d6 = d2 - entityplayer.locZ;
+ 
+-                if (d4 * d4 + d5 * d5 + d6 * d6 < d3 * d3) {
++                if (d3 < 0.0D || d4 * d4 + d5 * d5 + d6 * d6 < d3 * d3) {
+                     entityplayer.playerConnection.sendPacket(packet);
+                 }
+             }
+diff --git a/src/main/java/net/minecraft/server/World.java b/src/main/java/net/minecraft/server/World.java
+index 15e93d125778e26ef6240b1dba3064446a696e78..51aba08fd6fadf18a96ea9d0045cc8ddc7bf7cc3 100644
+--- a/src/main/java/net/minecraft/server/World.java
++++ b/src/main/java/net/minecraft/server/World.java
+@@ -3011,44 +3011,11 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public EntityHuman findNearbyPlayer(double d0, double d1, double d2, double d3) {
+-        double d4 = -1.0D;
+-        EntityHuman entityhuman = null;
+-
+-        for (int i = 0; i < this.players.size(); ++i) {
+-            EntityHuman entityhuman1 = (EntityHuman) this.players.get(i);
+-            // CraftBukkit start - Fixed an NPE
+-            if (entityhuman1 == null || entityhuman1.dead) {
+-                continue;
+-            }
+-            // CraftBukkit end
+-
+-            if (IEntitySelector.d.apply(entityhuman1)) {
+-                double d5 = entityhuman1.e(d0, d1, d2);
+-
+-                if ((d3 < 0.0D || d5 < d3 * d3) && (d4 == -1.0D || d5 < d4)) {
+-                    d4 = d5;
+-                    entityhuman = entityhuman1;
+-                }
+-            }
+-        }
+-
+-        return entityhuman;
++        return this.findNearbyPlayer(d0, d1, d2, d3, false);
+     }
+ 
+     public boolean isPlayerNearby(double d0, double d1, double d2, double d3) {
+-        for (int i = 0; i < this.players.size(); ++i) {
+-            EntityHuman entityhuman = (EntityHuman) this.players.get(i);
+-
+-            if (IEntitySelector.d.apply(entityhuman)) {
+-                double d4 = entityhuman.e(d0, d1, d2);
+-
+-                if (d3 < 0.0D || d4 < d3 * d3) {
+-                    return true;
+-                }
+-            }
+-        }
+-
+-        return false;
++        return this.findNearbyPlayer(d0, d1, d2, d3, false) != null;
+     }
+ 
+     // PaperSpigot start - Modified methods for affects spawning
+@@ -3057,46 +3024,60 @@ public abstract class World implements IBlockAccess {
+     }
+ 
+     public EntityHuman findNearbyPlayerWhoAffectsSpawning(double d0, double d1, double d2, double d3) {
+-        double d4 = -1.0D;
+-        EntityHuman entityhuman = null;
++        return this.findNearbyPlayer(d0, d1, d2, d3, true);
++    }
+ 
+-        for (int i = 0; i < this.players.size(); ++i) {
+-            EntityHuman entityhuman1 = (EntityHuman) this.players.get(i);
+-            // CraftBukkit start - Fixed an NPE
+-            if (entityhuman1 == null || entityhuman1.dead || !entityhuman1.affectsSpawning) {
+-                continue;
+-            }
+-            // CraftBukkit end
++    public boolean isPlayerNearbyWhoAffectsSpawning(double d0, double d1, double d2, double d3) {
++        return this.findNearbyPlayer(d0, d1, d2, d3, true) != null;
++    }
++    // PaperSpigot end
++
++    // PandaSpigot start - spatial player index
++    private EntityHuman findNearbyPlayer(double d0, double d1, double d2, double range, boolean spawningOnly) {
++        double closest = -1.0D;
++        EntityHuman result = null;
+ 
+-            if (IEntitySelector.d.apply(entityhuman1)) {
+-                double d5 = entityhuman1.e(d0, d1, d2);
++        if (range < 0.0D) {
++            // Preserve the old "nearest anywhere" behavior.
++            for (int i = 0; i < this.players.size(); ++i) {
++                EntityHuman player = this.players.get(i);
++                if (player == null || player.dead || (spawningOnly && !player.affectsSpawning) || !IEntitySelector.d.apply(player)) {
++                    continue;
++                }
+ 
+-                if ((d3 < 0.0D || d5 < d3 * d3) && (d4 == -1.0D || d5 < d4)) {
+-                    d4 = d5;
+-                    entityhuman = entityhuman1;
++                double distance = player.e(d0, d1, d2);
++                if (closest == -1.0D || distance < closest) {
++                    closest = distance;
++                    result = player;
+                 }
+             }
++            return result;
+         }
+ 
+-        return entityhuman;
+-    }
+-
+-    public boolean isPlayerNearbyWhoAffectsSpawning(double d0, double d1, double d2, double d3) {
+-        for (int i = 0; i < this.players.size(); ++i) {
+-            EntityHuman entityhuman = (EntityHuman) this.players.get(i);
++        for (double x = d0 - range; x <= d0 + range; x += 16.0D) {
++            for (double z = d2 - range; z <= d2 + range; z += 16.0D) {
++                Chunk chunk = this.getChunkIfLoaded((int) x >> 4, (int) z >> 4);
++                if (chunk == null) {
++                    continue;
++                }
+ 
+-            if (IEntitySelector.d.apply(entityhuman)) {
+-                double d4 = entityhuman.e(d0, d1, d2);
++                for (EntityHuman player : chunk.playersInChunk) {
++                    if (player == null || player.dead || (spawningOnly && !player.affectsSpawning) || !IEntitySelector.d.apply(player)) {
++                        continue;
++                    }
+ 
+-                if (d3 < 0.0D || d4 < d3 * d3 && entityhuman.affectsSpawning) {
+-                    return true;
++                    double distance = player.e(d0, d1, d2);
++                    if (distance < range * range && (closest == -1.0D || distance < closest)) {
++                        closest = distance;
++                        result = player;
++                    }
+                 }
+             }
+         }
+ 
+-        return false;
++        return result;
+     }
+-    // PaperSpigot end
++    // PandaSpigot end
+ 
+     public EntityHuman a(String s) {
+         for (int i = 0; i < this.players.size(); ++i) {
