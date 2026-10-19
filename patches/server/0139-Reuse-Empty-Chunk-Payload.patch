@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PandaSpigot <pandaspigot@localhost>
+Date: Tue, 20 Oct 2026 03:42:43 +1100
+Subject: [PATCH] Reuse empty chunk payload
+
+Add a shared empty ChunkMap for chunks with no sections and return it from Chunk.getChunkMap() when the primary bit mask is zero. PacketPlayOutMapChunk uses it for empty chunk packets.
+
+diff --git a/src/main/java/net/minecraft/server/Chunk.java b/src/main/java/net/minecraft/server/Chunk.java
+index bdbda3e61c86dc298862fe560942a08fdc57e3a5..5eb4baac69dff660a6718724f7d53700d3e57c1d 100644
+--- a/src/main/java/net/minecraft/server/Chunk.java
++++ b/src/main/java/net/minecraft/server/Chunk.java
+@@ -68,9 +68,7 @@ public class Chunk {
+         }
+ 
+         if (primaryBitMask == 0) {
+-            PacketPlayOutMapChunk.ChunkMap chunkMap = new PacketPlayOutMapChunk.ChunkMap();
+-            chunkMap.a = new byte[0];
+-            return chunkMap;
++            return PacketPlayOutMapChunk.EMPTY_CHUNK_MAP; // PandaSpigot - reuse empty chunk map
+         }
+ 
+         boolean isDirty = false;
+diff --git a/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java b/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
+index a0021fb96bac484f69e9d7c5c935c034d56358f9..7d96c4c70e68ff2f5803ef0a0b38473d15bd106c 100644
+--- a/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
++++ b/src/main/java/net/minecraft/server/PacketPlayOutMapChunk.java
+@@ -7,6 +7,14 @@ import java.util.Iterator;
+ 
+ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
+ 
++    // PandaSpigot start - reuse an empty chunk map for chunks with no sections
++    public static final PacketPlayOutMapChunk.ChunkMap EMPTY_CHUNK_MAP = new PacketPlayOutMapChunk.ChunkMap();
++    static {
++        EMPTY_CHUNK_MAP.a = new byte[0];
++        EMPTY_CHUNK_MAP.b = 0;
++    }
++    // PandaSpigot end
++
+     private int a;
+     private int b;
+     private PacketPlayOutMapChunk.ChunkMap c;
+@@ -18,7 +26,7 @@ public class PacketPlayOutMapChunk implements Packet<PacketListenerPlayOut> {
+         this.a = chunk.locX;
+         this.b = chunk.locZ;
+         this.d = flag;
+-        this.c = chunk.getChunkMap(flag, i); // PaperSpigot
++        this.c = i == 0 ? EMPTY_CHUNK_MAP : chunk.getChunkMap(flag, i); // PaperSpigot // PandaSpigot - empty chunk map
+         chunk.world.spigotConfig.antiXrayInstance.obfuscateSync(chunk.locX, chunk.locZ, c.b, c.a, chunk.world);
+     }
+ 
