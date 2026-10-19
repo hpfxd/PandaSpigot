@@ -1,0 +1,41 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PandaSpigot <pandaspigot@localhost>
+Date: Tue, 20 Oct 2026 03:53:38 +1100
+Subject: [PATCH] Cache the entity lava check per tick
+
+Entity.ab() currently performs a World.a(AABB, Material.LAVA) scan on every call. Mobs call it multiple times per tick from movement, pathfinding, and float goals.
+
+Cache the result for MinecraftServer.currentTick using inLava/lastLavaTickCalculated, so each entity performs at most one lava scan per tick.
+
+diff --git a/src/main/java/net/minecraft/server/Entity.java b/src/main/java/net/minecraft/server/Entity.java
+index e2b6f0a788fe56cacbadb457a7c65b3412a1b528..ee590521023610cae1619c47e59e20eefc2519e1 100644
+--- a/src/main/java/net/minecraft/server/Entity.java
++++ b/src/main/java/net/minecraft/server/Entity.java
+@@ -109,6 +109,10 @@ public abstract class Entity implements ICommandListener {
+     public int maxFireTicks;
+     public int fireTicks;
+     public boolean inWater; // Spigot - protected -> public // PAIL
++    // PandaSpigot start - cache the lava check for the current tick
++    public boolean inLava;
++    public long lastLavaTickCalculated = -1L;
++    // PandaSpigot end
+     public int noDamageTicks;
+     protected boolean justCreated;
+     protected boolean fireProof;
+@@ -1004,7 +1008,15 @@ public abstract class Entity implements ICommandListener {
+     }
+ 
+     public boolean ab() {
+-        return this.world.a(this.getBoundingBox().grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
++        // PandaSpigot start - cache the lava check for the current tick
++        if (MinecraftServer.currentTick == this.lastLavaTickCalculated) {
++            return this.inLava;
++        }
++
++        this.lastLavaTickCalculated = MinecraftServer.currentTick;
++        this.inLava = this.world.a(this.getBoundingBox().grow(-0.10000000149011612D, -0.4000000059604645D, -0.10000000149011612D), Material.LAVA);
++        return this.inLava;
++        // PandaSpigot end
+     }
+ 
+     public void a(float f, float f1, float f2) {
