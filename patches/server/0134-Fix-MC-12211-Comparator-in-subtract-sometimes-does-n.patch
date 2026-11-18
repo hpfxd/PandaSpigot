@@ -6,21 +6,25 @@ Subject: [PATCH] Fix MC-12211: Comparator in subtract sometimes does not
 
 
 diff --git a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
-index 6f5e45d5c9a42cc64a8eca28e237f9727746ec93..220e321225798bbc931a68158f533036ce3bf8cf 100644
+index 6f5e45d5c9a42cc64a8eca28e237f9727746ec93..b8ac0e93e9bad49389ff35152916ba168329980a 100644
 --- a/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
 +++ b/src/main/java/net/minecraft/server/BlockRedstoneComparator.java
-@@ -162,8 +162,12 @@ public class BlockRedstoneComparator extends BlockDiodeAbstract implements ICont
-             tileentitycomparator.a(i);
-         }
+@@ -68,14 +68,14 @@ public class BlockRedstoneComparator extends BlockDiodeAbstract implements ICont
+     protected boolean e(World world, BlockPosition blockposition, IBlockData iblockdata) {
+         int i = this.f(world, blockposition, iblockdata);
  
--        if (j != i || iblockdata.get(BlockRedstoneComparator.MODE) == BlockRedstoneComparator.EnumComparatorMode.COMPARE) {
--            boolean flag = this.e(world, blockposition, iblockdata);
+-        if (i >= 15) {
+-            return true;
+-        } else if (i == 0) {
 +        // PandaSpigot start - Fix MC-12211: Comparator in subtract sometimes does not visually update
-+        boolean compare = iblockdata.get(BlockRedstoneComparator.MODE) == BlockRedstoneComparator.EnumComparatorMode.COMPARE;
-+
-+        if (j != i || compare) {
-+            boolean flag = compare ? this.e(world, blockposition, iblockdata) : i > 0;
-+        // PandaSpigot end
-             boolean flag1 = this.l(iblockdata);
++        if (i == 0) {
+             return false;
+         } else {
+             int j = this.c(world, blockposition, iblockdata);
  
-             if (flag1 && !flag) {
+-            return j == 0 ? true : i >= j;
++            return i > j || i == j && iblockdata.get(MODE) == EnumComparatorMode.COMPARE;
++        // PandaSpigot end
+         }
+     }
+ 
