@@ -1,0 +1,183 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: PandaSpigot <pandaspigot@localhost>
+Date: Tue, 20 Oct 2026 04:11:14 +1100
+Subject: [PATCH] Use Velocity native libdeflate for packet compression
+
+Replace the Java Deflater/Inflater packet compressor and decompressor with Velocity's native libdeflate compressor. Falls back to the Java implementation when no native library is available.
+
+On Linux aarch64, a standalone 32 KiB benchmark measured:
+- deflate: 126.18 us/op Java vs 70.48 us/op native (1.79x)
+- inflate: 25.64 us/op Java vs 7.67 us/op native (3.34x)
+
+The velocity-native 1.1.5 artifact targets Java 8; native libraries are packaged for Linux x86_64/aarch64. Other platforms use the Java fallback.
+
+diff --git a/build.gradle.kts b/build.gradle.kts
+index 5fd93af71de1c39690c5335b94b9cb2b62af14d1..7657db2c3c8342b59ed756301360fc98010297d2 100644
+--- a/build.gradle.kts
++++ b/build.gradle.kts
+@@ -8,6 +8,7 @@ val adventureVersion = "4.25.0" // PandaSpigot - Adventure
+ 
+ repositories {
+     maven(url = "https://libraries.minecraft.net")
++    maven(url = "https://repo.papermc.io/repository/maven-public")
+ }
+ 
+ dependencies {
+@@ -21,6 +22,11 @@ dependencies {
+ 
+     // Minecraft libraries:
+     implementation("io.netty:netty-all:4.1.132.Final") // PandaSpigot - Update Netty to 4.1.x
++    implementation("com.velocitypowered:velocity-native:1.1.5") {
++        exclude(group = "io.netty")
++        exclude(group = "com.google.guava")
++        exclude(group = "org.checkerframework")
++    } // PandaSpigot - native libdeflate compression
+     implementation("com.mojang:authlib:1.5.21")
+     // PandaSpigot start - Update log4j
+     implementation("org.apache.logging.log4j:log4j-api:2.25.3")
+diff --git a/src/main/java/net/minecraft/server/PacketCompressor.java b/src/main/java/net/minecraft/server/PacketCompressor.java
+index 8107890ffbc205f5ce7e22c04d62fb8b16d087c2..d68f70b03ae93f09d9cf5c9db77bf1d801a44096 100644
+--- a/src/main/java/net/minecraft/server/PacketCompressor.java
++++ b/src/main/java/net/minecraft/server/PacketCompressor.java
+@@ -1,19 +1,22 @@
+ package net.minecraft.server;
+ 
++import com.velocitypowered.natives.compression.VelocityCompressor;
++import com.velocitypowered.natives.util.MoreByteBufUtils;
++import com.velocitypowered.natives.util.Natives;
+ import io.netty.buffer.ByteBuf;
+ import io.netty.channel.ChannelHandlerContext;
+ import io.netty.handler.codec.MessageToByteEncoder;
++
+ import java.util.zip.Deflater;
+ 
+ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+ 
+-    private final byte[] a = new byte[8192];
+-    private final Deflater b;
++    private final VelocityCompressor compressor;
+     private int c;
+ 
+     public PacketCompressor(int i) {
+         this.c = i;
+-        this.b = new Deflater();
++        this.compressor = Natives.compress.get().create(Deflater.DEFAULT_COMPRESSION);
+     }
+ 
+     protected void a(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, ByteBuf bytebuf1) throws Exception {
+@@ -24,28 +27,30 @@ public class PacketCompressor extends MessageToByteEncoder<ByteBuf> {
+             packetdataserializer.b(0);
+             packetdataserializer.writeBytes(bytebuf);
+         } else {
+-            byte[] abyte = new byte[i];
+-
+-            bytebuf.readBytes(abyte);
+-            packetdataserializer.b(abyte.length);
+-            this.b.setInput(abyte, 0, i);
+-            this.b.finish();
+-
+-            while (!this.b.finished()) {
+-                int j = this.b.deflate(this.a);
+-
+-                packetdataserializer.writeBytes(this.a, 0, j);
++            packetdataserializer.b(i);
++            ByteBuf compatible = MoreByteBufUtils.ensureCompatible(channelhandlercontext.alloc(), this.compressor, bytebuf);
++            try {
++                this.compressor.deflate(compatible, bytebuf1);
++            } finally {
++                compatible.release();
+             }
+-
+-            this.b.reset();
+         }
+-
+     }
+ 
+     public void a(int i) {
+         this.c = i;
+     }
+ 
++    @Override
++    protected ByteBuf allocateBuffer(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, boolean flag) throws Exception {
++        return MoreByteBufUtils.preferredBuffer(channelhandlercontext.alloc(), this.compressor, bytebuf.readableBytes() + 1);
++    }
++
++    @Override
++    public void handlerRemoved(ChannelHandlerContext channelhandlercontext) throws Exception {
++        this.compressor.close();
++    }
++
+     protected void encode(ChannelHandlerContext channelhandlercontext, ByteBuf object, ByteBuf bytebuf) throws Exception {
+         this.a(channelhandlercontext, object, bytebuf);
+     }
+diff --git a/src/main/java/net/minecraft/server/PacketDecompressor.java b/src/main/java/net/minecraft/server/PacketDecompressor.java
+index 300d46475a682fbeb4db3e21e64f3c18e21a14c7..c132a089539c5a35c1e7f0c14ac4f8f27ef42f16 100644
+--- a/src/main/java/net/minecraft/server/PacketDecompressor.java
++++ b/src/main/java/net/minecraft/server/PacketDecompressor.java
+@@ -1,21 +1,24 @@
+ package net.minecraft.server;
+ 
++import com.velocitypowered.natives.compression.VelocityCompressor;
++import com.velocitypowered.natives.util.MoreByteBufUtils;
++import com.velocitypowered.natives.util.Natives;
+ import io.netty.buffer.ByteBuf;
+-import io.netty.buffer.Unpooled;
+ import io.netty.channel.ChannelHandlerContext;
+ import io.netty.handler.codec.ByteToMessageDecoder;
+ import io.netty.handler.codec.DecoderException;
++
+ import java.util.List;
+-import java.util.zip.Inflater;
++import java.util.zip.Deflater;
+ 
+ public class PacketDecompressor extends ByteToMessageDecoder {
+ 
+-    private final Inflater a;
++    private final VelocityCompressor compressor;
+     private int b;
+ 
+     public PacketDecompressor(int i) {
+         this.b = i;
+-        this.a = new Inflater();
++        this.compressor = Natives.compress.get().create(Deflater.DEFAULT_COMPRESSION);
+     }
+ 
+     protected void decode(ChannelHandlerContext channelhandlercontext, ByteBuf bytebuf, List<Object> list) throws Exception {
+@@ -34,21 +37,27 @@ public class PacketDecompressor extends ByteToMessageDecoder {
+                     throw new DecoderException("Badly compressed packet - size of " + i + " is larger than protocol maximum of " + 2097152);
+                 }
+ 
+-                byte[] abyte = new byte[packetdataserializer.readableBytes()];
+-
+-                packetdataserializer.readBytes(abyte);
+-                this.a.setInput(abyte);
+-                byte[] abyte1 = new byte[i];
+-
+-                this.a.inflate(abyte1);
+-                list.add(Unpooled.wrappedBuffer(abyte1));
+-                this.a.reset();
++                ByteBuf compatible = MoreByteBufUtils.ensureCompatible(channelhandlercontext.alloc(), this.compressor, packetdataserializer);
++                ByteBuf uncompressed = MoreByteBufUtils.preferredBuffer(channelhandlercontext.alloc(), this.compressor, i);
++                try {
++                    this.compressor.inflate(compatible, uncompressed, i);
++                    list.add(uncompressed);
++                } catch (Exception exception) {
++                    uncompressed.release();
++                    throw exception;
++                } finally {
++                    compatible.release();
++                }
+             }
+-
+         }
+     }
+ 
+     public void a(int i) {
+         this.b = i;
+     }
++
++    @Override
++    protected void handlerRemoved0(ChannelHandlerContext channelhandlercontext) throws Exception {
++        this.compressor.close();
++    }
+ }
